@@ -24,12 +24,19 @@ import {installHelp,createHelpButton} from './help.js';
 import {foodLabel} from './food-settings.js';
 import {readFoodControls,installFoodControls,syncFoodControls} from './food-controls.js';
 import {geographyLabel} from './geography.js';
+import {COMPUTATION_WORKER_COUNTS,computationHardwareLabel} from './computation-settings.js';
+import {installUIText,UI_TEXT} from './ui-text.js';
+import {installPerformanceTabs} from './performance-tabs.js';
 const element=id=>document.getElementById(id);
+installUIText(document);installPerformanceTabs(document);
+// Один список допустимых режимов используется интерфейсом и расчётом.
+for(const count of COMPUTATION_WORKER_COUNTS){const option=document.createElement('option');option.value=count;option.textContent=count===1?'1 · последовательно':`${count} · параллельно`;element('compute-workers').append(option);}
+element('compute-hardware').textContent=computationHardwareLabel();
 import {mutationProfile} from './mutation-parameters.js';
 const canvas=element('world'),context=canvas.getContext('2d');
 const chart=element('chart'),graph=chart.getContext('2d');
 canvas.width=CANVAS_WIDTH;canvas.height=CANVAS_HEIGHT;
-let selected=null,running=false,baseGenome=null,legacyBase=false,controlPending=false;
+let selected=null,running=false,baseGenome=null,legacyBase=false,controlPending=false,activeComputationMode='auto';
 const trail={points:[]};
 const client=new WorldClient({onState:message=>{
  sim=client.view;selected=message.state.selected?.agent??null;trail.points=message.state.trail;
@@ -57,7 +64,7 @@ function settings(){
  if(!Number.isInteger(population)||population<1||population>1000)throw new Error('Основателей должно быть от 1 до 1000.');
  if(!Number.isInteger(limit)||limit<population||limit>1000)throw new Error('Лимит должен быть не меньше числа основателей и не больше 1000.');
  if(!Number.isInteger(seed)||seed<1||seed>4294967295)throw new Error('Номер опыта должен быть целым от 1 до 4294967295.');
- const computeValue=element('compute-workers').value||'auto',computeWorkers=computeValue==='auto'?'auto':Number(computeValue);
+ const computeWorkers=activeComputationMode;
  return {seed,population,limit,computeWorkers,geography:element('geography').value,...readFoodControls(),
   learning:element('learning').checked,memory:element('memory').checked,
   expandLegacy:legacyBase&&element('expand-legacy').checked,mutationRate:Number(element('mutation-rate').value),mutations:element('mutations').checked,upgradeMutationGenes:element('upgrade-mutations').checked,baseGenome};
@@ -82,6 +89,14 @@ async function restart(){
 element('play').addEventListener('click',toggle);
 element('step').addEventListener('click',singleStep);
 element('restart').addEventListener('click',restart);
+element('compute-apply').addEventListener('click',async()=>{
+ if(!client.ready||controlPending||labTabs?.isBenchmarkActive())return;
+ const value=element('compute-workers').value,mode=value==='auto'?'auto':Number(value);
+ controlPending=true;element('compute-message').textContent='Перенос опыта и проверка вычислителей…';update();
+ try{const result=await command('computations',{value:mode});activeComputationMode=mode;element('compute-message').textContent=UI_TEXT.computeChanged(result.computeWorkers,sim.tick);}
+ catch(error){element('compute-message').textContent=error.message;}
+ finally{controlPending=false;update();}
+});
 // Меняем только поле следующего запуска. Текущий мир, RNG, пауза и выбранный
 // житель остаются прежними до явного «Начать новый опыт».
 element('randomize-seed').addEventListener('click',()=>{
@@ -191,6 +206,9 @@ function updateContents(){
  element('next-agent').disabled=!total.population;
  element('rate').textContent=running?`${Math.round(actualRate)} шагов/с фактически`:'На паузе';
  element('compute-status').textContent=`Вычислителей: ${sim.execution?.computeWorkers??1}`;
+ activeComputationMode=sim.execution?.mode??activeComputationMode;
+ element('compute-current').textContent=UI_TEXT.currentComputations(sim.execution?.computeWorkers??1,activeComputationMode);
+ element('compute-apply').disabled=controlPending||labTabs?.isBenchmarkActive();element('compute-workers').disabled=controlPending||labTabs?.isBenchmarkActive();
  // Показатель наблюдателя: использует настоящие источники, но не входит в мозг.
  const sources=sim.foodIslands.flatMap(g=>g.sources);
  const nearFood=sim.agents.filter(a=>sources.some(p=>worldDistance(a,p)<=3)).length;

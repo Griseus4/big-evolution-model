@@ -4,7 +4,7 @@
  * Ёмкости 3…6, старт заполнен. Миграция/выживание не гарантируются. */
 import {Random} from './simulation.js';
 export const FOOD_LIMITS=Object.freeze({sourcesMin:0,sourcesMax:384,sourcesDefault:384,
- intervalMin:10,intervalMax:1600,intervalDefault:20,islandsMin:1,islandsMax:384,islandsDefault:8,
+ intervalMin:10,intervalMax:300,individualIntervalMax:1600,intervalDefault:20,islandsMin:1,islandsMax:384,islandsDefault:8,
  spreadMin:0,spreadMax:90,periodSpreadDefault:30,sizeSpreadDefault:30,scatteredFraction:.2});
 export function validateFoodSettings({foodSources=FOOD_LIMITS.sourcesDefault,foodRegrowInterval=FOOD_LIMITS.intervalDefault,
  foodIslandCount=FOOD_LIMITS.islandsDefault,foodPeriodSpread=FOOD_LIMITS.periodSpreadDefault,foodSizeSpread=FOOD_LIMITS.sizeSpreadDefault}={}){

@@ -10,9 +10,10 @@ import {prepareTemporalDecision,commitTemporalBrain,observeTime,accrueTemporalRe
 import {INPUT_WIDTH,RESULT_WIDTH,RESULT,readCognitionRow} from './cognition-packet.js';
 export class CognitionOwner{
  constructor(){this.agents=new Map();this.batch=null;this.result=null;this.deadId=null;}
+ register(agents){for(const a of agents){if(this.agents.has(a.id))throw new Error('Повторная регистрация мозга.');this.agents.set(a.id,{...a,alive:true});}}
  evaluate({input,count,added=[],removed=[],retainedId=null,tick,subtick,priming,memoryEnabled,learningEnabled}){
   if(this.batch)throw new Error('Предыдущие решения ещё не подтверждены.');
-  for(const a of added){if(this.agents.has(a.id))throw new Error('Повторная регистрация мозга.');this.agents.set(a.id,{...a,alive:true});}
+  this.register(added);
   // Удерживается максимум один выбранный умерший, без обхода всех живых.
   if(this.deadId!==null&&this.deadId!==retainedId){this.agents.delete(this.deadId);this.deadId=null;}
   for(const d of removed){const a=this.agents.get(d.id);if(a&&d.id===retainedId){Object.assign(a.brain,d.feeling);a.brain.pending=null;a.dead=true;this.deadId=d.id;}else this.agents.delete(d.id);}
@@ -48,5 +49,5 @@ export class CognitionOwner{
   }
   this.batch=null;this.result=result;
  }
- snapshot(ids){if(this.batch)throw new Error('Нельзя читать неподтверждённое состояние.');return ids.map(id=>{const a=this.agents.get(id);if(!a)throw new Error('Мозг не найден: '+id);return {id,brain:a.brain,lastDecision:a.lastDecision};});}
+ snapshot(ids){if(this.batch)throw new Error('Нельзя читать неподтверждённое состояние.');return ids.map(id=>{const a=this.agents.get(id);if(!a)throw new Error('Мозг не найден: '+id);return {id,brain:a.brain,lastDecision:a.lastDecision,cells:a.cells};});}
 }

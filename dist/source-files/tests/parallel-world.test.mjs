@@ -9,6 +9,30 @@ import {WORLD_PROTOCOL} from '../dist/world-view.js';
 import {createBenchmarkFixture,BENCHMARK_CASES} from '../dist/benchmark-fixtures.js';
 import {Worker} from 'node:worker_threads';
 import {WorldClient} from '../dist/world-client.js';
+import {COMPUTATION_WORKER_COUNTS} from '../dist/computation-settings.js';
+
+test('all expanded pool sizes preserve full state even with fewer agents than workers',async()=>{
+ for(const workers of COMPUTATION_WORKER_COUNTS.filter(n=>n>4)){
+  const reference=new Evolution({seed:71,population:9}),world=new Evolution({seed:71,population:9});
+  const pool=new ParallelWorld(world,{workers,createWorker:createCognitionWorker});
+  try{await pool.ready();for(let i=0;i<2;i++){reference.step();await pool.step();}await pool.syncAll();assert.deepEqual(world.snapshot(),reference.snapshot(),String(workers));}
+  finally{await pool.close();}
+ }
+});
+
+test('failed readiness closes the partial pool and preserves the previous running world',async()=>{
+ let failures=false,created=0,closed=0;
+ const runtime=new WorldRuntime({send:()=>{},executorFactory:world=>failures?new ParallelWorld(world,{workers:14,createWorker:()=>{
+  if(++created===5)throw new Error('Worker unavailable');
+  return {terminate:()=>{closed++;}};
+ }}):null});
+ await runtime.handle({protocol:WORLD_PROTOCOL,epoch:1,id:1,type:'init',payload:{settings:{population:2}}});
+ runtime.setRunning(true);const old=runtime.world;failures=true;
+ await runtime.handle({protocol:WORLD_PROTOCOL,epoch:2,id:2,type:'init',payload:{settings:{population:2}}});
+ assert.equal(closed,4);assert.equal(runtime.world,old);assert.equal(runtime.running,true);assert.equal(old.tick,0);
+ const pool=new ParallelWorld(new Evolution({population:1}),{workers:2,timeout:10,createWorker:()=>({postMessage(){},terminate:()=>{closed++;}})});
+ await assert.rejects(pool.ready(),/не ответил/);assert.equal(pool.closed,true);assert.equal(closed,6);
+});
 test('parallel world preserves full state, memory, learning and all RNG streams',async()=>{
  for(const workers of [1,2,4])for(const seed of [42,17]){
   const settings={seed,population:12,limit:30},reference=new Evolution(settings),world=new Evolution(settings),pool=new ParallelWorld(world,{workers,createWorker:createCognitionWorker});

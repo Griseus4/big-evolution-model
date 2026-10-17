@@ -1,7 +1,9 @@
-/** Чистые метаданные/матрицы v1–v3. Объём одного повтора прежний; число
+/** Чистые метаданные/матрицы v1–v4. Объём одного повтора прежний; число
  * повторов и выбранные группы берём из конкретного отчёта, не из UI сегодня. */
 import {BENCHMARK_SUITE_ID,BENCHMARK_CASES,BENCHMARK_REPEATS} from './benchmark-fixtures.js';
 import {BENCHMARK_MODEL_SERIES,BENCHMARK_PROTOCOL,MAX_BENCHMARK_REPEATS,BENCHMARK_GROUPS} from './benchmark-versions.js';
+import {workerBenchmarkSelection,WORKER_BENCHMARK_PROTOCOL} from './worker-benchmark-settings.js';
+import {configurationLayout,validateConfigurationReport,configurationMatrix} from './configuration-benchmark-report.js';
 // Архивные отчёты читаются без загрузки старых расчётных модулей. Каждая
 // нагрузка привязана к своей модели; между разными сериями ускорение не считаем.
 const HISTORICAL_SERIES=Object.freeze({'fixed-neural-workloads-v1':'neural-local-body-v1',
@@ -12,19 +14,26 @@ export function timingSummary(samples){
  return {medianMs:median,minMs:sorted[0],maxMs:sorted.at(-1),spreadPercent:median?(sorted.at(-1)-sorted[0])/median*100:0};
 }
 export function benchmarkReportLayout(report){
- const grouped=report.version===3;
+ if(report.version===5)return configurationLayout(report);
+ const grouped=report.version>=3;
  const groups=grouped?report.groups:BENCHMARK_GROUPS;
  return {versionIds:report.version>=2?report.versionIds:[report.modelVersion??'не указана'],groups,
-  specs:BENCHMARK_CASES.filter(spec=>groups.includes(spec.kind)),
+  specs:BENCHMARK_CASES.filter(spec=>groups.includes(spec.kind)&&(report.version!==4||report.caseIds.includes(spec.id))),
   repeatCounts:grouped?report.repeatCounts:{evaluator:report.version===2?report.repeatCount:BENCHMARK_REPEATS,world:report.version===2?report.repeatCount:BENCHMARK_REPEATS}};
 }
 export function validateBenchmarkReport(report){
- if(report?.format!=='big-evolution-benchmark'||![1,2,3].includes(report.version)||![BENCHMARK_SUITE_ID,...Object.keys(HISTORICAL_SERIES)].includes(report.suiteId))throw new Error('Нужен отчёт постоянных замеров (.json). Профиль обычного мира — другой формат.');
+ if(report?.version===5)return validateConfigurationReport(report);
+ if(report?.format!=='big-evolution-benchmark'||![1,2,3,4].includes(report.version)||![BENCHMARK_SUITE_ID,...Object.keys(HISTORICAL_SERIES)].includes(report.suiteId))throw new Error('Нужен отчёт постоянных замеров (.json). Профиль обычного мира — другой формат.');
  const multi=report.version>=2;
- if(multi&&(report.seriesId!==(HISTORICAL_SERIES[report.suiteId]??BENCHMARK_MODEL_SERIES)||report.protocolId!==BENCHMARK_PROTOCOL||
+ if(report.version===4){
+  if(typeof report.kernelVersion!=='string')throw new Error('Не указана версия расчёта.');
+  const selection=workerBenchmarkSelection(report.workerCounts,report.caseIds?.[0],report.repeatCounts?.world,report.kernelVersion);
+  for(const key of ['mode','versionIds','workerCounts','caseIds','groups','repeatCounts'])if(JSON.stringify(report[key])!==JSON.stringify(selection[key]))throw new Error('Некорректная конфигурация сравнения вычислителей.');
+  if(report.suiteId!==BENCHMARK_SUITE_ID||report.seriesId!==BENCHMARK_MODEL_SERIES||report.protocolId!==WORKER_BENCHMARK_PROTOCOL)throw new Error('Неизвестная методика сравнения вычислителей.');
+ }else if(multi&&(report.seriesId!==(HISTORICAL_SERIES[report.suiteId]??BENCHMARK_MODEL_SERIES)||report.protocolId!==BENCHMARK_PROTOCOL||
   !Array.isArray(report.versionIds)||!report.versionIds.length||report.versionIds.length>8||new Set(report.versionIds).size!==report.versionIds.length||
   report.versionIds.some(id=>typeof id!=='string'||!/^\d+\.\d+\.\d+$/.test(id))))throw new Error('Неизвестная серия/методика или неверный выбор версий.');
- if(report.version===3&&(!Array.isArray(report.groups)||!report.groups.length||new Set(report.groups).size!==report.groups.length||report.groups.some(g=>!BENCHMARK_GROUPS.includes(g))||
+ if(report.version>=3&&(!Array.isArray(report.groups)||!report.groups.length||new Set(report.groups).size!==report.groups.length||report.groups.some(g=>!BENCHMARK_GROUPS.includes(g))||
   !report.repeatCounts||Array.isArray(report.repeatCounts)||Object.keys(report.repeatCounts).some(g=>!report.groups.includes(g))))throw new Error('Некорректные группы нагрузок.');
  const layout=benchmarkReportLayout(report);
  for(const group of layout.groups){const count=layout.repeatCounts[group];if(!Number.isInteger(count)||count<1||count>MAX_BENCHMARK_REPEATS)throw new Error('Некорректное число повторов.');}
@@ -35,13 +44,15 @@ export function validateBenchmarkReport(report){
   const spec=layout.specs.find(c=>c.id===row.id),key=multi?row.versionId+':'+row.id:row.id;
   if(!spec||ids.has(key)||(multi&&(!report.versionIds.includes(row.versionId)||row.warmup!==spec.warmup||row.seed!==spec.seed||row.population!==spec.population))||row.work!==spec.work||row.kind!==spec.kind||!Array.isArray(row.repeats)||row.repeats.length>layout.repeatCounts[spec.kind])throw new Error('Состав/объём нагрузки не совпадает');
   ids.add(key);completedMeasurements+=row.repeats.length;
+  if(report.version===4&&row.repeats.some(r=>r.computeWorkers!==report.workerCounts[report.versionIds.indexOf(row.versionId)]))throw new Error('Число вычислителей расходится с режимом.');
   if(!/^[a-f0-9]{64}$/.test(row.fixtureDigest))throw new Error('Отсутствует отпечаток начального состояния');
   for(const sample of row.repeats)if(!Number.isFinite(sample.computeMs)||sample.computeMs<=0||!Number.isFinite(sample.wallMs)||sample.wallMs<sample.computeMs||sample.work!==spec.work||!Number.isSafeInteger(sample.actions)||sample.actions<0||!Number.isSafeInteger(sample.steps)||sample.steps<0||sample.steps>spec.work||(spec.kind==='evaluator'&&sample.steps!==0)||!/^[a-f0-9]{64}$/.test(sample.resultDigest))throw new Error('Некорректный повтор замера');
  }
  if(report.status==='completed'&&(ids.size!==layout.specs.length*layout.versionIds.length||report.cases.some(c=>c.repeats.length!==layout.repeatCounts[c.kind])))throw new Error('В завершённом отчёте не хватает повторов');
  if(multi&&(!Array.isArray(report.versions)||report.versions.length>report.versionIds.length||new Set(report.versions.map(v=>v.id)).size!==report.versions.length||report.versions.some(v=>!report.versionIds.includes(v.id))||(report.status==='completed'&&report.versions.length!==report.versionIds.length)))throw new Error('Потеряны или повторяются сведения о снимках');
  if(multi)for(const row of report.cases)for(const [i,r]of row.repeats.entries())if(r.repeatIndex!==i||!Number.isInteger(r.orderIndex)||r.orderIndex<0||r.orderIndex>=report.versionIds.length)throw new Error('Неверный порядок повторов');
- if(report.version===3){
+ if(report.version===4)for(const v of report.versions)if(v.snapshotId!==report.kernelVersion||v.execution?.computeWorkers!==report.workerCounts[report.versionIds.indexOf(v.id)])throw new Error('Потеряны сведения о расчётном режиме.');
+ if(report.version>=3){
   const planned=layout.specs.reduce((n,spec)=>n+layout.repeatCounts[spec.kind],0)*layout.versionIds.length;
   if(report.completedMeasurements!==undefined&&report.completedMeasurements!==completedMeasurements)throw new Error('Прогресс расходится с числом сохранённых повторов');
   if(report.plannedMeasurements!==undefined&&report.plannedMeasurements!==planned&&!(report.plannedMeasurements===0&&!report.cases.length&&report.status!=='completed'))throw new Error('План замера расходится с группами/повторами');
@@ -50,8 +61,10 @@ export function validateBenchmarkReport(report){
 }
 export function compareBenchmarkReports(current,previous){
  validateBenchmarkReport(current);validateBenchmarkReport(previous);
+ if(current.version===5||previous.version===5)throw new Error('Версии и вычислители сравниваются внутри таблицы своего запуска.');
  if(current.suiteId!==previous.suiteId||current.seriesId!==previous.seriesId)throw new Error('Разные модели/нагрузки: это не сравнение оптимизации.');
  if(current.status!=='completed'||previous.status!=='completed')throw new Error('Для сравнения нужны два полностью завершённых отчёта.');
+ if(current.protocolId!==previous.protocolId)throw new Error('Разные методики прогрева/запуска: сравнивай режимы внутри одного отчёта.');
  if((current.version===1)!==(previous.version===1))throw new Error('Старый одиночный замер и чередующаяся серия имеют разные методики.');
  if(current.version>=2){
   if(current.versionIds.length!==1||previous.versionIds.length!==1)throw new Error('Для двух многоверсионных отчётов используй их отдельные сравнительные таблицы.');
@@ -75,6 +88,7 @@ export function compareBenchmarkReports(current,previous){
 /** Частичные/различные результаты видимы, но не получают проценты ускорения.
  * Выключенная группа вовсе отсутствует; её строки не выглядят незавершёнными. */
 export function benchmarkMatrix(report){
+ if(report.version===5)return configurationMatrix(report);
  validateBenchmarkReport(report);const layout=benchmarkReportLayout(report),versionIds=layout.versionIds;
  return {...layout,rows:layout.specs.map(spec=>{
   const count=layout.repeatCounts[spec.kind];

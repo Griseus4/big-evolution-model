@@ -6,7 +6,7 @@ An artificial life simulation with evolving neural agents, individual learning, 
 
 Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments.
 
-**Status:** experimental prototype · **Current implementation:** 0.33.0 · **Interface:** Russian.
+**Status:** experimental prototype · **Current implementation:** 0.33.2 · **Interface:** Russian.
 
 ## What is implemented
 
@@ -16,7 +16,7 @@ Big Evolution explores how behavior develops through inherited neural parameters
 - Visible food sources, including empty ones, and local perception of other agents.
 - Energy expenditure, digestion, starvation, timed actions, reproduction, and a finite lifespan.
 - Seeded experiments, genome exports and analysis, mechanism checks, and versioned performance benchmarks.
-- A simulation coordinator separate from the browser interface, with up to four persistent workers for individual memory, attention, learning, and brain evaluation. New worlds offer Auto / 1 / 2 / 4 computation workers; one retains sequential execution.
+- A simulation coordinator separate from the browser interface, with up to sixteen persistent workers for individual memory, attention, learning, and brain evaluation. The Performance panel offers Auto or 1 / 2 / 4 / 6 / 8 / 10 / 12 / 14 / 16 computation workers, including live switching without resetting the world; one retains sequential execution. Performance tests can compare one identical standard world across selected worker counts, with separate warmup, rotating order, full-result checks, and JSON export.
 
 The default world has 48×32 hexes, 150 founders, a population limit of 1,000, and 384 food sources. These are initial conditions and limits, not a guarantee of a stable population.
 
@@ -96,3 +96,5 @@ A license has not been selected for this release.
 Version 0.32 adds ten substeps per time unit, action durations and interruption, a heritable attention network, and energy costs for decisions. Old genomes cannot initialize a new world. A population cap blocks new births from starting; births already underway may finish above it.
 
 Version 0.33 parallelizes individual cognition while preserving the 0.32 model, genome schema, learning, and random-number order. The local release has not been published by this update. See [implementation and short measurements](docs/updates/v033-parallel-world.md).
+
+Version0.33.2 groups benchmark columns by version and worker count, runs each evaluator once per version, and reports speedup and scaling efficiency without automatic tuning. Central food periods are limited to10–300; sliders have larger round handles. [Release notes](docs/updates/v033-live-controls.md).

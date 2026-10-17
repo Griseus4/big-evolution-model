@@ -7,10 +7,8 @@ import {CALL_REVIEW} from './action-timing.js';
 import {setCognitionSummary} from './cognition-summary.js';
 import {COGNITION_PROTOCOL,INPUT_WIDTH,RESULT_WIDTH,RESULT,writeCognitionRow} from './cognition-packet.js';
 
-export function computationWorkers(requested='auto',hardware=globalThis.navigator?.hardwareConcurrency??2,population=150){
- if(requested==='auto'||requested===undefined)return population<32||hardware<4?1:hardware>=8?4:2;
- if(![1,2,4].includes(requested))throw new Error('Число вычислителей: авто,1,2 или4.');return requested;
-}
+import {validateComputationWorkers} from './computation-settings.js';
+export {computationWorkers} from './computation-settings.js';
 class Endpoint{
  constructor(worker,fail,timeout){this.worker=worker;this.pending=null;this.id=0;this.timeout=timeout;worker.onmessage=({data:m})=>{
   if(m.protocol!==COGNITION_PROTOCOL)return;const p=this.pending;if(!p||m.id!==p.id){fail(new Error('Несогласованный ответ вычислителя.'));return;}
@@ -27,7 +25,8 @@ class Endpoint{
 function mirrorBrain(b){return {traits:b.traits,controllerType:b.controllerType,temporal:b.temporal,position:b.position,facing:b.facing,updates:b.updates,feelingTotal:b.feelingTotal,feelingSamples:b.feelingSamples,wellbeing:b.wellbeing,memory:new Map(),longMemory:new Map()};}
 export class ParallelWorld{
  constructor(world,{workers=4,createWorker=()=>new Worker(new URL('./cognition-worker.js',import.meta.url),{type:'module'}),timeout=30000}={}){
-  if(!world.temporal||![1,2,4].includes(workers))throw new Error('Параллельный расчёт поддерживает v12 и1/2/4 владельца.');
+  if(!world.temporal)throw new Error('Параллельный расчёт поддерживает модель v12.');
+  validateComputationWorkers(workers);
   this.world=world;this.owners=new Map();this.rows=new WeakMap();this.batch=0;this.closed=false;this.busy=false;this.error=null;this.retained=null;
   this.metrics={workers,substeps:0,evaluateMs:0,commitMs:0,packMs:0,ownerWorkMs:0,inputBytes:0,resultBytes:0,registrations:0,snapshotMs:0};
   this.lanes=[];
@@ -38,6 +37,17 @@ export class ParallelWorld{
  async close(){if(this.closed)return;this.closed=true;await Promise.all(this.lanes.map(l=>l.endpoint.close(new Error('Мир закрыт.'))));this.owners.clear();}
  ensureOpen(){if(this.closed)throw this.error??new Error('Мир закрыт.');}
  async ready(){try{await Promise.all(this.lanes.map(l=>l.endpoint.call('ready',{})));}catch(e){this.fail(e);throw e;}}
+ /** Переносим опыт без наблюдения, обучения, выбора действия или RNG.
+  * Координатор освобождает полные мозги только после подтверждения всех владельцев.
+  * При отказе старый пул и полные локальные копии остаются пригодны для работы. */
+ async attach(){
+  this.ensureOpen();if(this.busy||this.owners.size)throw new Error('Перенос доступен только в новый свободный пул.');
+  const groups=this.lanes.map(()=>[]);
+  for(const a of this.world.agents)groups[(a.id-1)%groups.length].push({id:a.id,x:a.x,y:a.y,brain:a.brain,lastDecision:a.lastDecision,cells:a._cells});
+  try{await Promise.all(this.lanes.map((l,i)=>l.endpoint.call('register',{agents:groups[i]})));}catch(e){this.fail(e);throw e;}
+  for(const a of this.world.agents){this.owners.set(a.id,(a.id-1)%groups.length);setCognitionSummary(a,a.brain.memory.size,a.brain.longMemory.size);a.brain=mirrorBrain(a.brain);a.lastDecision=null;}
+  this.metrics.registrations+=this.world.agents.length;
+ }
  async reset(world){
   this.ensureOpen();if(this.busy)throw new Error('Нельзя заменить выполняющийся мир.');
   try{await Promise.all(this.lanes.map(l=>l.endpoint.call('reset',{})));}catch(e){this.fail(e);throw e;}
@@ -104,7 +114,7 @@ export class ParallelWorld{
  async sync(agents){
   this.ensureOpen();if(this.busy)throw new Error('Снимок доступен только после полного шага.');const start=performance.now(),groups=this.lanes.map(()=>[]),lookup=new Map();
   for(const a of agents){const index=this.owners.get(a.id);if(index!==undefined){groups[index].push(a.id);lookup.set(a.id,a);}}
-  await Promise.all(groups.map(async(ids,i)=>{if(!ids.length)return;const snapshots=await this.lanes[i].endpoint.call('snapshot',{ids});for(const s of snapshots){const a=lookup.get(s.id);a.brain=s.brain;a.lastDecision=s.lastDecision;}}));this.metrics.snapshotMs+=performance.now()-start;
+  await Promise.all(groups.map(async(ids,i)=>{if(!ids.length)return;const snapshots=await this.lanes[i].endpoint.call('snapshot',{ids});for(const s of snapshots){const a=lookup.get(s.id);a.brain=s.brain;a.lastDecision=s.lastDecision;a._cells=s.cells;}}));this.metrics.snapshotMs+=performance.now()-start;
  }
  async syncAll(){await this.sync(this.world.agents);}
  async syncAgent(agent){if(agent)await this.sync([agent]);}

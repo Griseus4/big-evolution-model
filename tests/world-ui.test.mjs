@@ -17,6 +17,9 @@ import {mutationProfile} from '../dist/mutation-parameters.js';
 import {updateTextRows} from '../dist/stable-text-list.js';
 import {WorldClient} from '../dist/world-client.js';
 import {WorldRuntime} from '../dist/world-runtime.js';
+import * as computation from '../dist/computation-settings.js';
+import {UI_TEXT,installUIText} from '../dist/ui-text.js';
+import {installPerformanceTabs} from '../dist/performance-tabs.js';
 import {WorldProfiler} from '../dist/world-profiler.js';
 const html=fs.readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
 const app=fs.readFileSync(new URL('../dist/evolution-app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'');
@@ -57,8 +60,8 @@ async function boot(){
   }
  }
  let section='birth',tab='world';
- const context=vm.createContext({...model,...cognition,...setLayout,...neuralLayout,...body,...navigation,...reproduction,...geography,
-  WorldClient:TestClient,WorldProfiler,mutationProfile,foodLabel,updateTextRows,document,navigator:{hardwareConcurrency:2,userAgent:'test-dom'},
+ const context=vm.createContext({...model,...cognition,...setLayout,...neuralLayout,...body,...navigation,...reproduction,...geography,...computation,
+  WorldClient:TestClient,WorldProfiler,mutationProfile,foodLabel,updateTextRows,UI_TEXT,installUIText,installPerformanceTabs,document,navigator:{hardwareConcurrency:2,userAgent:'test-dom'},
   installLabTabs:options=>({currentTab:()=>tab,refresh:()=>{},onRestart:()=>{},isBenchmarkActive:()=>false,
    select:name=>{tab=name;if(name!=='world')options.pauseWorld();options.onTabChange(name);}}),
   installSidebar:fn=>{sidebarChange=fn;return {getResidentSection:()=>section,select:()=>fn(),selectResident:name=>{section=name;fn();}};},

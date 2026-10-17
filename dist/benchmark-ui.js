@@ -6,15 +6,20 @@ import {timingSummary,validateBenchmarkReport,compareBenchmarkReports,benchmarkM
 import {BENCHMARK_SUITE_ID,BENCHMARK_CASES} from './benchmark-fixtures.js';
 import {BENCHMARK_VERSIONS,BENCHMARK_MODEL_SERIES,BENCHMARK_PROTOCOL,groupedBenchmarkSelection} from './benchmark-versions.js';
 import {extractBenchmarkReport,interruptedLabReport} from './lab-reports.js';
+import {COMPUTATION_WORKER_COUNTS,computationHardwareLabel} from './computation-settings.js';
+import {configurationSelection,plannedConfigurationMeasurements,CONFIGURATION_PROTOCOL} from './benchmark-configurations.js';
+import {renderConfigurationTable} from './configuration-benchmark-ui.js';
+import {UI_TEXT} from './ui-text.js';
 const byId=id=>document.getElementById(id),ms=n=>n.toFixed(1)+' мс';
 const node=(tag,text,className)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(className)n.className=className;return n;};
 let repeatPanelSequence=0;
 const openRepeatKeys=host=>new Set([...host.querySelectorAll('button[data-repeat-key][aria-expanded="true"]')].map(button=>button.dataset.repeatKey));
 function renderTable(host,report,open=openRepeatKeys(host)){
+ if(report.version===5)return renderConfigurationTable(host,report,open);
  const matrix=benchmarkMatrix(report),multiple=matrix.versionIds.length>1;
  const table=node('table',undefined,'benchmark-table'),head=node('thead'),tr=node('tr');
  tr.append(node('th','Нагрузка'));
- for(const id of matrix.versionIds)tr.append(node('th','Версия '+id));
+ for(const id of matrix.versionIds)tr.append(node('th',report.version===4?(report.versions.find(v=>v.id===id)?.label??`${id.split('@')[1]} вычислителей`):'Версия '+id));
  tr.append(node('th',multiple?'Совпадение результатов':'Повторы'));head.append(tr);table.append(head);
  let currentKind=null;
  for(const row of matrix.rows){
@@ -25,9 +30,10 @@ function renderTable(host,report,open=openRepeatKeys(host)){
    if(!cell.timing)td.textContent='Ожидает запуска';
    else {
     td.append(node('strong',ms(cell.timing.medianMs)));
+    if(row.kind==='world')td.append(node('small',`${(cell.row.work*1000/cell.timing.medianMs).toFixed(2)} шагов/с`));
     td.append(node('small',`Диапазон ${ms(cell.timing.minMs)}…${ms(cell.timing.maxMs)} · разброс ${cell.timing.spreadPercent.toFixed(1)}%`));
-    if(multiple){const delta=cell.timeChangePercent;
-     td.append(node('small',delta===null?'Сравнение пока недоступно':cell===row.cells[0]?'Исходная точка':`${delta>=0?'+':''}${delta.toFixed(1)}% времени`,delta!==null&&cell!==row.cells[0]?(delta<0?'benchmark-better':'benchmark-slower'):''));
+    if(multiple){const speedup=cell.comparable?row.cells[0].timing.medianMs/cell.timing.medianMs:null;
+     td.append(node('small',speedup===null?'Сравнение пока недоступно':`×${speedup.toFixed(2)} · ${(speedup-1)*100>=0?'+':''}${((speedup-1)*100).toFixed(1)}% скорости`));
     }
    }
    line.append(td);
@@ -63,15 +69,20 @@ function renderTable(host,report,open=openRepeatKeys(host)){
   button.addEventListener('click',()=>setExpanded(repeats.hidden));label.append(button);table.append(repeats);setExpanded(open.has(row.id));
  }
  const scroll=node('div',undefined,'table-scroll');scroll.append(table);host.replaceChildren(scroll);
+
 }
 export function installBenchmarkUI({pauseWorld,isOtherTestActive,onBusyChange=()=>{},onReportChange=()=>{}}){
  let worker=null,report=null,previous=null,build=null,stopping=false,dirty=true;
  fetch('./build-info.json').then(r=>r.ok?r.json():null).then(v=>build=v).catch(()=>{});
  const active=()=>worker!==null;
- const versions=byId('benchmark-versions');
+ byId('benchmark-hardware').textContent=computationHardwareLabel();
+ const versions=byId('benchmark-versions'),versionControls=[];
  versions.replaceChildren(...BENCHMARK_VERSIONS.map(version=>{
-  const label=node('label',undefined,'benchmark-version'),input=node('input');input.type='checkbox';input.value=version.id;input.checked=true;
-  label.append(input,node('span',version.label));return label;
+  const card=node('div',undefined,'benchmark-version-card'),label=node('label',undefined,'check'),enabled=node('input');enabled.type='checkbox';enabled.value=version.id;enabled.checked=version.id===BENCHMARK_VERSIONS.at(-1).id;
+  label.append(enabled,node('strong',version.label));card.append(label);
+  const counts=node('div',undefined,'benchmark-counts'),inputs=version.workerCounts.map(n=>{
+   const item=node('label',undefined,'check'),input=node('input');input.type='checkbox';input.value=String(n);input.checked=[1,2,4].includes(n);item.append(input,node('span',String(n)));counts.append(item);return input;
+  });card.append(counts);versionControls.push({version,enabled,inputs});enabled.addEventListener('change',()=>update());return card;
  }));
  function renderProgress(){
   if(!report){byId('benchmark-progress').textContent='';byId('benchmark-progress-bar').value=0;return;}
@@ -84,9 +95,9 @@ export function installBenchmarkUI({pauseWorld,isOtherTestActive,onBusyChange=()
  function update(){
   byId('benchmark-start').disabled=active()||isOtherTestActive();byId('benchmark-stop').disabled=!active()||stopping;
   byId('benchmark-export').disabled=!report||active();byId('benchmark-previous').disabled=active();
+  for(const c of versionControls){c.enabled.disabled=active();for(const input of c.inputs)input.disabled=active()||!c.enabled.checked||!byId('benchmark-group-world').checked;}
   for(const kind of ['evaluator','world']){byId('benchmark-group-'+kind).disabled=active();byId('benchmark-repeats-'+kind).disabled=active()||!byId('benchmark-group-'+kind).checked;}
   renderProgress();
-  for(const input of versions.querySelectorAll('input'))input.disabled=active();
   if(!dirty)return;dirty=false;
   if(report){try{renderTable(byId('benchmark-results'),report);}catch(error){byId('benchmark-results').textContent='Не удалось разобрать отчёт: '+error.message;}}
   const host=byId('benchmark-comparison'),pastOpen=openRepeatKeys(host);host.replaceChildren();
@@ -97,8 +108,8 @@ export function installBenchmarkUI({pauseWorld,isOtherTestActive,onBusyChange=()
   try{
    const comparison=compareBenchmarkReports(report,previous);
    host.append(node('p',comparison.deviceWarning?'Характеристики устройства различаются; влияние версии не установлено.':'Отдельные запуски: фоновая нагрузка и температура могли различаться.','note'));
-   const table=node('table',undefined,'benchmark-table'),head=node('tr');head.append(node('th','Нагрузка'),node('th','Изменение времени'));table.append(head);
-   for(const row of comparison.rows){const tr=node('tr');tr.append(node('th',row.label),node('td',row.comparable?`${row.timeChangePercent>=0?'+':''}${row.timeChangePercent.toFixed(1)}%`:row.reasons.join('; ')));table.append(tr);}
+   const table=node('table',undefined,'benchmark-table'),head=node('tr');head.append(node('th','Нагрузка'),node('th','Ускорение'));table.append(head);
+   for(const row of comparison.rows){const tr=node('tr');tr.append(node('th',row.label),node('td',row.comparable?`×${row.speedup.toFixed(2)} · ${row.speedup>=1?'+':''}${((row.speedup-1)*100).toFixed(1)}% скорости`:row.reasons.join('; ')));table.append(tr);}
    const scroll=node('div',undefined,'table-scroll');scroll.append(table);host.append(scroll);
   }catch(error){host.append(node('p',error.message,'note'));}
  }
@@ -107,15 +118,17 @@ export function installBenchmarkUI({pauseWorld,isOtherTestActive,onBusyChange=()
  byId('benchmark-start').addEventListener('click',async()=>{
   if(active()||isOtherTestActive())return;
   try{
-   const selection=groupedBenchmarkSelection([...versions.querySelectorAll('input:checked')].map(i=>i.value),{groups:['evaluator','world'].filter(kind=>byId('benchmark-group-'+kind).checked),repeatCounts:{evaluator:Number(byId('benchmark-repeats-evaluator').value),world:Number(byId('benchmark-repeats-world').value)}});
+   const groups=['evaluator','world'].filter(kind=>byId('benchmark-group-'+kind).checked);
+   const selection=configurationSelection(versionControls.filter(c=>c.enabled.checked).map(c=>({versionId:c.version.id,workerCounts:groups.includes('world')?c.inputs.filter(i=>i.checked).map(i=>Number(i.value)):[1]})),{
+    groups,repeatCounts:{evaluator:Number(byId('benchmark-repeats-evaluator').value),world:Number(byId('benchmark-repeats-world').value)}});
    if(typeof Worker==='undefined')throw new Error('Этот браузер не поддерживает Worker.');
    await pauseWorld();
    if(active()||isOtherTestActive())return;
-   report={format:'big-evolution-benchmark',version:3,suiteId:BENCHMARK_SUITE_ID,seriesId:BENCHMARK_MODEL_SERIES,protocolId:BENCHMARK_PROTOCOL,
-    modelVersion:MODEL_VERSION,build,...selection,versions:[],createdAt:new Date().toISOString(),status:'running',cases:[],completedMeasurements:0,plannedMeasurements:BENCHMARK_CASES.filter(spec=>selection.groups.includes(spec.kind)).reduce((n,spec)=>n+selection.repeatCounts[spec.kind],0)*selection.versionIds.length};
+   report={format:'big-evolution-benchmark',version:5,suiteId:BENCHMARK_SUITE_ID,seriesId:BENCHMARK_MODEL_SERIES,protocolId:CONFIGURATION_PROTOCOL,
+    modelVersion:MODEL_VERSION,build,...selection,versions:[],createdAt:new Date().toISOString(),status:'running',cases:[],completedMeasurements:0,plannedMeasurements:plannedConfigurationMeasurements(selection,BENCHMARK_CASES)};
    onReportChange(report);dirty=true;
    worker=new Worker(new URL('./benchmark-worker.js',import.meta.url),{type:'module'});onBusyChange();update();
-   byId('benchmark-status').textContent='Подготовка выбранных снимков…';
+   byId('benchmark-status').textContent='Подготовка версий и выбранных вычислителей…';
    worker.onmessage=event=>{
     const data=event.data;
     if(data.type==='ready'){report.versions=data.versions;onReportChange(report);}
@@ -123,7 +136,7 @@ export function installBenchmarkUI({pauseWorld,isOtherTestActive,onBusyChange=()
     if(data.type==='case'){const index=report.cases.findIndex(c=>c.id===data.row.id&&c.versionId===data.row.versionId);if(index<0)report.cases.push(data.row);else report.cases[index]=data.row;report.completedMeasurements=report.cases.reduce((n,row)=>n+row.repeats.length,0);onReportChange(report);dirty=true;update();}
     if(data.type==='done'){report=data.report;
      if(report.modelVersion!==MODEL_VERSION){fail('Сборка Worker расходится с интерфейсом. Обнови страницу.');return;}
-     finish(report.status==='completed'?'Замеры завершены. Отрицательное изменение времени означает ускорение. Скачай JSON.':report.status==='stopped'?'Остановлено. Полученные повторы сохранены; отчёт неполный.':`Ошибка: ${report.error?.message??'неизвестная'}`);}
+     finish(report.status==='completed'?UI_TEXT.benchmarkFinished:report.status==='stopped'?'Остановлено. Полученные повторы сохранены; отчёт неполный.':`Ошибка: ${report.error?.message??'неизвестная'}`);}
     if(data.type==='error')fail('Ошибка Worker: '+data.message);
    };
    worker.onerror=event=>{event.preventDefault();fail('Ошибка Worker: '+event.message);};worker.onmessageerror=()=>fail('Не удалось прочитать результат Worker.');

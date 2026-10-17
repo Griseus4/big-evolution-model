@@ -58,7 +58,9 @@ def main() -> int:
         ('startup', 'startup', [node, 'tools/check-startup.mjs']),
         ('world-worker', 'worker', [node, '--test', 'tests/world-worker.test.mjs', 'tests/world-ui.test.mjs',
                                      'tests/performance-detail.test.mjs', 'tests/worker-timing.test.mjs',
-                                     'tests/temporal.test.mjs', 'tests/parallel-world.test.mjs', 'tests/parallel-benchmark.test.mjs']),
+                                     'tests/temporal.test.mjs', 'tests/parallel-world.test.mjs', 'tests/parallel-benchmark.test.mjs',
+                                     'tests/worker-count-benchmark.test.mjs', 'tests/worker-count-ui.test.mjs',
+                                     'tests/live-computations.test.mjs', 'tests/configuration-benchmark.test.mjs', 'tests/ui-text-controls.test.mjs']),
         ('mechanisms', 'mechanisms', [node, 'tools/check-mechanisms.mjs',
                                     str(REPORTS / 'mechanisms-latest.json')]),
         # HEAD учитывает и staged, и unstaged изменения отслеживаемых файлов.

@@ -79,7 +79,7 @@ export function createIndividualFoodLayout(tiles,template,seed,input){
 export function scheduleFoodIslands(islands,seed,input,startTick=0){
  const options=validateFoodSettings(input),random=new Random(seed^0x59f2a731);
  return islands.map(g=>{
-  const period=Math.max(FOOD_LIMITS.intervalMin,Math.min(FOOD_LIMITS.intervalMax,
+  const period=Math.max(FOOD_LIMITS.intervalMin,Math.min(FOOD_LIMITS.individualIntervalMax,
    Math.round(options.foodRegrowInterval*(1+(random.next()*2-1)*options.foodPeriodSpread/100))));
   const phase=Math.floor(random.next()*period);
   return {...g,centre:{...g.centre},sources:g.sources.map(point),period,phase,cycleStart:startTick,nextTick:startTick+(phase||period)};
