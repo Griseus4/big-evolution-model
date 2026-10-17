@@ -1,0 +1,9 @@
+node_modules/
+*.tar.gz
+.transfer/
+.openai/
+.codex/
+.agents/
+__pycache__/
+*.py[cod]
+/releases/

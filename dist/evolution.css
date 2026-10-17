@@ -1,0 +1,111 @@
+/* Оформление лаборатории. Координаты мира здесь не задаются: они вычисляются в JS.
+   Две колонки рассчитаны на ПК; на узком экране они становятся последовательными. */
+:root{color-scheme:dark;--bg:#151d1a;--panel:#202c25;--edge:#3a493b;--text:#e9ecdf;--muted:#a3b19f;--gold:#dfc98c;--green:#9ec48a;--red:#d8967e;font-family:Segoe UI,Arial,sans-serif;font-size:14px}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text)}h1,h2,h3,p{margin:0}h1{font-size:25px;font-weight:500}h2{font-size:17px;font-weight:500}h3{font-size:13px;margin:16px 0 8px}header{display:flex;justify-content:space-between;align-items:center;padding:24px 32px;border-bottom:1px solid var(--edge);gap:20px}header p{color:var(--muted);font-size:12px;margin-top:7px}nav{display:flex;gap:18px;align-items:center}.eyebrow{display:block;font-size:10px;color:var(--gold);letter-spacing:1.6px;margin-bottom:8px}a{color:var(--gold);text-decoration:none}a:hover{text-decoration:underline}button,input,select{font:inherit}button,select,input[type=number]{color:var(--text);border:1px solid var(--edge);border-radius:5px;background:#29372b;padding:9px 12px}button{cursor:pointer}button:hover{background:#384634}button:disabled{opacity:.4;cursor:default}.primary{background:var(--gold);color:#242b1c;font-weight:600;border-color:var(--gold)}.primary:hover{background:#efdba0}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:3px}main{display:grid;grid-template-columns:minmax(550px,1fr) 340px;gap:28px;padding:25px 32px;max-width:1650px;margin:auto}.transport{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}.transport label{font-size:12px;color:var(--muted)}.transport select{margin-left:6px}#clock{color:var(--gold);font-variant-numeric:tabular-nums}.muted,.note{color:var(--muted)}.muted{font-size:11px}.note{font-size:12px;line-height:1.6}.scoreboard{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}.scoreboard div{border:1px solid var(--edge);background:var(--panel);border-radius:6px;padding:12px}.scoreboard small{display:block;color:var(--muted);font-size:11px}.scoreboard strong{display:block;color:var(--gold);font-size:25px;font-weight:400;margin-top:5px;font-variant-numeric:tabular-nums}.map-shell{position:relative;border:1px solid #526147;border-radius:8px;overflow:hidden;background:#1e2922}#world{display:block;width:100%;height:auto;cursor:crosshair}.map-label{position:absolute;top:12px;left:12px;pointer-events:none;background:#142019dd;border:1px solid var(--edge);border-radius:4px;padding:7px 9px;font-size:11px;color:#d4deca}#extinction{position:absolute;inset:0;background:#142019cc;display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--red);pointer-events:none}#extinction[hidden]{display:none}.map-caption{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--muted);margin-top:10px;min-height:17px}#limit-status{color:var(--red)}.legend{display:flex;gap:18px;flex-wrap:wrap;padding:12px 0;color:var(--muted);font-size:11px}.legend span{display:flex;align-items:center;gap:6px}.legend i{width:8px;height:8px;border-radius:50%;display:inline-block}.food{background:#d6acc6}.hazard{background:var(--red)}.organism{background:var(--green)}.selected{background:var(--gold)}.chart-section,.events-section{border-top:1px solid var(--edge);margin-top:20px;padding-top:18px}.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}#chart{display:block;width:100%;height:170px}#events{max-height:200px;overflow:auto;scrollbar-color:#59674c transparent}.event{display:grid;grid-template-columns:55px 1fr;gap:8px;padding:7px 0;font-size:12px}.event time{color:var(--muted)}.event strong{font-weight:500;color:var(--gold)}.event p{color:var(--muted);font-size:11px;margin-top:3px;line-height:1.5}.panel{padding:18px;border:1px solid var(--edge);border-radius:7px;background:var(--panel);margin-bottom:18px}.panel label{display:block;color:var(--muted);font-size:12px;margin:12px 0}.panel input[type=number],.panel select{display:block;width:100%;margin-top:6px}.panel .check{display:flex;align-items:center;gap:8px}.check input{accent-color:var(--gold)}.wide{width:100%;font-size:12px;margin-top:10px}.file-label{border:1px dashed #627153;border-radius:5px;padding:10px}.file-label input{display:block;max-width:100%;font-size:11px;margin-top:8px}.error{font-size:12px;color:var(--red);line-height:1.5;margin-top:8px}.source-links a{display:block;font-size:12px;margin:10px 0}.body-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.body-grid span{font-size:10px;color:var(--muted);display:block}.body-grid strong{display:block;font-size:18px;font-weight:400;margin-top:4px}.choice{padding:5px 0}.choice-head{display:flex;justify-content:space-between;font-size:11px}.choice-meter{height:3px;background:#364330;margin-top:5px}.choice-meter span{display:block;height:100%;background:#8fa781}.choice.last .choice-head{color:var(--gold)}.choice.last .choice-meter span{background:var(--gold)}#next-agent{font-size:10px;padding:5px 7px}footer{max-width:1650px;margin:auto;padding:18px 32px;border-top:1px solid var(--edge);display:flex;justify-content:space-between;color:var(--muted);font-size:11px}dialog{background:var(--panel);color:var(--text);border:1px solid #6b7859;border-radius:8px;padding:26px;max-width:650px}dialog::backdrop{background:#0b120ddd}dialog p{font-size:13px;line-height:1.65;margin:15px 0;color:#c8d3c0}dialog button{margin-top:10px}@media(max-width:1000px){main{grid-template-columns:1fr;padding:20px}aside{display:grid;grid-template-columns:1fr 1fr;gap:15px}.source-links{grid-column:1/-1}header{padding:20px}.transport{gap:8px}}@media(max-width:600px){aside{display:block}.scoreboard{grid-template-columns:repeat(3,1fr)}header{align-items:flex-start;flex-direction:column}h1{font-size:22px}.map-caption{flex-direction:column}}
+
+/* Прозрачность мозга: детали раскрываются по желанию и не растягивают панель. */
+.memory-controls{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:10px 0;color:var(--muted);font-size:12px}.memory-controls .check{display:flex;align-items:center;gap:7px}.choice-detail{display:block;color:var(--muted);font-size:10px;margin-top:4px}details{border-top:1px solid var(--edge);padding-top:10px;margin-top:12px}summary{cursor:pointer;font-size:12px;color:var(--gold)}details .note{margin-top:8px}#memories,.feature-values{font-size:11px;line-height:1.6;max-height:220px;overflow:auto;margin-top:9px}.memory-row{padding:7px 0;border-bottom:1px solid var(--edge)}#learning-report,#memory-summary{margin:8px 0}@media(max-width:600px){.memory-controls{align-items:flex-start;flex-direction:column}}
+
+.remembered-food{background:#edbd69}
+
+/* Долгая память выводится целиком, но список прокручивается, чтобы не вытеснять управление. */
+#long-memories{font-size:11px;line-height:1.6;margin-top:9px;max-height:320px;overflow:auto;scrollbar-color:#59674c transparent}
+
+/* Вкладки наблюдателя. hidden задаёт настоящую скрытость, независимо от grid. */
+[hidden]{display:none!important}.lab-tablist{display:flex;gap:8px;max-width:1650px;margin:18px auto 0;padding:0 32px;flex-wrap:wrap}.lab-tablist [aria-selected=true]{background:var(--gold);color:#242b1c}.lab-panel{max-width:1650px;margin:auto;padding:25px 32px;min-height:65vh}.lab-summary{font-size:14px;color:var(--gold);line-height:1.7;margin:12px 0}.lab-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0}.lab-controls label{font-size:12px;color:var(--muted)}.lab-controls select,.lab-controls input{display:block;margin-top:6px}.table-scroll{overflow:auto;border:1px solid var(--edge);border-radius:6px}table{border-collapse:collapse;width:100%;font-size:12px;text-align:left}th,td{padding:11px 13px;border-bottom:1px solid var(--edge);white-space:nowrap}th{color:var(--gold);font-weight:500;background:var(--panel)}tbody tr:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}#history-rows tr{cursor:pointer}#history-rows tr:hover,.selected-row{background:#344332}.experiment-layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:24px;margin-top:24px}.panel textarea{width:100%;display:block;margin-top:6px;background:#29372b;color:var(--text);border:1px solid var(--edge);padding:9px;font:inherit;border-radius:5px}.check-result{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--edge);font-size:12px;line-height:1.6}.check-result.passed{color:var(--green)}.failed{color:var(--red)}.genome-sample{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:9px 0;font-size:12px}.genome-sample button{font-size:11px;flex-shrink:0}#check-results{max-height:420px;overflow:auto}#tests-genomes{max-height:350px;overflow:auto}@media(max-width:900px){.experiment-layout{grid-template-columns:1fr}.lab-panel{padding:20px}.lab-tablist{padding:0 20px}}@media(max-width:600px){.lab-panel .section-title{align-items:flex-start;flex-direction:column}.genome-sample{align-items:flex-start;flex-direction:column}}
+/* Вопрос расположен рядом с label: помощь не нажимает его checkbox.
+   Минимальная зона касания 32px, диалог помещается в экран телефона. */
+.help-control{display:flex;align-items:flex-start;gap:7px;min-width:0}.help-control>label{flex:1;min-width:0}.help-control>.help-trigger{margin-top:12px}.help-action{display:inline-flex;align-items:center}.help-action>.help-trigger{margin-top:0}.panel .help-action{display:flex;margin-top:10px}.help-action>.wide{flex:1;margin-top:0}.transport .help-control{align-items:center}.transport .help-control>.help-trigger{margin-top:0}.help-trigger{display:inline-flex;align-items:center;justify-content:center;flex:0 0 32px;width:32px;height:32px;min-width:32px;padding:0!important;border-radius:50%;font-size:14px;color:var(--gold);vertical-align:middle;margin:0 0 0 5px;line-height:1}.scoreboard small .help-trigger,.body-grid .help-trigger{width:26px;height:26px;min-width:26px;font-size:12px;margin-left:5px}.body-grid>div{min-width:0}.panel input[type=range]{display:block;width:100%;accent-color:var(--gold);margin-top:10px}.panel input[type=range]:disabled{opacity:.4}.panel output{color:var(--gold);font-variant-numeric:tabular-nums}#help-dialog{width:min(620px,calc(100vw - 28px));max-height:85vh;overflow:auto}#help-dialog p{font-size:15px;line-height:1.75}.about-intro{max-width:880px;font-size:16px;line-height:1.8;margin:20px 0}.about-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.about-grid .panel{margin:0}.about-grid h3{font-size:18px;color:var(--gold);margin:0 0 14px}.about-grid p{font-size:14px;line-height:1.8;margin:12px 0}.about-panel>.note{margin-top:22px}@media(max-width:700px){.about-grid{grid-template-columns:1fr}.about-intro{font-size:14px}.lab-tablist{padding:0 20px}.help-trigger{width:34px;height:34px;min-width:34px}}
+.help-explained{display:flex;align-items:baseline;gap:7px;min-width:0}.help-explained>p,.help-explained>h3{flex:1;min-width:0}.help-explained>.help-trigger{flex-shrink:0}
+/* Журнал обновляется только после вмешательства; раскрытый details и кнопки
+   не пересоздаются при обновлении счётчиков, поэтому сохраняют фокус. */
+.world-editor h2{margin-top:10px}.world-editor .note{line-height:1.7}.world-editor ol{padding-left:20px;margin:12px 0}.world-editor li{font-size:12px;line-height:1.7;margin:8px 0;overflow-wrap:anywhere}.loose-food{background:transparent!important;border:1px dashed var(--gold)}
+
+/* Географические признаки карты наблюдателя. Брод остаётся сушей для физики. */
+.river{background:#477b8a}.lake{background:#416b70}.ford{background:#a6b493}
+
+/* Один выбранный раздел вместо четырёх длинных панелей подряд.
+   На ПК панель остаётся рядом с картой; на телефоне идёт обычным потоком.
+   Текст не уменьшен: подробности раскрываются, общие данные тела видны сразу. */
+.compact-sidebar{display:block;align-self:start;position:sticky;top:16px;border:1px solid var(--edge);border-radius:8px;background:var(--panel);overflow:hidden;min-width:0}
+.side-tablist{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding:10px;border-bottom:1px solid var(--edge)}
+.side-tablist button{padding:9px 5px;font-size:12px;min-width:0}
+.side-tablist [aria-selected=true]{background:var(--gold);color:#242b1c;border-color:var(--gold)}
+.side-content{max-height:calc(100dvh - 90px);overflow:auto;scrollbar-color:#59674c transparent;padding:0 14px 12px}
+.compact-sidebar .panel{border:0;border-radius:0;background:transparent;margin:0;padding:14px 0}
+.compact-sidebar .source-links{padding:12px 0 0;border-top:1px solid var(--edge)}
+.compact-sidebar .section-title{margin-bottom:8px}.compact-sidebar .body-grid{gap:9px;margin-top:10px}
+.compact-sidebar #memory-summary{margin-top:12px}.compact-sidebar .note{line-height:1.5}
+.compact-sidebar summary:focus-visible,.compact-sidebar [role=tabpanel]:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+@media(max-width:1000px){.compact-sidebar{position:static;display:block;grid-column:1/-1}.side-content{max-height:none;overflow:visible}}
+
+/* Анализ — обычные таблицы с подписанными числами, без скрытой оценки «лучшего».
+   Две независимые загрузки становятся одной колонкой на телефоне. */
+.analysis-slots{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:20px}
+.analysis-slots h3{margin-top:0}.analysis-downloads{display:flex;gap:8px;flex-wrap:wrap}
+.analysis-text{font-size:13px;line-height:1.65;max-width:1100px}.analysis-text li{margin:8px 0}
+.analysis-text p{margin:8px 0}.analysis-hash{overflow-wrap:anywhere;margin-top:8px}
+#panel-analysis .table-scroll{margin:14px 0}#panel-analysis th{position:sticky;top:0;z-index:1}
+#analysis-properties td:first-child,#analysis-property-differences td:first-child{white-space:normal;min-width:210px}
+#analysis-policy .table-scroll{max-height:600px}#analysis-policy td:nth-child(2){white-space:normal;min-width:290px}
+#panel-analysis [role=status]{margin-top:10px}#analysis-origin{margin-bottom:8px}
+@media(max-width:700px){.analysis-slots{grid-template-columns:1fr}.analysis-downloads{width:100%}}
+
+/* Браузер не должен автоматически сдвигать внешнюю панель из-за обновления
+   соседних списков. Внутренний блок признаков сохраняет DOM и scrollTop. */
+.side-content{overflow-anchor:none}
+.feature-values{overflow-anchor:none;overscroll-behavior:contain;scrollbar-color:#59674c transparent}
+.feature-values:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.performance-panel{padding:12px 0;border-bottom:1px solid var(--edge)}
+.performance-panel button{margin:6px 0}.performance-panel .feature-values{max-height:240px}
+
+/* Подвкладки лаборатории остаются доступны во время расчёта. На узком экране
+   подписи переносятся целиком; выбранный раздел обозначен цветом и ARIA. */
+.test-tablist{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 16px;border-bottom:1px solid var(--edge);padding-bottom:12px}
+.test-tablist button{font-size:13px;padding:10px 16px}
+.test-tablist [aria-selected=true]{background:var(--gold);color:#242b1c;border-color:var(--gold)}
+#test-panel-mechanisms>.panel{max-width:850px}
+#test-panel-mechanisms #check-results{max-height:65vh}
+#panel-tests>.panel{margin-bottom:22px}
+@media(max-width:600px){.test-tablist button{flex:1 1 160px}#panel-tests>.section-title .help-action{width:100%}#tests-export{flex:1}}
+/* 0.23: четыре независимые вкладки и одна постоянная область подробностей.
+ * Строки/кнопки не заменяем при обновлениях; скрытые разделы не занимают места. */
+.side-tablist{grid-template-columns:repeat(2,minmax(0,1fr))}
+.resident-tablist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:12px 0}
+.resident-tablist button{font-size:12px;padding:8px 4px;min-width:0;overflow-wrap:anywhere}
+.resident-tablist [aria-selected=true]{background:var(--gold);color:#242b1c;border-color:var(--gold)}
+.resident-details{max-height:min(52dvh,480px);min-height:130px;overflow:auto;overflow-anchor:none;scrollbar-color:#59674c transparent;scrollbar-gutter:stable;padding-right:5px}
+.resident-details>section>h3{margin:10px 0;color:var(--gold);font-size:15px}
+.resident-details .feature-values{max-height:none;overflow:visible;padding:0}
+.resident-details [role=tabpanel]:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.benchmark-selection{border:1px solid var(--edge);border-radius:6px;margin:18px 0;padding:12px;min-width:0}
+.benchmark-versions{display:flex;flex-wrap:wrap;gap:12px}
+.panel .benchmark-version{display:flex;align-items:center;gap:8px;margin:0;padding:8px;border-radius:5px;background:#29372b}
+.panel .benchmark-version input{width:auto;margin:0;accent-color:var(--gold)}
+.benchmark-repeat-label{max-width:430px}
+.benchmark-table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.5}
+.benchmark-table th,.benchmark-table td{padding:12px;border-bottom:1px solid var(--edge);text-align:left;vertical-align:top;min-width:155px}
+.benchmark-table thead{background:#29372b}
+.benchmark-table tbody tr:nth-child(even){background:#29372b55}
+.benchmark-table td strong{display:block;font-size:17px;font-variant-numeric:tabular-nums}
+.benchmark-table td small{display:block;margin-top:5px;font-size:12px}
+.benchmark-table .benchmark-repeat-toggle{display:block;margin-top:10px;padding:6px 10px;font-size:12px}
+.benchmark-repeat-rows[hidden]{display:none}
+.benchmark-repeat-rows th{font-weight:normal;color:var(--gold)}
+.benchmark-repeat-rows td strong{font-size:14px}
+.benchmark-better{color:var(--green)}.benchmark-slower{color:var(--gold)}
+@media(max-width:600px){.resident-tablist{grid-template-columns:repeat(2,minmax(0,1fr))}.resident-tablist button{min-height:44px}.benchmark-table th,.benchmark-table td{min-width:145px;padding:9px}.benchmark-versions{flex-direction:column}}
+/* Независимые группы/счётчики и свежий seed относятся только к управлению. */
+.benchmark-group-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.benchmark-table .benchmark-group th{color:var(--gold);background:#29372b;padding-top:16px}
+#benchmark-progress-bar{display:block;width:100%;height:10px;accent-color:var(--gold);margin:8px 0 18px}
+.seed-controls{display:flex;align-items:flex-end;gap:8px;min-width:0}
+.seed-controls>.help-control:first-child{flex:1;min-width:0}
+.seed-controls>.help-action{flex:none;margin:0}
+#randomize-seed{min-width:40px;min-height:40px;font-size:18px;padding:6px}
+@media(max-width:650px){.benchmark-group-controls{grid-template-columns:1fr}}
+/* Общие чекбоксы: контрастная граница и явная отметка выбора вместо
+   зависящего от темы браузера белого квадрата. Нативная семантика сохранена. */
+input[type="checkbox"],.panel input[type="checkbox"]{appearance:none;-webkit-appearance:none;display:inline-block;width:19px;height:19px;min-width:19px;flex:0 0 19px;padding:0;border:2px solid var(--gold);border-radius:4px;background:var(--bg);vertical-align:middle;cursor:pointer}
+input[type="checkbox"]:checked,.panel input[type="checkbox"]:checked{background-color:var(--gold);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4 10l4 4 8-9' fill='none' stroke='%23151d1a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-size:100% 100%;background-repeat:no-repeat}
+input[type="checkbox"]:disabled,.panel input[type="checkbox"]:disabled{opacity:.55;cursor:default}
+@media(forced-colors:active){input[type="checkbox"],.panel input[type="checkbox"]{appearance:auto;-webkit-appearance:auto;background-image:none}}

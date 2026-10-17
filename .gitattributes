@@ -1,0 +1,2 @@
+# Keep sources byte exact: manifests and downloadable copies use SHA-256.
+* -text whitespace=cr-at-eol

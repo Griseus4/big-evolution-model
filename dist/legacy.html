@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Эволюция обществ — первый опыт</title>
+  <meta name="description" content="Первый опыт симуляции для ПК: один житель исследует мир, добывает еду и принимает решения по своей памяти.">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="mark" aria-hidden="true">◈</span><div><h1>Эволюция обществ</h1><span class="muted">Опыт 01 · Один житель</span></div></div>
+  <div class="transport">
+    <span class="time" id="time">Шаг 0</span>
+    <button id="play" class="primary">Ⅱ Пауза</button>
+    <button id="step" title="Один шаг · стрелка вправо">Шаг →</button>
+    <label class="speed-label">Скорость <select id="speed" aria-label="Скорость времени"><option value="0.25">¼×</option><option value="1" selected>1×</option><option value="4">4×</option><option value="16">16×</option><option value="64">64×</option></select></label>
+    <button id="restart" title="Повторить с теми же условиями">↺ Повторить</button>
+  <label class="autoplay-label"><input id="autoplay" type="checkbox" checked> Автозапуск опыта</label></div>
+</header>
+<main>
+  <section class="world-column">
+    <div class="section-heading"><div><span class="eyebrow">СРЕДА</span><h2>Мир за пределами памяти</h2></div><label class="switch"><input id="memory-view" type="checkbox" checked> Глазами жителя</label></div>
+    <div class="map-shell">
+      <canvas id="world" width="1049" height="590" role="img" aria-label="Гексагональная карта. Житель, источники еды, опасная местность и неизученные участки."></canvas>
+      <div class="map-badge" id="map-badge">Память жителя · неизвестное скрыто</div>
+      <div class="map-state" id="map-state" hidden></div>
+    </div>
+    <div class="map-caption"><span id="cell-info">Наведите курсор на гекс, чтобы проверить сведения.</span><span><span id="coverage">Изучено 0%</span> · <span id="revisits">Повторных проверок: 0</span></span></div>
+    <div class="legend"><span><i class="dot human"></i>Житель</span><span><i class="dot food"></i>Еда</span><span><i class="dot risk"></i>Опасность</span><span><i class="dot unknown"></i>Неизвестное</span><span><i class="line"></i>Выбранный путь</span></div>
+    <div class="lower-grid">
+      <section class="timeline"><div class="section-heading compact"><h3>Состояние во времени</h3><span class="muted">Последние 800 шагов</span></div><canvas id="chart" width="760" height="140" role="img" aria-label="График энергии и здоровья"></canvas><div class="legend small"><span><i class="dot energy"></i>Энергия</span><span><i class="dot health"></i>Здоровье</span></div></section>
+      <section class="event-section"><div class="section-heading compact"><h3>События</h3><span class="muted" id="decision-count">0 решений</span></div><div id="events" class="events"></div></section>
+    </div>
+  </section>
+  <aside>
+    <section class="resident">
+      <div class="resident-heading"><div class="portrait" aria-hidden="true"><span>●</span><b>▰</b></div><div><span class="eyebrow">ПЕРСОНАЖ</span><h2>Житель 01</h2><span id="status" class="status">Готов к первому решению</span></div></div>
+      <div class="metric"><div><span>Энергия организма</span><strong id="energy-value">68 / 100</strong></div><div class="meter"><span id="energy-bar" class="energy-bar"></span></div></div>
+      <div class="metric"><div><span>Здоровье</span><strong id="health-value">100 / 100</strong></div><div class="meter"><span id="health-bar" class="health-bar"></span></div></div>
+      <div class="digestion"><span>Усваивается</span><strong id="digestion">0.0 порции</strong><small id="digestion-rate">За последний шаг: +0.0 энергии</small></div>
+      <div class="inventory"><span>Еда при себе</span><div id="inventory" aria-label="Инвентарь"></div><strong id="inventory-value">0 / 5</strong></div>
+      <div class="sensations"><div><span>Ощущение голода</span><strong id="hunger">32</strong></div><div><span>Известный риск здесь</span><strong id="current-risk">0%</strong></div></div>
+      <p class="note">Голод учитывает энергию и пищу, которая ещё усваивается. При сытости еда менее привлекательна.</p>
+    </section>
+    <section class="decision-section"><span class="eyebrow">НАМЕРЕНИЕ</span><h3 id="intention">Пока не выбрано</h3><p class="note" id="plan-description">Время идёт автоматически. Нажмите «Пауза» для пошагового просмотра.</p><div class="section-heading compact"><h3>Последний выбор</h3><span id="choice-tick" class="muted">—</span></div><div id="choices" class="choices"><p class="muted">Здесь появятся рассмотренные варианты и их вероятности.</p></div><p class="note">Это варианты в момент решения. Выбранный план выполняется, пока обстоятельства существенно не изменятся.</p></section>
+    <details class="conditions" open><summary>Условия опыта</summary>
+      <label>Среда<select id="scenario"><option value="mixed">Доступная еда и дальняя угроза</option><option value="risk">Знакомая еда в опасном месте</option></select></label>
+      <label>Чувствительность к голоду <output id="hunger-output">1.0×</output><input id="hunger-sensitivity" type="range" min="0.1" max="2.5" value="1" step="0.1"></label>
+      <label>Чувствительность к страху <output id="fear-output">1.0×</output><input id="fear-sensitivity" type="range" min="0.1" max="2.5" value="1" step="0.1"></label>
+      <label class="seed-label">Номер опыта<input id="seed" type="number" min="1" max="4294967295" value="42" step="1"></label>
+      <button id="apply" class="wide">Начать с этими условиями</button>
+      <p class="note">Одинаковый номер и условия повторяют последовательность событий. Скорость меняет только темп просмотра.</p>
+    </details>
+  </aside>
+</main>
+<footer><span>Начало большого мира · прототип 0.3</span><span>Пробел — пауза · → — шаг · R — повторить</span><button id="about-open" class="text-button">Что проверяем?</button></footer>
+<dialog id="about"><h2>Один житель, две потребности</h2><p>Этот опыт проверяет связь между голодом, страхом, личной памятью и вероятностным выбором. Здесь пока нет общества, изобретений и размножения.</p><p>Житель видит местность в радиусе трёх гексов. Он может исследовать новое и возвращаться к знакомым участкам со сведениями старше 60 шагов. Даже пустой источник стоит проверить: еда могла вырасти снова. Старые сведения затемнены на карте памяти; обновление происходит только при наблюдении. Путь выбирается с учётом длины, известной опасности и чувствительности к страху: безопасный обход может быть длиннее прямого маршрута. Новые наблюдения могут изменить путь.</p><p>Еда постепенно восстанавливается в источниках. Одна порция содержит 22 единицы энергии, которые усваиваются до 1.1 за шаг, начиная со следующего шага после еды; движение и остальные действия расходуют энергию. Пища в процессе усвоения снижает желание есть. Избыток пока не превращается в запас жира. Долгосрочные последствия переедания и недоедания запланированы на отдельный этап. Здоровье в этом опыте не восстанавливается. Числа условные и будут меняться по результатам проверки.</p><p>Попробуйте одинаковый номер опыта с разной чувствительностью к страху. Посмотрите, меняются ли решения и результат. Один запуск ещё не подтверждает закономерность.</p><button id="about-close" class="primary">Вернуться к наблюдению</button></dialog>
+<script type="module" src="./app.js"></script>
+</body></html>
