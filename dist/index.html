@@ -63,6 +63,14 @@
    <p id="world-food-status" class="note" role="status" aria-live="polite"></p><p id="world-food-error" class="error" role="alert"></p>
    <details><summary>Последние изменения мира</summary><p id="world-food-no-changes" class="note" data-ui-text="description7"></p><ol id="world-food-changes"></ol><p class="note" data-ui-text="description8"></p></details>
    <button id="world-food-export" class="wide">Скачать наблюдения (.json)</button>
+   <details open><summary>Автоматическое изменение среды</summary>
+    <label class="check"><input id="environment-enabled" type="checkbox" checked> Автоматически менять пищевые условия</label>
+    <label>Первые пять обеднений, интервал Т<input id="environment-preparation-interval" type="number" min="1" max="1000000000" value="500"></label>
+    <label>Случайные изменения, интервал Т<input id="environment-random-interval" type="number" min="1" max="1000000000" value="1000"></label>
+    <button id="environment-apply" class="wide">Применить интервалы</button><p id="environment-status" class="note" role="status"></p>
+   </details>
+   <div class="analysis-downloads"><button id="world-save">Сохранить мир</button><button id="world-load">Загрузить мир</button></div>
+   <input id="world-load-file" type="file" accept=".json,application/json" hidden><p id="world-file-status" class="note" role="status"></p>
   </section>
   <section id="side-panel-resident" class="panel" role="tabpanel" aria-labelledby="side-tab-resident" tabindex="0">
    <span class="eyebrow">ИНДИВИДУАЛЬНОЕ ПОВЕДЕНИЕ</span><div class="section-title"><h2 id="resident-title">Выбери жителя</h2><button id="next-agent" title="Следующий живой житель">Следующий</button></div>
@@ -99,8 +107,33 @@
  <div class="section-title"><div><span class="eyebrow">ПРОЖИТЫЕ ЖИЗНИ</span><h2>Итоги и текущие наблюдения</h2></div><button id="history-export">Скачать истории (.json)</button></div>
  <p class="note" data-ui-text="description17"></p>
  <p id="history-summary" class="lab-summary"></p><p id="history-causes" class="note"></p><p id="history-cohorts" class="note"></p>
- <div class="lab-controls"><label>Показать<select id="history-filter"><option value="all">Все жизни</option><option value="alive">Живые</option><option value="dead">Завершённые</option><option value="starvation">Истощение</option><option value="age">Предел возраста</option></select></label><label>Порядок<select id="history-sort"><option value="recent">Новые жители</option><option value="age">По возрасту</option><option value="children">По потомству</option></select></label><label>Номер жителя или линии<input id="history-search" type="number" min="1" placeholder="Все"></label></div>
- <div class="table-scroll"><table><thead><tr><th>№</th><th>Поколение</th><th>Линия</th><th>Возраст</th><th>Состояние / причина</th><th>Потомков</th><th>Среднее чувство</th><th>Времени с энергией &lt;30</th></tr></thead><tbody id="history-rows"></tbody></table></div>
+ <div class="lab-controls history-settings">
+  <label>Интервал рождения, Т<input id="history-width" type="number" min="1" step="1" value="100"></label>
+  <label>Возраст дожития, Т<input id="history-survival-age" type="number" min="1" step="1" value="100"></label>
+  <label>Происхождение<select id="history-origin"><option value="all">Все особи</option><option value="founders">Основатели</option><option value="descendants">Потомки</option></select></label>
+  <label>Данные линий<select id="history-stat-mode"><option value="dead">Завершённые жизни</option><option value="observed">Включая прожитую часть живых</option></select></label>
+  <label>Прерывания<select id="history-interruption-kind"><option value="all">Отмена и физический срыв</option><option value="voluntary">Добровольная отмена</option><option value="physical">Физический срыв</option></select></label>
+ </div>
+ <p id="history-method-note" class="note" data-ui-text="history-method"></p>
+ <fieldset class="history-period"><legend>Общий период графиков и таблицы</legend>
+  <div class="lab-controls"><label>Начало, Т<input id="history-period-from" type="number" min="0" step="1" value="0"></label><label>Конец, Т<input id="history-period-to" type="number" min="1" step="1" value="100"></label><button id="history-period-all" type="button">Весь период</button><output id="history-period-value" aria-live="polite"></output></div>
+  <div class="history-dual-range"><div class="history-range-track"></div><input id="history-period-start" type="range" min="0" max="100" step="1" value="0" aria-label="Начало общего периода" aria-describedby="history-method-note" data-help-shared="history-period-from"><input id="history-period-end" type="range" min="0" max="100" step="1" value="100" aria-label="Конец общего периода" aria-describedby="history-method-note" data-help-shared="history-period-from"></div>
+ </fieldset>
+ <fieldset class="history-legend"><legend>Линии индивидуальных показателей</legend>
+  <label class="check"><input id="history-show-min" type="checkbox" checked>Минимум</label><label class="check"><input id="history-show-median" type="checkbox" checked>Медиана</label><label class="check"><input id="history-show-mean" type="checkbox" checked>Среднее</label><label class="check"><input id="history-show-max" type="checkbox" checked>Максимум</label>
+ </fieldset>
+ <p id="history-warning" class="note" role="status"></p><p id="history-error" class="error" role="alert"></p>
+ <div id="history-charts" class="history-chart-grid"></div>
+ <p class="note" data-ui-text="history-food-context"></p>
+ <section class="history-chart-card history-survival-panel"><h3>Кривая дожития одной группы рождения</h3>
+  <div class="lab-controls"><label>Начало периода рождения, Т<input id="history-curve-start" type="number" min="0" step="1" value="0"></label><span id="history-curve-period"></span></div>
+  <input id="history-curve-slider" type="range" min="0" max="100" step="1" value="0" aria-label="Начало периода рождения для кривой дожития" aria-describedby="history-curve-method-note" data-help-shared="history-curve-start">
+  <p id="history-curve-method-note" class="note" data-ui-text="history-curve-method"></p><p id="history-curve-summary" class="note"></p><div id="history-curve-chart"></div>
+ </section>
+ <div class="lab-controls"><strong id="history-selected">Все интервалы рождения.</strong><button id="history-clear-selection" disabled>Снять выбор интервала</button></div>
+ <div class="lab-controls"><label>Таблица<select id="history-table-mode"><option value="cohorts">Сводка по рождениям</option><option value="lives">Отдельные жизни</option></select></label><label id="history-table-metric-label">Показатель сводки<select id="history-table-metric"></select></label></div>
+ <div id="history-resident-filters" class="lab-controls" hidden><label>Показать<select id="history-filter"><option value="all">Все жизни</option><option value="alive">Живые</option><option value="dead">Завершённые</option><option value="starvation">Истощение</option><option value="age">Предел возраста</option></select></label><label>Порядок<select id="history-sort"><option value="recent">Новые жители</option><option value="age">По возрасту</option><option value="children">По потомству</option></select></label><label>Номер жителя или линии<input id="history-search" type="number" min="1" placeholder="Все"></label></div>
+ <div class="table-scroll history-table-window" tabindex="0" role="region" aria-label="Истории: таблица с внутренней прокруткой"><table><thead><tr id="history-head"></tr></thead><tbody id="history-rows"></tbody></table></div>
  <div class="lab-controls"><button id="history-prev">← Предыдущие</button><span id="history-page"></span><button id="history-next">Следующие →</button></div>
  <p id="history-detail" class="panel note" data-ui-text="description18"></p>
  <p class="note" data-ui-text="description19"></p>

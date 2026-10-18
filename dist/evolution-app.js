@@ -10,6 +10,8 @@ import {ACTIONS,RULES,WORLD_WIDTH,WORLD_HEIGHT,CANVAS_WIDTH,CANVAS_HEIGHT,
  hexCenter,worldHexAt,HEX_RADIUS,HEX_WIDTH,validateGenomeFile,BASE_GENE_COUNT,COGNITIVE_GENES,memoryWorldPosition,worldDistance} from './evolution.js';
 import {BIRTH_BLOCK_LABELS,reproductionSummary} from './reproduction.js';
 import {WorldClient} from './world-client.js';
+import {installWorldFiles} from './world-files-ui.js';
+import {installEnvironmentUI} from './environment-ui.js';
 import {WorldProfiler} from './world-profiler.js';
 import {installPerformancePanel} from './performance-ui.js';
 import {updateTextRows} from './stable-text-list.js';
@@ -46,7 +48,7 @@ const client=new WorldClient({onState:message=>{
   else profiler.measureUI('otherTabs',()=>labTabs.refresh());
  }
 },onError:message=>{running=false;element('error').textContent=message;update();}});
-let sim=client.view;
+let sim=client.view,environmentUI=null;
 function command(type,payload){return client.request(type,payload).catch(error=>{element('error').textContent=error.message;throw error;});}
 function selectResident(agent){if(agent)void command('select',{id:agent.id}).catch(()=>{});}
 const profiler=new WorldProfiler(client);
@@ -65,7 +67,7 @@ function settings(){
  if(!Number.isInteger(limit)||limit<population||limit>1000)throw new Error('Лимит должен быть не меньше числа основателей и не больше 1000.');
  if(!Number.isInteger(seed)||seed<1||seed>4294967295)throw new Error('Номер опыта должен быть целым от 1 до 4294967295.');
  const computeWorkers=activeComputationMode;
- return {seed,population,limit,computeWorkers,geography:element('geography').value,...readFoodControls(),
+ return {seed,population,limit,computeWorkers,automaticEnvironment:environmentUI?.settings(),geography:element('geography').value,...readFoodControls(),
   learning:element('learning').checked,memory:element('memory').checked,
   expandLegacy:legacyBase&&element('expand-legacy').checked,mutationRate:Number(element('mutation-rate').value),mutations:element('mutations').checked,upgradeMutationGenes:element('upgrade-mutations').checked,baseGenome};
 }
@@ -133,6 +135,8 @@ element('world-food-apply').addEventListener('click',async()=>{
 });
 element('world-food-export').addEventListener('click',()=>{pause();labTabs?.exportWorldObservation();});
 syncWorldFoodEditor();
+environmentUI=installEnvironmentUI({element,command,getWorld:()=>sim});
+installWorldFiles({element,command,onLoad:()=>{labTabs?.onRestart();syncWorldFoodEditor();update();draw();}});
 element('next-agent').addEventListener('click',()=>{
  if(!sim.agents.length)return;
  const index=sim.agents.findIndex(a=>a.id===selected?.id);selectResident(sim.agents[(index+1)%sim.agents.length]);update();draw();
@@ -169,7 +173,7 @@ element('load-genome').addEventListener('change',async event=>{
  const file=event.target.files?.[0];if(!file)return;pause();
  try{
   if(file.size>100000)throw new Error('Файл слишком велик. Геном должен быть меньше 100 КБ.');
-  const data=JSON.parse(await file.text());if(data.version!==12)throw new Error('Новый мир принимает только геномы v12.');baseGenome=validateGenomeFile(data);legacyBase=false;
+  const data=JSON.parse(await file.text());if(data.version!==13)throw new Error('Новый мир принимает только геномы v13.');baseGenome=validateGenomeFile(data);legacyBase=false;
   element('legacy-options').hidden=!legacyBase;
   const inherited=Boolean(mutationProfile(baseGenome));
   element('upgrade-mutations').checked=false;element('mutation-upgrade-options').hidden=inherited;
@@ -194,6 +198,7 @@ function update(){
  return profiler.measureUI('panel',updateContents);
 }
 function updateContents(){
+ environmentUI?.update();
  let residentOptions=null;
  const total=sim.summary();
  for(const [id,value]of [['population',total.population],['births',total.births],['deaths',total.deaths],
@@ -222,6 +227,7 @@ function updateContents(){
   displayedEnvironmentRevision=sim.environmentRevision;
   element('world-food-changes').replaceChildren(...sim.environmentChanges.slice(-8).reverse().map(change=>{
    const row=document.createElement('li'),a=change.after;
+   if(change.kind==='automatic-food'){row.textContent=`${change.tick} Т · ${change.operation==='impoverish'?'Обеднение':'Случайное изменение'}: ${change.before.production.toFixed(3)} → ${a.production.toFixed(3)} порции/Т; источников ${a.sourceCount}, перемещено ${change.moved.length}.`;return row;}
    row.textContent=`Шаг ${change.tick}: ${a.sourceCount} источников, период ${a.regrowInterval}, ёмкость ${a.capacityMin??'—'}…${a.capacityMax??'—'}. ${change.operation==='redistribute'?'Перераспределены. ':''}Живых ${change.summary.population}, линий ${change.summary.survivingFounders}.`;
    return row;
   }));
@@ -303,9 +309,9 @@ element('body-senses').textContent=`Переносимый запас: ${a.inven
   const rows=[`Других особей в обзоре: ${view.visibleCount}; на своей клетке: ${view.ownCount}.`,
    ...view.cells.map(c=>`${c.action===null?'Своя клетка':ACTIONS[c.action]}: ${c.count}`),
    `Контакты на своей клетке: ${ids.length?ids.map(id=>'№'+id).join(', '):'нет'}. На соседних клетках личности не различимы.`,
-   layout?.version===8||b.controllerType===SET_BRAIN_TYPE?'Количества доступны сети. Узнавания прежних встреч и социальной памяти пока нет.':'Этот сохранённый мозг не использует количества соседей; его схема сохранена.'];
-  if(b.controllerType===SET_BRAIN_TYPE)rows.push(...sim.visibleDecisionCells(a).map(cell=>
-   `Личные (${cell.q}, ${cell.r}): ${cell.isFoodSource?'источник пищи':'без источника'}, лежит ${cell.food} порций.`));
+   layout?.version===8||b.controllerType===SET_BRAIN_TYPE||b.temporal?'Количества доступны сети. Узнавания прежних встреч и социальной памяти пока нет.':'Этот сохранённый мозг не использует количества соседей; его схема сохранена.'];
+  if(b.controllerType===SET_BRAIN_TYPE||b.temporal)rows.push(...sim.visibleDecisionCells(a).map(cell=>
+   `Личные (${cell.q}, ${cell.r}): ${cell.isFoodSource?'источник пищи':'без источника'}, лежит ${cell.food} порций.`+(b.temporal?' '+UI_TEXT.activities(cell):'')));
   updateTextRows(element('neighbour-senses'),rows);
  }
 

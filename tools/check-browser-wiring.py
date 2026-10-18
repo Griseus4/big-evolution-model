@@ -47,6 +47,7 @@ for tab in ['resident','world','new','performance']:
     for prefix in ['side-tab-','side-panel-']:assert prefix+tab in p.ids
 for mode in ['no-memory-no-td','memory-only','memory-and-td']:assert 'mode-'+mode in p.ids
 checks=re.findall(r"check\('([^']+)'", (DIST/'temporal-checks.js').read_text())
+checks+=re.findall(r"\bid:'([^']+)'", (DIST/'environment-checks.js').read_text())
 assert len(checks)==len(set(checks)),'Повтор ID проверки'
 # Читаем только определения справки/констант, не создаём мир и не исполняем
 # проверки механизмов. Покрытие всех настроек проверяем отдельно от DOM-кликов.
@@ -66,7 +67,12 @@ for identity in p.controls:
     if identity.startswith(('tab-','side-tab-','resident-tab-','test-tab-')) or identity=='help-close':continue
     assert aliases.get(identity,identity) in data['help'],f'Нет подсказки для {identity}'
 for identity,attrs in p.ranges.items():
-    if identity=='world-food-capacity':
+    if identity.startswith('history-'):
+        # Диапазоны наблюдателя зависят от истории, а не от пищевой физики.
+        width = int(re.search(r'id="history-width"[^>]*value="(\d+)"', (DIST/'index.html').read_text()).group(1))
+        expected=[0,width,width if identity=='history-period-end' else 0]
+        assert attrs.get('step')=='1', f'Точность периода {identity}'
+    elif identity=='world-food-capacity':
         expected=[data['capacity'][x] for x in ['min','max','default']]
     elif identity.endswith('spread'):
         expected=[data['limits']['spreadMin'],data['limits']['spreadMax'],data['limits']['periodSpreadDefault' if identity.endswith('period-spread') else 'sizeSpreadDefault']]

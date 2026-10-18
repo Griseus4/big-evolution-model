@@ -7,7 +7,7 @@ import {GENE_COUNT} from './brain-parameters.js';
 import {BRAIN_TYPE} from './brain-controller.js';
 import {NEURAL_BRAIN_TYPE,NEURAL_GENE_COUNT,PARAMETER_COUNT,TRAIT_OFFSET,INPUT_COUNT,HIDDEN_COUNT,OUTPUT_WEIGHTS,OUTPUT_BIAS,NETWORK_SCHEMA,NEURAL_LAYOUTS,layoutForGenes,layoutForType} from './neural-layout.js';
 import {MUTATION_SCHEMA,MUTATION_RULES,mutationProfile,mutationOffset,validMutationGenes,mutateRegulator,effectiveMutationRate} from './mutation-parameters.js';
-import {TEMPORAL_BRAIN_TYPE,SET_BLOCKS as TIME_BLOCKS,GATE_OFFSET,GATE_PARAMETERS} from './temporal-layout.js';
+import {TEMPORAL_BRAIN_TYPE,TEMPORAL_LAYOUT,SET_BLOCKS as TIME_BLOCKS,GATE_OFFSET,GATE_INPUTS,GATE_HIDDEN,GATE_HIDDEN_BIAS,GATE_OUTPUT_WEIGHTS,GATE_OUTPUT_BIAS} from './temporal-layout.js';
 import {SET_BRAIN_TYPE,SET_BLOCKS} from './set-brain-layout.js';
 export const GENOME_VERSION=6;
 export function genomeMetadata(genes){
@@ -25,7 +25,7 @@ export function randomNeuralGenome(random,brainType=NEURAL_BRAIN_TYPE){
   const genes=Array(layout.genes).fill(0);
   for(const block of (brainType===TEMPORAL_BRAIN_TYPE?TIME_BLOCKS:SET_BLOCKS)){const scale=Math.sqrt(6/(block.inputs+block.outputs));for(let i=block.offset;i<block.offset+block.weights;i++)genes[i]=(random.next()*2-1)*scale;}
   for(let i=layout.traitOffset;i<(layout.gateOffset??layout.genes);i++)genes[i]=(random.next()-.5)*5;
-  if(layout.gateOffset!==undefined){for(let i=0;i<64;i++)genes[GATE_OFFSET+i]=(random.next()*2-1)*Math.sqrt(6/20);for(let i=68;i<72;i++)genes[GATE_OFFSET+i]=(random.next()*2-1)*Math.sqrt(6/5);}
+  if(layout.gateOffset!==undefined){for(let i=0;i<GATE_HIDDEN_BIAS;i++)genes[GATE_OFFSET+i]=(random.next()*2-1)*Math.sqrt(6/(GATE_INPUTS+GATE_HIDDEN));for(let i=GATE_OUTPUT_WEIGHTS;i<GATE_OUTPUT_BIAS;i++)genes[GATE_OFFSET+i]=(random.next()*2-1)*Math.sqrt(6/(GATE_HIDDEN+1));}
   return genes;
  }
  const {genes:NEURAL_GENE_COUNT,inputs:INPUT_COUNT,hidden:HIDDEN_COUNT,outputWeights:OUTPUT_WEIGHTS,outputBias:OUTPUT_BIAS,traitOffset:TRAIT_OFFSET}=layout;
@@ -81,8 +81,9 @@ export function mutateGenome(parent,random,rate=.06,scale=.7,extraRandom=random,
  * Импорт проверяет размер, тип и диапазон чисел, чтобы чужой файл не менял правила.
  */
 export function validateGenomeFile(data){
- if(!data||data.format!=='big-evolution-genome'||!Number.isInteger(data.version)||!Array.isArray(data.genes))throw new Error('Нужен JSON генома Big Evolution. Текущая схема — v12.');
- if(data.version===12){const l=layoutForGenes(data.genes),off=mutationOffset(data.genes);if(l?.version!==12||data.brainType!==TEMPORAL_BRAIN_TYPE||Object.entries(l.network).some(([k,v])=>data.network?.[k]!==v)||!data.genes.every((v,i)=>Number.isFinite(v)&&(off!==null&&i>=off||Math.abs(v)<=8))||off!==null&&(data.mutationSchema!==MUTATION_SCHEMA||!validMutationGenes(data.genes)))throw new Error('Неверный геном v12 или схема сети.');return data.genes.slice();}
+ if(!data||data.format!=='big-evolution-genome'||!Number.isInteger(data.version)||!Array.isArray(data.genes))throw new Error(`Нужен JSON генома Big Evolution. Текущая схема — v${TEMPORAL_LAYOUT.version}.`);
+ if(data.version===TEMPORAL_LAYOUT.version){const l=layoutForGenes(data.genes),off=mutationOffset(data.genes);if(l?.version!==TEMPORAL_LAYOUT.version||data.brainType!==TEMPORAL_BRAIN_TYPE||Object.entries(l.network).some(([k,v])=>data.network?.[k]!==v)||!data.genes.every((v,i)=>Number.isFinite(v)&&(off!==null&&i>=off||Math.abs(v)<=8))||off!==null&&(data.mutationSchema!==MUTATION_SCHEMA||!validMutationGenes(data.genes)))throw new Error('Неверный текущий геном или схема сети.');return data.genes.slice();}
+ if(data.version===12)throw new Error('Геном v12 не содержит нового восприятия действий. Нужен новый геном v13; преобразование не поддерживается.');
  if(data.version===10)throw new Error('Геном v10 относится к прежней схеме мозга 0.28. В 0.29 нужен новый геном v11; преобразование v10 не поддерживается.');
  const resolved=layoutForGenes(data.genes);
  const inherited=data.version===9||data.version===11&&mutationOffset(data.genes)!==null,layout=data.version>=9?resolved:NEURAL_LAYOUTS.find(l=>l.version===data.version);

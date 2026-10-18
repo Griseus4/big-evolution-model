@@ -7,7 +7,7 @@ import {ACTION_DURATIONS} from './action-timing.js';
 import {Evolution} from './evolution.js';
 import {observe} from './cognition.js';
 import {positionKey,localNeighbours} from './navigation.js';
-export const BENCHMARK_SUITE_ID='fixed-duration-workloads-v1';
+export const BENCHMARK_SUITE_ID='fixed-environment-deficit-workloads-v1';
 export const BENCHMARK_REPEATS=3;
 export const BENCHMARK_CASES=Object.freeze([
  {id:'evaluator-empty',label:'Оценщик · пустая память',kind:'evaluator',seed:701,population:16,filled:false,work:4096,warmup:256},

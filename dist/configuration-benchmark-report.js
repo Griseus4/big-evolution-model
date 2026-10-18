@@ -1,11 +1,12 @@
 import {configurationSelection,configurationsFor,plannedConfigurationMeasurements,CONFIGURATION_PROTOCOL} from './benchmark-configurations.js';
 import {BENCHMARK_CASES,BENCHMARK_SUITE_ID} from './benchmark-fixtures.js';
-import {BENCHMARK_MODEL_SERIES} from './benchmark-versions.js';
+import {BENCHMARK_MODEL_SERIES,ARCHIVED_DURATION_VERSIONS} from './benchmark-versions.js';
 import {timingSummary} from './benchmark-report.js';
 export function configurationLayout(report){return {versionIds:report.versionIds,groups:report.groups,repeatCounts:report.repeatCounts,specs:BENCHMARK_CASES.filter(s=>report.groups.includes(s.kind))};}
 export function validateConfigurationReport(report){
- if(report.format!=='big-evolution-benchmark'||report.protocolId!==CONFIGURATION_PROTOCOL||report.suiteId!==BENCHMARK_SUITE_ID||report.seriesId!==BENCHMARK_MODEL_SERIES)throw new Error('Неизвестная методика сравнения версий/вычислителей.');
- const selection=configurationSelection(report.selections,{groups:report.groups,repeatCounts:report.repeatCounts});
+ const archived=report.suiteId==='fixed-duration-workloads-v1'&&report.seriesId==='duration-attention-v1'||report.suiteId==='fixed-activity-workloads-v1'&&report.seriesId==='duration-activity-v1';
+ if(report.format!=='big-evolution-benchmark'||report.protocolId!==CONFIGURATION_PROTOCOL||!archived&&(report.suiteId!==BENCHMARK_SUITE_ID||report.seriesId!==BENCHMARK_MODEL_SERIES))throw new Error('Неизвестная методика сравнения версий/вычислителей.');
+ const selection=configurationSelection(report.selections,{groups:report.groups,repeatCounts:report.repeatCounts,...(archived?{versions:ARCHIVED_DURATION_VERSIONS}:{})});
  for(const key of ['versionIds','selections','configurations','groups','repeatCounts'])if(JSON.stringify(selection[key])!==JSON.stringify(report[key]))throw new Error('Некорректный выбор конфигураций.');
  if(!['running','stopped','failed','completed'].includes(report.status))throw new Error('Некорректный статус замера.');
  const specs=configurationLayout(report).specs,expected=specs.flatMap(s=>configurationsFor(report,s).map(c=>c.id+':'+s.id)),keys=new Set();let done=0;

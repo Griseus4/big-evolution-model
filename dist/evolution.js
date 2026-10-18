@@ -29,9 +29,12 @@ import {TRAIT_SCALE_VERSION,BODY_SENSE_VERSION} from './brain-parameters.js';
 import {localNeighbours,moveLocally,memoryWorldPosition} from './navigation.js';
 import {placeFoodIslands,worldDistance} from './food-layout.js';
 import {LifeHistory,MODEL_VERSION,createLifeCounters,sampleLife,lifeRow} from './life-history.js';
+import {createLifeObservations} from './life-observations.js';
+import {foodExposureReport} from './food-exposure.js';
 import {validateFoodSettings,createFoodTemplate} from './food-settings.js';
 import {ISLAND_SCHEMA,createIndividualFoodLayout,scheduleFoodIslands,regrowFoodIslands,islandScheduleSummary} from './food-islands.js';
 import {planWorldFoodChange,foodEnvironment} from './world-edit.js';
+import {initializeEnvironment,manualEnvironmentChange} from './automatic-environment.js';
 import {GEOGRAPHY_PROFILES,DEFAULT_GEOGRAPHY,validateGeography,createLakesAndRivers,classifyLandRegions,balancedFounderPositions} from './geography.js';
 import {ACTION_COUNT,BIRTH_ACTION,DEPOSIT_ACTION,STATE_COUNT,GENOME_SIZES} from './policy-layout.js';
 import {reproductionProfile,DEFAULT_REPRODUCTION,reproductionCounters} from './reproduction.js';
@@ -93,9 +96,9 @@ export class Evolution {
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?TEMPORAL_BRAIN_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,individualFood=scenario==='custom',geography,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false}={}){
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,individualFood=scenario==='custom',geography,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment}={}){
   this.temporal=Boolean(temporal);
-  if(this.temporal&&brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('В0.32 нужен мозг v12; старые основы не поддерживаются.');
+  if(this.temporal&&brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('В0.32 нужен мозг v13; старые основы не поддерживаются.');
   if(!['custom','balanced','scarce'].includes(scenario))throw new Error('Неизвестная пищевая среда.');
   const foodOptions=validateFoodSettings({foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread});
   this.individualFood=Boolean(individualFood);
@@ -116,7 +119,7 @@ export class Evolution {
   this.baseGenome=baseGenome?validateGenomeFile({format:'big-evolution-genome',
    ...genomeMetadata(baseGenome),genes:baseGenome}):null;
   if(this.baseGenome)this.brainType=genomeMetadata(this.baseGenome).brainType;
-  if(this.temporal&&this.brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('В0.32 нужны новые геномыv12; старые основы не преобразуются.');
+  if(this.temporal&&this.brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('В0.32 нужны новые геномыv13; старые основы не преобразуются.');
   if(this.temporal&&this.reproduction.automatic)throw new Error('Автоматическое рождение удалено из новых испытаний0.32.');
   this.tick=0;this.nextId=1;this.maxGeneration=0;this.events=[];this.history=[];this.agents=[];
   // Нулевое начало цикла сохраняет прежние сроки восстановления до первого
@@ -201,6 +204,7 @@ export class Evolution {
    regionCount:regions.length,regions};
   this.log('Начало',`${this.agents.length} основателей. Предпочтения ${this.baseGenome?'взяты из сохранённого генома':'случайны'}.`);
   if(this.temporal)initializeTemporal(this);
+  if(this.temporal)initializeEnvironment(this,automaticEnvironment);
   this.record();
  }
  tile(x,y){return x<0||y<0||x>=WORLD_WIDTH||y>=WORLD_HEIGHT?null:this.tiles[y*WORLD_WIDTH+x];}
@@ -244,6 +248,7 @@ export class Evolution {
    foodOutsideSources:this.tiles.filter(c=>c.maxFood===0).reduce((n,c)=>n+c.food,0),
    nextRegrowthTick:this.nextFoodRegrowth(),summary:this.summary(),stats:structuredClone(this.stats),lives:this.lifeHistory.summary()};
   this.environmentChanges.push(change);
+  manualEnvironmentChange(this);
   this.log('Изменение мира',`Источников ${before.sourceCount} → ${after.sourceCount}, период ${before.regrowInterval} → ${after.regrowInterval}. Лежащая еда сохранена. Следующее пополнение: шаг ${change.nextRegrowthTick}.`);
   this.record();return change;
  }
@@ -261,6 +266,7 @@ export class Evolution {
    health:100,pain:0,stomach:0,inventory:0,age:0,lastBirthAge:-RULES.birthInterval,
    children:0,lastAction:null,lastDecision:null,lastDamage:0,alive:true,genome,frameRotation,brain:createControllerState(genome),life:createLifeCounters(),born:this.tick};
   if(this.temporal){delete a.pain;delete a.lastDamage;for(const k of ['painTotal','painSteps','injuries','damage'])delete a.life[k];a.process=null;a.callReason=0;a.lastAction=8;a.readyAt=(this.subtick??0)+(parent?1:0);a.lastProcess={action:8,localDestination:{...a.brain.position},direction:null,elapsed:5,duration:5};}
+  if(this.temporal)a.life.observer=createLifeObservations(RULES.inventoryCapacity);
   a.brain.wellbeing=this.feeling(a);
   this.agents.push(a);placeOccupant(this.occupancy,a);this.records.set(id,{id,parentId:a.parentId,founderId,generation:a.generation,born:this.tick,death:null,cause:null});
   // Счётчик достигнутых поколений не уменьшается после смерти старшей ветви.
@@ -480,7 +486,7 @@ export class Evolution {
   * Родившиеся в этом шаге включатся в действия только на следующем шаге.
   */
  step(){if(this.temporal){for(let i=0;i<10&&this.agents.length;i++)advanceTemporal(this);return;}return this.legacyStep();}
- substep(){if(!this.temporal)throw new Error('Подшаги толькоv12');advanceTemporal(this);}
+ substep(){if(!this.temporal)throw new Error('Подшаги толькоv13');advanceTemporal(this);}
  legacyStep(){
   if(!this.agents.length)return;
   this.tick++;
@@ -548,7 +554,7 @@ export class Evolution {
  /** Компактные итоги всех завершённых жизней и отдельные незавершённые строки.
   * Они не зависят от обрезаемого справочника родословных records.
   */
- lifeReport(){return {tick:this.tick,...this.lifeHistory.summary(),
+ lifeReport(){return {tick:this.tick,...this.lifeHistory.summary(),foodAvailability:foodExposureReport(this.foodExposure),
   dead:this.lifeHistory.retainedRows(),living:this.agents.map(a=>lifeRow(a,a.born,this.tick))};}
  /** Общие показатели не заменяют индивидуальных жителей в расчёте. */
  summary(){

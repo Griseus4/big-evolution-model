@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {Evolution} from '../dist/evolution.js';
 import {ParallelWorld,computationWorkers} from '../dist/parallel-world.js';
 import {createCognitionWorker} from './node-cognition-worker.mjs';
-import {Evolution as FrozenEvolution} from '../dist/benchmark-snapshots/0.32.0/evolution.js';
+import {Evolution as FrozenEvolution} from '../dist/benchmark-snapshots/0.34.0/evolution.js';
+import {GATE_OUTPUT_BIAS} from '../dist/temporal-layout.js';
 import {WorldRuntime} from '../dist/world-runtime.js';
 import {WORLD_PROTOCOL} from '../dist/world-view.js';
 import {createBenchmarkFixture,BENCHMARK_CASES} from '../dist/benchmark-fixtures.js';
@@ -44,8 +45,8 @@ test('parallel world preserves full state, memory, learning and all RNG streams'
 test('automatic pool avoids tiny worlds and caps the measured initial pool at four',()=>{
  assert.equal(computationWorkers('auto',20,150),4);assert.equal(computationWorkers('auto',20,2),1);assert.equal(computationWorkers('auto',4,150),2);assert.equal(computationWorkers('auto',6,150),2);assert.equal(computationWorkers('auto',2,150),1);assert.throws(()=>computationWorkers(20));
 });
-test('shared phase extraction retains the frozen 0.32 full trajectory',()=>{
- for(const seed of [42,17,803]){const settings={seed,population:16,limit:30},old=new FrozenEvolution(settings),now=new Evolution(settings);for(let i=0;i<8;i++){old.step();now.step();assert.deepEqual(now.snapshot(),old.snapshot());}}
+test('shared phase extraction retains the frozen current model full trajectory',()=>{
+ for(const seed of [42,17,803]){const settings={seed,population:16,limit:30},old=new FrozenEvolution(settings),now=new Evolution(settings);for(let i=0;i<8;i++){old.step();now.step();const snapshot=structuredClone(now.snapshot());for(const a of snapshot.agents)delete a.life.observer;assert.deepEqual(snapshot,old.snapshot());}}
 });
 async function compareScenario(setup,workers=4,{delay=false,steps=3}={}){
  const settings={seed:42,population:3,limit:4,foodSources:0},reference=new Evolution(settings),world=new Evolution(settings);
@@ -63,7 +64,7 @@ test('competition for the last food preserves lottery, interruption, energy and 
  assert.equal(world.stats.gathered,1);assert.ok(world.stats.interrupted[6]>=2);
 });
 test('ongoing movement retains progress under attention and identical rolls',async()=>{
- const {world}=await compareScenario(w=>{for(const c of w.tiles)c.terrain='land';w.random.next=()=>0;for(const a of w.agents){w.moveAgent(a,{x:12,y:12});a._cells=null;a.frameRotation=0;a.brain.gateBase.fill(0);a.brain.gateBase[72]=1;}},4);
+ const {world}=await compareScenario(w=>{for(const c of w.tiles)c.terrain='land';w.random.next=()=>0;for(const a of w.agents){w.moveAgent(a,{x:12,y:12});a._cells=null;a.frameRotation=0;a.brain.gateBase.fill(0);a.brain.gateBase[GATE_OUTPUT_BIAS]=1;}},4);
  assert.ok(world.stats.reviews>0);assert.ok(world.stats.completed[0]>0);
 });
 test('selected death keeps its final brain and releases other dead owners',async()=>{

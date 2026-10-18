@@ -2,7 +2,7 @@
  * Два барьера на подшаг: оценки -> мировой RNG/исполнение -> подтверждение.
  * Буферы возвращаются владельцу и переиспользуются; полные мозги передаются
  * только при рождении и по явному запросу снимка выбранного жителя/проверки. */
-import {advanceTemporalBodies,prepareTemporalAgent,sampleCells,sampleLife,temporalAvailableMask,temporalSelectedChoice,acceptTemporalChoice,finishTemporal} from './temporal-world.js';
+import {advanceTemporalBodies,prepareTemporalBoundary,prepareTemporalAgent,sampleCells,sampleLife,temporalAvailableMask,temporalSelectedChoice,acceptTemporalChoice,compactTemporalAgents,finishTemporal} from './temporal-world.js';
 import {CALL_REVIEW} from './action-timing.js';
 import {setCognitionSummary} from './cognition-summary.js';
 import {COGNITION_PROTOCOL,INPUT_WIDTH,RESULT_WIDTH,RESULT,writeCognitionRow} from './cognition-packet.js';
@@ -25,7 +25,7 @@ class Endpoint{
 function mirrorBrain(b){return {traits:b.traits,controllerType:b.controllerType,temporal:b.temporal,position:b.position,facing:b.facing,updates:b.updates,feelingTotal:b.feelingTotal,feelingSamples:b.feelingSamples,wellbeing:b.wellbeing,memory:new Map(),longMemory:new Map()};}
 export class ParallelWorld{
  constructor(world,{workers=4,createWorker=()=>new Worker(new URL('./cognition-worker.js',import.meta.url),{type:'module'}),timeout=30000}={}){
-  if(!world.temporal)throw new Error('Параллельный расчёт поддерживает модель v12.');
+  if(!world.temporal)throw new Error('Параллельный расчёт поддерживает модель v13.');
   validateComputationWorkers(workers);
   this.world=world;this.owners=new Map();this.rows=new WeakMap();this.batch=0;this.closed=false;this.busy=false;this.error=null;this.retained=null;
   this.metrics={workers,substeps:0,evaluateMs:0,commitMs:0,packMs:0,ownerWorkMs:0,inputBytes:0,resultBytes:0,registrations:0,snapshotMs:0};
@@ -60,6 +60,7 @@ export class ParallelWorld{
  removed(a){const index=this.owners.get(a.id);if(index===undefined)return;this.lanes[index].removed.push({id:a.id,feeling:{feelingTotal:a.brain.feelingTotal,feelingSamples:a.brain.feelingSamples,wellbeing:a.brain.wellbeing}});if(a!==this.retained)this.owners.delete(a.id);}
  async cognition(priming){
   const w=this.world,packStart=performance.now();
+  prepareTemporalBoundary(w);
   this.batch++;
   for(const l of this.lanes){l.agents.length=0;l.added.length=0;l.addedAgents.length=0;}
   for(const a of w.agents){
@@ -96,11 +97,13 @@ export class ParallelWorld{
    w.recordBirthDecision(a);let roll=w.random.next(),action=-1;const mask=r[at+RESULT.mask];
    for(let k=0;k<11;k++)if(mask&(1<<k)){action=k;const p=r[at+RESULT.probabilities+k];if(!Number.isFinite(p)||p<0||p>1)throw new Error('Некорректная вероятность действия.');roll-=p;if(roll<=0)break;}
    if(action<0)throw new Error('Вычислитель не вернул доступных действий.');
-   acceptTemporalChoice(w,a,temporalSelectedChoice(w,a,action));l.selections[i]=action;
+   if(acceptTemporalChoice(w,a,temporalSelectedChoice(w,a,action)))l.selections[i]=action;
+   else{l.selections[i]=-2;this.removed(a);}
   }
   const commitStart=performance.now();
   const commits=await Promise.all(this.lanes.map(l=>l.endpoint.call('commit',{selections:l.selections,result:l.result},[l.selections.buffer,l.result.buffer])));
   for(let i=0;i<this.lanes.length;i++){this.lanes[i].selections=commits[i].selections;this.lanes[i].result=null;}
+  compactTemporalAgents(w);
   this.metrics.commitMs+=performance.now()-commitStart;this.metrics.substeps+=Number(!priming);
  }
  async step(){
@@ -108,6 +111,7 @@ export class ParallelWorld{
   try{
    const w=this.world;if(!w.agents.length)return;
    if(!w._primed){await this.cognition(true);w._primed=true;}
+   if(!w.agents.length){finishTemporal(w);return;}
    for(let i=0;i<10&&w.agents.length;i++){advanceTemporalBodies(w,a=>this.removed(a));await this.cognition(false);finishTemporal(w);}
   }catch(e){this.fail(e);throw e;}finally{this.busy=false;}
  }

@@ -1,4 +1,4 @@
-import {TEMPORAL_BRAIN_TYPE,TEMPORAL_TRAIT_INDICES,temporalParameterLabel,GATE_OFFSET,GATE_NAMES} from './temporal-layout.js';
+import {TEMPORAL_BRAIN_TYPE,TEMPORAL_TRAIT_INDICES,temporalParameterLabel,GATE_OFFSET,GATE_NAMES,GATE_INPUTS,GATE_HIDDEN,GATE_PARAMETERS,GATE_HIDDEN_BIAS,GATE_OUTPUT_WEIGHTS,GATE_OUTPUT_BIAS} from './temporal-layout.js';
 import {SET_BRAIN_TYPE,setParameterLabel} from './set-brain-layout.js';
 /** Чистая расшифровка/сравнение экспортов. Не создаёт Evolution, не расходует RNG,
  * не меняет исходный файл. Версия определяет шаг строки и наличие общих генов.
@@ -66,7 +66,7 @@ export function parseGenomeText(text,metadata={}){
 export function analyzeGenome(data,{name='Геном',sha256=null}={}){
  // Валидатор общий с игрой, включая диапазон чисел и точные размеры v1…v6.
  const canonical=validateGenomeFile(data);
- if(data.version===9||(data.version===11||data.version===12)&&mutationOffset(data.genes)!==null){
+ if(data.version===9||(data.version===11||data.version===13)&&mutationOffset(data.genes)!==null){
   const offset=mutationOffset(data.genes),layout=layoutForGenes(data.genes);
   const result=layout?analyzeNeuralGenome(data,{name,sha256}):analyzeGenome({...data,version:6,genes:data.genes.slice(0,offset)},{name,sha256});
   const profile=mutationProfile(data.genes);
@@ -212,7 +212,7 @@ function analyzeNeuralGenome(data,{name,sha256}){
   return {key:gene.key,label:gene.label,group:old<4?'Ощущения':'Память и обучение',description:DESCRIPTIONS[gene.key],present:true,index:TRAIT_OFFSET+i,raw,
    derived:known&&conversion?traits[conversion[0]]:null,unit:conversion?.[1]??'вес',share:known&&old<4?(normalizer?raw/normalizer:0):null};
  });
- if(layout.brainType===TEMPORAL_BRAIN_TYPE)for(let i=0;i<73;i++)properties.push({key:`gate-${i}`,label:i<64?`Малый мозг: ${Math.floor(i/16)+1} ← ${GATE_NAMES[i%16]}`:i<68?`Малый мозг: смещение ${i-63}`:i<72?`Запрос ← скрытый ${i-67}`:'Смещение запроса',group:'Малый мозг',description:'Наследуемый параметр, без обучения за жизнь',present:true,index:GATE_OFFSET+i,raw:data.genes[GATE_OFFSET+i],derived:null,unit:'вес',share:null});
+ if(layout.brainType===TEMPORAL_BRAIN_TYPE)for(let i=0;i<GATE_PARAMETERS;i++)properties.push({key:`gate-${i}`,label:i<GATE_HIDDEN_BIAS?`Малый мозг: ${Math.floor(i/GATE_INPUTS)+1} ← ${GATE_NAMES[i%GATE_INPUTS]}`:i<GATE_OUTPUT_WEIGHTS?`Малый мозг: смещение ${i-GATE_HIDDEN_BIAS+1}`:i<GATE_OUTPUT_BIAS?`Запрос ← скрытый ${i-GATE_OUTPUT_WEIGHTS+1}`:'Смещение запроса',group:'Малый мозг',description:'Наследуемый параметр, без обучения за жизнь',present:true,index:GATE_OFFSET+i,raw:data.genes[GATE_OFFSET+i],derived:null,unit:'вес',share:null});
  for(let i=0;i<PARAMETER_COUNT;i++){
   const label=layout.brainType===TEMPORAL_BRAIN_TYPE?temporalParameterLabel(i):layout.brainType===SET_BRAIN_TYPE?setParameterLabel(i):i<HIDDEN_BIAS?`Скрытый ${Math.floor(i/INPUT_COUNT)+1} ← ${NEURAL_INPUT_NAMES[i%INPUT_COUNT]}`:
    i<OUTPUT_WEIGHTS?`Смещение скрытого ${i-HIDDEN_BIAS+1}`:i<OUTPUT_BIAS?`Q ← скрытый ${i-OUTPUT_WEIGHTS+1}`:'Смещение Q';
@@ -224,8 +224,8 @@ function analyzeNeuralGenome(data,{name,sha256}){
  return {name:String(name).slice(0,200),sha256:typeof sha256==='string'&&/^[a-f0-9]{64}$/i.test(sha256)?sha256:null,genomeVersion:layout.version,geneCount:data.genes.length,columns:11,
   stateEncoding:data.network.inputSchema,stateKnown:false,bodySenseKnown:true,bodySenseEncoding:'network-input-v1',modelVersion:data.modelVersion??null,brainType:layout.brainType,
   traitScale:context.traitScale??TRAIT_SCALE_VERSION,actions:ACTIONS.slice(),source,rules,environment,properties,policy:[],network:{...NETWORK_SCHEMA},inputNames:NEURAL_INPUT_NAMES.slice(),
-  architectureLabel:layout.brainType===TEMPORAL_BRAIN_TYPE?'Клетки и процесс → все Q; наследуемое внимание 16 → 4 → 1':layout.brainType===SET_BRAIN_TYPE?'Общие клетки → ситуация → все Q; 6 операций, направления внутри движения':`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q`,
-  insights:[layout.brainType===TEMPORAL_BRAIN_TYPE?`${PARAMETER_COUNT} параметров основного мозга, 12 свойств, 73 параметра малого мозга. Основной мозг учитывает текущий процесс, его прогресс, причину вызова и цену решения. Малый мозг не обучается за жизнь.`:layout.brainType===SET_BRAIN_TYPE?`Вариант Б: кодировщик клеток ${layout.network.cellInputs} → ${layout.network.cellHidden}, ситуация ${layout.network.contextInputs} → ${layout.network.contextHidden}, цели ${layout.network.targetInputs} → ${layout.network.contextHidden}, критерии 6 операций; ${PARAMETER_COUNT} параметров и 13 общих свойств. Все Q за один прямой вызов; видимость источника независима от порций.`:`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q; ${PARAMETER_COUNT} параметров и 13 свойств ощущений/памяти/обучения.`,
+  architectureLabel:layout.brainType===TEMPORAL_BRAIN_TYPE?`Клетки, деятельность и процесс → все Q; наследуемое внимание ${GATE_INPUTS} → ${GATE_HIDDEN} → 1`:layout.brainType===SET_BRAIN_TYPE?'Общие клетки → ситуация → все Q; 6 операций, направления внутри движения':`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q`,
+  insights:[layout.brainType===TEMPORAL_BRAIN_TYPE?`${PARAMETER_COUNT} параметров основного мозга, 12 свойств, ${GATE_PARAMETERS} параметра малого мозга. Основной мозг учитывает текущий процесс, его прогресс, причину вызова и цену решения. Малый мозг не обучается за жизнь.`:layout.brainType===SET_BRAIN_TYPE?`Вариант Б: кодировщик клеток ${layout.network.cellInputs} → ${layout.network.cellHidden}, ситуация ${layout.network.contextInputs} → ${layout.network.contextHidden}, цели ${layout.network.targetInputs} → ${layout.network.contextHidden}, критерии 6 операций; ${PARAMETER_COUNT} параметров и 13 общих свойств. Все Q за один прямой вызов; видимость источника независима от порций.`:`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q; ${PARAMETER_COUNT} параметров и 13 свойств ощущений/памяти/обучения.`,
    `Память: краткая ${known?traits.shortCapacity:'неизвестна'}, долгая ${known?traits.longCapacity:'неизвестна'}. Личный опыт не сохранён.`,
    'Сеть оценивает варианты по локальным признакам. Значения Q и вероятности требуют конкретных наблюдений.'],
   warnings:['Начальные веса и смещения наследуются; личные поправки, память и градиентный след отсутствуют в геноме.',

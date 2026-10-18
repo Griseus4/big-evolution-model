@@ -6,7 +6,9 @@ An artificial life simulation with evolving neural agents, individual learning, 
 
 Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments.
 
-**Status:** experimental prototype · **Current implementation:** 0.33.2 · **Interface:** Russian.
+**Status:** experimental prototype · **Current implementation:** 0.36.0 · **Interface:** Russian.
+
+Version 0.36 adds automatic food-environment changes, health costs for unpaid energy, and full manual world save/load. These controls are available in the food-sources panel. See the [release notes](docs/updates/v036-environment-energy-save.md).
 
 ## What is implemented
 
@@ -20,7 +22,7 @@ Big Evolution explores how behavior develops through inherited neural parameters
 
 The default world has 48×32 hexes, 150 founders, a population limit of 1,000, and 384 food sources. These are initial conditions and limits, not a guarantee of a stable population.
 
-The current genome schema is v12: 1,376 main-brain parameters, 12 cognitive traits, 73 attention-network parameters, and 2 inherited mutation regulators — 1,463 values in total.
+The current genome schema is v13: 1,827 main-brain parameters, 12 cognitive traits, 77 attention-network parameters, and 2 inherited mutation regulators — 1,918 values in total.
 
 ## Play in your browser
 
@@ -98,3 +100,7 @@ Version 0.32 adds ten substeps per time unit, action durations and interruption,
 Version 0.33 parallelizes individual cognition while preserving the 0.32 model, genome schema, learning, and random-number order. The local release has not been published by this update. See [implementation and short measurements](docs/updates/v033-parallel-world.md).
 
 Version0.33.2 groups benchmark columns by version and worker count, runs each evaluator once per version, and reports speedup and scaling efficiency without automatic tuning. Central food periods are limited to10–300; sliders have larger round handles. [Release notes](docs/updates/v033-live-controls.md).
+
+Version 0.34.0 exposes current activity counts on the seven visible hexes, including six movement directions relative to the observer. Observations share one boundary before decisions; identities, hidden body states and exact progress are excluded. This is an enabling mechanism for social behaviour, not a scripted flocking policy. Genome v12 is not converted. Benchmarks start a new model series; old JSON reports remain readable. [Release notes](docs/updates/v034-visible-activities.md).
+
+Version 0.35.0 adds birth-cohort charts with minimum, median, mean and maximum, individual movement/eating rates, time-averaged inventory, reconsiderations, interruptions and survival to a selected age. A separate chart shows time-averaged food on the ground. The table is height-limited and paged. Observer counters do not change agent decisions or genome v13. [Details](docs/updates/v035-life-history-charts.md).

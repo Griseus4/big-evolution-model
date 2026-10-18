@@ -1,11 +1,20 @@
 # Навигация по архитектуре
 
+Наблюдатель0.35.1: `life-cohorts.js` агрегирует показатели всей жизни по точным границам рождения; `history-window.js` переиспользует полные группы и пересчитывает краевые; `survival-curve.js` хранит возрастные выборки одной группы, границы дожития и запросы возраста; `history-charts.js` рисует Canvas по выбранным линиям/окну; `history-ui.js` управляет независимыми кешами и таблицей. Эти модули не меняют расчёт мира. [Протокол](updates/v035-history-window.md).
+
 Цель файла — выбрать модуль, а не заменить его чтение. Перед изменением проверяй указанную функцию; номера строк намеренно не фиксируются.
 
 ## Главные модули
 
+0.36: [environment-settings.js](../dist/environment-settings.js) — единые параметры/выработка; [automatic-environment.js](../dist/automatic-environment.js) — независимый RNG/стадии/локальные события; [energy-budget.js](../dist/energy-budget.js) — оплата реальной энергии/дефицита; [state-codec.js](../dist/state-codec.js) и [world-save.js](../dist/world-save.js) — типы/ссылки и проверка полного снимка; [environment-ui.js](../dist/environment-ui.js), [world-files-ui.js](../dist/world-files-ui.js) — управление. Runtime синхронизирует мозги и атомарно заменяет загруженный мир; периодическая физика вызывает среду до роста/тел. Все описания ниже относятся к своим историческим этапам,0.36 уточняет плату/загрузку в протоколе.
+
 | Модуль | Ответственность | Входные точки |
 | --- | --- | --- |
+| [life-observations.js](../dist/life-observations.js) | Индивидуальные счётчики запасов/пересмотров/прерываний без входов в мозг | createLifeObservations, describeLifeObservations |
+| [food-exposure.js](../dist/food-exposure.js) | Интеграл порций на земле без обхода карты | sampleFoodExposure, foodExposureReport, foodCohorts |
+| [life-cohorts.js](../dist/life-cohorts.js) | Чистые точные распределения по интервалам рождения | aggregateLifeCohorts, lifeMetric |
+| [history-ui.js](../dist/history-ui.js), [history-charts.js](../dist/history-charts.js) | Кеш сводок, Canvas и50 строк таблицы | installHistoryUI, drawHistoryChart |
+| [activity-perception.js](../dist/activity-perception.js) | Общая текущая деятельность по клеткам, локальные направления и исключение наблюдателя | rebuildActivities, sampleActivities |
 | [set-brain-inputs.js](../dist/set-brain-inputs.js) | Независимые от весов входы одного решения; жизненный цикл задаётся локальной переменной Evolution | prepareSetDecisionInput |
 | [worker-timing.js](../dist/worker-timing.js) | Границы задач/принятых запусков и невложенные фазы Worker, ограниченные гистограммыv3; не CPU-время | WorkerTiming |
 | [performance-probe.js](../dist/performance-probe.js) | Необязательный синхронный контекст выбранного шага; без данных мозга | swapComputeProbe, beginComputePart, endComputePart |

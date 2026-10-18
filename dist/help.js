@@ -14,6 +14,9 @@ export function installHelp(pauseWorld){
  const dialog=document.getElementById('help-dialog'),title=document.getElementById('help-title'),body=document.getElementById('help-body');let opener=null;
  for(const [id,key]of [...Object.keys(HELP).map(id=>[id,id]),...Object.entries(ALIASES)]){
   const control=document.getElementById(id);if(!control)continue;
+  // Составной диапазон делит справку с числовым полем. Дополнительная
+  // обёртка разрушила бы общую дорожку двух нативных ползунков.
+  if(control.dataset.helpShared){if(!document.getElementById(control.dataset.helpShared))throw new Error('Нет связанного поля справки: '+id);control.title=HELP[key][1];continue;}
   // Кнопка помощи — сосед label, а не интерактивный элемент внутри него:
   // нажатие вопроса не должно переключать checkbox или активировать действие.
   const label=control.closest('label');

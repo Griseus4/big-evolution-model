@@ -42,6 +42,8 @@ export class CognitionOwner{
   for(let i=0;i<batch.items.length;i++){
    const {a,decision,options,beforeFeeling}=batch.items[i],action=selections[i];
    if(!options){if(action!==-1)throw new Error('Лишнее подтверждение выбора.');continue;}
+   // Координатор сообщил смерть при оплате решения: нового перехода нет.
+   if(action===-2){a.alive=false;a.brain.pending=null;continue;}
    const option=options.find(o=>o.action===action);if(!option)throw new Error('Подтверждено недоступное действие.');
    const executable=o=>({...o,localDestination:{...o.localDestination},destination:o.action<6?memoryWorldPosition(a,o.localDestination):{x:a.x,y:a.y}});
    a.lastDecision={tick:batch.w.tick,row:option.row,options:options.map(executable),chosen:action};

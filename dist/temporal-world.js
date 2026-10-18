@@ -1,4 +1,4 @@
-/** Фазы однопоточного мираv12. Время — целые подшаги, внешнееtick — Т.
+/** Фазы однопоточного мираv13. Время — целые подшаги, внешнееtick — Т.
  * Локальный геометрический след пересчитывается только после перемещения;
  * текущие количества считываются один раз на границу и переиспользуются. */
 import {RULES,actionEnergyCost,WORLD_WIDTH,mutateGenome} from './evolution.js';
@@ -12,8 +12,13 @@ import {learnSetBrain} from './temporal-brain.js';
 import {beginComputeGroup,endComputeGroup} from './performance-probe.js';
 import {cloneSetInput} from './set-brain-inputs.js';
 import {regrowFoodIslands} from './food-islands.js';
+import {ACTIVITY_COUNT,rebuildActivities,sampleActivities} from './activity-perception.js';
+import {createFoodExposure,sampleFoodExposure} from './food-exposure.js';
+import {spendEnergy as spend} from './energy-budget.js';
+import {advanceEnvironment} from './automatic-environment.js';
 
 export function initializeTemporal(w){
+ w.foodExposure=createFoodExposure();
  w.subtick=0;w._primed=false;w._due=[];w._gatherGroups=new Map();w._touched=[];w._viewEpoch=0;
  w.stats.started=Array(11).fill(0);w.stats.completed=Array(11).fill(0);w.stats.interrupted=Array(11).fill(0);w.stats.brainCalls=0;w.stats.gateCalls=0;w.stats.reviews=0;w.stats.brainSpent=0;w.stats.actionSpent=0;
  delete w.stats.injuries;delete w.stats.deathsByCause.injury;delete w.lifeHistory.byCause.injury;
@@ -26,12 +31,12 @@ function resetFoodCalendar(w){w._foodRevision=w.environmentRevision;w._nextGrowt
 export function sampleCells(w,a){
  if(!a._cells||a._footX!==a.x||a._footY!==a.y||a._footQ!==a.brain.position.q||a._footR!==a.brain.position.r){
   a._cells=[];a._tiles=[];
-  for(const p of [a.brain.position,...localNeighbours(a.brain)]){const pos=memoryWorldPosition(a,p),c=w.tile(pos.x,pos.y);if(c){a._tiles.push(c);a._cells.push({q:p.q,r:p.r,food:0,isFoodSource:false,terrain:c.terrain,neighbours:0});}}
+  for(const p of [a.brain.position,...localNeighbours(a.brain)]){const pos=memoryWorldPosition(a,p),c=w.tile(pos.x,pos.y);if(c){a._tiles.push(c);a._cells.push({q:p.q,r:p.r,food:0,isFoodSource:false,terrain:c.terrain,neighbours:0,activities:new Float64Array(ACTIVITY_COUNT)});}}
   a._footX=a.x;a._footY=a.y;a._footQ=a.brain.position.q;a._footR=a.brain.position.r;a._sampleEpoch=-1;
  }
- if(a._sampleEpoch!==w._viewEpoch||a._sampleEnvironment!==w.environmentRevision){
-  for(let i=0;i<a._cells.length;i++){const v=a._cells[i],c=a._tiles[i];v.food=c.food;v.isFoodSource=c.maxFood>0;v.neighbours=countOthers(w.occupancy,a,c.x,c.y);}
-  a._sampleEpoch=w._viewEpoch;a._sampleEnvironment=w.environmentRevision;
+ if(a._sampleEpoch!==w._viewEpoch||a._sampleEnvironment!==w.environmentRevision||a._sampleActivityRevision!==w._activities?.revision||a._sampleFacing!==a.brain.facing){
+  for(let i=0;i<a._cells.length;i++){const v=a._cells[i],c=a._tiles[i];v.food=c.food;v.isFoodSource=c.maxFood>0;v.neighbours=countOthers(w.occupancy,a,c.x,c.y);sampleActivities(w,a,c,v.activities);}
+  a._sampleEpoch=w._viewEpoch;a._sampleEnvironment=w.environmentRevision;a._sampleActivityRevision=w._activities.revision;a._sampleFacing=a.brain.facing;
  }
  return a._cells;
 }
@@ -95,8 +100,7 @@ export function temporalFrame(w,a,withExecution=true){
  if(withExecution)for(const c of request.candidates)executionDestinations.set(c.id,{action:c.action,destination:c.action<6?{...temporalNavigation(a).destinations[c.action]}:{x:a.x,y:a.y},localDestination:{...c.localDestination}});
  return {request,executionDestinations};
 }
-function spend(w,a,cost,decision=false){const n=Math.min(a.energy,cost);a.energy=Math.max(0,a.energy-n);w.stats.spent+=n;if(decision)w.stats.brainSpent+=n;else w.stats.actionSpent+=n;return n;}
-function fail(w,a){const p=a.process;if(!p)return;w.stats.interrupted[p.action]++;a.lastProcess=p;a.process=null;a.callReason=CALL_FAILED;}
+function fail(w,a,reason='physical'){const p=a.process;if(!p)return;w.stats.interrupted[p.action]++;if(a.life.observer)a.life.observer.interruptions[reason]++;a.lastProcess=p;a.process=null;a.callReason=CALL_FAILED;}
 function complete(w,a){
  const p=a.process,action=p.action;if(!physical(w,a,action,p.destination,true)){fail(w,a);return;}
  if(action<6){w.moveAgent(a,p.destination);moveLocally(a.brain,action);a._sampleEpoch=-1;}
@@ -125,25 +129,38 @@ export function prepareTemporalDecision(w,a){
 }
 export function acceptTemporalChoice(w,a,choice){
  const b=a.brain;w.stats.brainCalls++;if(a.callReason===CALL_REVIEW)w.stats.reviews++;
- if(!choice.continuation){if(a.process)fail(w,a);const direction=choice.action<6?{q:choice.localDestination.q-b.position.q,r:choice.localDestination.r-b.position.r}:null;a.process={action:choice.action,destination:choice.destination,localDestination:choice.localDestination,direction,duration:ACTION_DURATIONS[choice.action],elapsed:0};w.stats.started[choice.action]++;w.stats.actions[choice.action]++;if(choice.action===9){a.life.reproduction.chosen++;w.stats.reproduction.chosen++;}}
- a.lastAction=choice.action;spend(w,a,choice.decisionCost,true);
+ if(a.life.observer){a.life.observer.brainCalls++;a.life.observer.reviews+=Number(a.callReason===CALL_REVIEW);}
+ // Вычисление уже состоялось, но смертельная оплата не начинает действие.
+ spend(w,a,choice.decisionCost,true);
+ if(a.health===0){fail(w,a,'death');w.die(a,'starvation');b.pending=null;return false;}
+ if(!choice.continuation){if(a.process)fail(w,a,'voluntary');const direction=choice.action<6?{q:choice.localDestination.q-b.position.q,r:choice.localDestination.r-b.position.r}:null;a.process={action:choice.action,destination:choice.destination,localDestination:choice.localDestination,direction,duration:ACTION_DURATIONS[choice.action],elapsed:0};w.stats.started[choice.action]++;w.stats.actions[choice.action]++;if(choice.action===9){a.life.reproduction.chosen++;w.stats.reproduction.chosen++;}}
+ a.lastAction=choice.action;
  a.callReason=CALL_COMPLETE;
+ return true;
 }
 export function commitTemporalBrain(w,a,decision,choice,beforeFeeling){
  const b=a.brain;rememberAttention(a,decision.frame.request.observation.cells);
  if(w.memoryEnabled)rememberDecision(b,b.position,w.tick);
  if(w.learningEnabled||w.memoryEnabled)b.pending={choice:{id:choice.id,action:choice.action,row:0,features:choice.features.slice(),senses:choice.senses.slice(),place:{...b.position},batchInput:cloneSetInput(choice.batchInput)},beforeFeeling,startSubtick:w.subtick,sum:0,discount:1};
 }
-function decide(w,a){const decision=prepareTemporalDecision(w,a);w.recordBirthDecision(a);const beforeFeeling=w.feeling(a),choice=w.choose(a,decision);acceptTemporalChoice(w,a,choice);commitTemporalBrain(w,a,decision,choice,beforeFeeling);}
+function decide(w,a){const decision=prepareTemporalDecision(w,a);w.recordBirthDecision(a);const beforeFeeling=w.feeling(a),choice=w.choose(a,decision);if(acceptTemporalChoice(w,a,choice))commitTemporalBrain(w,a,decision,choice,beforeFeeling);}
 export function sampleLife(w,a){const c=a.life,f=w.feeling(a);c.samples+=DT;c.energyTotal+=a.energy*DT;c.healthTotal+=a.health*DT;c.hungerSteps+=Number(a.energy<30)*DT;c.emptyEnergySteps+=Number(a.energy===0)*DT;a.brain.feelingTotal+=f*DT;a.brain.feelingSamples+=DT;a.brain.wellbeing=f;w.lifeExposure.steps+=DT;w.lifeExposure.feelingTotal+=f*DT;}
-function compact(w){let k=0;for(let i=0;i<w.agents.length;i++)if(w.agents[i].alive)w.agents[k++]=w.agents[i];w.agents.length=k;}
+export function compactTemporalAgents(w){let k=0;for(let i=0;i<w.agents.length;i++)if(w.agents[i].alive)w.agents[k++]=w.agents[i];w.agents.length=k;}
 export function observeTime(w,a,cells,elapsed){const mark=beginComputeGroup('memory');try{observe(a.brain,cells,a.brain.position,w.tick,true,elapsed);}finally{endComputeGroup(mark);}}
 export function accrueTemporalReward(w,a){const b=a.brain;if(b.pending){b.pending.sum+=b.pending.discount*b.timeReward.b*w.feeling(a)/100;b.pending.discount*=b.timeReward.q;}}
 export function prepareTemporalAgent(w,a){if(a.readyAt>w.subtick)return null;if(a.process&&a.process.action!==9&&!physical(w,a,a.process.action,a.process.destination))fail(w,a);return sampleCells(w,a);}
+/** Сначала все физические срывы, затем общий снимок деятельности. Никаких
+ * решений между этими фазами: последовательный и параллельный пути видят одно. */
+export function prepareTemporalBoundary(w){
+ for(const a of w.agents)if(!(a.readyAt>w.subtick)&&a.process&&a.process.action!==9&&!physical(w,a,a.process.action,a.process.destination))fail(w,a);
+ rebuildActivities(w);
+}
 export function advanceTemporal(w){
  if(!w.agents.length)return;
- if(!w._primed){for(const a of w.agents){const cells=sampleCells(w,a);if(w.memoryEnabled)observeTime(w,a,cells,0);decide(w,a);}w._primed=true;}
+ if(!w._primed){prepareTemporalBoundary(w);for(const a of w.agents){const cells=sampleCells(w,a);if(w.memoryEnabled)observeTime(w,a,cells,0);decide(w,a);}compactTemporalAgents(w);w._primed=true;}
+ if(!w.agents.length){finishTemporal(w);return;}
  advanceTemporalBodies(w);
+ prepareTemporalBoundary(w);
  const count=w.agents.length;
  for(let i=0;i<count;i++){
   const a=w.agents[i],cells=prepareTemporalAgent(w,a);if(!cells)continue;
@@ -152,22 +169,24 @@ export function advanceTemporal(w){
   if(!a.process)decide(w,a);
   else if(a.process.action!==9){w.stats.gateCalls++;if(attentionRequest(a,cells,RULES.inventoryCapacity,RULES.stomachCapacity)){a.callReason=CALL_REVIEW;decide(w,a);}}
  }
- finishTemporal(w);
+ compactTemporalAgents(w);finishTemporal(w);
 }
 export function advanceTemporalBodies(w,onDeath=null){
+ sampleFoodExposure(w);
  w.subtick++;w.tick=w.subtick/10;
+ advanceEnvironment(w);
  if(w._foodRevision!==w.environmentRevision)resetFoodCalendar(w);
  if(w.tick+1e-9>=w._nextGrowth){if(w.individualFood)regrowFoodIslands(w);else for(const c of w.tiles)if(c.food<c.maxFood){c.food++;w.stats.regrown++;}resetFoodCalendar(w);}
  const due=w._due;due.length=0;
  for(const a of w.agents){
   a.age=(w.subtick-(a.bornSubtick??Math.round(a.born*10)))/10;
+  if(a.life.observer)a.life.observer.inventorySubsteps[a.inventory]++;
   const amount=Math.min(a.stomach,RULES.digestionRate*DT),gain=Math.min(amount,100-a.energy);a.stomach-=amount;a.energy+=gain;w.stats.digested+=amount;w.stats.overflow+=amount-gain;
   if(a.process){if(a.process.action!==9)spend(w,a,actionEnergyCost(a.process.action)*DT);a.process.elapsed++;}
-  if(a.energy===0)a.health=Math.max(0,a.health-1.5*DT);
-  if(a.health===0||a.age>=RULES.maxAge){fail(w,a);sampleLife(w,a);w.die(a,a.health===0?'starvation':'age');a.brain.pending=null;onDeath?.(a);continue;}
+  if(a.health===0||a.age>=RULES.maxAge){fail(w,a,'death');sampleLife(w,a);w.die(a,a.health===0?'starvation':'age');a.brain.pending=null;onDeath?.(a);continue;}
   if(a.process&&a.process.elapsed>=a.process.duration)due.push(a);
  }
- compact(w);
+ compactTemporalAgents(w);
  // Сначала независимые завершения; жеребьёвка только при недостатке порций.
  const touched=w._touched;touched.length=0;
  for(const a of due){if(a.process.action!==6){complete(w,a);continue;}const key=a.y*WORLD_WIDTH+a.x;let group=w._gatherGroups.get(key);if(!group){group=[];w._gatherGroups.set(key,group);}if(!group.length)touched.push(group);group.push(a);}

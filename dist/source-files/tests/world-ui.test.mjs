@@ -21,6 +21,8 @@ import * as computation from '../dist/computation-settings.js';
 import {UI_TEXT,installUIText} from '../dist/ui-text.js';
 import {installPerformanceTabs} from '../dist/performance-tabs.js';
 import {WorldProfiler} from '../dist/world-profiler.js';
+import {installEnvironmentUI} from '../dist/environment-ui.js';
+import {installWorldFiles} from '../dist/world-files-ui.js';
 const html=fs.readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
 const app=fs.readFileSync(new URL('../dist/evolution-app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'');
 const performanceUI=fs.readFileSync(new URL('../dist/performance-ui.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'').replace(/^export /gm,'');
@@ -70,6 +72,7 @@ async function boot(){
   installHelp:()=>{},createHelpButton:()=>document.createElement('button'),
   requestAnimationFrame:fn=>frame=fn,performance:{now:()=>now},Blob,
   URL:{createObjectURL:blob=>{downloads.push(blob);return 'blob:mock';},revokeObjectURL:()=>{}},setTimeout:()=>0});
+ Object.assign(context,{installEnvironmentUI,installWorldFiles});
  vm.runInContext(performanceUI,context);vm.runInContext(app,context);await settle();assert.equal(elements.get('error').textContent??'','');
  return {elements,document,context,downloads,get runtime(){return runtime;},
   pulse:async value=>{now=value;runtime.pulse();await settle();},frame:value=>frame(value),

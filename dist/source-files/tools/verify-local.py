@@ -58,7 +58,7 @@ def main() -> int:
         ('startup', 'startup', [node, 'tools/check-startup.mjs']),
         ('world-worker', 'worker', [node, '--test', 'tests/world-worker.test.mjs', 'tests/world-ui.test.mjs',
                                      'tests/performance-detail.test.mjs', 'tests/worker-timing.test.mjs',
-                                     'tests/temporal.test.mjs', 'tests/parallel-world.test.mjs', 'tests/parallel-benchmark.test.mjs',
+                                     'tests/temporal.test.mjs', 'tests/environment-save.test.mjs', 'tests/activity-perception.test.mjs', 'tests/life-cohorts.test.mjs', 'tests/history-ui.test.mjs', 'tests/history-window.test.mjs', 'tests/parallel-world.test.mjs', 'tests/parallel-benchmark.test.mjs',
                                      'tests/worker-count-benchmark.test.mjs', 'tests/worker-count-ui.test.mjs',
                                      'tests/live-computations.test.mjs', 'tests/configuration-benchmark.test.mjs', 'tests/ui-text-controls.test.mjs']),
         ('mechanisms', 'mechanisms', [node, 'tools/check-mechanisms.mjs',

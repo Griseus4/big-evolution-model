@@ -8,6 +8,8 @@ import {PerformanceProfiler} from './performance-profiler.js';
 import {worldPresentation,WORLD_PROTOCOL,WORLD_UI_INTERVAL} from './world-view.js';
 import {computationWorkers} from './computation-settings.js';
 import {clearCognitionSummary} from './cognition-summary.js';
+import {saveWorld,loadWorld,MAX_WORLD_SAVE_BYTES} from './world-save.js';
+import {configureEnvironment,environmentStatus} from './automatic-environment.js';
 export class WorldRuntime{
  constructor({send,clock=()=>performance.now(),wake=()=>{},cancel=()=>{},executorFactory=null}){
   Object.assign(this,{send,clock,wake,cancel,executorFactory});this.executor=null;this.epoch=0;this.sequence=0;this.world=null;
@@ -38,6 +40,7 @@ export class WorldRuntime{
   if(end-this.rateStart>=1000){this.actualRate=(this.world.tick-this.rateTick)*1000/(end-this.rateStart);this.rateStart=end;this.rateTick=this.world.tick;}
   this.profiler.frame({target:this.target,budgetLimited:false,gapMs:elapsed});
   if(!this.world.agents.length)this.setRunning(false);
+  if(this.lastEnvironmentRevision!==this.world.environmentRevision)this.staticDirty=true;
   if(this.executor)await this.publish(false);else this.publish(false);this.schedule();
   }finally{
    timing.endTask();
@@ -52,7 +55,8 @@ export class WorldRuntime{
   if(this.executor)await this.executor.syncAgent(this.selected);
   const timing=this.profiler.workerTiming,measuring=timing.active,prepareStart=measuring?timing.now():null;
   const start=this.clock(),state=worldPresentation(this.world,{selected:this.selected,trail:this.trail,
-   section:this.section,history:this.tab==='history'&&this.historyDirty,staticMap:this.staticDirty});
+   section:this.section,history:(this.tab==='history'||this.restored)&&this.historyDirty,staticMap:this.staticDirty});
+  this.lastEnvironmentRevision=this.world.environmentRevision;this.restored=false;
   state.execution={computeWorkers:this.executor?.lanes.length??1,mode:this.computeMode};
   this.presentationMs+=this.clock()-start;this.messages++;
   if(measuring)timing.phase('presentation',prepareStart);
@@ -115,6 +119,19 @@ export class WorldRuntime{
    }else if(type==='ack'){if(this.inFlight===payload.sequence)this.inFlight=null;return;}
    else if(type==='running')this.setRunning(payload.value);
    else if(type==='computations')result=await this.changeComputations(payload.value);
+   else if(type==='environment'){result=configureEnvironment(this.world,payload);this.staticDirty=true;}
+   else if(type==='save-world'){
+    if(this.executor)await this.executor.syncAll();
+    result={name:`big-evolution-world-seed-${this.world.seed}-step-${this.world.tick}.json`,json:JSON.stringify(saveWorld(this.world))};
+   }else if(type==='load-world'){
+    if(typeof payload.json!=='string'||payload.json.length>MAX_WORLD_SAVE_BYTES)throw new Error('Недопустимый размер сохранения.');
+    const next=loadWorld(JSON.parse(payload.json)),previous=this.executor;let executor=null;
+    try{executor=this.executorFactory?.(next,{computeWorkers:this.computeMode})??null;if(executor){await executor.ready();await executor.attach();}}
+    catch(error){await executor?.close();throw new Error('Не удалось подготовить загруженный мир: '+error.message);}
+    this.profiler.stop('world-loaded');this.setRunning(false);this.executor=executor;this.world=next;
+    this.selected=next.agents[0]??null;this.trail=new ResidentTrail();attachResidentTrail(next,this.trail);this.trail.select(next,this.selected);if(executor)executor.retained=this.selected;
+    await previous?.close();this.staticDirty=true;this.historyDirty=true;this.restored=true;this.resetTime();result={seed:next.seed,tick:next.tick};
+   }
    else if(type==='speed'){
     if(!Number.isFinite(payload.value)||payload.value<=0)throw new Error('Некорректная скорость.');
     this.target=payload.value;this.resetTime();this.cancel();this.schedule();
@@ -136,7 +153,7 @@ export class WorldRuntime{
      settings:{scenario:s.scenario,geography:s.geography,foodSettings:s.foodSettings,initialFoodSettings:s.initialFoodSettings,
       initialPopulation:s.initialPopulation,limit:s.limit,brainType:s.brainType,mutationProtocol:s.mutationProtocol,
       mutationRate:s.mutationRate,mutations:s.mutations,learning:s.learningEnabled,memory:s.memoryEnabled},
-     geography:s.geographyInfo,environmentChanges:s.environmentChanges,initialFoodIslands:s.initialFoodIslands,
+     geography:s.geographyInfo,automaticEnvironment:environmentStatus(s),environmentChanges:s.environmentChanges,initialFoodIslands:s.initialFoodIslands,
      foodIslands:s.foodIslands,foodCycleStart:s.foodCycleStart,nextRegrowthTick:s.nextFoodRegrowth(),
      stats:s.stats,balances:s.balances(),history:s.history,...s.lifeReport()};
    }else if(type==='profile-start'){

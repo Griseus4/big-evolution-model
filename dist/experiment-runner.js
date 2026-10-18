@@ -33,7 +33,7 @@ export function validateExperimentConfig(input){
  const baseGenome=input.baseGenome?validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome}):null;
  const brainType=baseGenome?genomeMetadata(baseGenome).brainType:input.brainType??TEMPORAL_BRAIN_TYPE;
  if(brainType!==BRAIN_TYPE&&!layoutForType(brainType))throw new Error('Неизвестный тип мозга.');
- if(brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('Для новых испытаний нужен геном v12. Старые отчёты доступны только для анализа.');
+ if(brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('Для новых испытаний нужен геном v13. Старые отчёты доступны только для анализа.');
  if(reproductionProfile(reproduction).automatic)throw new Error('Автоматическое размножение исключено из новых испытаний.');
  return {heritableMutations:input.heritableMutations!==false,upgradeMutationGenes:input.upgradeMutationGenes===true,individualFood:input.individualFood!==false,brainType,seeds:seeds.slice(),population,limit,steps,parallel,modes:[...new Set(modes)],
  mutations:input.mutations!==false,mutationRate,baseGenome,saveGenomes:input.saveGenomes!==false,geography,reproduction,...food};
@@ -57,7 +57,7 @@ export function checkInvariants(s){
   require(positions.length===s.foodSettings.sourceCount&&new Set(positions).size===positions.length,'Источники потеряны/в нескольких группах');
   require(s.tiles.filter(c=>c.maxFood>0).length===positions.length,'Расписание не охватывает источники');
   for(const g of s.foodIslands){
-   require(g.sources.length>0&&Number.isInteger(g.period)&&g.period>=10&&g.period<=1600&&Number.isInteger(g.phase)&&g.phase>=0&&g.phase<g.period&&Number.isFinite(g.nextTick)&&g.nextTick>s.tick-1e-9,'Недопустимое расписание островка');
+   require(g.sources.length>0&&Number.isFinite(g.period)&&g.period>=.1&&Math.abs(g.period*10-Math.round(g.period*10))<1e-7&&Number.isFinite(g.nextTick)&&g.nextTick>s.tick-1e-9,'Недопустимое расписание островка');
    require(g.sources.every(p=>s.tile(p.x,p.y)?.terrain==='land'&&s.tile(p.x,p.y).maxFood>0),'Источник расписания не на суше');
   }
  }
@@ -88,7 +88,7 @@ export async function runWorld(job,{onProgress,shouldStop}){
   mutations:job.mutations,mutationRate:job.mutationRate,baseGenome:job.baseGenome,
   learning:mode.learning,memory:mode.memory,lifeHistoryLimit:250});
  const start=performance.now(),checkpoints=[],samples=[],champions=new Map();let agentSteps=0,limitSteps=0,checks=0,lastSent=0;
- const sources=s.foodIslands.flatMap(g=>g.sources),interval=Math.max(1000,Math.ceil(job.steps/200));
+ const interval=Math.max(1000,Math.ceil(job.steps/200));
  function consider(a){
   if(!job.saveGenomes)return;
   // Три явно названных критерия отбора образцов; ни один не называется «лучший вообще».
@@ -99,6 +99,8 @@ export async function runWorld(job,{onProgress,shouldStop}){
  const originalDie=s.die.bind(s);s.die=(a,cause)=>{originalDie(a,cause);consider(a);};
  function point(){
   const balances=checkInvariants(s);checks++;
+  // Источники могут перемещаться: контрольная точка использует нынешнюю карту.
+  const sources=s.foodIslands.flatMap(g=>g.sources);
   return {...s.summary(),livingFounders:s.agents.filter(a=>a.parentId===null).length,
    meanLivingAge:s.agents.length?s.agents.reduce((n,a)=>n+a.age,0)/s.agents.length:null,
    nearFood:s.agents.filter(a=>sources.some(p=>worldDistance(a,p)<=3)).length,

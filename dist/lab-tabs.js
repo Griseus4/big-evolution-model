@@ -16,6 +16,7 @@ import {geographyLabel} from './geography.js';
 import {installGenomeAnalysis} from './genome-analysis-ui.js';
 import {installBenchmarkUI} from './benchmark-ui.js';
 import {createLabReportBundle,interruptedLabReport} from './lab-reports.js';
+import {installHistoryUI} from './history-ui.js';
 import {createHelpButton} from './help.js';
 const byId=id=>document.getElementById(id),number=v=>v===null||v===undefined?'—':Number(v).toFixed(1);
 function download(name,data){const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -23,7 +24,8 @@ function cell(value){const td=document.createElement('td');td.textContent=value;
 export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerformanceReport=()=>null,getWorldObservation}){
  const tabs=['world','history','tests','analysis','about'];
  installGenomeAnalysis();
- let current='world',historyPage=0,historySelection=null,lastHistoryTick=-1;
+ let current='world';
+ const historyUI=installHistoryUI({getSimulation});
  const reports={mechanisms:null,benchmark:null,long:null};
  let testPage='mechanisms';
  let jobReport=null,active=false,stopping=false,pending=[],workers=[],benchBase=null,build=null,benchmarkUI=null;
@@ -87,45 +89,16 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
   const button=byId(`tab-${name}`);button.tabIndex=name==='world'?0:-1;button.addEventListener('click',()=>selectTab(name));
   button.addEventListener('keydown',event=>{let index=tabs.indexOf(current);if(event.key==='ArrowRight')index=(index+1)%tabs.length;else if(event.key==='ArrowLeft')index=(index+tabs.length-1)%tabs.length;else if(event.key==='Home')index=0;else if(event.key==='End')index=tabs.length-1;else return;event.preventDefault();selectTab(tabs[index]);byId(`tab-${tabs[index]}`).focus();});
  }
- function historyRows(){const sim=getSimulation(),filter=byId('history-filter').value,search=byId('history-search').value.trim();
-  // Массив не меняет порядок хранилища. Живые — промежуточные строки, умершие — итоги.
-  const live=sim.lives.living;
-  let rows=filter==='alive'?live.slice():filter==='dead'?sim.lives.dead.slice():[...live,...sim.lives.dead];
-  if(['starvation','age'].includes(filter))rows=rows.filter(r=>r.cause===filter);
-  if(search)rows=rows.filter(r=>String(r.id)===search||String(r.founderId)===search);
-  const sort=byId('history-sort').value;return rows.sort((a,b)=>sort==='age'?b.age-a.age:sort==='children'?b.children-a.children:b.id-a.id);
- }
- function renderHistory(force=false){
-  if(current!=='history'&&!force)return;const sim=getSimulation();if(!sim.lives)return;if(!force&&lastHistoryTick===sim.tick)return;lastHistoryTick=sim.tick;
-  const summary=sim.lives,completed=summary.completed;
-  byId('history-summary').textContent=`Завершено ${completed.count} жизней · живых ${sim.agents.length} · средний возраст смерти ${number(completed.meanAge)} · медиана ${number(completed.medianAge)} · среднее потомство умерших ${number(completed.meanChildren)}. Дожившие до предела: ${summary.byCause.age.count}; среднее порций ${number(summary.byCause.age.feeding?.meanMeals)}, медиана ${number(summary.byCause.age.feeding?.medianMeals)}.`;
-  byId('history-cohorts').textContent=`Основатели: завершено ${summary.founders.count}, средний возраст смерти ${number(summary.founders.meanAge)}. Потомки: завершено ${summary.descendants.count}, средний возраст смерти ${number(summary.descendants.meanAge)}. Это разные группы; смена их состава влияет на общий средний.`;
-  byId('history-causes').textContent=Object.entries(summary.byCause).map(([key,g])=>`${CAUSE_LABELS[key]}: ${g.count}, средний возраст ${number(g.meanAge)}`).join(' · ');
-  const rows=historyRows(),pages=Math.max(1,Math.ceil(rows.length/100));historyPage=Math.min(historyPage,pages-1);
-  byId('history-page').textContent=`Страница ${historyPage+1}/${pages} · строк ${rows.length}`;byId('history-prev').disabled=historyPage===0;byId('history-next').disabled=historyPage>=pages-1;
-  byId('history-rows').replaceChildren(...rows.slice(historyPage*100,historyPage*100+100).map(row=>{
-   const tr=document.createElement('tr');tr.tabIndex=0;tr.className=row.id===historySelection?'selected-row':'';
-   tr.append(...[row.id,row.generation,`№${row.founderId}`,row.age,row.status==='alive'?'Жив, наблюдение продолжается':CAUSE_LABELS[row.cause],row.children,number(row.meanFeeling),number(row.hungerSteps)].map(cell));
-   const select=()=>{historySelection=row.id;showLife(row);};tr.addEventListener('click',select);tr.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();select();}});return tr;
-  }));
-  if(historySelection){const row=rows.find(r=>r.id===historySelection);if(row)showLife(row);else byId('history-detail').textContent='Выбранная жизнь не входит в текущий фильтр.';}
- }
- function showLife(row){byId('history-detail').textContent=`Житель №${row.id}: рождение на шаге ${row.born}, ${row.status==='alive'?'наблюдается':'гибель'} на шаге ${row.endTick}, возраст ${row.age}. Родитель ${row.parentId??'нет'}, потомков ${row.children}. Подобрал ${row.gathered}, съел ${row.eaten}, положил ${row.deposited??'нет данных'}; самый длинный промежуток без поедания ${row.maxStepsWithoutEating??'нет данных'} шагов, подбор и поедание ${row.feedingActionFraction==null?'нет данных':number(row.feedingActionFraction*100)+'%'} действий. Прошёл ${row.moved} шагов. Энергия в среднем ${number(row.meanEnergy)}, здоровье ${number(row.meanHealth)}. Нулевая энергия ${number(row.emptyEnergySteps)} единиц времени. Обновлений критика ${row.learningUpdates}, мест памяти ${row.shortPlaces}+${row.longPlaces}. ${row.censored?'Жизнь ещё не завершена; этот возраст не входит в средний возраст смерти.':''}`;if(row.reproduction)byId('history-detail').textContent+=' '+reproductionSummary(row.reproduction);}
- for(const id of ['history-filter','history-sort','history-search'])byId(id).addEventListener('input',()=>{historyPage=0;renderHistory(true);});
- byId('history-prev').addEventListener('click',()=>{historyPage--;renderHistory(true);});byId('history-next').addEventListener('click',()=>{historyPage++;renderHistory(true);});
- /** Экспорт наблюдения не содержит полной памяти/геномов и не загружается для
-  * продолжения мира. Он нужен для анализа: исходные условия, текущие условия,
-  * все вмешательства с накопительными итогами, общий итог и короткий график.
-  * Истории завершённых жизней по-прежнему учитывают все смерти.
-  */
+ function renderHistory(force=false){if(current==='history'||force)historyUI.refresh(force);}
  async function exportWorldObservation(){
   try{
   const s=await getWorldObservation();download(`big-evolution-lives-seed-${s.seed}-step-${s.tick}.json`,
-   {format:'big-evolution-lives',version:3,modelVersion:MODEL_VERSION,build,createdAt:new Date().toISOString(),seed:s.seed,
+   {format:'big-evolution-lives',version:4,modelVersion:MODEL_VERSION,build,createdAt:new Date().toISOString(),seed:s.seed,
     actionLabels:ACTIONS.slice(),reproduction:{...s.reproduction},rules:{...RULES,regrowInterval:s.foodSettings.regrowInterval,birthThreshold:s.reproduction.energy,birthHealth:s.reproduction.health},
     settings:s.settings,
     performance:getPerformanceReport(),geography:s.geography,
     environmentChanges:s.environmentChanges,initialFoodIslands:s.initialFoodIslands,foodIslands:s.foodIslands,foodCycleStart:s.foodCycleStart,nextRegrowthTick:s.nextRegrowthTick,
+    foodAvailability:s.foodAvailability?{...s.foodAvailability,prefix:Array.from(s.foodAvailability.prefix)}:null,
     stats:s.stats,balances:s.balances,history:s.history,tick:s.tick,completed:s.completed,founders:s.founders,descendants:s.descendants,byCause:s.byCause,dead:s.dead,living:s.living,omittedDetails:s.omittedDetails,
     notes:['Это наблюдение для анализа, не сохранение для продолжения симуляции.','Лежащая еда при вмешательствах сохранена; новые источники не получают дополнительного запаса.','История графика ограничена 800 точками; журнал вмешательств содержит все изменения.']});
   }catch(error){byId('error').textContent=error.message;}
@@ -236,5 +209,5 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  benchmarkUI=installBenchmarkUI({pauseWorld,isOtherTestActive:()=>active,onBusyChange:()=>renderTests(),onReportChange:(next,finished)=>{reports.benchmark=next;updateExportButton();if(finished)persist('benchmark');else queuePersist('benchmark');}});
  const initialTab=new URL(location.href).searchParams.get('tab');
  if(tabs.includes(initialTab))selectTab(initialTab);
- renderTests();return {isBenchmarkActive:()=>benchmarkUI.isActive(),refresh:()=>renderHistory(),onRestart:()=>{historyPage=0;historySelection=null;lastHistoryTick=-1;byId('history-detail').textContent='Выбери строку жизни.';renderHistory(true);},currentTab:()=>current,exportWorldObservation};
+ renderTests();return {isBenchmarkActive:()=>benchmarkUI.isActive(),refresh:()=>renderHistory(),onRestart:()=>{historyUI.reset();if(current==='history')renderHistory(true);},currentTab:()=>current,exportWorldObservation};
 }

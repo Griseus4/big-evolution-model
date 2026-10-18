@@ -6,7 +6,8 @@
 import {ACTION_COUNT,DEPOSIT_ACTION} from './policy-layout.js';
 import {reproductionCounters} from './reproduction.js';
 import {cognitionPlaces} from './cognition-summary.js';
-export const MODEL_VERSION='0.33.2';
+import {describeLifeObservations} from './life-observations.js';
+export const MODEL_VERSION='0.36.0';
 export const CAUSE_LABELS={starvation:'Истощение',injury:'Повреждения',age:'Предел возраста'};
 export function createLifeCounters(){return {samples:0,energyTotal:0,healthTotal:0,painTotal:0,
  hungerSteps:0,emptyEnergySteps:0,painSteps:0,gathered:0,eaten:0,deposited:0,moved:0,injuries:0,damage:0,
@@ -37,7 +38,7 @@ export function lifeRow(a,born,tick,cause=null){
  maxStepsWithoutEating:Math.max(c.maxMealGap,a.age-(c.lastMealAge??0)),
  feedingActionFraction:n?(c.gathered+c.eaten)/n:null,
  actions:c.actions.slice(),reproduction:structuredClone(c.reproduction),learningUpdates:a.brain.updates,shortPlaces:cognitionPlaces(a).short,longPlaces:cognitionPlaces(a).long};
- if(a.brain.temporal){for(const k of ['meanPain','painSteps','injuries','damage'])delete result[k];const actions=c.actions.reduce((n,x)=>n+x,0);result.feedingActionFraction=actions?(c.gathered+c.eaten)/actions:null;result.timeSchema='model-time-substeps-v1';}return result;
+ if(a.brain.temporal){for(const k of ['meanPain','painSteps','injuries','damage'])delete result[k];const actions=c.actions.reduce((n,x)=>n+x,0);result.feedingActionFraction=actions?(c.gathered+c.eaten)/actions:null;result.timeSchema='model-time-substeps-v1';if(c.observer)result.observations=describeLifeObservations(c.observer);}return result;
 }
 function group(){return {count:0,ageTotal:0,childrenTotal:0,feelingTotal:0,feelingCount:0,ages:[],
  meals:[],eatenTotal:0,depositedTotal:0,observedSteps:0,feedingActions:0,hungerSteps:0,emptyEnergySteps:0,

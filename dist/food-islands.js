@@ -91,9 +91,9 @@ export function scheduleFoodIslands(islands,seed,input,startTick=0){
  * или населения. Полный источник пропускает порцию без накопления долга. */
 export function regrowFoodIslands(world){
  for(const group of world.foodIslands){
-  if(world.tick<group.nextTick)continue;
+  if(world.tick+1e-9<group.nextTick)continue;
   for(const p of group.sources){const c=world.tile(p.x,p.y);if(c.food<c.maxFood){c.food++;world.stats.regrown++;}}
-  group.nextTick=world.tick+group.period;
+  group.nextTick=Math.round((world.tick+group.period)*10)/10;
  }
 }
 export function islandScheduleSummary(islands){

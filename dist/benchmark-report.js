@@ -6,7 +6,7 @@ import {workerBenchmarkSelection,WORKER_BENCHMARK_PROTOCOL} from './worker-bench
 import {configurationLayout,validateConfigurationReport,configurationMatrix} from './configuration-benchmark-report.js';
 // Архивные отчёты читаются без загрузки старых расчётных модулей. Каждая
 // нагрузка привязана к своей модели; между разными сериями ускорение не считаем.
-const HISTORICAL_SERIES=Object.freeze({'fixed-neural-workloads-v1':'neural-local-body-v1',
+const HISTORICAL_SERIES=Object.freeze({'fixed-activity-workloads-v1':'duration-activity-v1','fixed-duration-workloads-v1':'duration-attention-v1','fixed-neural-workloads-v1':'neural-local-body-v1',
  'fixed-food-island-workloads-v1':'neural-food-islands-v1','fixed-neighbour-workloads-v1':'neural-neighbours-v1','fixed-heritable-mutation-workloads-v1':'neural-heritable-mutation-v1'});
 export function timingSummary(samples){
  const sorted=samples.slice().sort((a,b)=>a-b),middle=Math.floor(sorted.length/2);
@@ -29,7 +29,7 @@ export function validateBenchmarkReport(report){
   if(typeof report.kernelVersion!=='string')throw new Error('Не указана версия расчёта.');
   const selection=workerBenchmarkSelection(report.workerCounts,report.caseIds?.[0],report.repeatCounts?.world,report.kernelVersion);
   for(const key of ['mode','versionIds','workerCounts','caseIds','groups','repeatCounts'])if(JSON.stringify(report[key])!==JSON.stringify(selection[key]))throw new Error('Некорректная конфигурация сравнения вычислителей.');
-  if(report.suiteId!==BENCHMARK_SUITE_ID||report.seriesId!==BENCHMARK_MODEL_SERIES||report.protocolId!==WORKER_BENCHMARK_PROTOCOL)throw new Error('Неизвестная методика сравнения вычислителей.');
+  if(report.seriesId!==(HISTORICAL_SERIES[report.suiteId]??(report.suiteId===BENCHMARK_SUITE_ID?BENCHMARK_MODEL_SERIES:null))||report.protocolId!==WORKER_BENCHMARK_PROTOCOL)throw new Error('Неизвестная методика сравнения вычислителей.');
  }else if(multi&&(report.seriesId!==(HISTORICAL_SERIES[report.suiteId]??BENCHMARK_MODEL_SERIES)||report.protocolId!==BENCHMARK_PROTOCOL||
   !Array.isArray(report.versionIds)||!report.versionIds.length||report.versionIds.length>8||new Set(report.versionIds).size!==report.versionIds.length||
   report.versionIds.some(id=>typeof id!=='string'||!/^\d+\.\d+\.\d+$/.test(id))))throw new Error('Неизвестная серия/методика или неверный выбор версий.');

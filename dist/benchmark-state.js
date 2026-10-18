@@ -15,6 +15,7 @@ export function captureBenchmarkState(world){
 export function restoreBenchmarkState(state){
  const world=Object.assign(Object.create(Evolution.prototype),structuredClone(state));
  for(const key of RNG_KEYS)Object.setPrototypeOf(world[key],Random.prototype);
+ if(world.automaticEnvironment)Object.setPrototypeOf(world.automaticEnvironment.random,Random.prototype);
  Object.setPrototypeOf(world.lifeHistory,LifeHistory.prototype);
  return world;
 }
