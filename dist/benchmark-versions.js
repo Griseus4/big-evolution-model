@@ -2,21 +2,22 @@
  * UI не импортирует их мозги. Новая физика/алгоритм обучения начинает серию,
  * старые серии остаются в Git, а не в обязательной загрузке страницы. */
 import {COMPUTATION_WORKER_COUNTS} from './computation-settings.js';
-export const BENCHMARK_MODEL_SERIES='environment-energy-deficit-v1';
+export const BENCHMARK_MODEL_SERIES='moving-food-islands-v1';
 export const BENCHMARK_PROTOCOL='rotating-fixed-work-v1';
 // Выпуск интерфейса/диагностики может не менять расчёт. Соответствие этой
 // базы нынешним модулям проверяется с учётом CRLF/LF и маркировки MODEL_VERSION.
-export const BENCHMARK_CURRENT_KERNEL='0.36.0';
+export const BENCHMARK_CURRENT_KERNEL='0.37.0';
 // Верхняя граница ограничивает размер отчёта и случайный сверхдолгий запуск.
 // Правила/объём одного измерения не зависят от выбранного числа повторов.
 export const MAX_BENCHMARK_REPEATS=100;
 export const BENCHMARK_GROUPS=Object.freeze(['evaluator','world']);
 export const DEFAULT_BENCHMARK_COUNTS=Object.freeze({evaluator:50,world:15});
 export const BENCHMARK_VERSIONS=Object.freeze([
- {id:'0.36.0',label:'0.36.0',path:'./benchmark-snapshots/0.36.0/',computeWorkers:4,workerCounts:COMPUTATION_WORKER_COUNTS},
+ {id:'0.37.0',label:'0.37.0',path:'./benchmark-snapshots/0.37.0/',computeWorkers:4,workerCounts:COMPUTATION_WORKER_COUNTS},
 ].map(Object.freeze));
 // Только метаданные чтения прежних JSON; старые расчётные модули не загружаются.
 export const ARCHIVED_DURATION_VERSIONS=Object.freeze([
+ ...['0.36.0','0.36.1','0.36.3'].map(id=>({id,seriesId:'environment-energy-deficit-v1',workerCounts:COMPUTATION_WORKER_COUNTS})),
  {id:'0.32.0',workerCounts:Object.freeze([1])},
  {id:'0.33.0',workerCounts:Object.freeze([1,2,4])},
  ...['0.33.1','0.33.2'].map(id=>({id,workerCounts:COMPUTATION_WORKER_COUNTS})),

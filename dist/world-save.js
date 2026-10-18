@@ -3,21 +3,21 @@
 import {Evolution,WORLD_WIDTH,WORLD_HEIGHT,RULES} from './evolution.js';
 import {MODEL_VERSION,LifeHistory} from './life-history.js';
 import {Random} from './simulation.js';
-import {rebuildActivities} from './activity-perception.js';
+import {rebuildActivities,ACTIVITY_COUNT} from './activity-perception.js';
 import {encodeState,decodeState} from './state-codec.js';
 import {TEMPORAL_BRAIN_TYPE,SET_PARAMETER_COUNT,GATE_PARAMETERS} from './temporal-layout.js';
 import {genomeMetadata,validateGenomeFile} from './genome.js';
 import {validateEnvironmentSettings,ENVIRONMENT_RULES,foodProduction} from './environment-settings.js';
 import {controllerProblems} from './brain-controller.js';
 export const WORLD_SAVE_FORMAT='big-evolution-world',WORLD_SAVE_VERSION=1,MAX_WORLD_SAVE_BYTES=512*1024*1024;
-const FIELDS=('temporal individualFood geography learningEnabled memoryEnabled reproduction seed random cognitiveRandom bodyRandom scenario heritableMutations upgradeMutationGenes mutationRandom brainType neuralRandom initialPopulation limit mutationRate mutations baseGenome tick nextId maxGeneration events history agents foodCycleStart environmentRevision environmentChanges lifeHistory lifeExposure records lineages tiles stats sourceTemplate foodIslands initialFood foodSettings initialFoodSettings initialFoodIslands mutationProtocol geographyInfo foodExposure subtick _primed _viewEpoch automaticEnvironment').split(' ');
+const FIELDS=('temporal individualFood geography learningEnabled memoryEnabled reproduction seed random cognitiveRandom bodyRandom scenario heritableMutations upgradeMutationGenes mutationRandom brainType neuralRandom initialPopulation limit mutationRate mutations baseGenome tick nextId maxGeneration events history agents foodCycleStart environmentRevision environmentChanges lifeHistory lifeExposure records lineages tiles stats sourceTemplate foodIslands initialFood foodSettings initialFoodSettings initialFoodIslands mutationProtocol geographyInfo foodExposure subtick _primed _viewEpoch automaticEnvironment _activities').split(' ');
 export function saveWorld(w){
  if(!w.temporal)throw new Error('Полное сохранение поддерживает текущую модель.');
  const state=Object.fromEntries(FIELDS.filter(k=>Object.hasOwn(w,k)).map(k=>[k,w[k]]));
  return {format:WORLD_SAVE_FORMAT,version:WORLD_SAVE_VERSION,modelVersion:MODEL_VERSION,activityRevision:w._activities?.revision??0,state:encodeState(state)};
 }
 export function loadWorld(file){
- if(file?.format!==WORLD_SAVE_FORMAT||file.version!==WORLD_SAVE_VERSION||file.modelVersion!==MODEL_VERSION)throw new Error('Неподдерживаемый формат или версия сохранения мира.');
+ if(file?.format!==WORLD_SAVE_FORMAT||file.version!==WORLD_SAVE_VERSION||![MODEL_VERSION,'0.36.3','0.36.2','0.36.1','0.36.0'].includes(file.modelVersion))throw new Error('Неподдерживаемый формат или версия сохранения мира.');
  const state=decodeState(file.state),w=Object.create(Evolution.prototype);
  if(!state||Object.keys(state).some(k=>!FIELDS.includes(k)))throw new Error('Недопустимые поля мира.');Object.assign(w,state);
  const valid=n=>typeof n==='number'&&Number.isFinite(n),integer=n=>Number.isSafeInteger(n)&&n>=0;
@@ -34,7 +34,12 @@ export function loadWorld(file){
  const environment=w.automaticEnvironment;if(!environment||environment.schema!=='automatic-food-v1'||!(environment.random instanceof Random)||!integer(environment.random.state)||environment.random.state>4294967295||!integer(environment.completedSteps)||environment.completedSteps>ENVIRONMENT_RULES.preparationSteps||typeof environment.preparationCancelled!=='boolean'||environment.enabled&&(!valid(environment.nextTick)||environment.nextTick<=w.tick||foodProduction(w)+1e-9<ENVIRONMENT_RULES.minimumRate))throw new Error('Повреждена автоматическая среда.');validateEnvironmentSettings(environment);
  for(const a of w.agents){validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(a.genome),genes:a.genome});if(!(a.brain.networkBase instanceof Float64Array)||!(a.brain.networkDelta instanceof Float64Array)||a.brain.gateBase?.length!==GATE_PARAMETERS||!a.brain.gateBase.every(Number.isFinite)||controllerProblems(a.brain).length)throw new Error('Повреждены веса/память/переход мозга.');}
  if(w.lifeHistory.all?.count!==w.stats.deaths||!Array.isArray(w.lifeHistory.rows)||!integer(w.lifeHistory.offset)||w.lifeHistory.offset>w.lifeHistory.rows.length||w.agents.length+w.stats.deaths!==w.initialPopulation+w.stats.births)throw new Error('Повреждён учёт жизней.');
- w._due=[];w._touched=[];w._gatherGroups=new Map();const viewEpoch=w._viewEpoch;w.rebuildOccupancy();w._viewEpoch=viewEpoch;rebuildActivities(w);w._activities.revision=file.activityRevision;
+ w._due=[];w._touched=[];w._gatherGroups=new Map();const viewEpoch=w._viewEpoch;w.rebuildOccupancy();w._viewEpoch=viewEpoch;
+ // Снимок деятельности относится к началу подшага: завершение движения уже
+ // могло изменить process. Пересборка по текущему process меняла бы наблюдение
+ // после загрузки. Новые файлы хранят этот небольшой кэш вместе с его фазой.
+ if(!w._activities){rebuildActivities(w);w._activities.revision=file.activityRevision;}
+ else if(!(w._activities.counts instanceof Int32Array)||w._activities.counts.length!==w.tiles.length*ACTIVITY_COUNT||!(w._activities.marked instanceof Uint8Array)||w._activities.marked.length!==w.tiles.length||w._activities.width!==WORLD_WIDTH||!Array.isArray(w._activities.touched)||!integer(w._activities.revision)||w._activities.counts.some(n=>n<0))throw new Error('Повреждён снимок видимой деятельности.');
  w._foodRevision=w.environmentRevision;w._nextGrowth=w.nextFoodRegrowth()??Infinity;
  const balance=w.balances();if(!Number.isFinite(balance.energyError)||balance.foodError!==0||Math.abs(balance.energyError)>Math.max(.1,(w.initialFood+w.stats.regrown)*RULES.foodEnergy*1e-8))throw new Error('Баланс сохранения мира не сходится.');
  return w;

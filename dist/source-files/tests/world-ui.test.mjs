@@ -23,6 +23,8 @@ import {installPerformanceTabs} from '../dist/performance-tabs.js';
 import {WorldProfiler} from '../dist/world-profiler.js';
 import {installEnvironmentUI} from '../dist/environment-ui.js';
 import {installWorldFiles} from '../dist/world-files-ui.js';
+import {installScreenTabs} from '../dist/screen-tabs.js';
+import {installLiveFoodControls} from '../dist/food-controls.js';
 const html=fs.readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
 const app=fs.readFileSync(new URL('../dist/evolution-app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'');
 const performanceUI=fs.readFileSync(new URL('../dist/performance-ui.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'').replace(/^export /gm,'');
@@ -50,7 +52,6 @@ async function boot(){
  document.createElement=()=>{const e=new Element();e.ownerDocument=document;return e;};document.hidden=false;
  for(const e of elements.values())e.ownerDocument=document;
  for(const [id,value]of [['seed','42'],['founders','12'],['population-limit','20'],['mutation-rate','0.06'],['speed','1']])elements.get(id).value=value;
- elements.get('geography').value=html.match(/id="geography"[\s\S]*?<option value="([^"]+)"/)[1];
  for(const id of ['mutations','learning','memory'])elements.get(id).checked=true;
  elements.get('chart').width=900;elements.get('chart').height=180;
  let now=0,runtime,frame,sidebarChange;const downloads=[];
@@ -61,20 +62,20 @@ async function boot(){
    super({...options,worker});
   }
  }
- let section='birth',tab='world';
+ let section='birth',tab='world',benchmarkActive=false;
  const context=vm.createContext({...model,...cognition,...setLayout,...neuralLayout,...body,...navigation,...reproduction,...geography,...computation,
   WorldClient:TestClient,WorldProfiler,mutationProfile,foodLabel,updateTextRows,UI_TEXT,installUIText,installPerformanceTabs,document,navigator:{hardwareConcurrency:2,userAgent:'test-dom'},
-  installLabTabs:options=>({currentTab:()=>tab,refresh:()=>{},onRestart:()=>{},isBenchmarkActive:()=>false,
-   select:name=>{tab=name;if(name!=='world')options.pauseWorld();options.onTabChange(name);}}),
+  installLabTabs:options=>({currentTab:()=>tab,refresh:()=>{},onRestart:()=>{},
+   select:name=>{tab=name;options.onTabChange(name);},isBenchmarkActive:()=>benchmarkActive}),
   installSidebar:fn=>{sidebarChange=fn;return {getResidentSection:()=>section,select:()=>fn(),selectResident:name=>{section=name;fn();}};},
   installFoodControls:()=>()=>{},syncFoodControls:()=>{},readFoodControls:()=>({foodSources:30,foodRegrowInterval:20,foodIslandCount:3,foodPeriodSpread:30,foodSizeSpread:30}),
   MODEL_VERSION:model.MODEL_VERSION,fetch:async()=>({ok:true,json:async()=>({modelVersion:model.MODEL_VERSION})}),
   installHelp:()=>{},createHelpButton:()=>document.createElement('button'),
   requestAnimationFrame:fn=>frame=fn,performance:{now:()=>now},Blob,
   URL:{createObjectURL:blob=>{downloads.push(blob);return 'blob:mock';},revokeObjectURL:()=>{}},setTimeout:()=>0});
- Object.assign(context,{installEnvironmentUI,installWorldFiles});
+ Object.assign(context,{installEnvironmentUI,installWorldFiles,installScreenTabs,installLiveFoodControls});
  vm.runInContext(performanceUI,context);vm.runInContext(app,context);await settle();assert.equal(elements.get('error').textContent??'','');
- return {elements,document,context,downloads,get runtime(){return runtime;},
+ return {elements,document,context,downloads,setBenchmarkActive:value=>benchmarkActive=value,get runtime(){return runtime;},
   pulse:async value=>{now=value;runtime.pulse();await settle();},frame:value=>frame(value),
   section:async name=>{section=name;sidebarChange();await settle();}};
 }
@@ -87,9 +88,17 @@ test('UI sends play/pause/step; frames do not move world and hiding continues',a
  assert.ok(b.runtime.world.tick>1);assert.equal(b.runtime.running,true);
  b.document.hidden=false;b.document.emit('visibilitychange');await settle();
  await e.get('play').emit('click');const tick=b.runtime.world.tick;await b.pulse(900);assert.equal(b.runtime.world.tick,tick);
- await e.get('step').emit('click');assert.equal(b.runtime.world.tick,tick+1);assert.equal(b.runtime.running,false);
- vm.runInContext("labTabs.select('history')",b.context);await settle();assert.equal(b.runtime.running,false);
+ await e.get('step').emit('click');assert.equal(b.runtime.world.tick,Math.round((tick+.1)*10)/10);assert.equal(b.runtime.running,false);
+ await e.get('play').emit('click');vm.runInContext("labTabs.select('history')",b.context);await settle();assert.equal(b.runtime.running,true);await b.pulse(1000);assert.ok(b.runtime.world.tick>tick);assert.match(e.get('play').textContent,/Пауза/);await e.get('play').emit('click');assert.equal(b.runtime.running,false);
 });
+test('global play availability follows benchmark activity even without new world messages',async()=>{
+ const b=await boot(),e=b.elements;vm.runInContext("labTabs.select('tests')",b.context);await settle();
+ b.setBenchmarkActive(true);b.frame(300);assert.equal(e.get('play').disabled,true);
+ await e.get('play').emit('click');assert.equal(b.runtime.running,false);
+ b.setBenchmarkActive(false);b.frame(600);assert.equal(e.get('play').disabled,false);
+ await e.get('play').emit('click');assert.equal(b.runtime.running,true);
+});
+
 test('restart, intervention, selection and all resident sections render',async()=>{
  const b=await boot(),e=b.elements;e.get('founders').value='1001';await e.get('restart').emit('click');assert.ok(e.get('error').textContent);
  e.get('founders').value='12';await e.get('restart').emit('click');assert.equal(e.get('population').textContent,12);
@@ -97,7 +106,7 @@ test('restart, intervention, selection and all resident sections render',async()
  for(const section of ['senses','learning','traits','short','long','features','birth'])await b.section(section);
  assert.ok(e.get('feature-learning').querySelector('.feature-values'));
  await e.get('world-food-apply').emit('click');assert.match(e.get('world-food-status').textContent,/Мир остаётся на паузе/);
- e.get('rules-open').emit('click');await settle();assert.equal(e.get('rules').open,true);
+ e.get('wiki-tab-actions').emit('click');assert.equal(e.get('wiki-panel-actions').hidden,false);assert.equal(e.get('wiki-panel-world').hidden,true);
 });
 test('genome export/import and memory switches cross the worker boundary',async()=>{
  const b=await boot(),e=b.elements;await e.get('save-genome').emit('click');assert.match(e.get('save-status').textContent,/загрузки/);

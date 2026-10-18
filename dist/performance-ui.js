@@ -33,7 +33,7 @@ export function installPerformancePanel({profiler,getSimulation,isRunning}){
   profiler.measureUI('diagnostics',()=>{
    const r=profiler.report({liveContext:false}),seconds=r.activeMs/1000;
    byId('performance-status').textContent=profiler.active?`Запись: ${fixed(seconds)}/30 активных секунд. ${isRunning()?'Мир работает.':'Пауза; время записи не расходуется.'}`:`Запись завершена: ${fixed(seconds)} активных секунд. Можно скачать JSON или начать новую запись.`;
-   byId('performance-summary').textContent=`${r.mode==='light'?'Лёгкая':'Подробная'} запись. ${r.steps} шагов · ${r.actions} действий жителей · ${fixed(r.rates.worldStepsPerSecond)} шагов/с · ${fixed(r.rates.residentActionsPerSecond)} действий/с. Средний шаг ${fixed(r.rates.meanStepMs)} мс, максимум ${fixed(r.maxStepMs)} мс. Численность перед шагом ${r.populationMin??'—'}…${r.populationMax}, средняя ${fixed(r.rates.meanPopulation)}. Подробно измерено ${r.sampledSteps} шагов.`;
+   byId('performance-summary').textContent=`${r.mode==='light'?'Лёгкая':'Подробная'} запись. ${r.steps} Т · ${r.actions} действий жителей · ${fixed(r.rates.worldStepsPerSecond)} Т/с · ${fixed(r.rates.residentActionsPerSecond)} действий/с. Средняя стоимость 1 Т: ${fixed(r.rates.meanStepMs)} мс; самый долгий расчётный интервал: ${fixed(r.maxStepMs)} мс. Численность перед расчётом ${r.populationMin??'—'}…${r.populationMax}, средняя ${fixed(r.rates.meanPopulation)}. Подробно измерено ${r.sampledSteps} Т.`;
    const simulation=r.breakdown.filter(g=>g.scope==='sampled-simulation'),total=simulation.reduce((sum,g)=>sum+g.ms,0);
    const rows=simulation.sort((a,b)=>b.ms-a.ms).map(g=>`${g.label}: ${fixed(g.ms)} мс · ${fixed(total?g.ms*100/total:0)}% выборки · вызовов ${g.calls}`);
    if(r.workerTiming){

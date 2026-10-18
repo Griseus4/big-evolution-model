@@ -22,12 +22,12 @@ function loader(){
 test('capabilities reject unsupported frozen counts and ignore disabled repeat fields',()=>{
  assert.throws(()=>configurationSelection([{versionId:'0.33.0',workerCounts:[10]}]));
  assert.throws(()=>configurationSelection([{versionId:'0.32.0',workerCounts:[2]}]));
- assert.throws(()=>configurationSelection([{versionId:'0.36.0',workerCounts:[]}]));
- const chosen=configurationSelection([{versionId:'0.36.0',workerCounts:[10,1,2]}],{groups:['world'],repeatCounts:{world:2,evaluator:NaN}});
+ assert.throws(()=>configurationSelection([{versionId:'0.37.0',workerCounts:[]}]));
+ const chosen=configurationSelection([{versionId:'0.37.0',workerCounts:[10,1,2]}],{groups:['world'],repeatCounts:{world:2,evaluator:NaN}});
  assert.deepEqual(chosen.selections[0].workerCounts,[1,2,10]);assert.equal(chosen.configurations.length,3);
 });
 test('version/count matrix runs each evaluator once, worlds per count and rotates without overlapping pools',async()=>{
- const l=loader(),report=await runConfigurationBenchmarks({selections:[{versionId:'0.36.0',workerCounts:[1,2,10]}],groups:['evaluator','world'],repeatCounts:{evaluator:2,world:2},loadVersion:l.loadVersion});
+ const l=loader(),report=await runConfigurationBenchmarks({selections:[{versionId:'0.37.0',workerCounts:[1,2,10]}],groups:['evaluator','world'],repeatCounts:{evaluator:2,world:2},loadVersion:l.loadVersion});
  assert.equal(report.status,'completed',report.error?.message);validateBenchmarkReport(report);
  assert.equal(report.completedMeasurements,24);assert.equal(report.plannedMeasurements,plannedConfigurationMeasurements(report,BENCHMARK_CASES));
  assert.equal(l.peak,1);assert.equal(l.active,0);assert.equal(l.created,6);assert.ok(l.log.every(r=>r.tick===0));
@@ -40,13 +40,14 @@ test('version/count matrix runs each evaluator once, worlds per count and rotate
 });
 test('partial configuration runs have no acceleration and preserve completed repeats',async()=>{
  const l=loader();let stop=false;
- const report=await runConfigurationBenchmarks({selections:[{versionId:'0.36.0',workerCounts:[2,10]}],groups:['world'],repeatCounts:{world:2},loadVersion:l.loadVersion,shouldStop:()=>stop,onCase:row=>{if(row.repeats.length)stop=true;}});
+ const report=await runConfigurationBenchmarks({selections:[{versionId:'0.37.0',workerCounts:[2,10]}],groups:['world'],repeatCounts:{world:2},loadVersion:l.loadVersion,shouldStop:()=>stop,onCase:row=>{if(row.repeats.length)stop=true;}});
  assert.equal(report.status,'stopped');assert.equal(report.completedMeasurements,1);assert.equal(l.active,0);validateBenchmarkReport(report);assert.ok(benchmarkMatrix(report).rows.every(r=>r.cells.every(c=>c.speedup===null)));
 });
 
 test('previous duration-series v5 reports remain readable without enabling old kernels in new runs',async()=>{
- const l=loader(),current=await runConfigurationBenchmarks({selections:[{versionId:'0.36.0',workerCounts:[1,2]}],groups:['world'],repeatCounts:{world:1},loadVersion:l.loadVersion});
- const previous=JSON.parse(JSON.stringify(current).replaceAll('0.36.0','0.33.2'));
+ const l=loader(),current=await runConfigurationBenchmarks({selections:[{versionId:'0.37.0',workerCounts:[1,2]}],groups:['world'],repeatCounts:{world:1},loadVersion:l.loadVersion});
+ const previousPatch=JSON.parse(JSON.stringify(current).replaceAll('0.37.0','0.36.0'));previousPatch.seriesId='environment-energy-deficit-v1';previousPatch.suiteId='fixed-environment-deficit-workloads-v1';validateBenchmarkReport(previousPatch);assert.throws(()=>configurationSelection(previousPatch.selections));
+ const previous=JSON.parse(JSON.stringify(current).replaceAll('0.37.0','0.33.2'));
  previous.seriesId='duration-attention-v1';previous.suiteId='fixed-duration-workloads-v1';
  validateBenchmarkReport(previous);assert.equal(benchmarkMatrix(previous).rows[0].cells[1].speedup,1.3);
  assert.throws(()=>configurationSelection(previous.selections));
@@ -59,7 +60,7 @@ test('actual version/count executor preserves full hashes across frozen versions
  globalThis.Worker=class{constructor(url){const worker=createCognitionWorker({url}),close=worker.terminate;active.add(worker);peak=Math.max(peak,active.size);worker.terminate=async()=>{await close();active.delete(worker);};return worker;}};
  const loadVersion=async c=>{const runtime=await loadSnapshotRuntime(c.snapshotId,{computeWorkers:c.computeWorkers,configurationId:c.id});runtime.specs=runtime.specs.filter(s=>['world-150','evaluator-empty'].includes(s.id)).map(s=>({...s,population:4,work:s.kind==='world'?2:16,warmup:1}));return runtime;};
  try{
-  const report=await runConfigurationBenchmarks({selections:[{versionId:'0.36.0',workerCounts:[1,2,4]}],groups:['evaluator','world'],repeatCounts:{evaluator:2,world:2},loadVersion});
+  const report=await runConfigurationBenchmarks({selections:[{versionId:'0.37.0',workerCounts:[1,2,4]}],groups:['evaluator','world'],repeatCounts:{evaluator:2,world:2},loadVersion});
   assert.equal(report.status,'completed',report.error?.message);assert.equal(report.completedMeasurements,8);assert.equal(active.size,0);assert.ok(peak<=4);
   for(const kind of ['evaluator','world'])assert.equal(new Set(report.cases.filter(c=>c.kind===kind).flatMap(c=>c.repeats.map(r=>r.resultDigest))).size,1);
  }finally{globalThis.fetch=savedFetch;globalThis.Worker=savedWorker;await Promise.all([...active].map(w=>w.terminate()));}

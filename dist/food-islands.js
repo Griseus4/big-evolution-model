@@ -14,7 +14,7 @@ const point=c=>({x:c.x,y:c.y});
  * Разброс определяет веса до нормировки, а не строгие пределы целых размеров. */
 export function islandSizes(total,count,spread,random){
  if(!count)return [];
- const weights=Array.from({length:count},()=>1+(random.next()*2-1)*spread/100);
+ const weights=Array.from({length:count},()=>Math.max(1e-9,1+(random.next()*2-1)*spread/100));
  const remaining=total-count,sum=weights.reduce((n,w)=>n+w,0);
  const quotas=weights.map(w=>remaining*w/sum),sizes=quotas.map(q=>1+Math.floor(q));
  const order=quotas.map((q,i)=>({i,fraction:q-Math.floor(q)})).sort((a,b)=>b.fraction-a.fraction||a.i-b.i);
@@ -32,7 +32,7 @@ export function createIndividualFoodLayout(tiles,template,seed,input){
  if(template.length>land.length)throw new Error('Недостаточно суши для источников.');
  if(!template.length)return {sources:[],islands:[]};
  const random=new Random(seed^0x784ea133),count=Math.min(options.foodIslandCount,template.length);
- const bushes=Math.min(Math.floor(template.length*FOOD_LIMITS.scatteredFraction),template.length-count);
+ const bushes=count?Math.min(Math.floor(template.length*FOOD_LIMITS.scatteredFraction),template.length-count):template.length;
  const sizes=islandSizes(template.length-bushes,count,options.foodSizeSpread,random);
  const centres=[land[Math.floor(random.next()*land.length)]],centreSet=new Set(centres);
  // Минимальное расстояние обновляется только по новому центру. Это O(суша ×
@@ -79,9 +79,11 @@ export function createIndividualFoodLayout(tiles,template,seed,input){
 export function scheduleFoodIslands(islands,seed,input,startTick=0){
  const options=validateFoodSettings(input),random=new Random(seed^0x59f2a731);
  return islands.map(g=>{
-  const period=Math.max(FOOD_LIMITS.intervalMin,Math.min(FOOD_LIMITS.individualIntervalMax,
-   Math.round(options.foodRegrowInterval*(1+(random.next()*2-1)*options.foodPeriodSpread/100))));
-  const phase=Math.floor(random.next()*period);
+  // Прежние целые настройки сохраняют прежние числа/RNG. Дробное среднее
+  // или диапазон за старыми границами использует физическую сетку0,1 Т.
+  const extended=options.foodGeneralSettings&&(options.foodRegrowInterval<10||options.foodRegrowInterval>300||!Number.isInteger(options.foodRegrowInterval)),unit=extended?.1:1;
+  const period=extended?Math.max(.1,Math.round(options.foodRegrowInterval*(1+(random.next()*2-1)*options.foodPeriodSpread/100)*10)/10):Math.max(FOOD_LIMITS.intervalMin,Math.min(FOOD_LIMITS.individualIntervalMax,Math.round(options.foodRegrowInterval*(1+(random.next()*2-1)*options.foodPeriodSpread/100))));
+  const phase=Math.floor(random.next()*period/unit)*unit;
   return {...g,centre:{...g.centre},sources:g.sources.map(point),period,phase,cycleStart:startTick,nextTick:startTick+(phase||period)};
  });
 }

@@ -29,6 +29,8 @@ import {TRAIT_SCALE_VERSION,BODY_SENSE_VERSION} from './brain-parameters.js';
 import {localNeighbours,moveLocally,memoryWorldPosition} from './navigation.js';
 import {placeFoodIslands,worldDistance} from './food-layout.js';
 import {LifeHistory,MODEL_VERSION,createLifeCounters,sampleLife,lifeRow} from './life-history.js';
+import {captureHeritable} from './heritable-statistics.js';
+import {foodProductionHistory} from './food-production-history.js';
 import {createLifeObservations} from './life-observations.js';
 import {foodExposureReport} from './food-exposure.js';
 import {validateFoodSettings,createFoodTemplate} from './food-settings.js';
@@ -96,11 +98,11 @@ export class Evolution {
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?TEMPORAL_BRAIN_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,individualFood=scenario==='custom',geography,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment}={}){
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment}={}){
   this.temporal=Boolean(temporal);
   if(this.temporal&&brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('В0.32 нужен мозг v13; старые основы не поддерживаются.');
   if(!['custom','balanced','scarce'].includes(scenario))throw new Error('Неизвестная пищевая среда.');
-  const foodOptions=validateFoodSettings({foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread});
+  const foodOptions=validateFoodSettings({foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax});
   this.individualFood=Boolean(individualFood);
   // Прежние balanced/scarce в API сохраняют историческую географию фикстур.
   // Обычная custom-игра по умолчанию использует новый рельеф и равномерный старт.
@@ -151,7 +153,7 @@ export class Evolution {
    {terrainGeneration:profile.terrain,targetWaterCells:null,waterCells:this.tiles.filter(c=>c.terrain==='water').length,riverCount:0,lakeCount:0,fordCells:0};
   const regions=classifyLandRegions(this.tiles,WORLD_WIDTH,WORLD_HEIGHT);
   // Шаблон принадлежит физике/наблюдателю, никогда не передаётся в мозг.
-  this.sourceTemplate=scenario==='custom'?createFoodTemplate(foodOptions.foodSources,this.seed):
+  this.sourceTemplate=scenario==='custom'?createFoodTemplate(foodOptions.foodSources,this.seed,foodOptions.foodCapacityMin,foodOptions.foodCapacityMax):
    this.tiles.filter(c=>c.maxFood>0).map(({x,y,food,maxFood})=>({x,y,food,maxFood}));
   if(this.sourceTemplate.length>this.tiles.filter(c=>c.terrain==='land').length)
    throw new Error('Для выбранного числа источников недостаточно пригодной суши.');
@@ -266,7 +268,7 @@ export class Evolution {
    health:100,pain:0,stomach:0,inventory:0,age:0,lastBirthAge:-RULES.birthInterval,
    children:0,lastAction:null,lastDecision:null,lastDamage:0,alive:true,genome,frameRotation,brain:createControllerState(genome),life:createLifeCounters(),born:this.tick};
   if(this.temporal){delete a.pain;delete a.lastDamage;for(const k of ['painTotal','painSteps','injuries','damage'])delete a.life[k];a.process=null;a.callReason=0;a.lastAction=8;a.readyAt=(this.subtick??0)+(parent?1:0);a.lastProcess={action:8,localDestination:{...a.brain.position},direction:null,elapsed:5,duration:5};}
-  if(this.temporal)a.life.observer=createLifeObservations(RULES.inventoryCapacity);
+  if(this.temporal){a.life.observer=createLifeObservations(RULES.inventoryCapacity);a.life.heritable=captureHeritable(a);}
   a.brain.wellbeing=this.feeling(a);
   this.agents.push(a);placeOccupant(this.occupancy,a);this.records.set(id,{id,parentId:a.parentId,founderId,generation:a.generation,born:this.tick,death:null,cause:null});
   // Счётчик достигнутых поколений не уменьшается после смерти старшей ветви.
@@ -554,7 +556,7 @@ export class Evolution {
  /** Компактные итоги всех завершённых жизней и отдельные незавершённые строки.
   * Они не зависят от обрезаемого справочника родословных records.
   */
- lifeReport(){return {tick:this.tick,...this.lifeHistory.summary(),foodAvailability:foodExposureReport(this.foodExposure),
+ lifeReport(){return {tick:this.tick,...this.lifeHistory.summary(),foodAvailability:foodExposureReport(this.foodExposure),foodProductionHistory:foodProductionHistory(this),
   dead:this.lifeHistory.retainedRows(),living:this.agents.map(a=>lifeRow(a,a.born,this.tick))};}
  /** Общие показатели не заменяют индивидуальных жителей в расчёте. */
  summary(){

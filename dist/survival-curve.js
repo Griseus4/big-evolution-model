@@ -13,16 +13,19 @@ export function survivalAtAge(curve,age){
 }
 export function survivalCurve(report,{start=0,width=100,origin='all'}={}){
  if(!Number.isSafeInteger(start)||start<0||!Number.isSafeInteger(width)||width<1||!['all','founders','descendants'].includes(origin))throw new Error('Неверный период рождения для кривой дожития.');
- const end=start+width,dead=[],alive=[];let excludedInvalid=0;
+ const end=start+width,dead=[],alive=[];let excludedInvalid=0,totalDeadAge=0;
  for(const rows of [report.dead??[],report.living??[]])for(const r of rows){
   if(origin==='founders'&&r.parentId!==null||origin==='descendants'&&r.parentId===null)continue;
   if(!Number.isFinite(r.born)||!Number.isFinite(r.age)||r.born<0||r.age<0||!['dead','alive'].includes(r.status)){excludedInvalid++;continue;}
-  if(r.born>=start&&r.born<end)(r.status==='dead'?dead:alive).push(r.age);
+  if(r.born>=start&&r.born<end){if(r.status==='dead'){dead.push(r.age);totalDeadAge+=r.age;}else alive.push(r.age);}
  }
  dead.sort((a,b)=>a-b);alive.sort((a,b)=>a-b);
  const count=dead.length+alive.length,birthClosed=report.tick+EPS>=end,omittedDetails=report.omittedDetails??0;
  const maximumAge=Math.max(dead.at(-1)??0,alive.at(-1)??0),domainEnd=Math.max(1,Math.ceil(maximumAge+1/SUBSTEPS));
- const result={start,end,count,dead:dead.length,alive:alive.length,birthClosed,omittedDetails,excludedInvalid,domainEnd,points:[],observedAges:{dead,alive}};
+ // Это возраст смерти только завершённых жизней, а не прогноз для живых.
+ // Медиана использует уже отсортированный массив; в кадровом цикле работы нет.
+ const n=dead.length,middle=n>>>1,completed={count:n,mean:n&&!omittedDetails?totalDeadAge/n:null,median:n&&!omittedDetails?(n%2?dead[middle]:(dead[middle-1]+dead[middle])/2):null};
+ const result={start,end,count,dead:n,alive:alive.length,birthClosed,omittedDetails,excludedInvalid,domainEnd,completed,points:[],observedAges:{dead,alive}};
  if(!count||omittedDetails)return result;
  // Массивы уже отсортированы: сливаем пороги без третьей сортировки.
  let ages=[0],di=0,ai=0;

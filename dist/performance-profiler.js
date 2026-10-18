@@ -78,8 +78,8 @@ export class PerformanceProfiler{
   const previousProbe=swapComputeProbe(this.sampled?this:null);
   try{return this.sampled?this.measure('worldOther',fn):fn();}finally{
    const elapsed=Math.max(0,this.now()-start),actions=sumActions(s)-before;
-   if(s.tick!==tick){d.steps++;d.actions+=actions;if(!this.running){d.stepsWhilePaused++;d.actionsWhilePaused+=actions;d.stepMsWhilePaused+=elapsed;}d.stepMs+=elapsed;d.minStepMs=d.minStepMs===null?elapsed:Math.min(d.minStepMs,elapsed);d.maxStepMs=Math.max(d.maxStepMs,elapsed);d.stepsOverFrameBudget+=Number(elapsed>8);d.populationSum+=population;d.populationMin=d.populationMin===null?population:Math.min(d.populationMin,population);d.populationMax=Math.max(d.populationMax,population);
-    if(this.sampled){d.sampledSteps++;d.sampledStepMs+=elapsed;d.sampledActions+=actions;}}
+   if(s.tick!==tick){d.steps=Math.round((d.steps+s.tick-tick)*10)/10;d.actions+=actions;if(!this.running){d.stepsWhilePaused=Math.round((d.stepsWhilePaused+s.tick-tick)*10)/10;d.actionsWhilePaused+=actions;d.stepMsWhilePaused+=elapsed;}d.stepMs+=elapsed;d.minStepMs=d.minStepMs===null?elapsed:Math.min(d.minStepMs,elapsed);d.maxStepMs=Math.max(d.maxStepMs,elapsed);d.stepsOverFrameBudget+=Number(elapsed>8);d.populationSum+=population*(s.tick-tick);d.populationMin=d.populationMin===null?population:Math.min(d.populationMin,population);d.populationMax=Math.max(d.populationMax,population);
+    if(this.sampled){d.sampledSteps=Math.round((d.sampledSteps+s.tick-tick)*10)/10;d.sampledStepMs+=elapsed;d.sampledActions+=actions;}}
    swapComputeProbe(previousProbe);this.sampled=false;
   }
  }
@@ -89,7 +89,7 @@ export class PerformanceProfiler{
   const s=this.world,d=this.data,population=s.agents.length,tick=s.tick,before=sumActions(s),start=this.now();
   try{return await fn();}finally{
    const elapsed=Math.max(0,this.now()-start),actions=sumActions(s)-before;
-   if(s.tick!==tick){d.steps++;d.actions+=actions;if(!this.running){d.stepsWhilePaused++;d.actionsWhilePaused+=actions;d.stepMsWhilePaused+=elapsed;}d.stepMs+=elapsed;d.minStepMs=d.minStepMs===null?elapsed:Math.min(d.minStepMs,elapsed);d.maxStepMs=Math.max(d.maxStepMs,elapsed);d.stepsOverFrameBudget+=Number(elapsed>8);d.populationSum+=population;d.populationMin=d.populationMin===null?population:Math.min(d.populationMin,population);d.populationMax=Math.max(d.populationMax,population);}
+   if(s.tick!==tick){d.steps=Math.round((d.steps+s.tick-tick)*10)/10;d.actions+=actions;if(!this.running){d.stepsWhilePaused=Math.round((d.stepsWhilePaused+s.tick-tick)*10)/10;d.actionsWhilePaused+=actions;d.stepMsWhilePaused+=elapsed;}d.stepMs+=elapsed;d.minStepMs=d.minStepMs===null?elapsed:Math.min(d.minStepMs,elapsed);d.maxStepMs=Math.max(d.maxStepMs,elapsed);d.stepsOverFrameBudget+=Number(elapsed>8);d.populationSum+=population*(s.tick-tick);d.populationMin=d.populationMin===null?population:Math.min(d.populationMin,population);d.populationMax=Math.max(d.populationMax,population);}
   }
  }
  /** Вызывать при переключении паузы, а также из rAF: без отсечения длинного

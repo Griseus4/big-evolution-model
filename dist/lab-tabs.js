@@ -81,7 +81,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  }
 
  function selectTab(name){
-  current=name;if(name!=='world')pauseWorld();onTabChange?.(name);
+  current=name;onTabChange?.(name);
   for(const tab of tabs){byId(`tab-${tab}`).setAttribute('aria-selected',String(tab===name));byId(`tab-${tab}`).tabIndex=tab===name?0:-1;byId(`panel-${tab}`).hidden=tab!==name;}
   if(name==='history')renderHistory(true);if(name==='tests')renderTests();
  }
@@ -98,7 +98,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
     settings:s.settings,
     performance:getPerformanceReport(),geography:s.geography,
     environmentChanges:s.environmentChanges,initialFoodIslands:s.initialFoodIslands,foodIslands:s.foodIslands,foodCycleStart:s.foodCycleStart,nextRegrowthTick:s.nextRegrowthTick,
-    foodAvailability:s.foodAvailability?{...s.foodAvailability,prefix:Array.from(s.foodAvailability.prefix)}:null,
+    foodProductionHistory:s.foodProductionHistory,foodAvailability:s.foodAvailability?{...s.foodAvailability,prefix:Array.from(s.foodAvailability.prefix)}:null,
     stats:s.stats,balances:s.balances,history:s.history,tick:s.tick,completed:s.completed,founders:s.founders,descendants:s.descendants,byCause:s.byCause,dead:s.dead,living:s.living,omittedDetails:s.omittedDetails,
     notes:['Это наблюдение для анализа, не сохранение для продолжения симуляции.','Лежащая еда при вмешательствах сохранена; новые источники не получают дополнительного запаса.','История графика ограничена 800 точками; журнал вмешательств содержит все изменения.']});
   }catch(error){byId('error').textContent=error.message;}

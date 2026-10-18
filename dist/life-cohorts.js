@@ -1,9 +1,11 @@
 /** Сводки наблюдателя по полуоткрытым интервалам рождения [b,b+width).
  * Один проход по сохранённым жизням; сортируются только собственные массивы
  * значений внутри групп. Нет обращения к миру, мозгам или RNG. */
+import {HERITABLE_METRICS,HERITABLE_SCHEMA} from './heritable-statistics.js';
 import {LIFE_OBSERVATION_SCHEMA} from './life-observations.js';
 export const HISTORY_PAGE_SIZE=50;
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
+const inheritedIds=new Set(HERITABLE_METRICS.map(m=>m.id));
 const rate=(row,n)=>finite(n)&&n>=0&&row.observedSteps>0?n*100/row.observedSteps:null;
 export const LIFE_METRICS=Object.freeze([
  {id:'lifetime',label:'Продолжительность завершённой жизни',unit:'Т',digits:1},
@@ -11,11 +13,17 @@ export const LIFE_METRICS=Object.freeze([
  {id:'eating',label:'Частота еды',unit:'порций / 100 Т',digits:2},
  {id:'inventory',label:'Средний переносимый запас',unit:'порций',digits:2},
  {id:'energy',label:'Средняя энергия',unit:'энергии',digits:1},
- {id:'hunger',label:'Время с энергией ниже 30',unit:'%',digits:1},
+ {id:'hunger',label:'Доля жизни с нулевой энергией',unit:'%',digits:1},
+ {id:'children',label:'Число прямых детей',unit:'детей',digits:1},
+ {id:'reproduced',label:'Доля оставивших хотя бы одного ребёнка',unit:'%',digits:1,single:true},
+ {id:'firstBirth',label:'Возраст рождения первого ребёнка',unit:'Т',digits:1},
+ {id:'brainCalls',label:'Вызовы основного мозга',unit:'вызовов / 100 Т',digits:2},
+ ...HERITABLE_METRICS,
  {id:'reviews',label:'Частота пересмотров',unit:'пересмотров / 100 Т',digits:2},
  {id:'interruptions',label:'Частота прерываний',unit:'прерываний / 100 Т',digits:2},
 ].map(Object.freeze));
 export function lifeMetric(row,id,interruptionKind='all'){
+ if(inheritedIds.has(id))return row.heritable?.schema===HERITABLE_SCHEMA&&finite(row.heritable[id])?row.heritable[id]:null;
  const o=row.observations?.schema===LIFE_OBSERVATION_SCHEMA?row.observations:null;
  switch(id){
   case 'lifetime':return row.status==='dead'?row.age:null;
@@ -23,7 +31,11 @@ export function lifeMetric(row,id,interruptionKind='all'){
   case 'eating':return rate(row,row.eaten);
   case 'inventory':return o?.inventoryObservedSteps>0?o.meanInventory:null;
   case 'energy':return row.meanEnergy;
-  case 'hunger':return rate(row,row.hungerSteps);
+  case 'hunger':return rate(row,row.emptyEnergySteps);
+  case 'children':return finite(row.children)?row.children:null;
+  case 'reproduced':return finite(row.children)?(row.children>0?100:0):null;
+  case 'firstBirth':return finite(row.firstBirthAge)?row.firstBirthAge:null;
+  case 'brainCalls':return o?rate(row,o.brainCalls):null;
   case 'reviews':return o?rate(row,o.reviews):null;
   case 'interruptions':return o?rate(row,interruptionKind==='all'?o.interruptions.voluntary+o.interruptions.physical:o.interruptions[interruptionKind]):null;
   default:throw new Error('Неизвестный показатель истории.');
@@ -31,8 +43,8 @@ export function lifeMetric(row,id,interruptionKind='all'){
 }
 function summarize(values){
  const count=values.length;if(!count)return {count:0,min:null,median:null,mean:null,max:null};
- values.sort((a,b)=>a-b);let total=0;for(const v of values)total+=v;
- return {count,min:values[0],median:(values[Math.floor((count-1)/2)]+values[Math.floor(count/2)])/2,mean:total/count,max:values[count-1]};
+ values.sort((a,b)=>a-b);let mean=0;for(let i=0;i<count;i++)mean+=(values[i]-mean)/(i+1);
+ return {count,min:values[0],median:values[Math.floor((count-1)/2)]/2+values[Math.floor(count/2)]/2,mean,max:values[count-1]};
 }
 export function aggregateLifeCohorts(report,{width=100,survivalAge=100,origin='all',mode='dead',interruptionKind='all',birthStart=0,birthEnd=Infinity}={}){
  if(!Number.isSafeInteger(width)||width<1||!Number.isSafeInteger(survivalAge)||survivalAge<1)throw new Error('Интервал рождения и возраст дожития — положительные целые числа.');
@@ -48,8 +60,7 @@ export function aggregateLifeCohorts(report,{width=100,survivalAge=100,origin='a
   g.born++;g[row.status==='dead'?'dead':'alive']++;
   if(row.status==='dead'||row.age+1e-9>=survivalAge)g.knownSurvival++;
   if(row.age+1e-9>=survivalAge)g.reachedAge++;
-  if(mode==='dead'&&row.status!=='dead')continue;
-  for(const m of LIFE_METRICS){const value=lifeMetric(row,m.id,interruptionKind);if(finite(value))g.samples[m.id].push(value);}
+  for(const m of LIFE_METRICS){if(mode==='dead'&&row.status!=='dead'&&!m.inherited)continue;const value=lifeMetric(row,m.id,interruptionKind);if(finite(value))g.samples[m.id].push(value);}
  }
  const omittedDetails=report.omittedDetails??0;
  const cohorts=[...groups.values()].sort((a,b)=>a.id-b.id).map(g=>{

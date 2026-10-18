@@ -11,9 +11,9 @@ const position=(p,width)=>p.x??((p.start??p.id*width)+(p.end??(p.id+1)*width))/2
 export function historyChartMaximum(points,keys,maximum=null){
  if(maximum!==null)return maximum;
  let max=0;for(const p of points)for(const key of keys)if(Number.isFinite(p[key]))max=Math.max(max,p[key]);
- return max?max*1.08:1;
+ return max?Math.min(Number.MAX_VALUE,max*1.08):1;
 }
-export function drawHistoryChart(canvas,{points,keys,domainStart=0,domainEnd,width=1,selected=null,single=false,maximum=null,age=false}){
+export function drawHistoryChart(canvas,{points,keys,domainStart=0,domainEnd,width=1,selected=null,single=false,maximum=null,minimum=0,age=false,markers=[],xLabel=null,histogram=false}){
  const context=canvas.getContext('2d');if(!context)return;
  const cssWidth=Math.max(280,Math.round(canvas.getBoundingClientRect().width||600)),ratio=Math.min(2,globalThis.devicePixelRatio||1);
  const pixelWidth=Math.round(cssWidth*ratio),pixelHeight=Math.round(HEIGHT*ratio);
@@ -21,16 +21,17 @@ export function drawHistoryChart(canvas,{points,keys,domainStart=0,domainEnd,wid
  context.setTransform(ratio,0,0,ratio,0,0);context.clearRect(0,0,cssWidth,HEIGHT);
  const span=cssWidth-LEFT-RIGHT,h=HEIGHT-TOP-BOTTOM;
  const max=historyChartMaximum(points,keys,maximum),count=points.reduce((n,p)=>n+Number(keys.some(key=>Number.isFinite(p[key]))),0);
- const x=value=>LEFT+(value-domainStart)/(domainEnd-domainStart)*span,y=value=>TOP+h-value/max*h;
+ const x=value=>LEFT+(value-domainStart)/(domainEnd-domainStart)*span,y=value=>TOP+h-(value-minimum)/(max-minimum)*h;
  context.font='11px system-ui';context.lineWidth=1;
  for(let i=0;i<=4;i++){
   const py=TOP+h-i*h/4;context.strokeStyle='#35433a';context.beginPath();context.moveTo(LEFT,py);context.lineTo(cssWidth-RIGHT,py);context.stroke();
-  context.fillStyle='#a6b3a6';context.textAlign='right';context.fillText(label(max*i/4),LEFT-8,py+4);
+  context.fillStyle='#a6b3a6';context.textAlign='right';context.fillText(label(minimum+(max-minimum)*i/4),LEFT-8,py+4);
   context.textAlign='center';context.fillText(label(domainStart+(domainEnd-domainStart)*i/4),LEFT+span*i/4,HEIGHT-20);
  }
- context.fillStyle='#a6b3a6';context.textAlign='center';context.fillText(age?'Возраст, Т':single==='food'?'Время мира, Т':'Время рождения, Т',LEFT+span/2,HEIGHT-2);
+ context.fillStyle='#a6b3a6';context.textAlign='center';context.fillText(xLabel??(age?'Возраст, Т':single==='food'?'Время мира, Т':'Время рождения, Т'),LEFT+span/2,HEIGHT-2);
  if(selected!==null){const p=points.find(p=>p.id===selected);if(p){const px=x(position(p,width));context.strokeStyle='#e1c88c88';context.setLineDash([3,4]);context.beginPath();context.moveTo(px,TOP);context.lineTo(px,TOP+h);context.stroke();context.setLineDash([]);}}
  if(!count){context.fillStyle='#a6b3a6';context.fillText(keys.length?'Пока недостаточно данных':'Выбери хотя бы одну линию',LEFT+span/2,TOP+h/2);return;}
+ if(histogram){context.fillStyle='#86bf80';for(const p of points)if(Number.isFinite(p.mean))context.fillRect(x(p.x-width/2)+.5,y(p.mean),Math.max(1,width/(domainEnd-domainStart)*span-1),y(0)-y(p.mean));return;}
  if(age){
   // Полоса показывает границы исхода для живых, ещё не достигших возраста.
   for(let i=1;i<points.length;i++){const p=points[i-1],next=points[i];if(p.upper<=p.lower)continue;context.fillStyle='#86bf8028';context.fillRect(x(p.x),y(p.upper),x(next.x)-x(p.x),y(p.lower)-y(p.upper));}
@@ -52,6 +53,13 @@ export function drawHistoryChart(canvas,{points,keys,domainStart=0,domainEnd,wid
   }
  }
  if(age){context.strokeStyle='#86bf8099';context.setLineDash([4,4]);for(let i=1;i<points.length;i++){const p=points[i-1],next=points[i];if(p.upper===p.lower&&next.upper===next.lower)continue;context.beginPath();context.moveTo(x(p.x),y(p.upper));context.lineTo(x(next.x),y(p.upper));context.lineTo(x(next.x),y(next.upper));context.stroke();}context.setLineDash([]);}
+ // Разные строки подписи сохраняют читаемость при совпавших среднем и медиане.
+ for(const [i,marker]of markers.entries()){
+  if(!Number.isFinite(marker.value)||marker.value<domainStart||marker.value>domainEnd)continue;
+  const px=x(marker.value);context.strokeStyle=marker.color;context.lineWidth=1.5;context.setLineDash(i%2?[2,3]:[7,3]);
+  context.beginPath();context.moveTo(px,TOP);context.lineTo(px,TOP+h);context.stroke();context.setLineDash([]);
+  const right=px>LEFT+span/2;context.textAlign=right?'right':'left';context.fillStyle=marker.color;context.fillText(`${marker.label}: ${label(marker.value)} Т`,px+(right?-5:5),TOP+13+i*16);
+ }
 }
 export function chartTimeAt(canvas,clientX,start,end){
  const box=canvas.getBoundingClientRect(),span=Math.max(1,box.width-LEFT-RIGHT);

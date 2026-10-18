@@ -5,10 +5,11 @@
  * Еда не переносится вместе с источником: план задаёт только производство.
  */
 import {Random} from './simulation.js';
-import {validateFoodSettings,createFoodTemplate} from './food-settings.js';
+import {validateFoodSettings,createFoodTemplate,SOURCE_CAPACITY_LIMITS} from './food-settings.js';
 import {placeFoodIslands,worldDistance} from './food-layout.js';
 import {createIndividualFoodLayout,scheduleFoodIslands,islandScheduleSummary} from './food-islands.js';
-export const SOURCE_CAPACITY_LIMITS=Object.freeze({min:1,max:24,default:6});
+import {foodDistribution} from './food-distribution.js';
+export {SOURCE_CAPACITY_LIMITS};
 const positionKey=p=>`${p.x},${p.y}`;
 function shuffle(values,random){
  const copy=values.slice();
@@ -38,26 +39,31 @@ export function foodEnvironment(world){
 }
 export function planWorldFoodChange(world,input,width,height){
  const options=validateWorldFoodChange(input),current=world.tiles.filter(c=>c.maxFood>0);
+ if(options.foodGeneralSettings&&!options.relocate&&options.sourceCapacity===null){
+  const actual=foodDistribution(world),same=(a,b)=>Math.abs(a-b)<1e-8;
+  if(options.foodSources===actual.sourceCount&&options.foodIslandCount===actual.requestedIslandCount&&same(options.foodRegrowInterval,actual.regrowInterval)&&same(options.foodPeriodSpread,actual.periodSpread)&&same(options.foodSizeSpread,actual.sizeSpread)&&options.foodCapacityMin===actual.capacityMin&&options.foodCapacityMax===actual.capacityMax)return {options,sources:[],islands:[],changed:false};
+ }
  const land=world.tiles.filter(c=>c.terrain==='land');
  if(options.foodSources>land.length)throw new Error('Для выбранного числа источников недостаточно суши.');
  // Случайность вмешательства отделена от действий, повреждений и мутаций.
  // Один seed и одинаковая последовательность изменений дают одинаковые места.
  // Повторная перестановка использует следующий номер изменения, без Date.now().
  const seed=(world.seed^Math.imul(world.environmentRevision+1,0x6d2b79f5))>>>0;
- const random=new Random(seed^0x371b4a09),template=createFoodTemplate(options.foodSources,seed);
+ const random=new Random(seed^0x371b4a09),template=createFoodTemplate(options.foodSources,seed,options.foodCapacityMin,options.foodCapacityMax);
  if(world.individualFood){
+  const capacities=current.map(c=>c.maxFood),capacityChanged=options.foodCapacityMin!==undefined&&(options.foodCapacityMin!==(capacities.length?Math.min(...capacities):3)||options.foodCapacityMax!==(capacities.length?Math.max(...capacities):6));
   const sizeChanged=options.foodIslandCount!==world.foodSettings.requestedIslandCount||options.foodSizeSpread!==world.foodSettings.sizeSpread;
   const layoutChanged=options.relocate||sizeChanged||options.foodSources!==current.length;
   const changed=layoutChanged||options.foodRegrowInterval!==world.foodSettings.regrowInterval||
-   options.foodPeriodSpread!==world.foodSettings.periodSpread||
+   options.foodPeriodSpread!==world.foodSettings.periodSpread||capacityChanged||
    options.sourceCapacity!==null&&current.some(c=>c.maxFood!==options.sourceCapacity);
   if(!changed)return {options,sources:[],islands:[],changed:false};
   let sources,islands;
   if(layoutChanged){
-   const capacities=shuffle(current,random),inventory=template.map((p,i)=>({food:0,maxFood:options.sourceCapacity??capacities[i]?.maxFood??p.maxFood}));
+   const capacities=shuffle(current,random),inventory=template.map((p,i)=>({food:0,maxFood:options.sourceCapacity??(capacityChanged?p.maxFood:capacities[i]?.maxFood??p.maxFood)}));
    ({sources,islands}=createIndividualFoodLayout(world.tiles,inventory,seed,options));
   }else{
-   sources=current.map(({x,y,maxFood})=>({x,y,maxFood:options.sourceCapacity??maxFood}));
+   sources=current.map(({x,y,maxFood},i)=>({x,y,maxFood:options.sourceCapacity??(capacityChanged?template[i].maxFood:maxFood)}));
    islands=world.foodIslands;
   }
   // План не изменяет настоящие группы. Новый цикл начинается с вмешательства,

@@ -2,12 +2,13 @@
  * В событии обходим источники/карту, но не жителей и не их мозги. Пища не
  * переносится/не выдаётся, календарь сохраняет долю до следующего роста. */
 import {Random} from './simulation.js';
-import {worldDistance} from './food-layout.js';
 import {FOOD_LIMITS} from './food-settings.js';
 import {islandScheduleSummary} from './food-islands.js';
 import {ENVIRONMENT_DEFAULTS,ENVIRONMENT_RULES as R,validateEnvironmentSettings,foodProduction} from './environment-settings.js';
 import {DT} from './action-timing.js';
 import {SOURCE_CAPACITY_LIMITS} from './world-edit.js';
+import {foodDistribution} from './food-distribution.js';
+import {evolveFoodGroups} from './food-island-evolution.js';
 function reason(w){return !w.individualFood?'Автоматика требует индивидуальных источников.':foodProduction(w)+1e-9<R.minimumRate?`Выработка ниже минимума ${R.minimumRate} порции/Т.`:'';}
 export function initializeEnvironment(w,input=ENVIRONMENT_DEFAULTS){
  const options=validateEnvironmentSettings(input),blocked=reason(w),prepared=foodProduction(w)<=R.targetRate;
@@ -26,32 +27,22 @@ export function manualEnvironmentChange(w){
 }
 export function environmentStatus(w){const e=w.automaticEnvironment;return e?{...e,random:undefined,production:foodProduction(w),minimumRate:R.minimumRate,targetRate:R.targetRate,phase:e.completedSteps<R.preparationSteps&&!e.preparationCancelled?'preparation':'random'}:null;}
 function normal(random){return Math.sqrt(-2*Math.log(1-random.next()))*Math.cos(2*Math.PI*random.next());}
-function shuffle(a,random){for(let i=a.length-1;i>0;i--){const j=Math.floor(random.next()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function nearby(w,p,used,random){
- const candidates=[];for(let y=Math.max(0,p.y-R.relocationRadius);y<=Math.min(w.tiles.at(-1).y,p.y+R.relocationRadius);y++)for(let x=Math.max(0,p.x-R.relocationRadius);x<=Math.min(w.tiles.at(-1).x,p.x+R.relocationRadius);x++){
-  const c=w.tile(x,y);if(c.terrain==='land'&&!used.has(c)&&worldDistance(c,p)<=R.relocationRadius)candidates.push(c);
- }
- return candidates.length?candidates[Math.floor(random.next()*candidates.length)]:null;
-}
 function changeSources(w,rate,capacityFactor){
- const e=w.automaticEnvironment,random=e.random,current=foodProduction(w),groups=w.foodIslands.map(g=>({...g,centre:{...g.centre},sources:g.sources.slice()}));
- let sources=groups.flatMap(g=>g.sources.map(p=>({cell:w.tile(p.x,p.y),group:g})));const beforeCount=sources.length,used=new Set(sources.map(p=>p.cell));
+ const random=w.automaticEnvironment.random,current=foodProduction(w),beforeCount=w.foodSettings.sourceCount;
  const desired=Math.max(1,Math.min(FOOD_LIMITS.sourcesMax,Math.round(beforeCount*Math.sqrt(rate/current))));
- shuffle(sources,random);
- for(const p of sources.slice(desired)){p.cell.maxFood=0;used.delete(p.cell);}
- sources=sources.slice(0,desired);
- for(let n=sources.length;n<desired;n++){
-  const parent=sources[Math.floor(random.next()*sources.length)];let cell=nearby(w,parent.cell,used,random);
-  if(!cell){const available=w.tiles.filter(c=>c.terrain==='land'&&!used.has(c));if(!available.length)break;cell=available[Math.floor(random.next()*available.length)];}
-  cell.maxFood=parent.cell.maxFood;used.add(cell);sources.push({cell,group:parent.group});
+ const sizeSpread=Math.max(0,Math.min(90,(w.foodSettings.sizeSpread??30)+normal(random)*R.relativeSigma*100));
+ const periodSpread=Math.max(0,Math.min(90,(w.foodSettings.periodSpread??30)+normal(random)*R.relativeSigma*100));
+ const count=Math.max(1,Math.min(desired,Math.round(Math.max(1,w.foodIslands.filter(g=>g.kind==='island').length)*(1+normal(random)*R.relativeSigma))));
+ const plan=evolveFoodGroups(w,{sourceCount:desired,islandCount:count,sizeSpread,periodSpread,capacityFactor,normal:normal(random)});
+ const kept=plan.groups,originalPotential=kept.reduce((n,g)=>n+g.sources.length/g.period,0),scale=originalPotential/rate;
+ for(const c of w.tiles)c.maxFood=0;
+ for(const g of kept){
+  for(const p of g.sources)w.tile(p.x,p.y).maxFood=p.capacity;
+  g.sources=g.sources.map(({x,y})=>({x,y}));
+  g.period=Math.max(DT,Math.floor(g.period*scale/DT+1e-9)*DT);
+  g.nextTick=Math.round((w.tick+Math.max(DT,g.remaining*g.period))/DT)*DT;g.cycleStart=w.tick-(1-g.remaining)*g.period;delete g.remaining;
  }
- const moved=[];for(const p of sources.slice(0,Math.max(1,Math.round(sources.length*R.relocationFraction)))){
-  const cell=nearby(w,p.cell,used,random);if(!cell)continue;cell.maxFood=p.cell.maxFood;p.cell.maxFood=0;used.delete(p.cell);used.add(cell);moved.push({from:{x:p.cell.x,y:p.cell.y},to:{x:cell.x,y:cell.y}});p.cell=cell;
- }
- for(const g of groups)g.sources=[];
- for(const p of sources){p.cell.maxFood=Math.max(SOURCE_CAPACITY_LIMITS.min,Math.min(SOURCE_CAPACITY_LIMITS.max,Math.round(p.cell.maxFood*capacityFactor)));p.group.sources.push({x:p.cell.x,y:p.cell.y});}
- const kept=groups.filter(g=>g.sources.length),originalPotential=kept.reduce((n,g)=>n+g.sources.length/g.period,0),scale=originalPotential/rate;
- for(const g of kept){const remaining=Math.max(0,Math.min(1,(g.nextTick-w.tick)/g.period));g.period=Math.max(DT,Math.floor(g.period*scale/DT+1e-9)*DT);g.nextTick=Math.round((w.tick+remaining*g.period)/DT)*DT;g.cycleStart=w.tick-(1-remaining)*g.period;}
+ const sources=kept.flatMap(group=>group.sources.map(p=>({cell:w.tile(p.x,p.y),group}))),moved=plan.moved;
  w.foodIslands=kept;const actual=foodProduction(w);
  // Ограничение временной сетки: не более одной порции/источник/подшаг.
  // Округление периода вниз сохраняет нижний порог производства.
@@ -59,7 +50,9 @@ function changeSources(w,rate,capacityFactor){
  const capacities=sources.map(p=>p.cell.maxFood),periods=kept.map(g=>g.period),weight=kept.reduce((n,g)=>n+g.sources.length,0);
  Object.assign(w.foodSettings,{generation:'automatic-food-v1',sourceCount:sources.length,regrowInterval:kept.reduce((n,g)=>n+g.period*g.sources.length,0)/weight,
   capacityMin:Math.min(...capacities),capacityMax:Math.max(...capacities),...islandScheduleSummary(kept)});
- return {moved,sourceCount:sources.length,previousSourceCount:beforeCount,actualProduction:actual,periodMin:Math.min(...periods),periodMax:Math.max(...periods)};
+ // Общие поля редактора описывают текущие группы, а не исходные ползунки.
+ Object.assign(w.foodSettings,foodDistribution(w));
+ return {moved,movedGroups:plan.movedGroups.map(({moved,...g})=>g),islandCount:kept.filter(g=>g.kind==='island').length,sourceCount:sources.length,previousSourceCount:beforeCount,actualProduction:actual,periodMin:Math.min(...periods),periodMax:Math.max(...periods)};
 }
 export function advanceEnvironment(w){
  const e=w.automaticEnvironment;if(!e?.enabled||w.tick+1e-9<e.nextTick)return false;

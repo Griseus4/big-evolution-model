@@ -7,11 +7,11 @@ import {ACTION_COUNT,DEPOSIT_ACTION} from './policy-layout.js';
 import {reproductionCounters} from './reproduction.js';
 import {cognitionPlaces} from './cognition-summary.js';
 import {describeLifeObservations} from './life-observations.js';
-export const MODEL_VERSION='0.36.0';
+export const MODEL_VERSION='0.37.0';
 export const CAUSE_LABELS={starvation:'Истощение',injury:'Повреждения',age:'Предел возраста'};
 export function createLifeCounters(){return {samples:0,energyTotal:0,healthTotal:0,painTotal:0,
  hungerSteps:0,emptyEnergySteps:0,painSteps:0,gathered:0,eaten:0,deposited:0,moved:0,injuries:0,damage:0,
- firstMealAge:null,lastMealAge:null,maxMealGap:0,actions:Array(ACTION_COUNT).fill(0),reproduction:reproductionCounters()};}
+ firstBirthAge:null,firstMealAge:null,lastMealAge:null,maxMealGap:0,actions:Array(ACTION_COUNT).fill(0),reproduction:reproductionCounters()};}
 export function sampleLife(a){
  const c=a.life;c.samples++;c.energyTotal+=a.energy;c.healthTotal+=a.health;c.painTotal+=a.pain;
  // Порог 30 служит описательной статистике, не новой потребностью или наградой.
@@ -29,7 +29,7 @@ export function sampleLife(a){
 export function lifeRow(a,born,tick,cause=null){
  const c=a.life,n=c.samples;
  const result={id:a.id,parentId:a.parentId,founderId:a.founderId,generation:a.generation,born,
- endTick:tick,age:a.age,status:cause?'dead':'alive',censored:!cause,cause,children:a.children,
+ endTick:tick,age:a.age,status:cause?'dead':'alive',censored:!cause,cause,children:a.children,firstBirthAge:c.firstBirthAge??null,heritable:c.heritable??null,
  meanEnergy:n?c.energyTotal/n:null,meanHealth:n?c.healthTotal/n:null,meanPain:n?c.painTotal/n:null,
  meanFeeling:a.brain.feelingSamples?a.brain.feelingTotal/a.brain.feelingSamples:null,
  hungerSteps:c.hungerSteps,emptyEnergySteps:c.emptyEnergySteps,painSteps:c.painSteps,

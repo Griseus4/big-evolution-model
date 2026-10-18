@@ -24,13 +24,17 @@ import {NEURAL_BRAIN_TYPE,NEURAL_INPUT_NAMES,PARAMETER_COUNT,layoutForType} from
 import {localNeighbours} from './navigation.js';
 import {installHelp,createHelpButton} from './help.js';
 import {foodLabel} from './food-settings.js';
-import {readFoodControls,installFoodControls,syncFoodControls} from './food-controls.js';
+import {readFoodControls,installFoodControls,syncFoodControls,installLiveFoodControls} from './food-controls.js';
 import {geographyLabel} from './geography.js';
 import {COMPUTATION_WORKER_COUNTS,computationHardwareLabel} from './computation-settings.js';
 import {installUIText,UI_TEXT} from './ui-text.js';
 import {installPerformanceTabs} from './performance-tabs.js';
+import {installScreenTabs} from './screen-tabs.js';
 const element=id=>document.getElementById(id);
 installUIText(document);installPerformanceTabs(document);
+installScreenTabs('start',['population','food','other'],document);
+installScreenTabs('food',['conditions','automatic','journal'],document);
+installScreenTabs('wiki',['world', 'saves', 'actions', 'brain', 'memory', 'selection', 'genome', 'geography', 'food', 'deposits', 'environment', 'research', 'checks', 'limits'],document);
 // Один список допустимых режимов используется интерфейсом и расчётом.
 for(const count of COMPUTATION_WORKER_COUNTS){const option=document.createElement('option');option.value=count;option.textContent=count===1?'1 · последовательно':`${count} · параллельно`;element('compute-workers').append(option);}
 element('compute-hardware').textContent=computationHardwareLabel();
@@ -45,10 +49,10 @@ const client=new WorldClient({onState:message=>{
  running=message.running;actualRate=message.actualRate;profiler.accept(message.profile);
  if(!document.hidden){
   if(!labTabs||labTabs.currentTab()==='world'){update();draw();}
-  else profiler.measureUI('otherTabs',()=>labTabs.refresh());
+  else profiler.measureUI('otherTabs',()=>{updateTransport();labTabs.refresh();});
  }
 },onError:message=>{running=false;element('error').textContent=message;update();}});
-let sim=client.view,environmentUI=null;
+let sim=client.view,environmentUI=null,liveFoodControls=null;
 function command(type,payload){return client.request(type,payload).catch(error=>{element('error').textContent=error.message;throw error;});}
 function selectResident(agent){if(agent)void command('select',{id:agent.id}).catch(()=>{});}
 const profiler=new WorldProfiler(client);
@@ -67,7 +71,7 @@ function settings(){
  if(!Number.isInteger(limit)||limit<population||limit>1000)throw new Error('Лимит должен быть не меньше числа основателей и не больше 1000.');
  if(!Number.isInteger(seed)||seed<1||seed>4294967295)throw new Error('Номер опыта должен быть целым от 1 до 4294967295.');
  const computeWorkers=activeComputationMode;
- return {seed,population,limit,computeWorkers,automaticEnvironment:environmentUI?.settings(),geography:element('geography').value,...readFoodControls(),
+ return {seed,population,limit,computeWorkers,automaticEnvironment:environmentUI?.settings(),geography:'lakes-rivers-v1',...readFoodControls(),
   learning:element('learning').checked,memory:element('memory').checked,
   expandLegacy:legacyBase&&element('expand-legacy').checked,mutationRate:Number(element('mutation-rate').value),mutations:element('mutations').checked,upgradeMutationGenes:element('upgrade-mutations').checked,baseGenome};
 }
@@ -78,7 +82,7 @@ async function toggle(){
 }
 async function singleStep(){
  if(!client.ready||controlPending||labTabs?.isBenchmarkActive())return;
- controlPending=true;update();try{await command('step');}catch{}finally{controlPending=false;update();}
+ controlPending=true;update();try{await command('substep');}catch{}finally{controlPending=false;update();}
 }
 async function restart(){
  if(controlPending)return;
@@ -105,19 +109,21 @@ element('randomize-seed').addEventListener('click',()=>{
  try{element('seed').value=randomExperienceSeed(Number(element('seed').value));element('error').textContent='';}
  catch(error){element('error').textContent=error.message;}
 });
-element('speed').addEventListener('change',()=>{if(client.ready)void command('speed',{value:10*Number(element('speed').value)}).catch(()=>{});});
+element('speed').addEventListener('change',()=>{if(client.ready)void command('speed',{value:10*Number(element('speed').value),substeps:Number(element('speed').value)<=.04}).catch(()=>{});});
 installFoodControls();
 /** Поля вмешательства независимы от полей следующего нового опыта.
  * Движение ползунка только готовит ввод. Worker применяет пищевые условия
  * между целыми шагами, сохраняя прежний режим запуска.
  */
 const updateWorldFoodControls=installFoodControls('world-');
+liveFoodControls=installLiveFoodControls({element,getWorld:()=>sim,refresh:updateWorldFoodControls});
 function syncWorldFoodEditor(){
  if(!client.ready)return;
  syncFoodControls('world-',sim.foodSettings);
  element('world-food-relocate').checked=false;
  element('world-food-status').textContent='';element('world-food-error').textContent='';
  displayedEnvironmentRevision=-1;updateWorldFoodControls();
+ liveFoodControls?.reset();
 }
 element('world-food-apply').addEventListener('click',async()=>{
  if(!client.ready||controlPending)return;
@@ -141,13 +147,11 @@ element('next-agent').addEventListener('click',()=>{
  if(!sim.agents.length)return;
  const index=sim.agents.findIndex(a=>a.id===selected?.id);selectResident(sim.agents[(index+1)%sim.agents.length]);update();draw();
 });
-element('rules-open').addEventListener('click',()=>{pause();element('rules').showModal();});
-element('rules-close').addEventListener('click',()=>element('rules').close());
 // Горячие клавиши не вмешиваются в поля, вкладки, раскрытие details и диалоги.
 // Space на summary должен раскрывать сведения, а не запускать мир одновременно.
 document.addEventListener('keydown',event=>{
  if(labTabs&&labTabs.currentTab()!=='world')return;
- if(event.defaultPrevented||event.target.closest('summary,[role=tablist]')||['INPUT','SELECT','TEXTAREA','BUTTON'].includes(event.target.tagName)||element('rules').open||element('help-dialog').open)return;
+ if(event.defaultPrevented||event.target.closest('summary,[role=tablist]')||['INPUT','SELECT','TEXTAREA','BUTTON'].includes(event.target.tagName)||element('help-dialog').open)return;
  if(event.code==='Space'){event.preventDefault();toggle();}
  if(event.code==='ArrowRight'){event.preventDefault();void singleStep();}
 });
@@ -194,11 +198,19 @@ element('clear-base').addEventListener('click',()=>{
  * Умерший выбранный житель остаётся доступен для изучения и сохранения генома.
  */
 function update(){
+ updateTransport();
  if(!client.ready){element('play').disabled=true;element('step').disabled=true;return;}
  return profiler.measureUI('panel',updateContents);
 }
+/** Общая кнопка обновляется и вне карты, без обхода жителей/источников. */
+function updateTransport(){
+ element('play').textContent=controlPending?'Ожидание…':running?'Ⅱ Пауза':'▶ Наблюдать';
+ element('play').setAttribute('aria-pressed',String(running));
+ element('play').disabled=!client.ready||controlPending||!sim.agents.length||labTabs?.isBenchmarkActive();
+}
 function updateContents(){
  environmentUI?.update();
+ liveFoodControls?.update();
  let residentOptions=null;
  const total=sim.summary();
  for(const [id,value]of [['population',total.population],['births',total.births],['deaths',total.deaths],
@@ -206,10 +218,9 @@ function updateContents(){
  element('feeling-mean').textContent=`Самочувствие живых: ${total.meanFeeling.toFixed(1)} · личных обновлений у живых: ${total.learningUpdates}`;
  element('brain-mode').textContent=`Память ${sim.memoryEnabled?'включена':'выключена'} · обучение ${sim.learningEnabled?'включено':'выключено'}`;
  element('clock').textContent=`Шаг ${sim.tick}`;
- element('play').textContent=controlPending?'Ожидание…':running?'Ⅱ Пауза':'▶ Наблюдать';
- element('play').disabled=controlPending||!total.population||labTabs?.isBenchmarkActive();element('step').disabled=controlPending||!total.population||labTabs?.isBenchmarkActive();
+ element('step').disabled=controlPending||!total.population||labTabs?.isBenchmarkActive();
  element('next-agent').disabled=!total.population;
- element('rate').textContent=running?`${Math.round(actualRate)} шагов/с фактически`:'На паузе';
+ element('rate').textContent=running?(Number(element('speed').value)<=.04?`${(actualRate*10).toFixed(1)} подшага/с фактически`:`${Math.round(actualRate)} шагов/с фактически`):'На паузе';
  element('compute-status').textContent=`Вычислителей: ${sim.execution?.computeWorkers??1}`;
  activeComputationMode=sim.execution?.mode??activeComputationMode;
  element('compute-current').textContent=UI_TEXT.currentComputations(sim.execution?.computeWorkers??1,activeComputationMode);
@@ -483,8 +494,10 @@ function drawChartContents(){
 /** rAF обслуживает только интерфейс. Worker сам планирует шаги и принимает
  * команды даже без кадров; скрытое окно не ставит мир на программную паузу. */
 function frame(now){
- if(!document.hidden&&!labTabs?.isBenchmarkActive()&&now-lastPaint>=200){
-  performancePanel?.refresh(now);lastPaint=now;
+ if(!document.hidden&&now-lastPaint>=200){
+  updateTransport();
+  if(!labTabs?.isBenchmarkActive())performancePanel?.refresh(now);
+  lastPaint=now;
  }
  requestAnimationFrame(frame);
 }
@@ -492,6 +505,6 @@ labTabs=installLabTabs({getSimulation:()=>sim,pauseWorld:pause,getPerformanceRep
  getWorldObservation:()=>command('observation'),onTabChange:()=>{if(client.ready)void sendView().catch(()=>{});}});
 performancePanel=installPerformancePanel({profiler,getSimulation:()=>sim,isRunning:()=>running});
 sidebar=installSidebar(()=>{if(client.ready)void sendView().catch(()=>{});});
-installHelp(pause);
+installHelp();
 update();requestAnimationFrame(frame);
-void client.init().then(async()=>{syncWorldFoodEditor();await command('speed',{value:10*Number(element('speed').value)});await sendView();}).catch(error=>{element('error').textContent=error.message;});
+void client.init().then(async()=>{syncWorldFoodEditor();await command('speed',{value:10*Number(element('speed').value),substeps:Number(element('speed').value)<=.04});await sendView();}).catch(error=>{element('error').textContent=error.message;});

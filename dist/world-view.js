@@ -6,6 +6,8 @@ import {foodEnvironment} from './world-edit.js';
 import {environmentStatus} from './automatic-environment.js';
 export const WORLD_PROTOCOL=1;
 export const WORLD_UI_INTERVAL=200;
+// Полный отчёт жизней нужен лишь видимой истории, не каждому кадру карты.
+export const HISTORY_UI_INTERVAL=1000;
 const META=['seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
  'learningEnabled','memoryEnabled','mutationRate','mutations','brainType','mutationProtocol','reproduction'];
 export function worldPresentation(world,{selected,trail,section='birth',history=false,staticMap=false}={}){

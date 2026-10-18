@@ -50,6 +50,23 @@ test('large survival cohorts cap Canvas points but retain exact queried ages',()
  assert.ok(curve.points.length<=512);near(survivalAtAge(curve,100).lower,50);near(survivalAtAge(curve,100.1).lower,49.95);
 });
 
+test('survival mean and median use only completed lives in the selected birth group',()=>{
+ const report={tick:200,dead:[row(1,0,10),row(2,1,20),row(3,2,90),row(4,100,1000)],living:[row(5,3,150,'alive')],omittedDetails:0},before=structuredClone(report);
+ const c=survivalCurve(report);assert.deepEqual(c.completed,{count:3,mean:40,median:20});assert.deepEqual(report,before);
+ const even=survivalCurve({...report,dead:report.dead.slice(0,2)});assert.deepEqual(even.completed,{count:2,mean:15,median:15});
+ assert.deepEqual(survivalCurve({...report,dead:[]}).completed,{count:0,mean:null,median:null});
+ assert.equal(survivalCurve({...report,omittedDetails:1}).completed.mean,null);
+ assert.equal(survivalCurve(report,{start:100}).completed.mean,1000);
+});
+
+test('vertical summary markers retain their ages and separate labels when they coincide',()=>{
+ const strokes=[],texts=[];let path=[];const context={setTransform(){},clearRect(){},fillRect(){},fillText(...v){texts.push(v);},beginPath(){path=[];},moveTo(x,y){path.push([x,y]);},lineTo(x,y){path.push([x,y]);},setLineDash(){},stroke(){strokes.push({color:this.strokeStyle,path:[...path]});}};
+ const canvas={getContext:()=>context,getBoundingClientRect:()=>({width:600})};
+ drawHistoryChart(canvas,{points:[{id:0,x:0,mean:100},{id:1,x:100,mean:0}],keys:['mean'],domainEnd:100,maximum:100,single:true,age:true,markers:[{label:'Медиана',value:50,color:'#e1c88c'},{label:'Среднее',value:50,color:'#86bf80'}]});
+ for(const color of ['#e1c88c','#86bf80'])assert.ok(strokes.some(s=>s.color===color&&s.path.length===2&&s.path[0][0]===322&&s.path[1][0]===322&&s.path[0][1]===16&&s.path[1][1]===195));
+ const labels=texts.filter(t=>/^(Медиана|Среднее):/.test(t[0]));assert.equal(labels.length,2);assert.notEqual(labels[0][2],labels[1][2]);
+});
+
 test('the known age interval remains solid when the following outcome is still unknown',()=>{
  const strokes=[];let dash=[],path=[];const context={setTransform(){},clearRect(){},fillRect(){},fillText(){},beginPath(){path=[];},moveTo(x,y){path.push([x,y]);},lineTo(x,y){path.push([x,y]);},setLineDash(value){dash=value;},stroke(){strokes.push({dash:[...dash],path:[...path]});}};
  const canvas={getContext:()=>context,getBoundingClientRect:()=>({width:600,left:0})};

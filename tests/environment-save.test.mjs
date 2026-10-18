@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Evolution,RULES,worldDistance} from '../dist/evolution.js';
 import {spendEnergy,ENERGY_DEFICIT_FACTOR} from '../dist/energy-budget.js';
-import {foodProduction} from '../dist/environment-settings.js';
+import {foodProduction,ENVIRONMENT_RULES} from '../dist/environment-settings.js';
 import {configureEnvironment,advanceEnvironment} from '../dist/automatic-environment.js';
 import {saveWorld,loadWorld} from '../dist/world-save.js';
 import {ParallelWorld} from '../dist/parallel-world.js';
@@ -35,12 +35,20 @@ test('five gradual impoverishments reach target, preserve stocks, locality and a
  const rng=[w.random,w.cognitiveRandom,w.bodyRandom,w.neuralRandom,w.mutationRandom].map(r=>r.state);
  for(let i=1;i<=5;i++){const food=w.tiles.map(c=>c.food);w.tick=i;w.subtick=i*10;assert.equal(advanceEnvironment(w),true);assert.deepEqual(w.tiles.map(c=>c.food),food);for(const move of w.environmentChanges.at(-1).moved)assert.ok(worldDistance(move.from,move.to)<=5);}
  assert.equal(w.automaticEnvironment.completedSteps,5);assert.ok(foodProduction(w)>=5.4&&foodProduction(w)<5.5);assert.deepEqual([w.random,w.cognitiveRandom,w.bodyRandom,w.neuralRandom,w.mutationRandom].map(r=>r.state),rng);
- for(let i=6;i<60;i++){w.tick=i;w.subtick=i*10;advanceEnvironment(w);assert.ok(foodProduction(w)>=3.6-1e-9);assert.equal(w.foodIslands.flatMap(g=>g.sources).length,w.foodSettings.sourceCount);}
+ for(let i=6;i<60;i++){w.tick=i;w.subtick=i*10;advanceEnvironment(w);assert.ok(foodProduction(w)>=ENVIRONMENT_RULES.minimumRate-1e-9);assert.equal(w.foodIslands.flatMap(g=>g.sources).length,w.foodSettings.sourceCount);}
 });
 test('disabled timer restarts a full interval and manual poverty disables/cancels preparation',()=>{
  const w=new Evolution({population:1});configureEnvironment(w,{enabled:false});assert.equal(w.automaticEnvironment.nextTick,null);w.tick=81;w.subtick=810;configureEnvironment(w,{enabled:true});assert.equal(w.automaticEnvironment.nextTick,581);
  w.changeFoodEnvironment({foodSources:10,foodRegrowInterval:300,foodIslandCount:2,foodPeriodSpread:0,foodSizeSpread:0});assert.equal(w.automaticEnvironment.enabled,false);assert.equal(w.automaticEnvironment.preparationCancelled,true);assert.throws(()=>configureEnvironment(w,{enabled:true}),/минимума/);
  w.changeFoodEnvironment({foodSources:384,foodRegrowInterval:20,foodIslandCount:8,foodPeriodSpread:0,foodSizeSpread:0});configureEnvironment(w,{enabled:true});assert.equal(w.automaticEnvironment.nextTick,w.tick+1000);assert.equal(w.automaticEnvironment.completedSteps,5);
+});
+
+test('automatic food can be enabled at two portions per T, rejects less and keeps random events above two',()=>{
+ const w=new Evolution({population:1,automaticEnvironment:{enabled:false,randomInterval:1}});
+ const options={foodSources:40,foodRegrowInterval:20,foodIslandCount:1,foodPeriodSpread:0,foodSizeSpread:0};
+ w.changeFoodEnvironment(options);near(foodProduction(w),2);configureEnvironment(w,{enabled:true});assert.equal(w.automaticEnvironment.enabled,true);
+ for(let i=1;i<=50;i++){w.tick=i;w.subtick=i*10;advanceEnvironment(w);assert.ok(foodProduction(w)>=2-1e-9);}
+ w.changeFoodEnvironment({...options,foodSources:39});assert.equal(w.automaticEnvironment.enabled,false);assert.throws(()=>configureEnvironment(w,{enabled:true}),/минимума/);
 });
 test('save/load preserves exact biology, learning, calendars, observer and environment RNG',()=>{
  const w=new Evolution({population:5,automaticEnvironment:{preparationInterval:1,randomInterval:2}});for(let i=0;i<7;i++)w.step();const restored=roundtrip(w);compare(w,restored);

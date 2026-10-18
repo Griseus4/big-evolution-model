@@ -58,13 +58,33 @@ test('hidden world runs without ACK; regular snapshot queue remains bounded',()=
  f.command('ack',{sequence:f.runtime.inFlight});f.time(2700);f.runtime.pulse();
  assert.equal(f.messages.filter(m=>m.type==='state').length,snapshots+1);
 });
-test('pause and internal tabs stop at a whole step; single step stays paused',()=>{
+test('explicit pause stops at a whole step; single step stays paused; tabs keep running',()=>{
  const f=fixture();f.command('running',{value:true});f.time(100);f.runtime.pulse();
  assert.equal(f.runtime.world.tick,1);const reply=f.command('running',{value:false});assert.equal(reply.tick,1);
  f.time(500);f.runtime.pulse();assert.equal(f.runtime.world.tick,1);
  f.command('step');assert.equal(f.runtime.world.tick,2);assert.equal(f.runtime.running,false);
  f.command('running',{value:true});f.command('view',{visible:true,tab:'analysis',section:'birth'});
- f.time(900);f.runtime.pulse();assert.equal(f.runtime.world.tick,2);
+ f.time(900);f.runtime.pulse();assert.equal(f.runtime.world.tick,3);assert.equal(f.runtime.running,true);
+});
+
+test('all tabs preserve running or paused state and observing does not change world trajectories',()=>{
+ for(const running of [false,true]){
+  const f=fixture(),reference=new Evolution(settings);f.command('running',{value:running});let time=0;
+  for(const tab of ['history','tests','analysis','about','world']){
+   f.command('view',{visible:true,tab,section:'birth'});assert.equal(f.runtime.running,running);
+   f.time(time+=100);f.runtime.pulse();if(running)reference.step();
+   assert.deepEqual(f.runtime.world.snapshot(),reference.snapshot());
+  }
+ }
+});
+
+test('live history is delivered once per second; explicit pause flushes the last changed report',()=>{
+ const f=fixture();f.command('view',{visible:true,tab:'history',section:'birth'});f.command('running',{value:true});
+ for(let i=1;i<=10;i++){f.command('ack',{sequence:f.runtime.inFlight});f.time(i*100);f.runtime.pulse();}
+ const reports=()=>f.messages.filter(m=>m.type==='state'&&m.state.lives).map(m=>m.state.lives.tick);
+ assert.deepEqual(reports(),[0,10]);assert.equal(f.runtime.running,true);
+ f.command('ack',{sequence:f.runtime.inFlight});f.time(1100);f.runtime.pulse();
+ f.command('running',{value:false});assert.deepEqual(reports(),[0,10,11]);
 });
 test('target pacing and bounded catchup after suspension',()=>{
  const f=fixture();f.command('running',{value:true});

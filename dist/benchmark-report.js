@@ -6,7 +6,7 @@ import {workerBenchmarkSelection,WORKER_BENCHMARK_PROTOCOL} from './worker-bench
 import {configurationLayout,validateConfigurationReport,configurationMatrix} from './configuration-benchmark-report.js';
 // Архивные отчёты читаются без загрузки старых расчётных модулей. Каждая
 // нагрузка привязана к своей модели; между разными сериями ускорение не считаем.
-const HISTORICAL_SERIES=Object.freeze({'fixed-activity-workloads-v1':'duration-activity-v1','fixed-duration-workloads-v1':'duration-attention-v1','fixed-neural-workloads-v1':'neural-local-body-v1',
+const HISTORICAL_SERIES=Object.freeze({'fixed-environment-deficit-workloads-v1':'environment-energy-deficit-v1','fixed-activity-workloads-v1':'duration-activity-v1','fixed-duration-workloads-v1':'duration-attention-v1','fixed-neural-workloads-v1':'neural-local-body-v1',
  'fixed-food-island-workloads-v1':'neural-food-islands-v1','fixed-neighbour-workloads-v1':'neural-neighbours-v1','fixed-heritable-mutation-workloads-v1':'neural-heritable-mutation-v1'});
 export function timingSummary(samples){
  const sorted=samples.slice().sort((a,b)=>a-b),middle=Math.floor(sorted.length/2);

@@ -64,7 +64,7 @@ console.log(JSON.stringify({benchmarkDefaults:DEFAULT_BENCHMARK_COUNTS,benchmark
 data=json.loads(subprocess.run(['node','--input-type=module','-e',js],cwd=ROOT,check=True,capture_output=True,text=True).stdout)
 aliases=data['aliases']
 for identity in p.controls:
-    if identity.startswith(('tab-','side-tab-','resident-tab-','test-tab-')) or identity=='help-close':continue
+    if identity.startswith(('tab-','side-tab-','resident-tab-','test-tab-','start-tab-','food-tab-','wiki-tab-')) or identity=='help-close':continue
     assert aliases.get(identity,identity) in data['help'],f'Нет подсказки для {identity}'
 for identity,attrs in p.ranges.items():
     if identity.startswith('history-'):
@@ -72,6 +72,12 @@ for identity,attrs in p.ranges.items():
         width = int(re.search(r'id="history-width"[^>]*value="(\d+)"', (DIST/'index.html').read_text()).group(1))
         expected=[0,width,width if identity=='history-period-end' else 0]
         assert attrs.get('step')=='1', f'Точность периода {identity}'
+    elif identity.endswith('food-capacity-mean'):
+        expected=[data['capacity']['min'],data['capacity']['max'],4.5]
+    elif identity.endswith('food-capacity-spread'):
+        expected=[0,100,100/3]
+    elif identity.endswith('food-size-mean'):
+        expected=[0,data['limits']['sourcesMax'],38.5]
     elif identity=='world-food-capacity':
         expected=[data['capacity'][x] for x in ['min','max','default']]
     elif identity.endswith('spread'):
@@ -79,13 +85,14 @@ for identity,attrs in p.ranges.items():
     else:
         prefix='sources' if identity.endswith('sources') else 'interval'
         expected=[data['limits'][prefix+x] for x in ['Min','Max','Default']]
-    assert [int(attrs[x]) for x in ['min','max','value']]==expected,f'Границы/начальное значение {identity}'
+    assert all(abs(float(attrs[x])-value)<1e-8 for x,value in zip(['min','max','value'],expected)),f'Границы/начальное значение {identity}'
 for prefix in ['', 'world-', 'test-']:
     for suffix in ['sources', 'period', 'islands', 'period-spread', 'size-spread']:
         assert prefix+'food-'+suffix in p.ids, 'Не хватает общего пищевого поля'
-    assert re.search(r'id="'+prefix+r'food-islands"[^>]*min="'+str(data['limits']['islandsMin'])+r'"[^>]*max="'+str(data['limits']['islandsMax'])+r'"[^>]*value="'+str(data['limits']['islandsDefault'])+r'"', (DIST/'index.html').read_text()), 'Границы островков'
+    assert re.search(r'id="'+prefix+r'food-islands"[^>]*min="'+str(data['limits']['islandsMin'] if prefix=='test-' else 0)+r'"[^>]*max="'+str(data['limits']['islandsMax'])+r'"[^>]*value="'+str(data['limits']['islandsDefault'])+r'"', (DIST/'index.html').read_text()), 'Границы островков'
 for identity in p.references:assert identity in p.ids,f'Отсутствует цель HTML/ARIA {identity}'
-for identity in ['geography','test-geography']:
+assert 'geography' not in p.ids,'Одновариантный выбор географии убран из стартовых условий'
+for identity in ['test-geography']:
     options=p.selects[identity]
     assert [o.get('value') for o in options]==[data['defaultGeography']],f'Профили {identity} расходятся с моделью'
     assert [o.get('value') for o in options if 'selected' in o]==[data['defaultGeography']],f'Исходный профиль {identity}'

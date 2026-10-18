@@ -6,9 +6,9 @@ An artificial life simulation with evolving neural agents, individual learning, 
 
 Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments.
 
-**Status:** experimental prototype · **Current implementation:** 0.36.0 · **Interface:** Russian.
+**Status:** experimental prototype · **Current implementation:** 0.37.0 · **Interface:** Russian.
 
-Version 0.36 adds automatic food-environment changes, health costs for unpaid energy, and full manual world save/load. These controls are available in the food-sources panel. See the [release notes](docs/updates/v036-environment-energy-save.md).
+Version 0.37 adds whole-island movement and expanded behavioral and genetic statistics. Full world save/load is available in the top bar; automatic food changes are configured in the food-sources panel. See the [release notes](docs/updates/v037-moving-islands-statistics.md).
 
 ## What is implemented
 
@@ -104,3 +104,11 @@ Version0.33.2 groups benchmark columns by version and worker count, runs each ev
 Version 0.34.0 exposes current activity counts on the seven visible hexes, including six movement directions relative to the observer. Observations share one boundary before decisions; identities, hidden body states and exact progress are excluded. This is an enabling mechanism for social behaviour, not a scripted flocking policy. Genome v12 is not converted. Benchmarks start a new model series; old JSON reports remain readable. [Release notes](docs/updates/v034-visible-activities.md).
 
 Version 0.35.0 adds birth-cohort charts with minimum, median, mean and maximum, individual movement/eating rates, time-averaged inventory, reconsiderations, interruptions and survival to a selected age. A separate chart shows time-averaged food on the ground. The table is height-limited and paged. Observer counters do not change agent decisions or genome v13. [Details](docs/updates/v035-life-history-charts.md).
+
+Version 0.37.0 adds whole-island food movement, reproduction and heritable-trait statistics, sensitivity distributions, potential food production and a four-substeps-per-second observation mode. [Release notes](docs/updates/v037-moving-islands-statistics.md).
+
+Version 0.36.3 moves Play/Pause beside the main tabs and keeps the world running across sections. Life-history charts refresh while it runs; both automatic-food thresholds are 2 portions per model-time unit. [Release notes](docs/updates/v036-live-history.md).
+
+Version 0.36.2 adds survival mean/median markers for completed lives, aligned help controls without pausing, and a question-based reference. [Release notes](docs/updates/v036-interface-help-survival.md).
+
+Version 0.36.1 adds a wider panel with task screens, persistent world-save controls, a navigable reference, shared food controls and observation one substep every 0.5 seconds. [Release notes](docs/updates/v036-interface-screens.md).

@@ -5,36 +5,41 @@
 import {Evolution} from './evolution.js';
 import {ResidentTrail,attachResidentTrail} from './resident-trail.js';
 import {PerformanceProfiler} from './performance-profiler.js';
-import {worldPresentation,WORLD_PROTOCOL,WORLD_UI_INTERVAL} from './world-view.js';
+import {worldPresentation,WORLD_PROTOCOL,WORLD_UI_INTERVAL,HISTORY_UI_INTERVAL} from './world-view.js';
 import {computationWorkers} from './computation-settings.js';
 import {clearCognitionSummary} from './cognition-summary.js';
 import {saveWorld,loadWorld,MAX_WORLD_SAVE_BYTES} from './world-save.js';
 import {configureEnvironment,environmentStatus} from './automatic-environment.js';
+import {parallelSubstep} from './world-substeps.js';
 export class WorldRuntime{
  constructor({send,clock=()=>performance.now(),wake=()=>{},cancel=()=>{},executorFactory=null}){
   Object.assign(this,{send,clock,wake,cancel,executorFactory});this.executor=null;this.epoch=0;this.sequence=0;this.world=null;
-  this.running=false;this.visible=true;this.target=10;this.credit=0;this.lastTime=clock();
-  this.lastPaint=-Infinity;this.inFlight=null;this.staticDirty=true;this.historyDirty=true;
+  this.running=false;this.visible=true;this.target=10;this.quantum=1;this.credit=0;this.lastTime=clock();
+  this.lastPaint=-Infinity;this.lastHistoryPaint=-Infinity;this.inFlight=null;this.staticDirty=true;this.historyDirty=true;
   this.section='birth';this.tab='world';this.trail=new ResidentTrail();
   this.profiler=new PerformanceProfiler({clock});this.rateStart=clock();this.rateTick=0;this.actualRate=0;
   this.presentationMs=0;this.messages=0;
   this.parallelBaseline=null;this.parallelFrozen=null;this.computeMode='auto';
  }
- schedule(){if(this.running){const delay=Math.max(0,(1-this.credit)*1000/this.target);if(this.wake(delay)!==false)this.profiler.workerTiming.scheduled(delay,delay>0?Math.ceil(delay):0);}}
+ schedule(){if(this.running){const delay=Math.max(0,(this.quantum-this.credit)*1000/this.target);if(this.wake(delay)!==false)this.profiler.workerTiming.scheduled(delay,delay>0?Math.ceil(delay):0);}}
  resetTime(){this.profiler.workerTiming.resetBoundary();this.credit=0;this.lastTime=this.clock();this.rateStart=this.lastTime;this.rateTick=this.world?.tick??0;this.actualRate=0;}
  setRunning(value){this.running=Boolean(value&&this.world?.agents.length);this.profiler.setRunning(this.running);this.freezeParallel();this.resetTime();this.cancel();this.schedule();}
+ async substep(){
+  if(this.executor){if(this.profiler.active)await this.profiler.runAsyncStep(()=>parallelSubstep(this.executor));else await parallelSubstep(this.executor);}
+  else if(this.profiler.active)this.profiler.runStep(()=>this.world.substep());else this.world.substep();
+ }
  async pulse(){
   if(!this.running)return;
   const timing=this.profiler.workerTiming;timing.beginTask();
   try{
-  const now=this.clock(),elapsed=Math.max(0,Math.min(250,now-this.lastTime));this.lastTime=now;
-  this.credit=Math.min(Math.max(1,this.target*.25),this.credit+elapsed*this.target/1000);
+  const now=this.clock(),elapsed=Math.max(0,Math.min(this.quantum===.1?Math.max(250,this.quantum*1000/this.target):250,now-this.lastTime));this.lastTime=now;
+  this.credit=Math.min(Math.max(this.quantum,this.target*.25),this.credit+elapsed*this.target/1000);
   // Дробные миллисекунды могут оставить 0.9999999999999999 вместо единицы.
   // Допуск относится только к часам планировщика, не к физике/числам мозга.
-  if(this.credit>=1-1e-12){
+  if(this.credit>=this.quantum-1e-12){
    const start=timing.active?timing.now():null;
-   try{if(this.executor){if(this.profiler.active)await this.profiler.runAsyncStep(()=>this.executor.step());else await this.executor.step();}else this.world.step();}finally{if(start!==null)timing.phase('step',start);}
-   this.credit=Math.max(0,this.credit-1);this.historyDirty=true;
+   try{if(this.quantum===.1)await this.substep();else if(this.executor){if(this.profiler.active)await this.profiler.runAsyncStep(()=>this.executor.step());else await this.executor.step();}else this.world.step();}finally{if(start!==null)timing.phase('step',start);}
+   this.credit=Math.max(0,this.credit-this.quantum);this.historyDirty=true;
   }
   const end=this.clock();
   if(end-this.rateStart>=1000){this.actualRate=(this.world.tick-this.rateTick)*1000/(end-this.rateStart);this.rateStart=end;this.rateTick=this.world.tick;}
@@ -55,13 +60,13 @@ export class WorldRuntime{
   if(this.executor)await this.executor.syncAgent(this.selected);
   const timing=this.profiler.workerTiming,measuring=timing.active,prepareStart=measuring?timing.now():null;
   const start=this.clock(),state=worldPresentation(this.world,{selected:this.selected,trail:this.trail,
-   section:this.section,history:(this.tab==='history'||this.restored)&&this.historyDirty,staticMap:this.staticDirty});
+   section:this.section,history:(this.tab==='history'||this.restored)&&this.historyDirty&&(force||now-this.lastHistoryPaint>=HISTORY_UI_INTERVAL),staticMap:this.staticDirty});
   this.lastEnvironmentRevision=this.world.environmentRevision;this.restored=false;
   state.execution={computeWorkers:this.executor?.lanes.length??1,mode:this.computeMode};
   this.presentationMs+=this.clock()-start;this.messages++;
   if(measuring)timing.phase('presentation',prepareStart);
   const sequence=++this.sequence;this.inFlight=sequence;this.lastPaint=now;this.staticDirty=false;
-  if(state.lives)this.historyDirty=false;
+  if(state.lives){this.historyDirty=false;this.lastHistoryPaint=now;}
   const message={protocol:WORLD_PROTOCOL,type:'state',epoch:this.epoch,sequence,running:this.running,
    actualRate:this.actualRate,state,profile:this.profile()};
   // Сюда входит только синхронный send/postMessage, а не доставка/ACK/DOM.
@@ -70,7 +75,7 @@ export class WorldRuntime{
  }
  profile(){
   const report=this.profiler.report();if(!report)return null;
-  report.context.worldMode='dedicated-worker';report.context.scheduler={targetStepsPerSecond:this.target,uiIntervalMs:WORLD_UI_INTERVAL,stepsPerTask:1};
+  report.context.worldMode='dedicated-worker';report.context.scheduler={targetStepsPerSecond:this.target,uiIntervalMs:WORLD_UI_INTERVAL,stepsPerTask:this.quantum,manualStepSize:.1};
   report.context.computeWorkers??=this.executor?.lanes.length??1;
   if(report.context.computeWorkers>1&&(this.parallelFrozen||this.parallelBaseline)){report.parallel=this.parallelFrozen??this.parallelMetrics();report.detailSchema='parallel-phases-v1';report.notes.push('Параллельный stepMs включает ожидание владельцев. parallel.ownerWorkMs суммирует время нескольких потоков и не складывается с stepMs. Традиционные внутренние группы однопоточного оценщика здесь не измеряются.');}
   report.scheduler.computeBudgetMs=null;report.scheduler.maxStepsPerFrame=null;
@@ -134,14 +139,14 @@ export class WorldRuntime{
    }
    else if(type==='speed'){
     if(!Number.isFinite(payload.value)||payload.value<=0)throw new Error('Некорректная скорость.');
-    this.target=payload.value;this.resetTime();this.cancel();this.schedule();
+    this.target=payload.value;this.quantum=payload.substeps===true?.1:1;this.resetTime();this.cancel();this.schedule();
+   }else if(type==='substep'){this.setRunning(false);await this.substep();this.historyDirty=true;
    }else if(type==='step'){this.setRunning(false);if(this.executor){if(this.profiler.active)await this.profiler.runAsyncStep(()=>this.executor.step());else await this.executor.step();}else this.world.step();this.historyDirty=true;}
    else if(type==='select'){
     const a=this.world.agents.find(a=>a.id===payload.id);
     if(a){this.selected=a;this.trail.select(this.world,a);if(this.executor)this.executor.retained=a;}
    }else if(type==='view'){
     this.visible=payload.visible;this.tab=payload.tab;this.section=payload.section;
-    if(this.tab!=='world')this.setRunning(false);
    }else if(type==='food'){
     // Команда обрабатывается между целыми шагами; сохраняем режим запуска
     // и при успешном вмешательстве, и при ошибке валидации настроек.

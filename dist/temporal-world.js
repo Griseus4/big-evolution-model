@@ -109,7 +109,7 @@ function complete(w,a){
  else if(action===10)w.depositFood(a);
  else if(action===9){
   // Конечная проверка намеренно не проверяетN/50/40 повторно.
-  a.energy-=RULES.birthCost;w.stats.birthSpent+=RULES.birthCost-RULES.newbornEnergy;a.lastBirthAge=a.age;a.children++;w.stats.births++;a.life.reproduction.births++;w.stats.reproduction.births++;
+  a.energy-=RULES.birthCost;w.stats.birthSpent+=RULES.birthCost-RULES.newbornEnergy;a.lastBirthAge=a.age;if(a.children===0)a.life.firstBirthAge=a.age;a.children++;w.stats.births++;a.life.reproduction.births++;w.stats.reproduction.births++;
   const genes=w.mutations?mutateGenome(a.genome,w.random,w.mutationRate,.7,w.cognitiveRandom,w.bodyRandom,w.neuralRandom):a.genome.slice();const child=w.addAgent(a,genes,a);child.bornSubtick=w.subtick;child.readyAt=w.subtick+1;
  }
  w.stats.completed[action]++;a.life.actions[action]++;a.life.moved+=Number(action<6);a.life.gathered+=Number(action===6);a.life.eaten+=Number(action===7);a.life.deposited+=Number(action===10);a.lastProcess=p;a.process=null;a.callReason=CALL_COMPLETE;

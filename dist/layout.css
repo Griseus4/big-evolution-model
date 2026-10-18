@@ -1,0 +1,30 @@
+/* Экраны по задачам вместо длинной панели. Карта сохраняет читаемый размер;
+ * на небольшом экране настройки переходят под неё, без горизонтального скролла. */
+.global-toolbar,.global-status{max-width:2200px;margin:auto;padding:0 28px}
+.global-toolbar{display:flex;align-items:center;justify-content:space-between;gap:18px;position:sticky;top:0;z-index:5;background:var(--bg);padding-top:12px;padding-bottom:12px;border-bottom:1px solid var(--edge)}
+.global-toolbar .lab-tablist{padding:0;margin:0;max-width:none}.world-file-actions{display:flex;gap:8px;flex-shrink:0}.global-status p:not(:empty){padding:8px 0}
+#panel-world{max-width:2200px;grid-template-columns:minmax(550px,1fr) minmax(560px,650px);gap:24px;padding:20px 28px}
+.lab-panel,footer{max-width:2200px}.compact-sidebar{top:74px}.side-tablist{grid-template-columns:repeat(4,minmax(0,1fr));padding:8px;gap:5px}.side-tablist button{padding:10px 5px}
+.side-content{max-height:calc(100dvh - 150px);padding:0 18px 12px}.compact-sidebar .panel{padding:14px 0}.compact-sidebar .body-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.screen-tablist{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0;border-bottom:1px solid var(--edge);padding-bottom:10px}.screen-tablist button{flex:1;padding:9px 12px}.screen-tablist [aria-selected=true]{background:var(--gold);color:#242b1c;border-color:var(--gold)}
+.screen-panel{min-width:0}.screen-panel:focus-visible{outline:2px solid var(--gold);outline-offset:3px}.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;align-items:start}.settings-grid>.note{grid-column:1/-1}.settings-grid label{min-width:0}.settings-grid input{max-width:100%}
+.screen-actions{margin-top:14px;padding-top:10px;border-top:1px solid var(--edge)}.screen-actions .wide{margin-top:0}.seed-controls{max-width:340px}.screen-panel>.file-label{margin-top:16px}
+#resident-details{max-height:min(52dvh,540px)}#choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 18px}.resident-tablist{gap:5px}.resident-tablist button{padding:8px 10px}
+.wiki-layout{display:grid;grid-template-columns:290px minmax(0,1fr);gap:28px;margin-top:22px;align-items:start}.wiki-contents{position:sticky;top:80px;display:block}.wiki-contents .screen-tablist{display:flex;flex-direction:column;margin:0;border:0;padding:0}.wiki-contents button{text-align:left;flex:none}.wiki-article .panel{padding:24px;margin:0;min-height:240px}.wiki-article h3{font-size:23px;margin:0 0 18px}.wiki-article p{font-size:15px;line-height:1.8;margin:14px 0}.about-intro{max-width:100ch}
+.wiki-contents .screen-tablist{display:grid;grid-template-columns:1fr 1fr}.wiki-contents button{font-size:12px;min-height:42px}
+.history-display-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:16px 0}.history-display-controls select{min-width:180px}.history-chart-picker{margin-left:auto}.history-chart-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 20px;padding:12px 0}.history-chart-options label{font-size:13px;display:flex;align-items:center;gap:8px}
+input:disabled,select:disabled{opacity:.65;cursor:not-allowed}.automatic-summary{padding:12px;border:1px solid var(--edge);border-radius:6px;margin:12px 0;font-size:13px;line-height:1.6}
+.range-setting{margin:9px 0}.range-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.range-heading label{margin:0!important}.range-heading input[type=number]{width:110px;margin:0;padding:6px 8px}
+@media(max-width:1500px) and (min-width:1101px){#panel-world{grid-template-columns:minmax(550px,1fr) minmax(420px,500px);gap:20px;padding:20px}.side-content{padding:0 14px 12px}.side-tablist button{font-size:11px}.settings-grid{gap:0 14px}.compact-sidebar .body-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:1100px){#panel-world{grid-template-columns:1fr;padding:18px}.compact-sidebar{position:static;grid-column:1/-1}.side-content{max-height:none;overflow:visible}.wiki-layout{grid-template-columns:220px minmax(0,1fr);gap:18px}.global-toolbar,.global-status{padding-left:18px;padding-right:18px}.global-toolbar{position:static;flex-wrap:wrap}.wiki-contents{top:16px}}
+@media(max-width:650px){.settings-grid{grid-template-columns:1fr}.side-tablist{grid-template-columns:repeat(2,minmax(0,1fr))}.compact-sidebar .body-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.wiki-layout{grid-template-columns:1fr}.wiki-contents{position:static}.wiki-contents .screen-tablist{display:grid;grid-template-columns:1fr 1fr}.wiki-contents button{font-size:12px}.wiki-article .panel{padding:16px}.history-chart-options{grid-template-columns:1fr}.history-chart-picker{margin-left:0}#choices{grid-template-columns:1fr}.world-file-actions{width:100%}.world-file-actions button{flex:1}}
+
+/* Подсказка выравнивается по полю, а не по подписи над ним. */
+.help-control.help-field{align-items:flex-end}.help-field>.help-trigger{margin:0 0 12px!important}.transport .help-field>.help-trigger{margin:0!important}
+.seed-controls>.help-action{margin:0 0 12px}.seed-controls{max-width:460px}
+.range-heading>.help-trigger{margin:0}.range-heading label{flex:1}.range-heading .range-number{flex:0 1 110px;min-width:70px}
+#next-agent{font-size:14px;padding:10px 16px;min-height:42px;min-width:120px}
+.wiki-contents .wiki-tree{display:flex;gap:14px}.wiki-branch{border-left:1px solid var(--edge);padding-left:12px}.wiki-branch h3{margin:0 0 6px;color:var(--muted);font-size:12px}.wiki-branch button{display:block;width:100%;margin:4px 0;text-align:left}
+@media(max-width:650px){.wiki-contents .wiki-tree{display:grid;grid-template-columns:1fr 1fr;gap:12px}.wiki-branch{min-width:0}.wiki-branch button{font-size:12px}}
+
+.global-toolbar{flex-wrap:wrap}.global-play-controls{margin-left:auto;flex-shrink:0}.global-toolbar .help-action{display:inline-flex;margin:0}.global-play-controls #play{min-width:148px;min-height:40px}

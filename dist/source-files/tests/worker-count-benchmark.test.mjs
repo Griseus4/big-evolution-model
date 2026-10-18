@@ -5,7 +5,7 @@ import {workerBenchmarkSelection,WORKER_BENCHMARK_PROTOCOL} from '../dist/worker
 import {COMPUTATION_WORKER_COUNTS} from '../dist/computation-settings.js';
 import {runVersionBenchmarks} from '../dist/benchmark-comparison-runner.js';
 import {benchmarkMatrix,validateBenchmarkReport} from '../dist/benchmark-report.js';
-import {BENCHMARK_CASES} from '../dist/benchmark-fixtures.js';
+import {BENCHMARK_CASES,BENCHMARK_SUITE_ID} from '../dist/benchmark-fixtures.js';
 import {loadSnapshotRuntime} from '../dist/benchmark-snapshot-runtime.js';
 import {createCognitionWorker} from './node-cognition-worker.mjs';
 import {BENCHMARK_VERSION_CHECKS} from '../dist/benchmark-version-checks.js';
@@ -26,7 +26,7 @@ function controlledLoader(log,{failMeasure=false,stopWarmup=false,onStop=()=>{}}
  let creations=0,active=0,peak=0;
  return {get creations(){return creations;},get active(){return active;},get peak(){return peak;},loadVersion:async id=>{
   const workers=Number(id.split('@')[1]);let live=false;
-  return {manifest:{id,snapshotId:id.split('@')[0],label:`${workers} вычислителей`,execution:{computeWorkers:workers}},suiteId:'fixed-environment-deficit-workloads-v1',specs:BENCHMARK_CASES,
+  return {manifest:{id,snapshotId:id.split('@')[0],label:`${workers} вычислителей`,execution:{computeWorkers:workers}},suiteId:BENCHMARK_SUITE_ID,specs:BENCHMARK_CASES,
    create:()=>{creations++;return {tick:0,agents:[]};},capture:structuredClone,restore:structuredClone,check:()=>{},
    digest:async world=>(world.tick?'b':'a').repeat(64),
    async workload(world,spec,count,{shouldStop}){

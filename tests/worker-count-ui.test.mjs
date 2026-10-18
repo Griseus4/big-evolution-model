@@ -55,9 +55,9 @@ test('nested version/count UI sends explicit configurations, grouped metrics and
  const latest=cards.at(-1);assert.equal(latest.children[1].querySelectorAll('input').length,9);
  for(const input of latest.children[1].querySelectorAll('input'))input.checked=[1,2].includes(Number(input.value));
  await e.get('benchmark-start').emit('click');assert.equal(b.pauses,1);assert.equal(b.workers.length,1);
- const config=b.workers[0].message.config;assert.deepEqual(config.selections,[{versionId:'0.36.0',workerCounts:[1,2]}]);assert.equal(config.configurations.length,3);
+ const config=b.workers[0].message.config;assert.deepEqual(config.selections,[{versionId:'0.37.0',workerCounts:[1,2]}]);assert.equal(config.configurations.length,3);
  reports.validateBenchmarkReport(b.ui.getReport());
- const report=selected(completeReport(configs.configurationSelection([{versionId:'0.36.0',workerCounts:[1,2]}],{groups:['evaluator','world'],repeatCounts:{evaluator:2,world:2}})));
+ const report=selected(completeReport(configs.configurationSelection([{versionId:'0.37.0',workerCounts:[1,2]}],{groups:['evaluator','world'],repeatCounts:{evaluator:2,world:2}})));
  b.workers[0].onmessage({data:{type:'done',report}});assert.equal(b.workers[0].closed,true);
  const displayed=text(e.get('benchmark-results'));assert.match(displayed,/шагов\/с/);assert.match(displayed,/Эффективность/);assert.match(displayed,/×2.00/);assert.match(displayed,/один замер на версию/);assert.doesNotMatch(displayed,/Наименьшее медианное время/);
  await e.get('benchmark-export').emit('click');const exported=JSON.parse(await b.downloads[0].text());reports.validateBenchmarkReport(exported);
@@ -67,7 +67,7 @@ test('UI rejects empty counts and preserves unequal and partial reports without 
  const b=boot();for(const input of b.elements.get('benchmark-versions').children.at(-1).children[1].querySelectorAll('input'))input.checked=false;
  await b.elements.get('benchmark-start').emit('click');assert.equal(b.workers.length,0);assert.equal(b.pauses,0);
  assert.match(b.elements.get('benchmark-status').textContent,/число вычислителей/);
- const report=selected(completeReport(configs.configurationSelection([{versionId:'0.36.0',workerCounts:[1,4]}],{groups:['world'],repeatCounts:{world:1}})));
+ const report=selected(completeReport(configs.configurationSelection([{versionId:'0.37.0',workerCounts:[1,4]}],{groups:['world'],repeatCounts:{world:1}})));
  report.cases[1].repeats[0].resultDigest='c'.repeat(64);b.ui.restoreReport(report);assert.match(text(b.elements.get('benchmark-results')),/разные результаты/);
  const next=boot();report.status='stopped';report.cases[0].repeats=[];selected(report);next.ui.restoreReport(report);
  assert.doesNotMatch(text(next.elements.get('benchmark-results')),/Наименьшее медианное время/);
