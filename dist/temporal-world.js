@@ -181,7 +181,7 @@ export function advanceTemporalBodies(w,onDeath=null){
  for(const a of w.agents){
   a.age=(w.subtick-(a.bornSubtick??Math.round(a.born*10)))/10;
   if(a.life.observer)a.life.observer.inventorySubsteps[a.inventory]++;
-  const amount=Math.min(a.stomach,RULES.digestionRate*DT),gain=Math.min(amount,100-a.energy);a.stomach-=amount;a.energy+=gain;w.stats.digested+=amount;w.stats.overflow+=amount-gain;
+  const amount=Math.min(a.stomach,w.digestionRate*DT),gain=Math.min(amount,100-a.energy);a.stomach-=amount;a.energy+=gain;w.stats.digested+=amount;w.stats.overflow+=amount-gain;
   if(a.process){if(a.process.action!==9)spend(w,a,actionEnergyCost(a.process.action)*DT);a.process.elapsed++;}
   if(a.health===0||a.age>=RULES.maxAge){fail(w,a,'death');sampleLife(w,a);w.die(a,a.health===0?'starvation':'age');a.brain.pending=null;onDeath?.(a);continue;}
   if(a.process&&a.process.elapsed>=a.process.duration)due.push(a);

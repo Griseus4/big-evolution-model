@@ -1,6 +1,6 @@
 /** Ручной снимок только на согласованной границе. Личные мозги перед вызовом
  * синхронизирует Runtime; восстановление не создаёт основателей/бросков RNG. */
-import {Evolution,WORLD_WIDTH,WORLD_HEIGHT,RULES} from './evolution.js';
+import {Evolution,WORLD_WIDTH,WORLD_HEIGHT,RULES,validateDigestionTime} from './evolution.js';
 import {MODEL_VERSION,LifeHistory} from './life-history.js';
 import {Random} from './simulation.js';
 import {rebuildActivities,ACTIVITY_COUNT} from './activity-perception.js';
@@ -11,10 +11,10 @@ import {validateEnvironmentSettings,ENVIRONMENT_DEFAULTS,ENVIRONMENT_SCHEMA,ENVI
 import {reproductionProfile} from './reproduction.js';
 import {controllerProblems} from './brain-controller.js';
 export const WORLD_SAVE_FORMAT='big-evolution-world',WORLD_SAVE_VERSION=2,MAX_WORLD_SAVE_BYTES=512*1024*1024;
-// Эти выпуски отличаются только наблюдателем при той же биологии/схеме.
-// Новый номер интерфейса не должен запрещать продолжить прежний полный мир.
-const COMPATIBLE_MODELS=new Set([MODEL_VERSION,'0.44.0','0.43.0','0.42.0','0.41.0','0.40.0','0.39.2']);
-const FIELDS=('temporal individualFood geography learningEnabled memoryEnabled reproduction seed foodSeed random cognitiveRandom bodyRandom scenario heritableMutations upgradeMutationGenes mutationRandom brainType neuralRandom initialPopulation limit mutationRate mutations baseGenome tick nextId maxGeneration events history agents foodCycleStart environmentRevision environmentChanges lifeHistory lifeExposure records lineages tiles stats sourceTemplate foodIslands initialFood foodSettings initialFoodSettings initialFoodIslands mutationProtocol geographyInfo foodExposure subtick _primed _viewEpoch automaticEnvironment _activities').split(' ');
+// Старые миры продолжают прежнее усвоение: отсутствующий параметр даёт 20 Т.
+// Новые сохраняют выбранное время; номер UI сам по себе не ломает схему.
+const COMPATIBLE_MODELS=new Set([MODEL_VERSION,'0.45.0','0.44.0','0.43.0','0.42.0','0.41.0','0.40.0','0.39.2']);
+const FIELDS=('temporal digestionTime individualFood geography learningEnabled memoryEnabled reproduction seed foodSeed random cognitiveRandom bodyRandom scenario heritableMutations upgradeMutationGenes mutationRandom brainType neuralRandom initialPopulation limit mutationRate mutations baseGenome tick nextId maxGeneration events history agents foodCycleStart environmentRevision environmentChanges lifeHistory lifeExposure records lineages tiles stats sourceTemplate foodIslands initialFood foodSettings initialFoodSettings initialFoodIslands mutationProtocol geographyInfo foodExposure subtick _primed _viewEpoch automaticEnvironment _activities').split(' ');
 export function saveWorld(w){
  if(!w.temporal)throw new Error('Полное сохранение поддерживает текущую модель.');
  const state=Object.fromEntries(FIELDS.filter(k=>Object.hasOwn(w,k)).map(k=>[k,w[k]]));
@@ -24,6 +24,8 @@ export function loadWorld(file){
  if(file?.format!==WORLD_SAVE_FORMAT||file.version!==WORLD_SAVE_VERSION||!COMPATIBLE_MODELS.has(file.modelVersion))throw new Error('Неподдерживаемый формат или версия сохранения мира. Требуется совместимая схема целевой автоматики.');
  const state=decodeState(file.state),w=Object.create(Evolution.prototype);
  if(!state||Object.keys(state).some(k=>!FIELDS.includes(k)))throw new Error('Недопустимые поля мира.');Object.assign(w,state);w.reproduction=reproductionProfile(w.reproduction);
+ if(file.modelVersion===MODEL_VERSION&&!Object.hasOwn(state,'digestionTime'))throw new Error('В сохранении отсутствует время усвоения пищи.');
+ w.digestionTime=validateDigestionTime(w.digestionTime);w.digestionRate=RULES.foodEnergy/w.digestionTime;
  const valid=n=>typeof n==='number'&&Number.isFinite(n),integer=n=>Number.isSafeInteger(n)&&n>=0;
  if(!integer(w.foodSeed)||w.foodSeed>4294967295)throw new Error('Повреждён seed пищи.');
  if(w.temporal!==true||w.individualFood!==true||w.brainType!==TEMPORAL_BRAIN_TYPE||!integer(w.subtick)||w.tick!==w.subtick/10||!integer(w.nextId)||!Array.isArray(w.agents)||!Array.isArray(w.tiles)||w.tiles.length!==WORLD_WIDTH*WORLD_HEIGHT||!(w.lifeHistory instanceof LifeHistory)||!(w.records instanceof Map)||!(w.lineages instanceof Map))throw new Error('Повреждена структура мира.');

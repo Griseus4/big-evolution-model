@@ -4,13 +4,15 @@ import {genomeMetadata,validateGenomeFile} from './genome.js';
 import {EXPERIMENT_FACTOR_FIELDS,factorDesign,setSetting,MAX_EXPERIMENT_COMBINATIONS} from './experiment-fields.js';
 import {validateFounderSenses} from './founder-senses.js';
 import {WORLD_DEFAULTS} from './world-defaults.js';
+import {validateDigestionTime} from './evolution.js';
 import {validateFoodSettings} from './food-settings.js';
 import {validateEnvironmentSettings} from './environment-settings.js';
 import {reproductionProfile} from './reproduction.js';
 import {COMPUTATION_WORKER_COUNTS} from './computation-settings.js';
 import {DEFAULT_SEEDS} from './experiment-runner.js';
-export const EXPERIMENT_PROTOCOL='world-constructor-v2';
-export const EXPERIMENT_PLAN_VERSION=2;
+export const EXPERIMENT_PROTOCOL='world-constructor-v3';
+export const EXPERIMENT_PLAN_VERSION=3;
+export const EXPERIMENT_PLAN_PROTOCOLS=Object.freeze([EXPERIMENT_PROTOCOL,'world-constructor-v2']);
 export const EXPERIMENT_TERRAIN_SEED=42;
 export const EXPERIMENT_FOOD_SEED=42;
 export const EXPERIMENT_DEFAULTS=Object.freeze({worlds:5,steps:20000,budget:Math.max(1,Math.min(32,(globalThis.navigator?.hardwareConcurrency??4)-1)),maxWorkers:4,allocation:'auto'});
@@ -21,7 +23,8 @@ export function validateWorldOptions(input={}){
  const population=integer(input.population??WORLD_DEFAULTS.population,1,1000,'Основатели'),limit=integer(input.limit??WORLD_DEFAULTS.limit,population,1000,'Лимит');
  for(const name of ['memory','learning','mutations'])if(input[name]!==undefined&&typeof input[name]!=='boolean')throw new Error(`Некорректный переключатель ${name}.`);
  const founderSenses=validateFounderSenses(input.founderSenses);
- return {population,limit,...(founderSenses?{founderSenses}:{}),...(input.terrainSeed!==undefined?{terrainSeed:integer(input.terrainSeed,1,4294967295,'Seed карты')}:{}),...(input.foodSeed!==undefined?{foodSeed:integer(input.foodSeed,1,4294967295,'Seed пищи')}:{}),...validateFoodSettings({...input,foodGeneralSettings:input.foodGeneralSettings||input.foodRegrowInterval!==undefined&&(!Number.isInteger(input.foodRegrowInterval)||input.foodRegrowInterval<10||input.foodRegrowInterval>300)||input.foodIslandCount===0}),...(input.baseGenome?{baseGenome:validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome})}:{}),automaticEnvironment:validateEnvironmentSettings(input.automaticEnvironment),reproduction:reproductionProfile(input.reproduction),memory:input.memory!==false,learning:input.learning!==false,mutations:input.mutations!==false};
+ const digestionTime=validateDigestionTime(input.digestionTime);
+ return {population,limit,digestionTime,...(founderSenses?{founderSenses}:{}),...(input.terrainSeed!==undefined?{terrainSeed:integer(input.terrainSeed,1,4294967295,'Seed карты')}:{}),...(input.foodSeed!==undefined?{foodSeed:integer(input.foodSeed,1,4294967295,'Seed пищи')}:{}),...validateFoodSettings({...input,foodGeneralSettings:input.foodGeneralSettings||input.foodRegrowInterval!==undefined&&(!Number.isInteger(input.foodRegrowInterval)||input.foodRegrowInterval<10||input.foodRegrowInterval>300)||input.foodIslandCount===0}),...(input.baseGenome?{baseGenome:validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome})}:{}),automaticEnvironment:validateEnvironmentSettings(input.automaticEnvironment),reproduction:reproductionProfile(input.reproduction),memory:input.memory!==false,learning:input.learning!==false,mutations:input.mutations!==false};
 }
 export function validatePlan(input){
  const worlds=integer(input.worlds??EXPERIMENT_DEFAULTS.worlds,1,64,'Миров на вариант'),steps=integer(input.steps??EXPERIMENT_DEFAULTS.steps,1,1000000,'Длительность, Т'),budget=integer(input.budget??EXPERIMENT_DEFAULTS.budget,1,64,'Бюджет потоков');

@@ -7,7 +7,7 @@
 **Сейчас:** поля — [experiment-fields.js](../../dist/experiment-fields.js), редактор — [experiment-design-ui.js](../../dist/experiment-design-ui.js); `validateWorldOptions`/`validatePlan` — [experiment-plan.js](../../dist/experiment-plan.js). Геномы — [experiment-genomes.js](../../dist/experiment-genomes.js), подмена коэффициентов — [founder-senses.js](../../dist/founder-senses.js).
 **Граница:** редактор даёт план, валидатор определяет допустимые сочетания, исполнитель получает отдельные настройки мира. Отличия не должны менять общие условия другого варианта; замена чувствительности не заменяет остальные случайные гены. Изменение поля проверить в UI, плане, исполнении и экспорте.
 **Проверка:** [experiment-factors.test.mjs](../../tests/experiment-factors.test.mjs), [experiment-ui.test.mjs](../../tests/experiment-ui.test.mjs), [genome-experiments044.test.mjs](../../tests/genome-experiments044.test.mjs): сочетания/границы, отсутствие дублей, основы и числовые коэффициенты.
-**История:** [0.39.1 — один список факторов](../next-experiment-factors.md), [0.44 — геномы и чувствительности](../next-genome-experiments.md). Старый список произвольных готовых вариантов заменён редактором сочетаний.
+**История:** [0.39.1 — один список факторов](../next-experiment-factors.md), [0.44 — геномы и чувствительности](../next-genome-experiments.md), [0.46 — усвоение порции](../updates/v046-digestion-experiments.md). Старый список произвольных готовых вариантов заменён редактором сочетаний.
 **Дальше:** дополнительные сценарии/диапазоны от–до–шаг — [предложения](../future-ideas.md#исследования-и-обучение). Перед новым фактором найти владельца в [карте](README.md), затем решить, входит ли он в схему плана.
 
 ## runs

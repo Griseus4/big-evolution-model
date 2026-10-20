@@ -6,9 +6,9 @@ An artificial life simulation with evolving neural agents, individual learning, 
 
 Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments.
 
-**Status:** experimental prototype · **Current implementation:** 0.45.0 · **Interface:** Russian.
+**Status:** experimental prototype · **Current implementation:** 0.46.0 · **Interface:** Russian.
 
-Version 0.45.0 adds compact compressed `.beexp` experiment archives, JSON/gzip import, and selective loading of worlds and birth periods without dropping life records or changing statistics. Plain JSON export remains available. [Release notes](docs/updates/v045-compact-experiment-archives.md).
+Version 0.46.0 adds digestion time per food portion to experiment settings and factors. Compare custom values, including combinations with genome sensitivities; the default remains 20 simulation steps. Compact `.beexp` archives and JSON import/export remain available. [Release notes](docs/updates/v046-digestion-experiments.md).
 
 Version 0.44.0 adds genome files and optional numeric energy, health, and stomach sensitivity coefficients as experimental factors. Unspecified genes retain their original values; all combinations use the existing comparison tools. [Release notes](docs/updates/v044-genome-experiments.md).
 

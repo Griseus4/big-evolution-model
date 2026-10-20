@@ -56,6 +56,13 @@ export const RULES=Object.freeze({foodEnergy:22,digestionRate:1.1,stomachCapacit
  inventoryCapacity:3,initialEnergy:68,newbornEnergy:28,birthCost:32,birthThreshold:reproductionProfile().energy,birthHealth:reproductionProfile().health,
  maturity:REPRODUCTION_DEFAULTS.maturity,birthInterval:REPRODUCTION_DEFAULTS.birthInterval,maxAge:10000,regrowInterval:80,
  waitCost:.30,depositCost:.36,groundFoodCapacity:10,actionCost:.48,moveExtra:.30,gatherExtra:.18});
+export const DIGESTION_TIME_LIMITS=Object.freeze({min:.1,max:1e9});
+/** Время усвоения одной порции, Т. Прежняя скорость задаёт значение по
+ * умолчанию; энергоценность пищи не меняется. Нижний предел — один подшаг. */
+export function validateDigestionTime(value=RULES.foodEnergy/RULES.digestionRate){
+ if(!Number.isFinite(value)||value<DIGESTION_TIME_LIMITS.min||value>DIGESTION_TIME_LIMITS.max)throw new Error('Усвоение одной порции: время от 0,1 до 1 000 000 000 Т.');
+ return value;
+}
 /** Расходы действий в три раза выше 0.8. Рождение отдельно: его стоимость 32
  * и передача 28 ребёнку не масштабированы, как и сроки начала размножения.
  * Эти величины заданы физикой, не обученными предпочтениями/целями организма.
@@ -99,8 +106,10 @@ export class Evolution {
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?TEMPORAL_BRAIN_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses}={}){
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime}={}){
   this.temporal=Boolean(temporal);
+  this.digestionTime=validateDigestionTime(digestionTime);
+  this.digestionRate=RULES.foodEnergy/this.digestionTime;
   if(this.temporal&&brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('В0.32 нужен мозг v13; старые основы не поддерживаются.');
   if(!['custom','balanced','scarce'].includes(scenario))throw new Error('Неизвестная пищевая среда.');
   const foodOptions=validateFoodSettings({foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax});
@@ -437,7 +446,7 @@ export class Evolution {
   * Поэтому бесконечное поедание не создаёт бесконечный внутренний склад.
   */
  digest(a){
-  const amount=Math.min(a.stomach,RULES.digestionRate),gain=Math.min(amount,100-a.energy);
+  const amount=Math.min(a.stomach,this.digestionRate),gain=Math.min(amount,100-a.energy);
   a.stomach=Math.max(0,a.stomach-amount);a.energy+=gain;
   this.stats.digested+=amount;this.stats.overflow+=amount-gain;
  }

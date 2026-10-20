@@ -61,7 +61,7 @@ test('persistence writes immutable completed attempts once and marks interrupted
 const descendants=(node,predicate)=>node.children.flatMap(n=>[...(predicate(n)?[n]:[]),...descendants(n,predicate)]);
 test('common table is fully visible; boolean factors default to both states and never duplicate rows',()=>{
  const b=boot();try{
- const common=b.elements.get('constructor-common');assert.equal(common.children[0].tagName,'table');assert.equal(common.children[0].children[0].children.length,5);assert.equal(descendants(common,n=>n.tagName==='details').length,0);
+ const common=b.elements.get('constructor-common');assert.equal(common.children[0].tagName,'table');assert.equal(common.children[0].children[0].children.length,6);assert.equal(descendants(common,n=>n.tagName==='details').length,0);
  const picker=b.elements.get('constructor-factor-add'),factors=b.elements.get('constructor-factors');picker.value='memory';picker.emit('change');assert.equal(factors.children.length,1);const boxes=descendants(factors,n=>n.type==='checkbox');assert.equal(boxes.length,2);assert.ok(boxes.every(i=>i.checked));assert.match(b.elements.get('constructor-design-summary').textContent,/Сочетаний на seed: 2/);
  picker.value='memory';picker.emit('change');assert.equal(factors.children.length,1);boxes[0].checked=false;boxes[0].emit('change');assert.match(b.elements.get('constructor-design-summary').textContent,/Сочетаний на seed: 1/);
  boxes[1].checked=false;boxes[1].emit('change');assert.equal(b.elements.get('constructor-run').disabled,true);assert.match(b.elements.get('constructor-design-summary').textContent,/хотя бы одно/);

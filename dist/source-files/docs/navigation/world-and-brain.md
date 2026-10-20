@@ -20,10 +20,10 @@
 
 ## energy
 **Задача:** нулевая энергия, расход здоровья, усвоение пищи и стоимость действий/мышления.
-**Сейчас:** `spendEnergy`/`ENERGY_DEFICIT_FACTOR` — [energy-budget.js](../../dist/energy-budget.js); физиология — `advanceTemporalBodies`/`acceptTemporalChoice` в [temporal-world.js](../../dist/temporal-world.js); `RULES`/`actionEnergyCost` — [evolution.js](../../dist/evolution.js).
+**Сейчас:** `spendEnergy`/`ENERGY_DEFICIT_FACTOR` — [energy-budget.js](../../dist/energy-budget.js); физиология — `advanceTemporalBodies`/`acceptTemporalChoice` в [temporal-world.js](../../dist/temporal-world.js); `RULES`/`actionEnergyCost`/`validateDigestionTime` — [evolution.js](../../dist/evolution.js). Время усвоения задаётся отдельно для каждого мира опыта.
 **Граница:** неоплаченный дефицит снижает здоровье; учёт фактически списанной энергии отдельный. При смертельной оплате решения действие не начинается. Роды имеют отдельный расчёт; не добавлять второй голодный штраф.
 **Проверка:** [environment-save.test.mjs](../../tests/environment-save.test.mjs): дефицит/точный ноль/смерть при решении; [temporal.test.mjs](../../tests/temporal.test.mjs): физиология и цены. Ряды нулевой энергии относятся к [статистике](experiments-and-statistics.md#statistics).
-**История:** [0.36 — дефицит вместо бесплатных действий](../updates/v036-environment-energy-save.md), [правила](../mechanics-reference.md#энергетика).
+**История:** [0.36 — дефицит вместо бесплатных действий](../updates/v036-environment-energy-save.md), [0.46 — время усвоения в опытах](../updates/v046-digestion-experiments.md), [правила](../mechanics-reference.md#энергетика).
 **Дальше:** разделение базального/добавочного расхода, износ/восстановление — [предложения физиологии](../future-ideas.md#новые-механики).
 
 ## perception

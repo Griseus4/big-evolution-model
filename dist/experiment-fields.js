@@ -1,9 +1,11 @@
 import {FOUNDER_SENSE_FIELDS} from './founder-senses.js';
 import {uniqueGenomeChoices} from './experiment-genomes.js';
+import {DIGESTION_TIME_LIMITS} from './evolution.js';
 /** Один каталог общих условий и факторов. Редактор и проверка сочетаний
  * используют те же типы/границы; зависимые ограничения проверяет мир. */
 export const EXPERIMENT_FIELDS=Object.freeze([
  ['Мир','population','Основателей',1,1000,1],['Мир','limit','Лимит живых',1,1000,1],
+ ['Физиология','digestionTime','Усвоение одной порции, Т',DIGESTION_TIME_LIMITS.min,DIGESTION_TIME_LIMITS.max,'any'],
  ['Возможности','memory','Память мест','check'],['Возможности','learning','Личное обучение','check'],['Возможности','mutations','Мутации потомков','check'],
  ['Размножение','reproduction.energy','Энергия для начала родов',0,100,.1],['Размножение','reproduction.health','Здоровье для начала родов',0,100,.1],['Размножение','reproduction.maturity','Возраст зрелости, Т',0,1000000,.1],['Размножение','reproduction.birthInterval','Интервал между рождениями, Т',0,1000000,.1],
  ['Пища на старте','foodSources','Количество источников',0,384,1],['Пища на старте','foodRegrowInterval','Средний период, Т',.1,1e9,.1],['Пища на старте','foodIslandCount','Количество островков',0,384,1],['Пища на старте','foodSizeSpread','Разброс размеров, %',0,90,1],['Пища на старте','foodPeriodSpread','Разброс периодов, %',0,90,1],['Пища на старте','foodCapacityMin','Минимальная вместимость',1,24,1],['Пища на старте','foodCapacityMax','Максимальная вместимость',1,24,1],
