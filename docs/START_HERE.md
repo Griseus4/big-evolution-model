@@ -2,7 +2,7 @@
 
 ## Текущий статус
 
-Рабочая версия — [0.45.0: компактные архивы опытов](updates/v045-compact-experiment-archives.md). Версия в `dist/life-history.js`, параметры — в коде. Расчёт/общая пищевая среда [0.39.2](updates/v039-shared-food-seed.md) прежние. Геном и UI — в [действующих механиках](mechanics-reference.md).
+Рабочая версия — [0.45.0: компактные архивы опытов](updates/v045-compact-experiment-archives.md), [опубликована в GitHub/Pages](updates/v045-github-publication.md). Версия в `dist/life-history.js`, параметры — в коде. Расчёт/общая пищевая среда [0.39.2](updates/v039-shared-food-seed.md) прежние. Геном и UI — в [действующих механиках](mechanics-reference.md).
 
 Результаты и ограничения 0.45.0 — в протоколе выпуска; команды и смысл проверок — в [маршруте проверок](verification.md). Старые успешные проверки не подтверждают следующую правку автоматически.
 

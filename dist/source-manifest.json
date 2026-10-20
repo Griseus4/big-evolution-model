@@ -3,7 +3,7 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 33,
-    "bytes": 3970,
+    "bytes": 4050,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
@@ -558,8 +558,8 @@
   {
     "name": "docs/updates/v045-github-publication.md",
     "url": "./source-files/docs/updates/v045-github-publication.md",
-    "lines": 15,
-    "bytes": 2671,
+    "lines": 19,
+    "bytes": 4383,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8303,7 +8303,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 10,
-    "bytes": 1851,
+    "bytes": 2273,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
