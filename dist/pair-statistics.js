@@ -3,11 +3,12 @@
  * кратности; сравниваются оценки распределений, не медианы разностей особей. */
 import {createWorldEstimator,bootstrapDraws,quantile,MIN_CONFIDENCE_WORLDS} from './statistics-estimates.js';
 import {prepareMetric} from './statistical-series.js';
+import {incompleteLifeHistory} from './life-cohorts.js';
 export function preparePairSide(worlds,metric,options){
  return worlds.map(world=>{
   const {report,...meta}=world;
   if(!report)return {...meta,values:new Float64Array(),reason:'Нет выбранного завершённого результата.'};
-  const data=prepareMetric([world],metric,{...options,summaryOnly:true}),sample=data.summary.worlds[0],incomplete=data.incomplete||(report.completed?.count??0)>(report.dead?.length??0);
+  const data=prepareMetric([world],metric,{...options,summaryOnly:true}),sample=data.summary.worlds[0],incomplete=data.incomplete||incompleteLifeHistory(report);
   return {...meta,values:incomplete?new Float64Array():sample?.values??new Float64Array(),reason:incomplete?'История неполная.':data.error??(sample?null:'Нет наблюдений за выбранный период.')};
  });
 }
@@ -22,6 +23,7 @@ export function estimatePair(a,b,weightMode='worlds'){
  if(!n)return {pairs:0,availableA,availableB,excluded,included:[],mean:null,median:null,reason:'Нет полных пар с данными этого показателя.'};
  const ca=createWorldEstimator(included.map(p=>p.a),weightMode),cb=createWorldEstimator(included.map(p=>p.b),weightMode),result={pairs:n,availableA,availableB,excluded,included:included.map((p,i)=>({pairId:p.pairId,a:{...p.a,values:undefined,...ca.individual[i]},b:{...p.b,values:undefined,...cb.individual[i]}})),reason:n<MIN_CONFIDENCE_WORLDS?`ДИ недоступен: ${n} полных пар, нужно не менее ${MIN_CONFIDENCE_WORLDS}.`:n<10?'Мало независимых повторов: интервалы приблизительны.':null};
  for(const stat of ['mean','median'])result[stat]={...effects(ca.center[stat],cb.center[stat]),confidence:null,ratioReason:ca.center[stat]===0?'База A равна нулю: отношение и процент не определены.':null};
+ for(const stat of ['min','max'])result[stat]={...effects(ca[stat],cb[stat]),confidence:null};
  if(n<MIN_CONFIDENCE_WORLDS)return result;
  const samples=Object.fromEntries(['mean','median'].map(stat=>[stat,Object.fromEntries(['a','b','difference','ratio','percent'].map(key=>[key,[]]))])),memo=new Map();
  for(const counts of bootstrapDraws(n)){

@@ -2,6 +2,10 @@
  * Один проход по сохранённым жизням; сортируются только собственные массивы
  * значений внутри групп. Нет обращения к миру, мозгам или RNG. */
 import {weightedSummary,worldWeights} from './weighted-statistics.js';
+/** Полнота исходного отчёта, а не размер загруженного окна рождения.
+ * Архив хранит возраста всех записанных смертей отдельно; отсутствующие
+ * подробности по-прежнему делают отчёт неполным. */
+export const incompleteLifeHistory=report=>(report.omittedDetails??0)>0||(report.completed?.count??0)>(report.completedAges?.length??report.dead?.length??0);
 import {HERITABLE_METRICS,HERITABLE_SCHEMA} from './heritable-statistics.js';
 import {LIFE_OBSERVATION_SCHEMA} from './life-observations.js';
 export const HISTORY_PAGE_SIZE=50;
@@ -14,6 +18,8 @@ export const LIFE_METRICS=Object.freeze([
  {id:'eating',label:'Частота еды',unit:'порций / 100 Т',digits:2},
  {id:'inventory',label:'Средний переносимый запас',unit:'порций',digits:2},
  {id:'energy',label:'Средняя энергия',unit:'энергии',digits:1},
+ {id:'health',label:'Среднее здоровье',unit:'здоровья',digits:1,maximum:100},
+ {id:'feeling',label:'Среднее самочувствие',unit:'шкалы чувств',digits:1,minimum:-100,maximum:100},
  {id:'hunger',label:'Доля жизни с нулевой энергией',unit:'%',digits:1},
  {id:'children',label:'Число прямых детей',unit:'детей',digits:1},
  {id:'reproduced',label:'Доля оставивших хотя бы одного ребёнка',unit:'%',digits:1,single:true},
@@ -32,6 +38,8 @@ export function lifeMetric(row,id,interruptionKind='all'){
   case 'eating':return rate(row,row.eaten);
   case 'inventory':return o?.inventoryObservedSteps>0?o.meanInventory:null;
   case 'energy':return row.meanEnergy;
+  case 'health':return row.meanHealth;
+  case 'feeling':return row.meanFeeling;
   case 'hunger':return rate(row,row.emptyEnergySteps);
   case 'children':return finite(row.children)?row.children:null;
   case 'reproduced':return finite(row.children)?(row.children>0?100:0):null;

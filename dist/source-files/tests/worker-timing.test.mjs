@@ -7,7 +7,7 @@ import {Evolution} from '../dist/evolution.js';
 import {readFile} from 'node:fs/promises';
 import {BENCHMARK_CURRENT_KERNEL} from '../dist/benchmark-versions.js';
 
-test('diagnostic release retains numerical modules apart from release marker and CRLF',async()=>{
+test('baseline modules retain byte identity except release, display bins and explicit founder-only initialization',async()=>{
  const base=new URL(`../dist/benchmark-snapshots/${BENCHMARK_CURRENT_KERNEL}/`,import.meta.url);
  const manifest=JSON.parse(await readFile(new URL('manifest.json',base),'utf8'));
  for(const name of Object.keys(manifest.files)){
@@ -16,6 +16,19 @@ test('diagnostic release retains numerical modules apart from release marker and
    const version=/export const MODEL_VERSION='[^']+';/;
    current=current.replace(version,'MODEL_VERSION');frozen=frozen.replace(version,'MODEL_VERSION');
   }
+  // Только ширина корзины отображения меняется в 0.43; наследуемые
+  // значения и захват наблюдений должны остаться побайтно прежними.
+  if(name==='heritable-statistics.js'){
+   current=current.replace('SENSITIVITY_BIN_WIDTH=20','SENSITIVITY_BIN_WIDTH=5');
+  }
+  // 0.44 добавляет только необязательное вмешательство в начальные гены.
+  // Удаляем точные четыре добавки; остальная физика сравнивается побайтно.
+  // Отдельный genome-experiments044 проверяет траекторию прежнего режима.
+  if(name==='evolution.js')current=current
+   .replace(/import \{compileFounderSenses\} from '.\/founder-senses.js';\r?\n/,'')
+   .replace(',automaticEnvironment,founderSenses}',',automaticEnvironment}')
+   .replace(/  const founderEdits=compileFounderSenses\(founderSenses,layoutForType\(this.brainType\)\);\r?\n/,'')
+   .replace(/   for\(const \[index,value\]of founderEdits\)genome\[index\]=value;\r?\n/,'');
   assert.equal(current.replaceAll('\r\n','\n'),frozen.replaceAll('\r\n','\n'),name);
  }
 });

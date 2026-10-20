@@ -8,6 +8,8 @@ import {ExperimentStore} from '../dist/experiment-store.js';
 import {installExperimentDesign} from '../dist/experiment-design-ui.js';
 import {installExperimentRuns,environmentSeedText} from '../dist/experiment-runs-ui.js';
 import {MODEL_VERSION} from '../dist/life-history.js';
+import {validatePlan} from '../dist/experiment-plan.js';
+import {experimentArchive,archiveOrigin} from '../dist/experiment-archive.js';
 class Element{
  constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.value='';this.checked=false;this.textContent='';this.style={};this.files=[];}
  append(...nodes){for(const node of nodes){node.parent=this;this.children.push(node);}if(this.tagName==='select'&&!this.value)this.value=String(nodes[0]?.value??'');}
@@ -21,7 +23,7 @@ class Element{
  click(){return this.listeners.click?.({target:this});}
  emit(name){return this.listeners[name]?.({target:this});}
 }
-function boot({running=true,pauseError=false}={}){
+function boot({running=true,pauseError=false,realTimers=false}={}){
  const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8'),elements=new Map(),workers=[],intervals=[];
  for(const m of html.matchAll(/<([a-z]+)\b[^>]*\bid="([^"]+)"[^>]*>/g)){const node=new Element(m[1]);node.value=m[0].match(/\bvalue="([^"]*)"/)?.[1]??'';elements.set(m[2],node);}
  for(const m of html.matchAll(/<select\b[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/select>/g)){const first=m[2].match(/<option[^>]*value="([^"]+)"/);if(first)elements.get(m[1]).value=first[1];}
@@ -29,11 +31,11 @@ function boot({running=true,pauseError=false}={}){
  globalThis.document={getElementById:id=>{assert.ok(elements.has(id),id);return elements.get(id);},createElement:tag=>new Element(tag),querySelector:()=>toolbar};
  globalThis.Worker=class{constructor(){this.sent=[];workers.push(this);}postMessage(m){this.sent.push(m);}terminate(){this.closed=true;}};
  const oldFetch=globalThis.fetch,oldInterval=globalThis.setInterval,oldTimeout=globalThis.setTimeout;
- globalThis.fetch=async()=>({ok:true,json:async()=>({sourceFingerprint:'test'})});globalThis.setInterval=fn=>{intervals.push(fn);return 0;};globalThis.setTimeout=()=>0;
+ globalThis.fetch=async()=>({ok:true,json:async()=>({sourceFingerprint:'test'})});globalThis.setInterval=fn=>{intervals.push(fn);return 0;};if(!realTimers)globalThis.setTimeout=()=>0;
  const ui=installExperimentUI({getSimulation:()=>({lives:{tick:77}}),getWorldState:()=>({...state}),pauseWorld:async()=>{calls.pause++;if(pauseError)throw new Error('pause failed');state.running=false;},resumeWorld:async previous=>{assert.equal(previous.epoch,state.epoch);calls.resume++;state.running=true;},sourceChanged:()=>calls.source++,openStatistics:()=>calls.statistics++});
  const done=(worker,status='completed')=>worker.onmessage({data:{type:'done',jobId:worker.sent.find(m=>m.type==='run').job.id,result:{status,modelVersion:MODEL_VERSION,tick:1,extinct:false,lives:{tick:1,dead:[],living:[],completed:{count:0,meanAge:null,medianAge:null},byCause:{}}}}});
  const flush=async()=>{for(let i=0;i<20;i++)await Promise.resolve();};
- return {ui,elements,workers,state,calls,intervals,done,flush,restore(){globalThis.fetch=oldFetch;globalThis.setInterval=oldInterval;globalThis.setTimeout=oldTimeout;}};
+ return {ui,elements,workers,state,calls,toolbar,intervals,done,flush,restore(){globalThis.fetch=oldFetch;globalThis.setInterval=oldInterval;globalThis.setTimeout=oldTimeout;}};
 }
 test('real UI builds templates, passes independent variants, pauses and restores the main world',async()=>{
  const b=boot();try{
@@ -46,14 +48,14 @@ test('real UI builds templates, passes independent variants, pauses and restores
  }finally{b.restore();}
 });
 test('paused main world remains paused after force-stop; failed pause never starts a series',async()=>{
- const b=boot({running:false});try{b.elements.get('constructor-worlds').value='1';b.elements.get('constructor-worlds').emit('change');await b.elements.get('constructor-run').click();assert.equal(b.ui.isActive(),true);b.elements.get('constructor-force-stop').click();await b.flush();assert.equal(b.calls.resume,0);assert.equal(b.ui.isActive(),false);assert.ok(b.workers.every(w=>w.closed));}finally{b.restore();}
+ const b=boot({running:false});try{b.elements.get('constructor-worlds').value='1';b.elements.get('constructor-worlds').emit('change');await b.elements.get('constructor-run').click();assert.equal(b.ui.isActive(),true);b.elements.get('constructor-force-stop').click();await b.flush();assert.equal(b.calls.resume,0);assert.equal(b.ui.isActive(),false);assert.ok(b.workers.every(w=>w.closed));assert.equal(b.elements.get('experiment-notification-dialog').open,true);assert.match(b.elements.get('experiment-notification-body').textContent,/Опыты завершены.*остаётся на паузе/);assert.equal(b.toolbar.afterNode,undefined);}finally{b.restore();}
  const f=boot({pauseError:true});try{await f.elements.get('constructor-run').click();await f.flush();assert.equal(f.workers.length,0);assert.equal(f.ui.isActive(),false);assert.match(f.elements.get('constructor-error').textContent,/pause failed/);}finally{f.restore();}
 });
 test('persistence writes immutable completed attempts once and marks interrupted metadata honestly',async()=>{
- const store=new ExperimentStore(null),tables=new Map(['runs','attempts','templates'].map(k=>[k,new Map()]));let writes=0;
- store.transaction=async(name,mode,action)=>{const table=tables.get(name);const result=action({put:(value,key)=>{writes++;table.set(key,structuredClone(value));return {result:key};},get:key=>({result:structuredClone(table.get(key))}),getAll:()=>({result:[...table.values()].map(structuredClone)}),delete:key=>{table.delete(key);return {};}});return result.result;};
- const report={createdAt:'test',status:'running',groups:[{id:'g',attempts:[{id:'g-1',status:'completed',tick:3,lives:{dead:[{id:1}]}},{id:'g-2',status:'running',tick:4}]}]};
- await store.save(report);assert.equal(writes,2);await store.save(report);assert.equal(writes,3);const loaded=await store.load('test');assert.equal(loaded.status,'interrupted');assert.equal(loaded.groups[0].attempts[1].status,'interrupted');assert.equal(loaded.groups[0].attempts[0].lives.dead.length,1);
+ const store=new ExperimentStore(null),tables=new Map(['runs','attempts','templates'].map(k=>[k,new Map()]));store.ready=Promise.resolve({});let writes=0;
+ store.transaction=async(name,mode,action)=>{const wrap=key=>{const table=tables.get(key);return {put:(value,id)=>{writes++;table.set(id,structuredClone(value));return {result:id};},get:id=>({result:structuredClone(table.get(id))}),getAll:()=>({result:[...table.values()].map(structuredClone)}),delete:id=>{table.delete(id);return {};}};};const result=action(Array.isArray(name)?Object.fromEntries(name.map(k=>[k,wrap(k)])):wrap(name));return result.result;};
+ const report={createdAt:'test',status:'running',groups:[{id:'g',attempts:[{id:'g-1',status:'completed',tick:3,lives:{tick:3,dead:[{id:1,born:0,age:3,endTick:3,status:'dead'}],living:[]}},{id:'g-2',status:'running',tick:4}]}]};
+ await store.save(report);assert.equal(writes,2);await store.save(report);assert.equal(writes,3);const loaded=await store.load('test');assert.equal(loaded.status,'interrupted');assert.equal(loaded.groups[0].attempts[1].status,'interrupted');assert.equal(loaded.groups[0].attempts[0].lives.dead.length,0);assert.ok(tables.get('attempts').get('test/g-1') instanceof Blob);
  await store.delete('test');assert.equal(tables.get('runs').size,0);assert.equal(tables.get('attempts').size,0);
 });
 const descendants=(node,predicate)=>node.children.flatMap(n=>[...(predicate(n)?[n]:[]),...descendants(n,predicate)]);
@@ -97,6 +99,7 @@ test('lifecycle notifications are modal and acknowledge without changing world s
   b.elements.get('experiment-notification-close').click();assert.equal(dialog.open,false);assert.equal(b.state.running,false);
   b.done(b.workers[0]);await b.flush();assert.equal(dialog.open,true);assert.match(message.textContent,/завершены.*продолжает/);assert.equal(b.state.running,true);assert.equal(dialog.shown,2);
   b.elements.get('experiment-notification-close').click();assert.equal(b.calls.resume,1);
+  assert.equal(b.toolbar.afterNode,undefined,'Lifecycle messages must not create a persistent banner above the page.');
  }finally{b.restore();}
 });
 
@@ -121,4 +124,18 @@ test('runs paginate combinations, bound visible rows and reset when another repo
  report.groups=report.plan.variants.map(v=>({variantId:v.id,index:0,status:'pending',attempts:[]}));ui.render(report);assert.equal(elements.get('constructor-results').children.length,6);assert.equal(elements.get('constructor-results-prev').disabled,true);
  for(let i=0;i<10;i++)elements.get('constructor-results-next').click();assert.equal(elements.get('constructor-results').children.length,4);assert.equal(elements.get('constructor-results-next').disabled,true);assert.match(elements.get('constructor-results-page').textContent,/61–64/);
  ui.render({...report});assert.equal(elements.get('constructor-results').children.length,6);assert.equal(elements.get('constructor-results-prev').disabled,true);
+});
+
+test('archive import is atomic, loads requested birth periods and exports all observations',async()=>{
+ const plan=validatePlan({worlds:1,seeds:[42],steps:2000,factors:[]}),v=plan.variants[0],id=v.id+'-0',rows=[0,600,1200].map((born,i)=>({id:i+1,born,age:10,endTick:born+10,parentId:null,status:'dead',cause:'age',meanEnergy:i}));
+ const original={format:'big-evolution-experiment',version:1,createdAt:'2026-10-20T12:00:00.000Z',status:'completed',plan,groups:[{id,variantId:v.id,index:0,status:'completed',selectedId:id+'-1',attempts:[{id:id+'-1',number:1,seed:plan.seedMatrix[0][0],tick:2000,status:'completed',lives:{tick:2000,dead:rows,living:[],completed:{count:3,meanAge:10,medianAge:10},byCause:{age:{count:3}},omittedDetails:0}}]}]};
+ const archive=await experimentArchive(original,{yieldControl:async()=>{}}),b=boot({realTimers:true});
+ try{
+  const input=b.elements.get('constructor-import-report');input.files=[archive];await input.emit('change');assert.equal(b.elements.get('constructor-error').textContent,'');
+  b.elements.get('constructor-open-comparison').click();const context=b.ui.comparisons(),header=context.variants[0].worlds[0].report;assert.ok(archiveOrigin(header));assert.equal(header.dead.length,0);
+  await b.ui.prepareStatistics({start:500,end:1000,width:100,curveStart:500});assert.deepEqual(b.ui.getSimulation().lives.dead.map(r=>r.originalId),[2]);assert.equal(b.ui.getSimulation().lives.completed.count,3);
+  const before=b.ui.getSimulation().lives;input.files=[new Blob(['broken'])];await input.emit('change');assert.equal(b.ui.getSimulation().lives,before);assert.match(b.elements.get('constructor-export-state').textContent,/не открыт/);
+  input.files=[];const error=b.elements.get('constructor-error').textContent;await input.emit('change');assert.equal(b.elements.get('constructor-error').textContent,error);
+  const observations=await b.ui.exportObservation();assert.deepEqual(observations.dead.map(r=>r.originalId),[1,2,3]);assert.equal(observations.completed.count,3);
+ }finally{b.restore();}
 });

@@ -1,0 +1,43 @@
+# Опыты, статистика и архивы
+
+[Выбор темы](README.md). План опыта, результат попытки, полный мир и геном имеют разные назначения/форматы.
+
+## design
+**Задача:** общие условия, значения отличий, все сочетания, основы геномов/чувствительности, шаблоны.
+**Сейчас:** поля — [experiment-fields.js](../../dist/experiment-fields.js), редактор — [experiment-design-ui.js](../../dist/experiment-design-ui.js); `validateWorldOptions`/`validatePlan` — [experiment-plan.js](../../dist/experiment-plan.js). Геномы — [experiment-genomes.js](../../dist/experiment-genomes.js), подмена коэффициентов — [founder-senses.js](../../dist/founder-senses.js).
+**Граница:** редактор даёт план, валидатор определяет допустимые сочетания, исполнитель получает отдельные настройки мира. Отличия не должны менять общие условия другого варианта; замена чувствительности не заменяет остальные случайные гены. Изменение поля проверить в UI, плане, исполнении и экспорте.
+**Проверка:** [experiment-factors.test.mjs](../../tests/experiment-factors.test.mjs), [experiment-ui.test.mjs](../../tests/experiment-ui.test.mjs), [genome-experiments044.test.mjs](../../tests/genome-experiments044.test.mjs): сочетания/границы, отсутствие дублей, основы и числовые коэффициенты.
+**История:** [0.39.1 — один список факторов](../next-experiment-factors.md), [0.44 — геномы и чувствительности](../next-genome-experiments.md). Старый список произвольных готовых вариантов заменён редактором сочетаний.
+**Дальше:** дополнительные сценарии/диапазоны от–до–шаг — [предложения](../future-ideas.md#исследования-и-обучение). Перед новым фактором найти владельца в [карте](README.md), затем решить, входит ли он в схему плана.
+
+## runs
+**Задача:** общая карта/пища, разные жители, повторные попытки, очередь, бюджет Workers, запуск/пауза основного мира.
+**Сейчас:** `seedMatrix`/`allocateComputations`/`selectAttempt` — [experiment-plan.js](../../dist/experiment-plan.js); `ExperimentSeries` — [experiment-series.js](../../dist/experiment-series.js); `ExperimentExecution` — [experiment-execution.js](../../dist/experiment-execution.js). UI/аренда основного мира — [experiment-ui.js](../../dist/experiment-ui.js); статусы — [experiment-runs-ui.js](../../dist/experiment-runs-ui.js).
+**Граница:** серия владеет очередью/попытками, исполнитель — своим миром. Повторное вымирание и техническая ошибка различны. Выбранный итог не удаляет остальные попытки; номер исходного повтора нужен [сравнению](#comparison). Общие seed карты/пищи отделены от жителей; разные пищевые настройки не обещают идентичную среду.
+**Проверка:** [experiment-constructor.test.mjs](../../tests/experiment-constructor.test.mjs), [experiment-ui.test.mjs](../../tests/experiment-ui.test.mjs): повторы, освобождение/перераспределение бюджета, старые ответы, пауза/возобновление и модальные уведомления.
+**История:** [договор исполнения](../experiment-comparison-plan.md), [общая пищевая случайность 0.39.2](../updates/v039-shared-food-seed.md), [ячейки запусков 0.40](../updates/v040-experiment-organization.md).
+**Дальше:** переносимость на другие карты и диагностический микротест ощущений — [направления](../future-ideas.md#исследования-и-обучение). Новое правило повторов меняет смысл сравнения, а не только расписание вычислений.
+
+## statistics
+**Задача:** новый график/число, период, когорта, дожитие, население, веса, доверительная полоса.
+**Сейчас:** события/жизни — [life-history.js](../../dist/life-history.js); `LIFE_METRICS`/`aggregateLifeCohorts` — [life-cohorts.js](../../dist/life-cohorts.js); `populationCohorts` — [population-statistics.js](../../dist/population-statistics.js). `prepareMetric` в [statistical-series.js](../../dist/statistical-series.js) готовит выборки; [statistics-client.js](../../dist/statistics-client.js)/[statistics-worker.js](../../dist/statistics-worker.js) считают оценки через [statistics-estimates.js](../../dist/statistics-estimates.js). Показ — [history-ui.js](../../dist/history-ui.js)/[history-charts.js](../../dist/history-charts.js).
+**Граница:** сначала определить единицу наблюдения и знаменатель. Время мира не равно когорте рождения; вымирание не равно ручной остановке; незавершённая жизнь не равна смерти. Не считать потомков независимыми повторами опыта. Формулы не дублировать в UI; RNG анализа отделён от мира.
+**Проверка:** [life-cohorts.test.mjs](../../tests/life-cohorts.test.mjs), [history-window.test.mjs](../../tests/history-window.test.mjs), [statistical-ui041.test.mjs](../../tests/statistical-ui041.test.mjs): интервалы, цензурирование, взвешенные медианы, нули после вымирания, Worker и шкалы.
+**История:** [показатели жизней 0.35](../updates/v035-life-history-charts.md), [периоды 0.35.1](../updates/v035-history-window.md), [сводки и полосы 0.41](../updates/v041-statistics-bands-export.md).
+**Дальше:** новые методы/множественные сравнения и разности распределений остаются [предложениями](../next-experiment-statistics-ui.md). Новый показатель должен иметь данные в [архиве](#experiment-files); при их отсутствии нужно отдельное решение о сборе.
+
+## comparison
+**Задача:** выбранные A/B, B−A, отношение/процент, пропущенные миры, разница линий.
+**Сейчас:** `experimentWorlds` — [experiment-statistics.js](../../dist/experiment-statistics.js); `preparePairSide`/`estimatePair` — [pair-statistics.js](../../dist/pair-statistics.js); временные корзины — [pair-series.js](../../dist/pair-series.js); общие селекторы/таблица — [pair-comparison-ui.js](../../dist/pair-comparison-ui.js), карточки B−A — [history-differences-ui.js](../../dist/history-differences-ui.js).
+**Граница:** полные пары определяются отдельно для показателя по исходному повтору, даже если итоговые seed после повторных попыток различаются. Показывать состав/пропуски/вымирания. Отношение при нулевой/неустойчивой базе может быть недоступно. Частично загруженный архив не означает потерю исходной истории.
+**Проверка:** [pair-statistics042.test.mjs](../../tests/pair-statistics042.test.mjs), [statistics043.test.mjs](../../tests/statistics043.test.mjs), [experiment-storage045.test.mjs](../../tests/experiment-storage045.test.mjs): сопряжённые оценки/ДИ, общая пара, исходный и оконный отчёты.
+**История:** [0.42 — таблица пары](../updates/v042-paired-comparison.md), [0.43 — временные разности](../updates/v043-difference-charts.md), [смысл принятых весов/повторов](../next-experiment-statistics-ui.md).
+**Дальше:** графики разности гистограмм/возрастных кривых и дополнительные методы не включены в нынешнее сравнение. Переключение между всеми мирами/только совпавшими seed потребует явного договора, а не скрытого фильтра.
+
+## experiment-files
+**Задача:** большой отчёт, .beexp/JSON/gzip, импорт, браузерная база и загрузка окна.
+**Сейчас:** `experimentArchive`/`openExperimentArchive`/`loadArchiveWindow`/`materializeExperiment` — [experiment-archive.js](../../dist/experiment-archive.js); экспорт JSON — [json-export.js](../../dist/json-export.js); IndexedDB — [experiment-store.js](../../dist/experiment-store.js); выбор файла/окна — [experiment-ui.js](../../dist/experiment-ui.js).
+**Граница:** архив хранит все попытки и исходную точность; просмотр окна не ограничивает последующий экспорт. Ошибка/отмена не заменяет выбранные данные. Старый JSON разбирается целиком; частичная загрузка архивных жизней не равна потоковому импорту JSON. Это не полный снимок [живого мира](interface-and-files.md#world-save).
+**Проверка:** [experiment-storage045.test.mjs](../../tests/experiment-storage045.test.mjs), [experiment-ui.test.mjs](../../tests/experiment-ui.test.mjs), [statistical-ui041.test.mjs](../../tests/statistical-ui041.test.mjs): точное восстановление, ошибки блоков, окна, экспорт всех строк и атомарная замена.
+**История:** [0.41 — порционный JSON](../updates/v041-statistics-bands-export.md), [контракт хранения](../next-experiment-storage.md), [формат/измерения 0.45](../updates/v045-compact-experiment-archives.md).
+**Дальше:** SQL/Parquet, удаление диагностических полей и потоковый разбор JSON не реализованы. Новая схема/сжатие требуют версии и проверки старых форматов; замер памяти/чтения отделять от [расчёта мира](world-and-brain.md#execution).

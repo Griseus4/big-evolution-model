@@ -53,7 +53,7 @@ test('birth properties match the genome analyzer, do not change over life, and m
 
 test('sensitivity histogram has fixed bins, retains both signs and includes the +100 endpoint',()=>{
  const rows=[-100,-40,0,40,100].map((v,id)=>({id,born:10,parentId:null,status:'alive',heritable:{schema:HERITABLE_SCHEMA,senseEnergy:v,senseHealth:0,senseStomach:0}}));
- const d=sensitivityDistributions([...rows,{born:10,parentId:null}],{start:0,end:100})[0];assert.equal(d.count,5);assert.equal(d.positive,2);assert.equal(d.negative,2);assert.equal(d.zero,1);assert.equal(d.bins[0],1);assert.equal(d.bins[39],1);near(d.points.reduce((n,p)=>n+p.mean,0),100);
+ const d=sensitivityDistributions([...rows,{born:10,parentId:null}],{start:0,end:100})[0];assert.equal(d.count,5);assert.equal(d.positive,2);assert.equal(d.negative,2);assert.equal(d.zero,1);assert.equal(d.bins[0],1);assert.equal(d.bins[9],1);near(d.points.reduce((n,p)=>n+p.mean,0),100);
  assert.equal(sensitivityDistributions(rows,{start:100,end:200})[0].count,0);
 });
 

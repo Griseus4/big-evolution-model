@@ -1,6 +1,6 @@
 # Навигация по архитектуре
 
-Карта владельцев; читай нужную функцию. [История](archive/context-2026-10-18/architecture.md).
+[Темы](navigation/README.md) · [История](archive/context-2026-10-18/architecture.md).
 
 ## Исполнение
 
@@ -48,15 +48,17 @@
 
 ## Данные и анализ
 
-[world-save.js](../dist/world-save.js) валидирует полные сохранения; [state-codec.js](../dist/state-codec.js) сохраняет типы/общие ссылки. Runtime синхронизирует владельцев до сохранения и не заменяет мир при ошибке загрузки. [life-history.js](../dist/life-history.js), [heritable-statistics.js](../dist/heritable-statistics.js), [food-production-history.js](../dist/food-production-history.js) владеют отчётами. [genome-analysis.js](../dist/genome-analysis.js) и [tools/analyze-genomes.mjs](../tools/analyze-genomes.mjs) — общий разбор геномов, без запуска симуляции.
+[world-save.js](../dist/world-save.js) валидирует сохранения; [state-codec.js](../dist/state-codec.js) сохраняет типы/ссылки. Runtime синхронизирует владельцев; ошибка загрузки не заменяет мир. [life-history.js](../dist/life-history.js), [heritable-statistics.js](../dist/heritable-statistics.js), [food-production-history.js](../dist/food-production-history.js) владеют отчётами. [genome-analysis.js](../dist/genome-analysis.js) и [tools/analyze-genomes.mjs](../tools/analyze-genomes.mjs) — разбор геномов без симуляции.
 
-[population-statistics.js](../dist/population-statistics.js) восстанавливает N(t) из событий. [statistical-series.js](../dist/statistical-series.js) готовит видимые числовые выборки, [statistics-client.js](../dist/statistics-client.js) владеет кэшем/отменой одного аналитического Worker. [statistics-worker.js](../dist/statistics-worker.js) и [statistics-estimates.js](../dist/statistics-estimates.js) считают взвешенные оценки/бутстрэп, без RNG мира. [history-estimates-ui.js](../dist/history-estimates-ui.js) показывает числа и мировые значения; [json-export.js](../dist/json-export.js) фиксирует состав отчёта и собирает JSON порциями.
+[population-statistics.js](../dist/population-statistics.js): N(t). [statistical-series.js](../dist/statistical-series.js): выборки; [statistics-client.js](../dist/statistics-client.js): кэш/отмена Worker. [statistics-worker.js](../dist/statistics-worker.js)/[statistics-estimates.js](../dist/statistics-estimates.js): оценки/ДИ без RNG мира. [history-estimates-ui.js](../dist/history-estimates-ui.js): сводки; [json-export.js](../dist/json-export.js): порционный JSON.
 
-Пара: [pair-statistics.js](../dist/pair-statistics.js) — полные повторы/совместный бутстрэп, [pair-statistics-client.js](../dist/pair-statistics-client.js) — очередь/отмена Worker, [pair-comparison-ui.js](../dist/pair-comparison-ui.js) — таблица/состав. Общий createWorldEstimator сортирует значения один раз; [протокол](updates/v042-paired-comparison.md).
+[experiment-archive.js](../dist/experiment-archive.js): .beexp/окно; UI загружает блоки, Store хранит попытки. [Формат](updates/v045-compact-experiment-archives.md).
+
+Пара: [pair-statistics.js](../dist/pair-statistics.js) — общий оценщик; [pair-series.js](../dist/pair-series.js) — корзины; [pair-statistics-client.js](../dist/pair-statistics-client.js) — Worker/отмена; [pair-comparison-ui.js](../dist/pair-comparison-ui.js) — таблица/общая A/B; [history-differences-ui.js](../dist/history-differences-ui.js) — режимы карточек. [Протокол](updates/v043-difference-charts.md).
 
 ## Конструктор опытов
 
-[experiment-fields.js](../dist/experiment-fields.js) — поля/факторы; [experiment-design-ui.js](../dist/experiment-design-ui.js) — редактор/ленивая схема. [experiment-plan.js](../dist/experiment-plan.js) — валидация/до 64 сочетаний; [experiment-series.js](../dist/experiment-series.js) — очередь/повторы; [experiment-execution.js](../dist/experiment-execution.js) — владельцы на границе шага. [experiment-ui.js](../dist/experiment-ui.js) — план/уведомления/пауза/статистика; [experiment-runs-ui.js](../dist/experiment-runs-ui.js) — ограниченный DOM попыток. [experiment-store.js](../dist/experiment-store.js) — сохранение итогов. [experiment-statistics.js](../dist/experiment-statistics.js) — проекции/метаданные исходных повторов; [weighted-statistics.js](../dist/weighted-statistics.js) — веса/медиана; [comparison-charts.js](../dist/comparison-charts.js) — варианты на графиках.
+[experiment-fields.js](../dist/experiment-fields.js) — поля; [experiment-design-ui.js](../dist/experiment-design-ui.js) — редактор/дерево; [experiment-genomes.js](../dist/experiment-genomes.js) — проверка наборов файлов; [founder-senses.js](../dist/founder-senses.js) — гены основателей. [experiment-plan.js](../dist/experiment-plan.js) — сочетания. [experiment-series.js](../dist/experiment-series.js) — очередь/повторы; [experiment-execution.js](../dist/experiment-execution.js) — владельцы. [experiment-ui.js](../dist/experiment-ui.js) — управление, [experiment-runs-ui.js](../dist/experiment-runs-ui.js) — DOM, [experiment-store.js](../dist/experiment-store.js) — сохранение. [experiment-statistics.js](../dist/experiment-statistics.js) — проекции; [weighted-statistics.js](../dist/weighted-statistics.js) — веса; [comparison-charts.js](../dist/comparison-charts.js) — графики.
 
 ## Проверки и релиз
 

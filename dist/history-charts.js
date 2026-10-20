@@ -4,7 +4,7 @@ export const HISTORY_LINES=Object.freeze([
  {id:'min',label:'Минимум',color:'#91b8d0'}, {id:'median',label:'Медиана',color:'#e1c88c'},
  {id:'mean',label:'Среднее',color:'#86bf80'}, {id:'max',label:'Максимум',color:'#cba4e4'},
 ].map(Object.freeze));
-const short=new Intl.NumberFormat('ru-RU',{notation:'compact',maximumSignificantDigits:3});
+const short=new Intl.NumberFormat('ru-RU',{notation:'compact',maximumFractionDigits:1});
 const label=n=>short.format(n);
 const LEFT=58,RIGHT=14,TOP=16,BOTTOM=40,HEIGHT=235;
 const position=(p,width)=>p.x??((p.start??p.id*width)+(p.end??(p.id+1)*width))/2;
@@ -13,7 +13,7 @@ export function historyChartMaximum(points,keys,maximum=null){
  let max=0;for(const p of points)for(const key of keys)if(Number.isFinite(p[key]))max=Math.max(max,p[key]);
  return max?Math.min(Number.MAX_VALUE,max*1.08):1;
 }
-export function drawHistoryChart(canvas,{points,keys,domainStart=0,domainEnd,width=1,selected=null,single=false,maximum=null,minimum=0,age=false,markers=[],xLabel=null,xTicks=null,histogram=false,lines=HISTORY_LINES,bands=[]}){
+export function drawHistoryChart(canvas,{points,keys,domainStart=0,domainEnd,width=1,selected=null,single=false,maximum=null,minimum=0,age=false,markers=[],xLabel=null,xTicks=null,histogram=false,lines=HISTORY_LINES,bands=[],zeroLine=false}){
  const context=canvas.getContext('2d');if(!context)return;
  const cssWidth=Math.max(280,Math.round(canvas.getBoundingClientRect().width||600)),ratio=Math.min(2,globalThis.devicePixelRatio||1);
  const pixelWidth=Math.round(cssWidth*ratio),pixelHeight=Math.round(HEIGHT*ratio);
@@ -31,6 +31,7 @@ export function drawHistoryChart(canvas,{points,keys,domainStart=0,domainEnd,wid
  else for(let i=0;i<=4;i++)context.fillText(label(domainStart+(domainEnd-domainStart)*i/4),LEFT+span*i/4,HEIGHT-20);
  context.font='11px system-ui';
  context.fillStyle='#a6b3a6';context.textAlign='center';context.fillText(xLabel??(age?'Возраст, Т':single==='food'?'Время мира, Т':'Время рождения, Т'),LEFT+span/2,HEIGHT-2);
+ if(zeroLine&&minimum<0&&max>0){context.strokeStyle='#b9c6b9';context.setLineDash([5,4]);context.beginPath();context.moveTo(LEFT,y(0));context.lineTo(cssWidth-RIGHT,y(0));context.stroke();context.setLineDash([]);}
  if(selected!==null){const p=points.find(p=>p.id===selected);if(p){const px=x(position(p,width));context.strokeStyle='#e1c88c88';context.setLineDash([3,4]);context.beginPath();context.moveTo(px,TOP);context.lineTo(px,TOP+h);context.stroke();context.setLineDash([]);}}
  if(!count){context.fillStyle='#a6b3a6';context.fillText(keys.length?'Пока недостаточно данных':'Выбери хотя бы одну линию',LEFT+span/2,TOP+h/2);return;}
  if(histogram){const bin=width/(domainEnd-domainStart)*span;for(const p of points)for(let i=0;i<keys.length;i++){const key=keys[i];if(!Number.isFinite(p[key]))continue;context.fillStyle=lines.find(l=>l.id===key)?.color??'#86bf80';context.fillRect(x(p.x-width/2)+i*bin/keys.length+.25,y(p[key]),Math.max(.1,bin/keys.length-.5),y(0)-y(p[key]));}return;}

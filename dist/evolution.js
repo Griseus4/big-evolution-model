@@ -19,6 +19,7 @@ import {BASE_GENE_COUNT} from './policy-layout.js';
 import {GENE_COUNT,COGNITIVE_GENES} from './brain-parameters.js';
 import {GENOME_VERSION,randomGenome,randomNeuralGenome,genomeMetadata,mutateGenome,validateGenomeFile,randomizeLegacyProperties} from './genome.js';
 import {NEURAL_BRAIN_TYPE,NEIGHBOUR_BRAIN_TYPE,SET_BRAIN_TYPE,layoutForType} from './neural-layout.js';
+import {compileFounderSenses} from './founder-senses.js';
 import {createOccupancy,placeOccupant,removeOccupant,countOthers,contactIds,visibleNeighbours} from './neighbour-perception.js';
 import {withMutationGenes,mutationProfile,MUTATION_SCHEMA} from './mutation-parameters.js';
 import {WORLD_DEFAULTS} from './world-defaults.js';
@@ -98,7 +99,7 @@ export class Evolution {
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?TEMPORAL_BRAIN_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment}={}){
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses}={}){
   this.temporal=Boolean(temporal);
   if(this.temporal&&brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('В0.32 нужен мозг v13; старые основы не поддерживаются.');
   if(!['custom','balanced','scarce'].includes(scenario))throw new Error('Неизвестная пищевая среда.');
@@ -188,6 +189,7 @@ export class Evolution {
   if(this.baseGenome&&this.upgradeMutationGenes)this.baseGenome=withMutationGenes(this.baseGenome,this.mutationRandom);
   this.mutationProtocol=this.baseGenome?(mutationProfile(this.baseGenome)?MUTATION_SCHEMA:'global-mutation-v1'):
    this.heritableMutations?MUTATION_SCHEMA:'global-mutation-v1';
+  const founderEdits=compileFounderSenses(founderSenses,layoutForType(this.brainType));
   for(let i=0;i<this.initialPopulation;i++){
    // Даже при отдельном размещении сохраняем один прежний бросок перед генами.
    // Поэтому смена географии при том же seed не меняет исходные гены/физический RNG.
@@ -202,6 +204,7 @@ export class Evolution {
     }else genome=randomGenome(this.random,this.cognitiveRandom,this.bodyRandom);
    }
    if(!this.baseGenome&&this.heritableMutations)genome=withMutationGenes(genome,this.mutationRandom);
+   for(const [index,value]of founderEdits)genome[index]=value;
    this.addAgent(p,genome,null);
   }
   for(const a of this.agents)regions[this.tile(a.x,a.y).regionId].initialFounders++;

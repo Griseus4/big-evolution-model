@@ -27,7 +27,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  installGenomeAnalysis();
  let current='world',constructorUI=null;
  const testPages=['templates','constructor','runs','benchmark','mechanisms'];
- const historyUI=installHistoryUI({getSimulation:()=>constructorUI?.getSimulation()??getSimulation(),getComparisons:()=>constructorUI?.comparisons()});
+ const historyUI=installHistoryUI({getSimulation:()=>constructorUI?.getSimulation()??getSimulation(),getComparisons:()=>constructorUI?.comparisons(),prepareSimulation:options=>constructorUI?.prepareStatistics(options)});
  const reports={mechanisms:null,benchmark:null,long:null};
  let testPage='mechanisms';
  let jobReport=null,active=false,stopping=false,pending=[],workers=[],benchBase=null,build=null,benchmarkUI=null;
@@ -93,7 +93,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  }
  function renderHistory(force=false){if(current==='history'||force)historyUI.refresh(force);}
  async function exportWorldObservation(){
-  const selected=constructorUI?.report();if(selected){try{await downloadExperiment('big-evolution-experiment-lives.json',{format:'big-evolution-lives',version:4,modelVersion:MODEL_VERSION,...selected});}catch(error){byId('history-error').textContent='Ошибка экспорта: '+error.message;}return;}
+  if(constructorUI?.report()){try{const selected=await constructorUI.exportObservation();await downloadExperiment('big-evolution-experiment-lives.json',{format:'big-evolution-lives',version:4,modelVersion:MODEL_VERSION,...selected});}catch(error){byId('history-error').textContent='Ошибка экспорта: '+error.message;}return;}
   try{
   const s=await getWorldObservation();download(`big-evolution-lives-seed-${s.seed}-step-${s.tick}.json`,
    {format:'big-evolution-lives',version:4,modelVersion:MODEL_VERSION,build,createdAt:new Date().toISOString(),seed:s.seed,

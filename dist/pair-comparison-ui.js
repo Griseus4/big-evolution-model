@@ -16,13 +16,17 @@ export function installPairComparison({root=document,onChange=()=>{},createClien
    for(const p of result.excluded)list.append(make('li',`Повтор ${p.pairId+1} исключён только из этого показателя. A: ${p.a??'данные есть'} B: ${p.b??'данные есть'}`));node.append(list);
   });return node;
  }
- function update(input){
-  last=input;const variants=input.comparison?.variants??[],key=JSON.stringify(variants.map(v=>[v.id,v.name]));
+ function selection(comparison){
+  const variants=comparison?.variants??[],key=JSON.stringify(variants.map(v=>[v.id,v.name]));
   if(key!==variantsKey){variantsKey=key;for(const select of [a,b]){const old=select.value;select.replaceChildren(...variants.map(v=>{const o=make('option',v.name);o.value=v.id;return o;}));select.value=variants.some(v=>v.id===old)?old:variants[select===a?0:1]?.id??'';}}
-  if(variants.length<2){client.suspend();status.textContent='Выберите источник «Сравнение вариантов» в настройках статистики. Нужен опыт как минимум с двумя вариантами.';for(const id of ['pair-label-a','pair-label-b','pair-period'])byId(id).textContent='';for(const block of blocks.values())block.remove();blocks.clear();rendered.clear();return;}
+  if(variants.length<2)return null;
   if(a.value===b.value)b.value=variants.find(v=>v.id!==a.value).id;
   const va=variants.find(v=>v.id===a.value),vb=variants.find(v=>v.id===b.value);previousA=a.value;previousB=b.value;
   for(const [id,v]of [['pair-label-a',va],['pair-label-b',vb]]){const label=byId(id);label.textContent=`${id.endsWith('a')?'A':'B'}: ${v.name}`;label.style.color=v.color;}
+  return {a:va,b:vb};
+ }
+ function update(input){
+  last=input;const chosen=selection(input.comparison);if(!chosen){client.suspend();status.textContent='Выберите источник «Сравнение вариантов» в настройках статистики. Нужен опыт как минимум с двумя вариантами.';for(const id of ['pair-label-a','pair-label-b','pair-period'])byId(id).textContent='';for(const block of blocks.values())block.remove();blocks.clear();rendered.clear();return;}const {a:va,b:vb}=chosen;
   byId('pair-period').textContent=`Общий период [${input.start}; ${input.end}) Т. Метрики жизней — рождения, население и пища — время мира. Вес метрик особей: ${input.comparison.weightMode==='individuals'?'равный вес особей':'равный вес миров'}.`;
   client.update({a:va,b:vb,metrics:PAIR_METRICS.map(m=>m.id),options:{...input.options,start:input.start,end:input.end},weightMode:input.comparison.weightMode});
   const progress=client.state();status.textContent=progress.error??`Сравнение в фоне: ${progress.completed}/${progress.total} показателей. ДИ приближённые, от пяти полных пар; сравниваются только указанные в составе пары.`;
@@ -39,8 +43,8 @@ export function installPairComparison({root=document,onChange=()=>{},createClien
    }block.replaceChildren(...rows);
   }
  }
- for(const [select,other,old]of [[a,b,()=>previousA],[b,a,()=>previousB]])select.addEventListener('change',()=>{if(select.value===other.value)other.value=old();if(last)update(last);});
+ for(const [select,other,old]of [[a,b,()=>previousA],[b,a,()=>previousB]])select.addEventListener('change',()=>{if(select.value===other.value)other.value=old();onChange();});
  stat.addEventListener('change',()=>{if(last)update(last);});
- byId('pair-swap').addEventListener('click',()=>{const old=a.value;a.value=b.value;b.value=old;if(last)update(last);});
- return {update,suspend:client.suspend,dispose:client.dispose};
+ byId('pair-swap').addEventListener('click',()=>{const old=a.value;a.value=b.value;b.value=old;onChange();});
+ return {update,selection,suspend:client.suspend,dispose:client.dispose};
 }

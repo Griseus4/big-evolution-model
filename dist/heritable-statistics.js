@@ -3,7 +3,7 @@
 import {worldWeights} from './weighted-statistics.js';
 import {mutationProfile} from './mutation-parameters.js';
 export const HERITABLE_SCHEMA='heritable-statistics-v1';
-export const SENSITIVITY_BIN_WIDTH=5;
+export const SENSITIVITY_BIN_WIDTH=20;
 export const HERITABLE_METRICS=Object.freeze([
  {id:'senseEnergy',label:'Чувствительность к энергии',unit:'% шкалы чувств',digits:1,signed:true},
  {id:'senseHealth',label:'Чувствительность к здоровью',unit:'% шкалы чувств',digits:1,signed:true},

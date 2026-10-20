@@ -1,7 +1,8 @@
 /** Неизменяемый план серии. Seed назначаются до запуска и не зависят от
  * очередности Workers. Настройки каждого мира отделены от глобальных правил. */
 import {genomeMetadata,validateGenomeFile} from './genome.js';
-import {EXPERIMENT_FIELDS,factorDesign,setSetting,MAX_EXPERIMENT_COMBINATIONS} from './experiment-fields.js';
+import {EXPERIMENT_FACTOR_FIELDS,factorDesign,setSetting,MAX_EXPERIMENT_COMBINATIONS} from './experiment-fields.js';
+import {validateFounderSenses} from './founder-senses.js';
 import {WORLD_DEFAULTS} from './world-defaults.js';
 import {validateFoodSettings} from './food-settings.js';
 import {validateEnvironmentSettings} from './environment-settings.js';
@@ -19,7 +20,8 @@ const integer=(v,min,max,label)=>{if(!Number.isSafeInteger(v)||v<min||v>max)thro
 export function validateWorldOptions(input={}){
  const population=integer(input.population??WORLD_DEFAULTS.population,1,1000,'Основатели'),limit=integer(input.limit??WORLD_DEFAULTS.limit,population,1000,'Лимит');
  for(const name of ['memory','learning','mutations'])if(input[name]!==undefined&&typeof input[name]!=='boolean')throw new Error(`Некорректный переключатель ${name}.`);
- return {population,limit,...(input.terrainSeed!==undefined?{terrainSeed:integer(input.terrainSeed,1,4294967295,'Seed карты')}:{}),...(input.foodSeed!==undefined?{foodSeed:integer(input.foodSeed,1,4294967295,'Seed пищи')}:{}),...validateFoodSettings({...input,foodGeneralSettings:input.foodGeneralSettings||input.foodRegrowInterval!==undefined&&(!Number.isInteger(input.foodRegrowInterval)||input.foodRegrowInterval<10||input.foodRegrowInterval>300)||input.foodIslandCount===0}),...(input.baseGenome?{baseGenome:validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome})}:{}),automaticEnvironment:validateEnvironmentSettings(input.automaticEnvironment),reproduction:reproductionProfile(input.reproduction),memory:input.memory!==false,learning:input.learning!==false,mutations:input.mutations!==false};
+ const founderSenses=validateFounderSenses(input.founderSenses);
+ return {population,limit,...(founderSenses?{founderSenses}:{}),...(input.terrainSeed!==undefined?{terrainSeed:integer(input.terrainSeed,1,4294967295,'Seed карты')}:{}),...(input.foodSeed!==undefined?{foodSeed:integer(input.foodSeed,1,4294967295,'Seed пищи')}:{}),...validateFoodSettings({...input,foodGeneralSettings:input.foodGeneralSettings||input.foodRegrowInterval!==undefined&&(!Number.isInteger(input.foodRegrowInterval)||input.foodRegrowInterval<10||input.foodRegrowInterval>300)||input.foodIslandCount===0}),...(input.baseGenome?{baseGenome:validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome})}:{}),automaticEnvironment:validateEnvironmentSettings(input.automaticEnvironment),reproduction:reproductionProfile(input.reproduction),memory:input.memory!==false,learning:input.learning!==false,mutations:input.mutations!==false};
 }
 export function validatePlan(input){
  const worlds=integer(input.worlds??EXPERIMENT_DEFAULTS.worlds,1,64,'Миров на вариант'),steps=integer(input.steps??EXPERIMENT_DEFAULTS.steps,1,1000000,'Длительность, Т'),budget=integer(input.budget??EXPERIMENT_DEFAULTS.budget,1,64,'Бюджет потоков');
@@ -35,15 +37,15 @@ export function validatePlan(input){
   raw=[];
   function expand(index,settings,labels){
    if(index===design.factors.length){raw.push({name:labels.length?`Вариант ${raw.length+1} · ${labels.join(' · ')}`:'Общие условия',settings});return;}
-   const f=design.factors[index],field=EXPERIMENT_FIELDS.find(d=>d[1]===f.key);
-   for(const value of f.values){const next={...settings,automaticEnvironment:{...settings.automaticEnvironment},reproduction:{...settings.reproduction}};setSetting(next,f.key,value);expand(index+1,next,[...labels,`${field[2]}: ${typeof value==='boolean'?(value?'вкл':'выкл'):value}`]);}
+   const f=design.factors[index],field=EXPERIMENT_FACTOR_FIELDS.find(d=>d[1]===f.key);
+   for(const value of f.values){const next={...settings,automaticEnvironment:{...settings.automaticEnvironment},reproduction:{...settings.reproduction},founderSenses:{...settings.founderSenses}};setSetting(next,f.key,field[3]==='genome'?value.genes:value);expand(index+1,next,[...labels,`${field[2]}: ${field[3]==='genome'?value.name:typeof value==='boolean'?(value?'вкл':'выкл'):value}`]);}
   }
   expand(0,{},[]);
  }
  // Готовые варианты остаются внутренним контрактом исполнителя и чтения
  // прежних результатов. Редактор принимает только новую схему factors.
  if(!Array.isArray(raw)||!raw.length||raw.length>MAX_EXPERIMENT_COMBINATIONS)throw new Error(`Нужно от 1 до ${MAX_EXPERIMENT_COMBINATIONS} вариантов.`);
- const variants=raw.map((v,i)=>{try{return {id:`v${i+1}`,name:String(v.name??`Вариант ${i+1}`).trim().slice(0,240)||`Вариант ${i+1}`,settings:validateWorldOptions({...common,...v.settings,automaticEnvironment:{...common.automaticEnvironment,...v.settings?.automaticEnvironment},reproduction:{...common.reproduction,...v.settings?.reproduction}})};}catch(e){throw new Error(`Вариант ${i+1}: ${e.message}`);}});
+ const variants=raw.map((v,i)=>{try{validateFounderSenses(v.settings?.founderSenses);return {id:`v${i+1}`,name:String(v.name??`Вариант ${i+1}`).trim().slice(0,240)||`Вариант ${i+1}`,settings:validateWorldOptions({...common,...v.settings,automaticEnvironment:{...common.automaticEnvironment,...v.settings?.automaticEnvironment},reproduction:{...common.reproduction,...v.settings?.reproduction},founderSenses:{...common.founderSenses,...v.settings?.founderSenses}})};}catch(e){throw new Error(`Вариант ${i+1}: ${e.message}`);}});
  return {protocolId:EXPERIMENT_PROTOCOL,name:String(input.name??'Новый опыт').slice(0,120),worlds,steps,budget,maxWorkers,allocation,seeds:seeds.slice(),seedMatrix:seedMatrix(seeds),common,...(design?{factors:design.factors}:{}),variants};
 }
 export const workerCost=count=>count===1?1:count+1;

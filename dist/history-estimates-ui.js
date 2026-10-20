@@ -8,7 +8,7 @@ export function installHistoryEstimates({root=document,cards,onChange}){
  const client=createStatisticsClient({onChange}),state=root.getElementById('history-analysis-state');let sources=[];
  for(const card of cards){card.numeric=make('div');card.numeric.className='history-numeric-summary';card.card.append(card.numeric);}
  function update(input){
-  sources=input.sources;const visible=cards.filter(c=>!c.card.hidden);client.update({...input,metrics:visible.map(c=>c.m.id)});
+  sources=input.sources;const visible=cards.filter(c=>!c.card.hidden&&c.view?.value!=='difference');client.update({...input,metrics:visible.map(c=>c.m.id)});
   const progress=client.state();state.textContent=progress.error??(progress.total?progress.completed<progress.total?`Статистика в фоне: ${progress.completed}/${progress.total} показателей. Графики обновятся по готовности.`:'Числа — за выбранный период. Полосы ДИ приближённые, поточечные; при 5–9 мирах особенно осторожная интерпретация.':'');
   for(const c of visible){
    const results=sources.map(s=>client.get(s.id,c.m.id)),key=results.map((r,i)=>r??sources[i].report);

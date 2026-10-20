@@ -81,7 +81,7 @@ test('report validation rejects damaged retry seeds and unsupported report forma
  const h=harness(plan({worlds:1,variants:[{name:'A'}]}));h.done(h.workers[0]);const r=structuredClone(h.series.report);r.groups[0].attempts[0].seed++;assert.throws(()=>validateExperimentReport(r));assert.throws(()=>validateExperimentReport({format:'other'}));
 });
 test('unavailable persistence is explicit and never pretends the report was saved',async()=>{
- const store=new ExperimentStore(null);await assert.rejects(store.saveTemplate('x',plan()),/JSON/);
+ const store=new ExperimentStore(null);await assert.rejects(store.saveTemplate('x',plan()),/Скачайте результаты/);
 });
 test('actual experiment Worker protocol completes a short two-variant series',async()=>{
  let series;const finished=new Promise(resolve=>{series=new ExperimentSeries({createWorker:()=>createCognitionWorker({url:new URL('../dist/experiment-worker.js',import.meta.url)}),onFinish:resolve});});

@@ -4,6 +4,7 @@
 import {MAX_HISTORY_INTERVALS} from './food-exposure.js';
 const cached=new WeakMap();
 export function populationTimeline(report){
+ if(report.populationSeries)return report.populationSeries;
  if(cached.has(report))return cached.get(report);
  let error=null;
  if(!Number.isFinite(report.tick)||report.tick<0)error='Неизвестно время наблюдения населения.';

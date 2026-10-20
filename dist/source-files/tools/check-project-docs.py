@@ -19,6 +19,11 @@ for name in REQUIRED:
 links = 0
 for path in FILES:
     text = path.read_text(encoding='utf-8')
+    # Потерянные при консольной записи буквы нельзя восстановить по UTF-8:
+    # файл декодируется, но вместо слов уже записаны обычные знаки вопроса.
+    for number, line in enumerate(text.splitlines(), 1):
+        if '\ufffd' in line or re.search(r'\?{4,}', line):
+            errors.append(f'{path.relative_to(ROOT)}:{number}: возможная потеря текста; проверить исходную запись и кодировку.')
     for href in re.findall(r'\[[^\]]+\]\(([^)]+)\)', text):
         if re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*:', href):
             continue

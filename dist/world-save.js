@@ -13,7 +13,7 @@ import {controllerProblems} from './brain-controller.js';
 export const WORLD_SAVE_FORMAT='big-evolution-world',WORLD_SAVE_VERSION=2,MAX_WORLD_SAVE_BYTES=512*1024*1024;
 // Эти выпуски отличаются только наблюдателем при той же биологии/схеме.
 // Новый номер интерфейса не должен запрещать продолжить прежний полный мир.
-const COMPATIBLE_MODELS=new Set([MODEL_VERSION,'0.41.0','0.40.0','0.39.2']);
+const COMPATIBLE_MODELS=new Set([MODEL_VERSION,'0.44.0','0.43.0','0.42.0','0.41.0','0.40.0','0.39.2']);
 const FIELDS=('temporal individualFood geography learningEnabled memoryEnabled reproduction seed foodSeed random cognitiveRandom bodyRandom scenario heritableMutations upgradeMutationGenes mutationRandom brainType neuralRandom initialPopulation limit mutationRate mutations baseGenome tick nextId maxGeneration events history agents foodCycleStart environmentRevision environmentChanges lifeHistory lifeExposure records lineages tiles stats sourceTemplate foodIslands initialFood foodSettings initialFoodSettings initialFoodIslands mutationProtocol geographyInfo foodExposure subtick _primed _viewEpoch automaticEnvironment _activities').split(' ');
 export function saveWorld(w){
  if(!w.temporal)throw new Error('Полное сохранение поддерживает текущую модель.');
