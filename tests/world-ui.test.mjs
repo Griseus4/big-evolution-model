@@ -22,6 +22,8 @@ import {UI_TEXT,installUIText} from '../dist/ui-text.js';
 import {installPerformanceTabs} from '../dist/performance-tabs.js';
 import {WorldProfiler} from '../dist/world-profiler.js';
 import {installEnvironmentUI} from '../dist/environment-ui.js';
+import {formatNumber} from '../dist/ui-numbers.js';
+import {foodProduction} from '../dist/environment-settings.js';
 import {installWorldFiles} from '../dist/world-files-ui.js';
 import {installScreenTabs} from '../dist/screen-tabs.js';
 import {installLiveFoodControls} from '../dist/food-controls.js';
@@ -29,7 +31,7 @@ const html=fs.readFileSync(new URL('../dist/index.html',import.meta.url),'utf8')
 const app=fs.readFileSync(new URL('../dist/evolution-app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'');
 const performanceUI=fs.readFileSync(new URL('../dist/performance-ui.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'').replace(/^export /gm,'');
 class Element{
- constructor(){this.listeners={};this.style={};this.children=[];this.dataset={};this.checked=false;this.value='';this.tagName='DIV';this.scrollTop=0;}
+ constructor(){this.listeners={};this.style={setProperty(k,v){this[k]=v;}};this.children=[];this.dataset={};this.checked=false;this.value='';this.tagName='DIV';this.scrollTop=0;}
  addEventListener(name,fn){this.listeners[name]=fn;}
  append(...nodes){for(const n of nodes){n.parent=this;n.ownerDocument=this.ownerDocument;this.children.push(n);}}
  replaceChildren(...nodes){this.children=[];this.append(...nodes);}
@@ -64,7 +66,7 @@ async function boot(){
  }
  let section='birth',tab='world',benchmarkActive=false;
  const context=vm.createContext({...model,...cognition,...setLayout,...neuralLayout,...body,...navigation,...reproduction,...geography,...computation,
-  WorldClient:TestClient,WorldProfiler,mutationProfile,foodLabel,updateTextRows,UI_TEXT,installUIText,installPerformanceTabs,document,navigator:{hardwareConcurrency:2,userAgent:'test-dom'},
+  WorldClient:TestClient,WorldProfiler,mutationProfile,foodLabel,format:formatNumber,updateTextRows,UI_TEXT,installUIText,installPerformanceTabs,document,navigator:{hardwareConcurrency:2,userAgent:'test-dom'},
   installLabTabs:options=>({currentTab:()=>tab,refresh:()=>{},onRestart:()=>{},
    select:name=>{tab=name;options.onTabChange(name);},isBenchmarkActive:()=>benchmarkActive}),
   installSidebar:fn=>{sidebarChange=fn;return {getResidentSection:()=>section,select:()=>fn(),selectResident:name=>{section=name;fn();}};},
@@ -99,6 +101,15 @@ test('global play availability follows benchmark activity even without new world
  await e.get('play').emit('click');assert.equal(b.runtime.running,true);
 });
 
+test('speed menu exposes final modes and ten substeps per second draws each intermediate state',async()=>{
+ const menu=html.match(/<select id="speed">([\s\S]*?)<\/select>/)[1];
+ assert.deepEqual([...menu.matchAll(/value="([^"]+)"/g)].map(m=>Number(m[1])),[.02,.04,.1,8,32,64]);
+ const b=await boot(),e=b.elements;e.get('speed').value='.1';await e.get('speed').emit('change');await settle();
+ assert.equal(b.runtime.target,1);assert.equal(b.runtime.quantum,.1);await e.get('play').emit('click');
+ for(let i=1;i<=10;i++){await b.pulse(i*100);assert.equal(b.runtime.world.subtick,i);assert.match(e.get('clock').textContent,new RegExp(`Шаг ${i/10}`));}
+ e.get('speed').value='64';await e.get('speed').emit('change');await settle();assert.equal(b.runtime.target,640);assert.equal(b.runtime.quantum,1);
+});
+
 test('restart, intervention, selection and all resident sections render',async()=>{
  const b=await boot(),e=b.elements;e.get('founders').value='1001';await e.get('restart').emit('click');assert.ok(e.get('error').textContent);
  e.get('founders').value='12';await e.get('restart').emit('click');assert.equal(e.get('population').textContent,12);
@@ -120,7 +131,9 @@ test('genome export/import and memory switches cross the worker boundary',async(
 });
 test('food Apply keeps the running UI active and reports unchanged settings accurately',async()=>{
  const b=await boot(),e=b.elements;await e.get('play').emit('click');
+ assert.ok(e.get('world-food-production').textContent.includes(formatNumber(foodProduction(b.runtime.world))));
  await e.get('world-food-apply').emit('click');
+ assert.ok(e.get('world-food-production').textContent.includes(formatNumber(foodProduction(b.runtime.world))));assert.match(e.get('world-food-production').textContent,/Полные источники пропускают рост/);
  assert.equal(b.runtime.running,true);assert.match(e.get('world-food-status').textContent,/Мир продолжает работу/);
  await e.get('world-food-apply').emit('click');
  assert.match(e.get('world-food-status').textContent,/Условия совпадают/);assert.equal(b.runtime.running,true);

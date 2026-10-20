@@ -2,6 +2,7 @@
  * Миры изолированы, без отрисовки и общего RNG. Параллельность управляется UI;
  * здесь один мир выполняется кусками, чтобы Worker мог обработать остановку.
  */
+import {ExperimentExecution} from './experiment-execution.js';
 import {TEMPORAL_BRAIN_TYPE} from './temporal-layout.js';
 import {Evolution,RULES,GENE_COUNT,validateGenomeFile,worldDistance} from './evolution.js';
 import {controllerProblems,BRAIN_TYPE} from './brain-controller.js';
@@ -9,6 +10,8 @@ import {NEURAL_BRAIN_TYPE,NEURAL_GENE_COUNT,NEIGHBOUR_BRAIN_TYPE,SET_BRAIN_TYPE,
 import {mutationOffset,validMutationGenes} from './mutation-parameters.js';
 import {genomeMetadata} from './genome.js';
 import {WORLD_DEFAULTS} from './world-defaults.js';
+import {foodExposureReport} from './food-exposure.js';
+import {foodProductionHistory} from './food-production-history.js';
 import {MODEL_VERSION,lifeRow} from './life-history.js';
 import {validateFoodSettings} from './food-settings.js';
 import {validateGeography} from './geography.js';
@@ -82,11 +85,12 @@ export function checkInvariants(s){
  }
  return {foodError:b.foodError,energyError:b.energyError,energyTolerance};
 }
-export async function runWorld(job,{onProgress,shouldStop}){
- const mode=BRAIN_MODES.find(m=>m.id===job.mode);if(!mode)throw new Error('Неизвестный режим мозга');
+export async function runWorld(job,{onProgress=()=>{},shouldStop=()=>false,getComputations=()=>1,onSnapshot=null,observe=()=>false,createWorker}={}){
+ const mode=job.worldOptions??BRAIN_MODES.find(m=>m.id===job.mode);if(!mode)throw new Error('Неизвестный режим мозга');
  const s=new Evolution({temporal:!job.brainType||job.brainType===TEMPORAL_BRAIN_TYPE,heritableMutations:job.heritableMutations!==false,upgradeMutationGenes:job.upgradeMutationGenes===true,seed:job.seed,brainType:job.brainType??TEMPORAL_BRAIN_TYPE,scenario:job.scenario,geography:job.geography,reproduction:job.reproduction,foodSources:job.foodSources,foodRegrowInterval:job.foodRegrowInterval,foodIslandCount:job.foodIslandCount,foodPeriodSpread:job.foodPeriodSpread,foodSizeSpread:job.foodSizeSpread,individualFood:job.individualFood!==false,population:job.population,limit:job.limit,
   mutations:job.mutations,mutationRate:job.mutationRate,baseGenome:job.baseGenome,
-  learning:mode.learning,memory:mode.memory,lifeHistoryLimit:250});
+  learning:mode.learning,memory:mode.memory,...job.worldOptions,lifeHistoryLimit:job.fullHistory?Infinity:250});
+ const execution=new ExperimentExecution(s,createWorker);let snapshotAt=-Infinity,sentDead=0;
  const start=performance.now(),checkpoints=[],samples=[],champions=new Map();let agentSteps=0,limitSteps=0,checks=0,lastSent=0;
  const interval=Math.max(1000,Math.ceil(job.steps/200));
  function consider(a){
@@ -116,31 +120,38 @@ export async function runWorld(job,{onProgress,shouldStop}){
    wallSeconds:(performance.now()-start)/1000,agentSteps,meanPopulation:s.tick?agentSteps/s.tick:s.initialPopulation,
    meanFeelingAcrossAgentSteps:agentSteps?s.lifeExposure.feelingTotal/s.lifeExposure.steps:null,limitSteps,
    deathsPer1000AgentSteps:agentSteps?s.stats.deaths/agentSteps*1000:null,
-   rules:{...RULES,birthThreshold:s.reproduction.energy,birthHealth:s.reproduction.health},reproduction:{...s.reproduction},geography:s.geographyInfo,stats:structuredClone(s.stats),summary:s.summary(),lives:s.lifeReport(),checkpoints,
+   rules:{...RULES,birthThreshold:s.reproduction.energy,birthHealth:s.reproduction.health,maturity:s.reproduction.maturity,birthInterval:s.reproduction.birthInterval},reproduction:{...s.reproduction},geography:s.geographyInfo,stats:structuredClone(s.stats),summary:s.summary(),lives:s.lifeReport(),checkpoints,
    feedingAcrossAgentSteps:{mealsPer1000AgentSteps:agentSteps?s.stats.eaten/agentSteps*1000:null,
     feedingActionFraction:s.stats.completed.reduce((n,v)=>n+v,0)?(s.stats.gathered+s.stats.eaten)/s.stats.completed.reduce((n,v)=>n+v,0):null},
    invariants:{status:error?'failed':'passed',checkpointsChecked:checks},genomeSamples:samples,
-   detailRetention:{deadRowsLimit:250,allDeathsCounted:true},
+   detailRetention:{deadRowsLimit:job.fullHistory?null:250,allDeathsCounted:true},computationChanges:execution.changes,
    notes:['Средние возраста смерти относятся только к завершённым жизням; живые представлены отдельно.','Один seed задаёт одинаковый старт режимов; дальнейшие случайные события расходятся после разных действий.','Прекращение роста популяции при лимите влияет на отбор.','Образцы геномов выбраны по потомству, возрасту и поколению; это не рейтинг общей приспособленности.']};
  }
  try{
   checkpoints.push(point());saveSample();
   while(s.tick<job.steps&&s.agents.length&&!shouldStop()){
+   const wanted=getComputations();if(wanted!==execution.count){try{await execution.resize(wanted);onProgress({tick:s.tick,population:s.agents.length,computeWorkers:execution.count,allocationChanged:true});}catch(error){onProgress({tick:s.tick,population:s.agents.length,computeWorkers:execution.count,allocationError:error.message});}}
    const sliceStart=performance.now();
    // До 20 мс без отдачи управления; отдельный тяжёлый шаг может занять дольше.
    do{
     const alive=s.agents.length;agentSteps+=alive;limitSteps+=Number(alive>=s.limit);
-    s.step();
-    if(s.tick%interval===0)checkpoints.push(point());
-    if(s.tick%10000===0)saveSample();
+    if(execution.pool)await execution.step();else s.step();
+    if(s.tick%interval===0){await execution.sync();checkpoints.push(point());}
+    if(s.tick%10000===0&&job.saveGenomes){await execution.sync();saveSample();}
    }while(s.agents.length&&s.tick<job.steps&&performance.now()-sliceStart<20);
-   if(performance.now()-lastSent>=1000){onProgress({tick:s.tick,targetSteps:job.steps,population:s.agents.length,births:s.stats.births,deaths:s.stats.deaths,seconds:(performance.now()-start)/1000});lastSent=performance.now();}
+   if(performance.now()-lastSent>=1000){onProgress({tick:s.tick,targetSteps:job.steps,population:s.agents.length,computeWorkers:execution.count,births:s.stats.births,deaths:s.stats.deaths,seconds:(performance.now()-start)/1000});lastSent=performance.now();}
+   if(onSnapshot&&observe()&&performance.now()-snapshotAt>=5000){
+    // Передаём только новые завершённые строки. Полные личные состояния
+    // владельцев здесь не нужны; живые строки содержат лишь итоги наблюдателя.
+    const lives={tick:s.tick,...s.lifeHistory.summary(),dead:s.lifeHistory.rows.slice(s.lifeHistory.offset+sentDead),living:s.agents.map(a=>lifeRow(a,a.born,s.tick)),foodAvailability:foodExposureReport(s.foodExposure),foodProductionHistory:foodProductionHistory(s)};
+    onSnapshot(lives);sentDead+=lives.dead.length;snapshotAt=performance.now();
+   }
    await new Promise(resolve=>setTimeout(resolve,0));
   }
-  if(checkpoints.at(-1)?.tick!==s.tick)checkpoints.push(point());
+  await execution.sync();if(checkpoints.at(-1)?.tick!==s.tick)checkpoints.push(point());
   if(samples.at(-1)?.tick!==s.tick)saveSample();
   return result(shouldStop()?'stopped':'completed');
- }catch(error){return result('failed',{message:error.message,stack:error.stack??null,tick:s.tick});}
+ }catch(error){return {id:job.id,status:'failed',modelVersion:MODEL_VERSION,tick:s.tick,error:{message:error.message,stack:error.stack??null}};}finally{await execution.close();}
 }
 
 /** Сводка по независимым мирам. Незавершённые/аварийные запуски показываются

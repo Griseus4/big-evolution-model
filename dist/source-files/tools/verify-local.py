@@ -37,7 +37,7 @@ def find_node() -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--only', choices=['static', 'startup', 'mechanisms', 'worker'],
+    parser.add_argument('--only', choices=['docs', 'static', 'startup', 'mechanisms', 'worker'],
                         help='Run one group; omit for the complete short suite.')
     parser.add_argument('--source-only', action='store_true',
                         help='For ZIP/fresh repositories: skip Git history/diff checks; keep source hashes and executable checks.')
@@ -53,12 +53,13 @@ def main() -> int:
     steps = [
         ('browser-wiring', 'static', [sys.executable, 'tools/check-browser-wiring.py']),
         ('project-docs', 'static', [sys.executable, 'tools/check-project-docs.py']),
+        ('agent-context', 'static', [sys.executable, 'tools/check-agent-context.py']),
         ('benchmark-snapshots', 'static', [sys.executable, 'tools/check-benchmark-snapshots.py'] +
          (['--hash-only'] if args.source_only else [])),
         ('startup', 'startup', [node, 'tools/check-startup.mjs']),
-        ('world-worker', 'worker', [node, '--test', 'tests/world-worker.test.mjs', 'tests/world-ui.test.mjs',
+        ('world-worker', 'worker', [node, '--test', 'tests/js-syntax.test.mjs', 'tests/pair-statistics042.test.mjs', 'tests/statistical-ui041.test.mjs', 'tests/experiment-factors.test.mjs', 'tests/experiment-constructor.test.mjs', 'tests/experiment-statistics.test.mjs', 'tests/experiment-ui.test.mjs', 'tests/world-worker.test.mjs', 'tests/world-ui.test.mjs',
                                      'tests/performance-detail.test.mjs', 'tests/worker-timing.test.mjs', 'tests/help-ui.test.mjs', 'tests/live-history.test.mjs', 'tests/update037.test.mjs',
-                                     'tests/temporal.test.mjs', 'tests/environment-save.test.mjs', 'tests/interface0361.test.mjs', 'tests/activity-perception.test.mjs', 'tests/life-cohorts.test.mjs', 'tests/history-ui.test.mjs', 'tests/history-window.test.mjs', 'tests/parallel-world.test.mjs', 'tests/parallel-benchmark.test.mjs',
+                                     'tests/temporal.test.mjs', 'tests/environment-save.test.mjs', 'tests/target-environment.test.mjs', 'tests/island-mobility.test.mjs', 'tests/interface0361.test.mjs', 'tests/activity-perception.test.mjs', 'tests/life-cohorts.test.mjs', 'tests/history-ui.test.mjs', 'tests/history-window.test.mjs', 'tests/parallel-world.test.mjs', 'tests/parallel-benchmark.test.mjs',
                                      'tests/worker-count-benchmark.test.mjs', 'tests/worker-count-ui.test.mjs',
                                      'tests/live-computations.test.mjs', 'tests/configuration-benchmark.test.mjs', 'tests/ui-text-controls.test.mjs']),
         ('mechanisms', 'mechanisms', [node, 'tools/check-mechanisms.mjs',
@@ -66,7 +67,8 @@ def main() -> int:
         # HEAD учитывает и staged, и unstaged изменения отслеживаемых файлов.
         ('git-diff', 'static', [git, '-c', 'core.safecrlf=false', 'diff', 'HEAD', '--check']),
     ]
-    selected = [step for step in steps if (args.only is None or step[1] == args.only)
+    selected = [step for step in steps if (args.only is None or step[1] == args.only or
+                args.only == 'docs' and step[0] in {'project-docs', 'agent-context', 'git-diff'})
                 and not (args.source_only and step[0] == 'git-diff')]
     version = re.search(r"MODEL_VERSION='([^']+)'", (ROOT / 'dist/life-history.js').read_text(encoding='utf-8')).group(1)
     start = perf_counter()

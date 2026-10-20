@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {aggregateLifeCohorts} from '../dist/life-cohorts.js';
 import {historyDomainEnd,windowLifeCohorts,windowFoodCohorts} from '../dist/history-window.js';
-import {survivalCurve,survivalAtAge} from '../dist/survival-curve.js';
+import {survivalCurve,survivalAtAge,survivalAgeWindow} from '../dist/survival-curve.js';
 import {historyChartMaximum,chartCohortAt,drawHistoryChart} from '../dist/history-charts.js';
 import {foodCohorts,FOOD_EXPOSURE_SCHEMA} from '../dist/food-exposure.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
@@ -50,6 +50,15 @@ test('large survival cohorts cap Canvas points but retain exact queried ages',()
  assert.ok(curve.points.length<=512);near(survivalAtAge(curve,100).lower,50);near(survivalAtAge(curve,100.1).lower,49.95);
 });
 
+test('fixed survival view clips at the exact age and extends unknown outcomes without changing the cohort',()=>{
+ const report={tick:300,dead:[row(1,0,10),row(2,1,30)],living:[row(3,2,20,'alive')],omittedDetails:0},curve=survivalCurve(report),before=structuredClone(curve);
+ const short=survivalAgeWindow(curve,10);assert.equal(short.domainEnd,10);assert.ok(short.points.every(p=>p.x<=10));near(short.points.at(-1).mean,100);
+ const afterDeath=survivalAgeWindow(curve,11);near(afterDeath.points.at(-1).mean,200/3);
+ const long=survivalAgeWindow(curve,200);assert.equal(long.points.at(-1).x,200);near(long.points.at(-1).upper,100/3);assert.equal(long.points.at(-1).mean,0);assert.equal(long.points.at(-1).unknown,1);
+ assert.deepEqual(curve,before);for(const value of [0,-1,NaN,Infinity,1.5])assert.throws(()=>survivalAgeWindow(curve,value));
+ assert.deepEqual(survivalAgeWindow(survivalCurve({...report,omittedDetails:1}),200).points,[]);
+});
+
 test('survival mean and median use only completed lives in the selected birth group',()=>{
  const report={tick:200,dead:[row(1,0,10),row(2,1,20),row(3,2,90),row(4,100,1000)],living:[row(5,3,150,'alive')],omittedDetails:0},before=structuredClone(report);
  const c=survivalCurve(report);assert.deepEqual(c.completed,{count:3,mean:40,median:20});assert.deepEqual(report,before);
@@ -73,4 +82,12 @@ test('the known age interval remains solid when the following outcome is still u
  drawHistoryChart(canvas,{points:[{id:0,x:0,mean:100,lower:100,upper:100,complete:true},{id:1,x:2.1,mean:0,lower:0,upper:100,complete:false},{id:2,x:3,mean:0,lower:0,upper:100,complete:false}],keys:['mean'],domainEnd:3,single:true,maximum:100,age:true});
  const known=strokes.find(s=>s.path.length===2&&s.path[0][0]===58&&s.path[0][1]===16&&Math.abs(s.path[1][0]-427.6)<1e-8);
  assert.ok(known);assert.deepEqual(known.dash,[]);assert.ok(strokes.some(s=>s.dash.length&&s.path.some(p=>p[1]===195)));
+});
+
+test('sensitivity distribution labels every20 percentage points without changing vertical ticks',()=>{
+ const texts=[],context={setTransform(){},clearRect(){},fillRect(){},beginPath(){},moveTo(){},lineTo(){},stroke(){},setLineDash(){},fillText(...args){texts.push(args);}},canvas={getContext:()=>context,getBoundingClientRect:()=>({width:600})};
+ const ticks=[-100,-80,-60,-40,-20,0,20,40,60,80,100];
+ drawHistoryChart(canvas,{points:[{id:0,x:0,mean:10}],keys:['mean'],domainStart:-100,domainEnd:100,width:5,histogram:true,single:true,xTicks:ticks});
+ assert.deepEqual(texts.filter(([,x,y])=>y===215).map(([label])=>Number(label.replace('−','-'))),ticks);
+ assert.equal(texts.filter(([,x])=>x===50).length,5);
 });

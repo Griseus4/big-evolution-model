@@ -1,6 +1,7 @@
 /** Сводки наблюдателя по полуоткрытым интервалам рождения [b,b+width).
  * Один проход по сохранённым жизням; сортируются только собственные массивы
  * значений внутри групп. Нет обращения к миру, мозгам или RNG. */
+import {weightedSummary,worldWeights} from './weighted-statistics.js';
 import {HERITABLE_METRICS,HERITABLE_SCHEMA} from './heritable-statistics.js';
 import {LIFE_OBSERVATION_SCHEMA} from './life-observations.js';
 export const HISTORY_PAGE_SIZE=50;
@@ -56,19 +57,20 @@ export function aggregateLifeCohorts(report,{width=100,survivalAge=100,origin='a
   if(!finite(row.born)||row.born<0||!finite(row.age)||row.age<0||!['alive','dead'].includes(row.status)){excludedInvalid++;continue;}
   if(row.born<birthStart||row.born>=birthEnd)continue;
   const id=Math.floor(row.born/width);let g=groups.get(id);
-  if(!g){g={id,start:Math.max(birthStart,id*width),end:Math.min(birthEnd,(id+1)*width),born:0,dead:0,alive:0,knownSurvival:0,reachedAge:0,samples:Object.fromEntries(LIFE_METRICS.map(m=>[m.id,[]]))};groups.set(id,g);}
-  g.born++;g[row.status==='dead'?'dead':'alive']++;
+  if(!g){g={id,start:Math.max(birthStart,id*width),end:Math.min(birthEnd,(id+1)*width),born:0,dead:0,alive:0,knownSurvival:0,reachedAge:0,survivalRows:report.weightMode==='worlds'?[]:null,samples:Object.fromEntries(LIFE_METRICS.map(m=>[m.id,[]]))};groups.set(id,g);}
+  g.survivalRows?.push(row);g.born++;g[row.status==='dead'?'dead':'alive']++;
   if(row.status==='dead'||row.age+1e-9>=survivalAge)g.knownSurvival++;
   if(row.age+1e-9>=survivalAge)g.reachedAge++;
-  for(const m of LIFE_METRICS){if(mode==='dead'&&row.status!=='dead'&&!m.inherited)continue;const value=lifeMetric(row,m.id,interruptionKind);if(finite(value))g.samples[m.id].push(value);}
+  for(const m of LIFE_METRICS){if(mode==='dead'&&row.status!=='dead'&&!m.inherited)continue;const value=lifeMetric(row,m.id,interruptionKind);if(finite(value))g.samples[m.id].push(report.weightMode==='worlds'?{value,worldId:row.worldId}:value);}
  }
  const omittedDetails=report.omittedDetails??0;
  const cohorts=[...groups.values()].sort((a,b)=>a.id-b.id).map(g=>{
   const birthClosed=report.tick+1e-9>=g.end,complete=birthClosed&&g.alive===0&&omittedDetails===0;
   const sufficient=birthClosed&&g.knownSurvival===g.born&&omittedDetails===0;
-  const metrics=Object.fromEntries(LIFE_METRICS.map(m=>[m.id,summarize(g.samples[m.id])]));
-  delete g.samples;
-  return {...g,birthClosed,complete,metrics,survival:{age:survivalAge,sufficient,percent:sufficient?100*g.reachedAge/g.born:null}};
+  const metrics=Object.fromEntries(LIFE_METRICS.map(m=>[m.id,report.weightMode==='worlds'?weightedSummary(g.samples[m.id].map(r=>r.value),worldWeights(g.samples[m.id])):summarize(g.samples[m.id])]));
+  let survivalPercent=100*g.reachedAge/g.born;if(report.weightMode==='worlds'){const weights=worldWeights(g.survivalRows);survivalPercent=100*weights.reduce((n,v,i)=>n+v*Number(g.survivalRows[i].age+1e-9>=survivalAge),0)/weights.reduce((a,b)=>a+b,0);}
+  delete g.samples;delete g.survivalRows;
+  return {...g,birthClosed,complete,metrics,survival:{age:survivalAge,sufficient,percent:sufficient?survivalPercent:null}};
  });
- return {width,survivalAge,origin,mode,interruptionKind,cohorts,omittedDetails,excludedInvalid};
+ return {width,survivalAge,origin,mode,interruptionKind,cohorts,omittedDetails,excludedInvalid,...(report.weightMode?{weightMode:report.weightMode}:{})};
 }

@@ -1,6 +1,7 @@
 /** Один владелец мира. Каждая задача планировщика исполняет не более одного
  * целого шага: очередь команд получает управление между физическими шагами.
- * Показ/ACK не управляют расчётом. После сна долг ограничен 250 мс, шаги
+ * Быстрый расчёт независим от показа. Медленное наблюдение ждёт кадр каждого
+ * подшага только на видимой карте. После сна долг ограничен 250 мс, шаги
  * не укрупняются, RNG и очередность Evolution.step остаются прежними. */
 import {Evolution} from './evolution.js';
 import {ResidentTrail,attachResidentTrail} from './resident-trail.js';
@@ -21,7 +22,8 @@ export class WorldRuntime{
   this.presentationMs=0;this.messages=0;
   this.parallelBaseline=null;this.parallelFrozen=null;this.computeMode='auto';
  }
- schedule(){if(this.running){const delay=Math.max(0,(this.quantum-this.credit)*1000/this.target);if(this.wake(delay)!==false)this.profiler.workerTiming.scheduled(delay,delay>0?Math.ceil(delay):0);}}
+ showingSubsteps(){return this.quantum===.1&&this.visible&&this.tab==='world';}
+ schedule(){if(this.running&&!(this.showingSubsteps()&&this.inFlight!==null)){const delay=Math.max(0,(this.quantum-this.credit)*1000/this.target-(this.showingSubsteps()?this.clock()-this.lastTime:0));if(this.wake(delay)!==false)this.profiler.workerTiming.scheduled(delay,delay>0?Math.ceil(delay):0);}}
  resetTime(){this.profiler.workerTiming.resetBoundary();this.credit=0;this.lastTime=this.clock();this.rateStart=this.lastTime;this.rateTick=this.world?.tick??0;this.actualRate=0;}
  setRunning(value){this.running=Boolean(value&&this.world?.agents.length);this.profiler.setRunning(this.running);this.freezeParallel();this.resetTime();this.cancel();this.schedule();}
  async substep(){
@@ -29,11 +31,11 @@ export class WorldRuntime{
   else if(this.profiler.active)this.profiler.runStep(()=>this.world.substep());else this.world.substep();
  }
  async pulse(){
-  if(!this.running)return;
+  if(!this.running||(this.showingSubsteps()&&this.inFlight!==null))return;
   const timing=this.profiler.workerTiming;timing.beginTask();
   try{
   const now=this.clock(),elapsed=Math.max(0,Math.min(this.quantum===.1?Math.max(250,this.quantum*1000/this.target):250,now-this.lastTime));this.lastTime=now;
-  this.credit=Math.min(Math.max(this.quantum,this.target*.25),this.credit+elapsed*this.target/1000);
+  this.credit=Math.min(this.showingSubsteps()?this.quantum:Math.max(this.quantum,this.target*.25),this.credit+elapsed*this.target/1000);
   // Дробные миллисекунды могут оставить 0.9999999999999999 вместо единицы.
   // Допуск относится только к часам планировщика, не к физике/числам мозга.
   if(this.credit>=this.quantum-1e-12){
@@ -56,7 +58,7 @@ export class WorldRuntime{
  }
  async publish(force=false){
   const now=this.clock();
-  if(!this.world||(!force&&(!this.visible||this.inFlight!==null||now-this.lastPaint<WORLD_UI_INTERVAL)))return;
+  if(!this.world||(!force&&(!this.visible||this.inFlight!==null||(!this.showingSubsteps()&&now-this.lastPaint<WORLD_UI_INTERVAL))))return;
   if(this.executor)await this.executor.syncAgent(this.selected);
   const timing=this.profiler.workerTiming,measuring=timing.active,prepareStart=measuring?timing.now():null;
   const start=this.clock(),state=worldPresentation(this.world,{selected:this.selected,trail:this.trail,
@@ -68,14 +70,14 @@ export class WorldRuntime{
   const sequence=++this.sequence;this.inFlight=sequence;this.lastPaint=now;this.staticDirty=false;
   if(state.lives){this.historyDirty=false;this.lastHistoryPaint=now;}
   const message={protocol:WORLD_PROTOCOL,type:'state',epoch:this.epoch,sequence,running:this.running,
-   actualRate:this.actualRate,state,profile:this.profile()};
+   actualRate:this.actualRate,state,profile:this.profile(),paintBeforeNext:this.showingSubsteps()};
   // Сюда входит только синхронный send/postMessage, а не доставка/ACK/DOM.
   const sendStart=measuring?timing.now():null;
   try{this.send(message);}finally{if(measuring)timing.phase('send',sendStart);}
  }
  profile(){
   const report=this.profiler.report();if(!report)return null;
-  report.context.worldMode='dedicated-worker';report.context.scheduler={targetStepsPerSecond:this.target,uiIntervalMs:WORLD_UI_INTERVAL,stepsPerTask:this.quantum,manualStepSize:.1};
+  report.context.worldMode='dedicated-worker';report.context.scheduler={targetStepsPerSecond:this.target,uiIntervalMs:this.showingSubsteps()?null:WORLD_UI_INTERVAL,paintEverySubstep:this.showingSubsteps(),stepsPerTask:this.quantum,manualStepSize:.1};
   report.context.computeWorkers??=this.executor?.lanes.length??1;
   if(report.context.computeWorkers>1&&(this.parallelFrozen||this.parallelBaseline)){report.parallel=this.parallelFrozen??this.parallelMetrics();report.detailSchema='parallel-phases-v1';report.notes.push('Параллельный stepMs включает ожидание владельцев. parallel.ownerWorkMs суммирует время нескольких потоков и не складывается с stepMs. Традиционные внутренние группы однопоточного оценщика здесь не измеряются.');}
   report.scheduler.computeBudgetMs=null;report.scheduler.maxStepsPerFrame=null;
@@ -84,7 +86,7 @@ export class WorldRuntime{
   report.workerTransport={presentationMs:timing.taskPhases.presentationMs+timing.outsideTasks.presentationMs,
    sendMs:timing.taskPhases.sendMs+timing.outsideTasks.sendMs,messages:timing.sendCalls};
   report.notes=report.notes.filter(n=>!n.includes('скрытая вкладка'));
-  report.notes.push('Активное время включает работу скрытой вкладки. UI измеряется отдельно в главном потоке.','workerTiming: только завершённые задачи/участки; текущая отправка попадёт в следующий отчёт. ACK ограничивает снимки, не расчёт.');
+  report.notes.push('Активное время включает работу скрытой вкладки. UI измеряется отдельно в главном потоке.','workerTiming: только завершённые задачи/участки; текущая отправка попадёт в следующий отчёт. Только медленный показ на видимой карте ждёт ACK кадра; быстрый и фоновый расчёт независимы.');
   report.unattributedNote='Остаток Worker включает ожидание цели, подготовку/отправку снимков и прочую работу; UI исполняется параллельно, это не процент простоя CPU.';
   return report;
  }
@@ -121,7 +123,7 @@ export class WorldRuntime{
     this.selected=next.agents[0]??null;attachResidentTrail(next,this.trail);this.trail.select(next,this.selected);
     if(this.executor)this.executor.retained=this.selected;
     this.staticDirty=true;this.historyDirty=true;this.resetTime();
-   }else if(type==='ack'){if(this.inFlight===payload.sequence)this.inFlight=null;return;}
+   }else if(type==='ack'){if(this.inFlight===payload.sequence){this.inFlight=null;if(this.showingSubsteps())this.schedule();}return;}
    else if(type==='running')this.setRunning(payload.value);
    else if(type==='computations')result=await this.changeComputations(payload.value);
    else if(type==='environment'){result=configureEnvironment(this.world,payload);this.staticDirty=true;}
@@ -147,6 +149,7 @@ export class WorldRuntime{
     if(a){this.selected=a;this.trail.select(this.world,a);if(this.executor)this.executor.retained=a;}
    }else if(type==='view'){
     this.visible=payload.visible;this.tab=payload.tab;this.section=payload.section;
+    this.cancel();this.schedule();
    }else if(type==='food'){
     // Команда обрабатывается между целыми шагами; сохраняем режим запуска
     // и при успешном вмешательстве, и при ошибке валидации настроек.

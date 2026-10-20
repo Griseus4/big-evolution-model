@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Evolution,RULES,worldDistance} from '../dist/evolution.js';
 import {spendEnergy,ENERGY_DEFICIT_FACTOR} from '../dist/energy-budget.js';
-import {foodProduction,ENVIRONMENT_RULES} from '../dist/environment-settings.js';
+import {foodProduction,ENVIRONMENT_DEFAULTS} from '../dist/environment-settings.js';
 import {configureEnvironment,advanceEnvironment} from '../dist/automatic-environment.js';
 import {saveWorld,loadWorld} from '../dist/world-save.js';
 import {ParallelWorld} from '../dist/parallel-world.js';
@@ -14,6 +14,12 @@ import {encodeState,decodeState} from '../dist/state-codec.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 const roundtrip=w=>loadWorld(JSON.parse(JSON.stringify(saveWorld(w))));
 function compare(a,b){assert.deepEqual(a.snapshot(),b.snapshot());assert.deepEqual(a.lifeReport(),b.lifeReport());assert.deepEqual(a.automaticEnvironment,b.automaticEnvironment);}
+
+test('UI releases retain identical-schema saves and still reject unknown model versions',()=>{
+ const w=new Evolution({seed:42,population:2});w.step();const saved=saveWorld(w);
+ for(const modelVersion of ['0.39.2','0.40.0','0.41.0']){const reference=loadWorld(saved),loaded=loadWorld({...saved,modelVersion});compare(reference,loaded);reference.step();loaded.step();compare(reference,loaded);}
+ for(const modelVersion of ['0.38.0','0.99.0'])assert.throws(()=>loadWorld({...saved,modelVersion}),/Неподдерживаемый/);
+});
 
 test('JSON codec preserves shared references, sparse arrays, typed negative zero and rejects executable types',()=>{
  const shared={n:-0},sparse=[];sparse[4]=shared;const source={shared,sparse,buffer:new Float64Array([-0,1.2345678901234567]),map:new Map([['a',shared]])};
@@ -33,9 +39,9 @@ test('death on brain payment cannot start action and stays exact across workers'
 test('five gradual impoverishments reach target, preserve stocks, locality and all life RNG',()=>{
  const w=new Evolution({population:2,automaticEnvironment:{preparationInterval:1,randomInterval:1}});
  const rng=[w.random,w.cognitiveRandom,w.bodyRandom,w.neuralRandom,w.mutationRandom].map(r=>r.state);
- for(let i=1;i<=5;i++){const food=w.tiles.map(c=>c.food);w.tick=i;w.subtick=i*10;assert.equal(advanceEnvironment(w),true);assert.deepEqual(w.tiles.map(c=>c.food),food);for(const move of w.environmentChanges.at(-1).moved)assert.ok(worldDistance(move.from,move.to)<=5);}
- assert.equal(w.automaticEnvironment.completedSteps,5);assert.ok(foodProduction(w)>=5.4&&foodProduction(w)<5.5);assert.deepEqual([w.random,w.cognitiveRandom,w.bodyRandom,w.neuralRandom,w.mutationRandom].map(r=>r.state),rng);
- for(let i=6;i<60;i++){w.tick=i;w.subtick=i*10;advanceEnvironment(w);assert.ok(foodProduction(w)>=ENVIRONMENT_RULES.minimumRate-1e-9);assert.equal(w.foodIslands.flatMap(g=>g.sources).length,w.foodSettings.sourceCount);}
+ for(let i=1;i<=5;i++){const food=w.tiles.map(c=>c.food);w.tick=i;w.subtick=i*10;assert.equal(advanceEnvironment(w),true);assert.deepEqual(w.tiles.map(c=>c.food),food);for(const move of w.environmentChanges.at(-1).movedGroups){const distance=worldDistance(move.from,move.to);assert.ok(move.kind==='island'?distance>=5&&distance<=20:distance>0&&distance<=5);}}
+ assert.equal(w.automaticEnvironment.completedSteps,5);near(w.foodSettings.regrowInterval,100);assert.equal(w.foodSettings.sourceCount,300);assert.ok(foodProduction(w)>=2&&foodProduction(w)<=6);assert.deepEqual([w.random,w.cognitiveRandom,w.bodyRandom,w.neuralRandom,w.mutationRandom].map(r=>r.state),rng);
+ for(let i=6;i<60;i++){w.tick=i;w.subtick=i*10;advanceEnvironment(w);assert.ok(foodProduction(w)>=ENVIRONMENT_DEFAULTS.minimumRate-1e-9);assert.equal(w.foodIslands.flatMap(g=>g.sources).length,w.foodSettings.sourceCount);}
 });
 test('disabled timer restarts a full interval and manual poverty disables/cancels preparation',()=>{
  const w=new Evolution({population:1});configureEnvironment(w,{enabled:false});assert.equal(w.automaticEnvironment.nextTick,null);w.tick=81;w.subtick=810;configureEnvironment(w,{enabled:true});assert.equal(w.automaticEnvironment.nextTick,581);

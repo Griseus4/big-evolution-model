@@ -39,7 +39,7 @@ import {planWorldFoodChange,foodEnvironment} from './world-edit.js';
 import {initializeEnvironment,manualEnvironmentChange} from './automatic-environment.js';
 import {GEOGRAPHY_PROFILES,DEFAULT_GEOGRAPHY,validateGeography,createLakesAndRivers,classifyLandRegions,balancedFounderPositions} from './geography.js';
 import {ACTION_COUNT,BIRTH_ACTION,DEPOSIT_ACTION,STATE_COUNT,GENOME_SIZES} from './policy-layout.js';
-import {reproductionProfile,DEFAULT_REPRODUCTION,reproductionCounters} from './reproduction.js';
+import {reproductionProfile,DEFAULT_REPRODUCTION,REPRODUCTION_DEFAULTS,reproductionCounters} from './reproduction.js';
 export {ACTION_COUNT,BIRTH_ACTION,DEPOSIT_ACTION,STATE_COUNT};
 export {memoryWorldPosition,worldDistance};
 export {key, hexCenter, HEX_RADIUS, HEX_WIDTH,BASE_GENE_COUNT,GENE_COUNT,COGNITIVE_GENES};
@@ -53,7 +53,7 @@ export const CANVAS_HEIGHT=Math.ceil((WORLD_HEIGHT-1)*HEX_RADIUS*1.5+2*HEX_RADIU
 // Все величины условные: шаг пока не переводится в часы или годы.
 export const RULES=Object.freeze({foodEnergy:22,digestionRate:1.1,stomachCapacity:66,
  inventoryCapacity:3,initialEnergy:68,newbornEnergy:28,birthCost:32,birthThreshold:reproductionProfile().energy,birthHealth:reproductionProfile().health,
- maturity:90,birthInterval:100,maxAge:10000,regrowInterval:80,
+ maturity:REPRODUCTION_DEFAULTS.maturity,birthInterval:REPRODUCTION_DEFAULTS.birthInterval,maxAge:10000,regrowInterval:80,
  waitCost:.30,depositCost:.36,groundFoodCapacity:10,actionCost:.48,moveExtra:.30,gatherExtra:.18});
 /** Расходы действий в три раза выше 0.8. Рождение отдельно: его стоимость 32
  * и передача 28 ребёнку не масштабированы, как и сроки начала размножения.
@@ -98,7 +98,7 @@ export class Evolution {
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?TEMPORAL_BRAIN_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment}={}){
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment}={}){
   this.temporal=Boolean(temporal);
   if(this.temporal&&brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('В0.32 нужен мозг v13; старые основы не поддерживаются.');
   if(!['custom','balanced','scarce'].includes(scenario))throw new Error('Неизвестная пищевая среда.');
@@ -108,9 +108,14 @@ export class Evolution {
   // Обычная custom-игра по умолчанию использует новый рельеф и равномерный старт.
   this.geography=validateGeography(geography??(scenario==='custom'?DEFAULT_GEOGRAPHY:'legacy-v1'));
   const profile=GEOGRAPHY_PROFILES.find(p=>p.id===this.geography);
+  if(terrainSeed!==undefined&&(!Number.isSafeInteger(terrainSeed)||terrainSeed<1||terrainSeed>4294967295))throw new Error('Некорректный seed карты.');
+  if(foodSeed!==undefined&&(!Number.isSafeInteger(foodSeed)||foodSeed<1||foodSeed>4294967295))throw new Error('Некорректный seed пищи.');
   this.learningEnabled=Boolean(learning);this.memoryEnabled=Boolean(memory);
   this.reproduction=reproductionProfile(reproduction);
   this.seed=seed>>>0;this.random=new Random(this.seed);this.cognitiveRandom=new Random(this.seed^0x2ac7e131);this.bodyRandom=new Random(this.seed^0x7bd239a1);this.scenario=scenario;
+  // Общая среда опыта не зависит от жителей. Без отдельного seed пищи
+  // обычный мир сохраняет прежнюю последовательность генерации и автоматики.
+  this.foodSeed=foodSeed??this.seed;
   if(brainType!==BRAIN_TYPE&&!layoutForType(brainType))throw new Error('Неизвестный тип мозга.');
   this.heritableMutations=Boolean(heritableMutations);this.upgradeMutationGenes=Boolean(upgradeMutationGenes);
   this.mutationRandom=new Random(this.seed^0x31d869ab);
@@ -149,20 +154,20 @@ export class Evolution {
   }
   // Старая петля выше сохранена для того же расхода RNG геномов. Новая вода
   // заменяет её рельеф независимым потоком; попадание воды убирает опасность.
-  const terrainInfo=profile.terrain==='lakes-rivers-v1'?createLakesAndRivers(this.tiles,WORLD_WIDTH,WORLD_HEIGHT,this.seed):
+  const terrainInfo=profile.terrain==='lakes-rivers-v1'?createLakesAndRivers(this.tiles,WORLD_WIDTH,WORLD_HEIGHT,terrainSeed??this.seed):
    {terrainGeneration:profile.terrain,targetWaterCells:null,waterCells:this.tiles.filter(c=>c.terrain==='water').length,riverCount:0,lakeCount:0,fordCells:0};
   const regions=classifyLandRegions(this.tiles,WORLD_WIDTH,WORLD_HEIGHT);
   // Шаблон принадлежит физике/наблюдателю, никогда не передаётся в мозг.
-  this.sourceTemplate=scenario==='custom'?createFoodTemplate(foodOptions.foodSources,this.seed,foodOptions.foodCapacityMin,foodOptions.foodCapacityMax):
+  this.sourceTemplate=scenario==='custom'?createFoodTemplate(foodOptions.foodSources,this.foodSeed,foodOptions.foodCapacityMin,foodOptions.foodCapacityMax):
    this.tiles.filter(c=>c.maxFood>0).map(({x,y,food,maxFood})=>({x,y,food,maxFood}));
   if(this.sourceTemplate.length>this.tiles.filter(c=>c.terrain==='land').length)
    throw new Error('Для выбранного числа источников недостаточно пригодной суши.');
   if(this.individualFood){
-   const layout=createIndividualFoodLayout(this.tiles,this.sourceTemplate,this.seed,foodOptions);
+   const layout=createIndividualFoodLayout(this.tiles,this.sourceTemplate,this.foodSeed,foodOptions);
    for(const c of this.tiles){c.food=0;c.maxFood=0;}
    for(const p of layout.sources)Object.assign(this.tile(p.x,p.y),{food:p.food,maxFood:p.maxFood});
-   this.foodIslands=scheduleFoodIslands(layout.islands,this.seed,foodOptions);
-  }else this.foodIslands=placeFoodIslands(this.tiles,this.sourceTemplate,this.seed,WORLD_WIDTH,WORLD_HEIGHT,{anchorFirstIsland:profile.placement==='legacy-region-v1'});
+   this.foodIslands=scheduleFoodIslands(layout.islands,this.foodSeed,foodOptions);
+  }else this.foodIslands=placeFoodIslands(this.tiles,this.sourceTemplate,this.foodSeed,WORLD_WIDTH,WORLD_HEIGHT,{anchorFirstIsland:profile.placement==='legacy-region-v1'});
   this.initialFood=this.tiles.reduce((sum,c)=>sum+c.food,0);
   this.foodSettings={generation:scenario==='custom'?(profile.placement==='legacy-region-v1'?'islands-custom-v1':'islands-custom-v2'):'islands-legacy-v1',sourceCount:this.sourceTemplate.length,
    regrowInterval:scenario==='custom'?foodOptions.foodRegrowInterval:RULES.regrowInterval,
@@ -201,7 +206,9 @@ export class Evolution {
   }
   for(const a of this.agents)regions[this.tile(a.x,a.y).regionId].initialFounders++;
   for(const c of this.tiles)if(c.maxFood>0)regions[c.regionId].initialSources++;
-  this.geographyInfo={profile:this.geography,founderPlacement:profile.placement,...terrainInfo,
+  // Отдельные seed карты и пищи записываются в отчёт наблюдателя.
+  // Размещение жителей, геномы и их жизненные RNG используют seed мира.
+  this.geographyInfo={profile:this.geography,founderPlacement:profile.placement,...terrainInfo,...(terrainSeed!==undefined?{terrainSeed}:{}),...(foodSeed!==undefined?{foodSeed}:{}),
    landCells:this.tiles.length-terrainInfo.waterCells,waterFraction:terrainInfo.waterCells/this.tiles.length,
    regionCount:regions.length,regions};
   this.log('Начало',`${this.agents.length} основателей. Предпочтения ${this.baseGenome?'взяты из сохранённого генома':'случайны'}.`);
@@ -265,7 +272,7 @@ export class Evolution {
   const frameRotation=Math.floor(new Random(this.seed^(Math.imul(id,0x9e3779b9))^0x63a71f).next()*6);
   const a={id,parentId:parent?.id??null,founderId,generation:parent?parent.generation+1:0,
    x:position.x,y:position.y,energy:parent?RULES.newbornEnergy:RULES.initialEnergy,
-   health:100,pain:0,stomach:0,inventory:0,age:0,lastBirthAge:-RULES.birthInterval,
+   health:100,pain:0,stomach:0,inventory:0,age:0,lastBirthAge:-this.reproduction.birthInterval,
    children:0,lastAction:null,lastDecision:null,lastDamage:0,alive:true,genome,frameRotation,brain:createControllerState(genome),life:createLifeCounters(),born:this.tick};
   if(this.temporal){delete a.pain;delete a.lastDamage;for(const k of ['painTotal','painSteps','injuries','damage'])delete a.life[k];a.process=null;a.callReason=0;a.lastAction=8;a.readyAt=(this.subtick??0)+(parent?1:0);a.lastProcess={action:8,localDestination:{...a.brain.position},direction:null,elapsed:5,duration:5};}
   if(this.temporal){a.life.observer=createLifeObservations(RULES.inventoryCapacity);a.life.heritable=captureHeritable(a);}
@@ -440,8 +447,8 @@ export class Evolution {
   const blocked=[];
   if(a.energy<this.reproduction.energy)blocked.push('energy');
   if(a.health<this.reproduction.health)blocked.push('health');
-  if(a.age<RULES.maturity)blocked.push('immature');
-  if(a.age-a.lastBirthAge<RULES.birthInterval)blocked.push('interval');
+  if(a.age<this.reproduction.maturity)blocked.push('immature');
+  if(a.age-a.lastBirthAge<this.reproduction.birthInterval)blocked.push('interval');
   if(this.agents.length>=this.limit)blocked.push('limit');
   if(!a.alive||a.age>=RULES.maxAge)blocked.push('terminal');
   return {eligible:blocked.length===0,blocked};

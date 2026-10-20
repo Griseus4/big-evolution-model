@@ -94,6 +94,39 @@ test('target pacing and bounded catchup after suspension',()=>{
  f.command('speed',{value:1280});assert.equal(f.runtime.target,1280);assert.equal(f.runtime.credit,0);
  assert.ok(f.command('speed',{value:NaN}).error);
 });
+
+test('slow visible playback publishes every substep, waits for paint and releases in background',async()=>{
+ for(const target of [.2,.4,1]){
+  const f=fixture({...settings,population:2}),r=f.runtime,interval=100/target;
+  await f.command('speed',{value:target,substeps:true});await f.command('running',{value:true});
+  const ack=()=>f.command('ack',{sequence:r.inFlight});await ack();
+  const start=f.messages.length;
+  for(let i=1;i<=10;i++){
+   f.time(i*interval);await r.pulse();assert.equal(r.world.subtick,i);
+   const state=f.messages.filter(m=>m.type==='state').at(-1);assert.equal(state.paintBeforeNext,true);assert.equal(state.state.tick,i/10);
+   await r.pulse();assert.equal(r.world.subtick,i); // UI ещё не подтвердил кадр.
+   await ack();
+  }
+  assert.equal(f.messages.slice(start).filter(m=>m.type==='state').length,10);
+  // Не пришедший ACK не блокирует скрытую страницу или другой раздел.
+  await f.command('view',{visible:false,tab:'world',section:'birth'});f.time(11*interval);await r.pulse();assert.equal(r.world.subtick,11);
+  await f.command('view',{visible:true,tab:'history',section:'birth'});f.time(12*interval);await r.pulse();assert.equal(r.world.subtick,12);
+  await f.command('view',{visible:true,tab:'world',section:'birth'});
+  const sequence=r.inFlight;await f.command('ack',{sequence:sequence-1});f.time(13*interval);await r.pulse();assert.equal(r.world.subtick,12);
+  await ack();await r.pulse();assert.equal(r.world.subtick,13);
+ }
+});
+
+test('client acknowledges slow playback after drawing and ignores delayed paint from a restarted world',async()=>{
+ const sent=[],paint=[],order=[],worker={postMessage:m=>{sent.push(m);if(m.type==='ack')order.push('ack');}},client=new WorldClient({worker,afterPaint:fn=>paint.push(fn),onState:()=>order.push('draw')});
+ client.epoch=1;
+ const f=fixture({...settings,population:1}),state=f.messages.find(m=>m.type==='state').state;
+ client.receive({protocol:WORLD_PROTOCOL,epoch:1,type:'state',sequence:1,state,paintBeforeNext:true});
+ assert.deepEqual(order,['draw']);paint.shift()();assert.deepEqual(order,['draw','ack']);
+ client.receive({protocol:WORLD_PROTOCOL,epoch:1,type:'state',sequence:2,state,paintBeforeNext:true});
+ const pending=client.init(settings),request=sent.at(-1);paint.shift()();assert.equal(sent.filter(m=>m.type==='ack').length,1);
+ client.receive({protocol:WORLD_PROTOCOL,epoch:2,type:'reply',id:request.id,result:null});await pending;
+});
 test('food edits and rejected edits preserve running state at the current whole step',()=>{
  for(const running of [false,true]){
   const f=fixture();f.command('running',{value:running});

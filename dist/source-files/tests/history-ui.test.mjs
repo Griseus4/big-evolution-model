@@ -5,14 +5,15 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {LIFE_METRICS} from '../dist/life-cohorts.js';
 import {installHistoryUI} from '../dist/history-ui.js';
+import {installHistoryDrawers} from '../dist/history-drawers.js';
 class Element{
- constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.value='';this.checked=true;this.textContent='';this.hidden=false;this.attributes={};}
+ constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.value='';this.checked=true;this.textContent='';this.hidden=false;this.attributes={};this.style={setProperty:(k,v)=>{this.attributes[k]=v;}};}
  append(...children){this.children.push(...children);if(this.tagName==='select'&&!this.value)this.value=this.children[0]?.value??'';}
  replaceChildren(...children){this.children=[];this.append(...children);}
  addEventListener(key,fn){this.listeners[key]=fn;}
  setAttribute(k,v){this.attributes[k]=v;}
  emit(key,event={}){return this.listeners[key]?.({target:this,preventDefault(){},...event});}
- getBoundingClientRect(){return {width:600,left:0};}
+ getBoundingClientRect(){return {width:600,left:0,height:this.height??72};}
  getContext(){return {setTransform(){},clearRect(){},beginPath(){},moveTo(...v){assert.ok(v.every(Number.isFinite));},lineTo(...v){assert.ok(v.every(Number.isFinite));},stroke(){},fill(){},fillRect(...v){assert.ok(v.every(Number.isFinite));},arc(...v){assert.ok(v.every(Number.isFinite));},setLineDash(){},fillText(){}};}
 }
 function boot(){
@@ -21,11 +22,11 @@ function boot(){
  for(const m of html.matchAll(/<select\b[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/select>/g)){const options=[...m[2].matchAll(/<option\b([^>]*)value="([^"]+)"([^>]*)>/g)],chosen=options.find(o=>/selected/.test(o[1]+o[3]))??options[0];if(chosen)elements.get(m[1]).value=chosen[2];}
  const rows=Array.from({length:125},(_,i)=>({id:i+1,parentId:i%2?1:null,founderId:1,generation:i%2,born:i,age:20,status:'dead',observedSteps:20,moved:i,eaten:2,hungerSteps:1,meanEnergy:60,cause:'starvation'}));
  const report={tick:300,dead:rows,living:[],omittedDetails:0,completed:{count:125,meanAge:20,medianAge:20},byCause:{starvation:{count:125}},foodAvailability:{schema:'ground-food-exposure-v1',prefix:Float64Array.from({length:301},(_,i)=>i*100),substeps:0,partialSum:0}};
- const sim={tick:300,lives:report},root={getElementById:id=>{assert.ok(elements.has(id),id);return elements.get(id);},createElement:tag=>{const e=new Element(tag);created.push(e);return e;}};
- const ui=installHistoryUI({root,getSimulation:()=>sim});return {elements,created,ui,sim};
+ const toolbar=new Element(),sim={tick:300,lives:report},root={getElementById:id=>{assert.ok(elements.has(id),id);return elements.get(id);},querySelector:selector=>selector==='.global-toolbar'?toolbar:null,createElement:tag=>{const e=new Element(tag);created.push(e);return e;}};
+ const ui=installHistoryUI({root,getSimulation:()=>sim});return {elements,created,ui,sim,toolbar};
 }
 test('history UI creates metric and distribution charts, four cohort statistics and a bounded paged table',()=>{
- const b=boot();b.ui.refresh();assert.equal(b.created.filter(e=>e.tagName==='canvas').length,LIFE_METRICS.length+7);assert.equal(b.ui.getSummary().cohorts.length,2);assert.equal(b.elements.get('history-rows').children.length,2);
+ const b=boot();b.ui.refresh();assert.equal(b.created.filter(e=>e.tagName==='canvas').length,LIFE_METRICS.length+5);assert.equal(b.ui.getSummary().cohorts.length,2);assert.equal(b.elements.get('history-rows').children.length,2);
  b.elements.get('history-table-mode').value='lives';b.elements.get('history-table-mode').emit('input');assert.equal(b.elements.get('history-rows').children.length,50);
  const cached=b.ui.getSummary();b.elements.get('history-next').emit('click');assert.equal(b.elements.get('history-rows').children.length,50);assert.equal(b.ui.getSummary(),cached);
  b.elements.get('history-next').emit('click');assert.equal(b.elements.get('history-rows').children.length,25);assert.equal(b.elements.get('history-next').disabled,true);
@@ -46,7 +47,7 @@ test('invalid settings preserve the previous view, origin changes recompute, and
 test('history screens and custom chart selections preserve cohorts and shared filters',()=>{
  const b=boot();b.ui.refresh();const summary=b.ui.getSummary(),display=b.elements.get('history-display');
  display.value='resources';display.emit('change');assert.equal(b.ui.getSummary(),summary);assert.equal(b.elements.get('history-table-screen').hidden,true);
- const picker=b.elements.get('history-chart-options').children[0].children[0];picker.checked=true;picker.emit('change');assert.equal(display.value,'custom');assert.equal(b.ui.getSummary(),summary);
+ const picker=b.created.find(e=>e.tagName==='input'&&e.attributes['aria-label']===LIFE_METRICS[0].label);picker.checked=true;picker.emit('change');assert.equal(display.value,'custom');assert.equal(b.ui.getSummary(),summary);
  display.value='table';display.emit('change');assert.equal(b.elements.get('history-table-screen').hidden,false);assert.equal(b.elements.get('history-rows').children.length,2);assert.equal(b.ui.getSummary(),summary);
 });
 
@@ -85,4 +86,50 @@ test('range handles cannot cross and invalid numeric boundaries preserve the las
  const b=boot();b.ui.refresh();b.elements.get('history-period-start').value='350';b.elements.get('history-period-start').emit('input');assert.equal(b.ui.getSummary().domainStart,350);
  b.elements.get('history-period-end').value='100';b.elements.get('history-period-end').emit('input');assert.equal(b.ui.getSummary().domainEnd,351);
  const cached=b.ui.getSummary();b.elements.get('history-period-to').value='350';b.elements.get('history-period-to').emit('change');assert.equal(b.ui.getSummary(),cached);assert.ok(b.elements.get('history-error').textContent);
+});
+
+test('fixed age axis survives cohort changes and live refresh, with matching pointer and keyboard ages',()=>{
+ const b=boot();b.ui.refresh();const summary=b.ui.getSummary(),curve=b.ui.getCurve(),field=b.elements.get('history-curve-age-max'),slider=b.elements.get('history-curve-age-slider'),canvas=b.created.find(e=>e.id==='history-chart-age-survival'),note=b.created.find(e=>e.id==='history-note-age-survival');
+ field.value='50';field.emit('change');assert.equal(b.ui.getSummary(),summary);assert.equal(b.ui.getCurve(),curve);assert.equal(slider.value,50);
+ canvas.emit('pointermove',{clientX:322});assert.match(note.textContent,/Возраст 25 Т/);
+ canvas.emit('keydown',{key:'End'});assert.match(note.textContent,/Возраст 50 Т/);
+ b.elements.get('history-curve-slider').value='100';b.elements.get('history-curve-slider').emit('input');assert.equal(field.value,50);assert.equal(slider.value,50);assert.equal(b.ui.getCurve().start,100);
+ b.sim.lives={...b.sim.lives,tick:301};b.ui.refresh();assert.equal(field.value,50);
+ const current=b.ui.getCurve();field.value='0';field.emit('change');assert.equal(b.ui.getCurve(),current);assert.match(b.elements.get('history-error').textContent,/положительное целое/);
+ slider.value='80';slider.emit('input');assert.equal(field.value,80);assert.equal(b.elements.get('history-error').textContent,'');
+ field.value='1500';field.emit('change');assert.equal(slider.max,1500);canvas.emit('keydown',{key:'End'});assert.match(note.textContent,/Возраст 1\s?500 Т/);
+ b.ui.reset();b.ui.refresh();assert.equal(field.value,1500);
+});
+
+test('drawer positions follow the actual navigation height after wrapping',()=>{
+ const original=globalThis.ResizeObserver,observers=[];
+ globalThis.ResizeObserver=class{constructor(callback){this.callback=callback;observers.push(this);}observe(target){this.target=target;}};
+ try{const b=boot(),controls=b.elements.get('panel-history'),observer=observers.find(o=>o.target===b.toolbar);assert.ok(observer);assert.equal(controls.attributes['--history-toolbar-height'],'72px');b.toolbar.height=128;observer.callback();assert.equal(controls.attributes['--history-toolbar-height'],'128px');}
+ finally{globalThis.ResizeObserver=original;}
+});
+
+test('chart picker groups each chart once and keeps all sensitivities only as distributions',()=>{
+ const b=boot();b.ui.refresh();const groups=b.elements.get('history-chart-options').children;
+ assert.deepEqual(groups.map(g=>g.children[0].textContent),['Выживание','Поведение','Ресурсы','Размножение','Наследуемые свойства','Распределения']);
+ const labels=groups.flatMap(g=>g.children.slice(1).map(label=>label.children[0].attributes['aria-label']));assert.equal(new Set(labels).size,labels.length);
+ for(const m of LIFE_METRICS.filter(m=>m.signed)){assert.ok(!b.created.some(e=>e.id==='history-chart-'+m.id));assert.ok(b.created.some(e=>e.id==='history-histogram-'+m.id));assert.ok(!labels.includes(m.label));assert.ok(labels.includes('Распределение: '+m.label));}
+ const display=b.elements.get('history-display');display.value='all';display.emit('change');
+ for(const group of groups)for(const label of group.children.slice(1))assert.equal(label.children[0].checked,true);
+ const item=groups[5].children[3].children[0];item.checked=false;item.emit('change');assert.equal(display.value,'custom');assert.equal(item.checked,false);
+});
+
+test('toolbar button docks statistics controls; Escape commits input and restores focus',()=>{
+ const elements=new Map(),root={activeElement:null,getElementById:id=>elements.get(id)};
+ elements.set('history-layout',new Element());
+ for(const side of ['left']){const drawer=new Element('details'),handle=new Element('summary'),field=new Element('input');drawer.contains=e=>e===handle||e===field;handle.focus=()=>{root.activeElement=handle;};field.blur=()=>{field.committed=true;root.activeElement=null;};drawer.field=field;elements.set('history-drawer-'+side,drawer);elements.set('history-drawer-'+side+'-handle',handle);}
+ installHistoryDrawers(root);
+ for(const side of ['left']){const drawer=elements.get('history-drawer-'+side),handle=elements.get('history-drawer-'+side+'-handle');
+  drawer.open=false;drawer.emit('mouseenter');drawer.emit('focusin',{target:drawer.field});assert.equal(drawer.open,false);
+  handle.emit('click');assert.equal(drawer.open,true);assert.equal(elements.get('history-layout').attributes['data-open'],'true');handle.emit('click');assert.equal(drawer.open,false);
+  drawer.open=true;root.activeElement=drawer.field;drawer.emit('mouseleave');drawer.emit('focusout',{relatedTarget:null});assert.equal(drawer.open,true);
+  let stopped=false;drawer.emit('keydown',{key:'Escape',stopPropagation(){stopped=true;}});assert.equal(drawer.open,false);assert.equal(root.activeElement,handle);assert.equal(stopped,true);assert.equal(drawer.field.committed,true);
+ }
+ const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8'),left=html.slice(html.indexOf('id="history-drawer-left"'),html.indexOf('id="history-charts"'));
+ assert.ok(!html.includes('id="history-drawer-top"'));
+ for(const id of ['history-survival-age','history-origin','history-stat-mode','history-interruption-kind','history-width','history-period-from','history-period-to','history-line-controls','history-display','history-chart-options','experiment-stat-source','experiment-stat-weight','experiment-stat-line'])assert.ok(left.includes(`id="${id}"`));
 });

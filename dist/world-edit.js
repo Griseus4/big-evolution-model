@@ -48,7 +48,7 @@ export function planWorldFoodChange(world,input,width,height){
  // Случайность вмешательства отделена от действий, повреждений и мутаций.
  // Один seed и одинаковая последовательность изменений дают одинаковые места.
  // Повторная перестановка использует следующий номер изменения, без Date.now().
- const seed=(world.seed^Math.imul(world.environmentRevision+1,0x6d2b79f5))>>>0;
+ const seed=(world.foodSeed^Math.imul(world.environmentRevision+1,0x6d2b79f5))>>>0;
  const random=new Random(seed^0x371b4a09),template=createFoodTemplate(options.foodSources,seed,options.foodCapacityMin,options.foodCapacityMax);
  if(world.individualFood){
   const capacities=current.map(c=>c.maxFood),capacityChanged=options.foodCapacityMin!==undefined&&(options.foodCapacityMin!==(capacities.length?Math.min(...capacities):3)||options.foodCapacityMax!==(capacities.length?Math.max(...capacities):6));

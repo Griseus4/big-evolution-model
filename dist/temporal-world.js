@@ -41,7 +41,7 @@ export function sampleCells(w,a){
  return a._cells;
 }
 export function temporalBirthAvailability(w,a){
- const blocked=[];if(a.energy<w.reproduction.energy)blocked.push('energy');if(a.health<w.reproduction.health)blocked.push('health');if(a.age<RULES.maturity)blocked.push('immature');if(a.age-a.lastBirthAge<RULES.birthInterval-1e-9)blocked.push('interval');if(w.agents.length>=w.limit)blocked.push('limit');if(!a.alive||a.age>=RULES.maxAge)blocked.push('terminal');if(a.process?.action===9)blocked.push('inProgress');return {eligible:blocked.length===0,blocked};
+ const blocked=[];if(a.energy<w.reproduction.energy)blocked.push('energy');if(a.health<w.reproduction.health)blocked.push('health');if(a.age<w.reproduction.maturity)blocked.push('immature');if(a.age-a.lastBirthAge<w.reproduction.birthInterval-1e-9)blocked.push('interval');if(w.agents.length>=w.limit)blocked.push('limit');if(!a.alive||a.age>=RULES.maxAge)blocked.push('terminal');if(a.process?.action===9)blocked.push('inProgress');return {eligible:blocked.length===0,blocked};
 }
 function processView(w,a,cells){
  const p=a.process??a.lastProcess,place=p?.localDestination??a.brain.position,cell=cells.find(c=>c.q===place.q&&c.r===place.r);

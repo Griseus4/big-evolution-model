@@ -30,9 +30,11 @@ class Page(HTMLParser):
 p=Page();p.feed((DIST/'index.html').read_text())
 assert len(set(p.ids))==len(p.ids),'Повтор ID в HTML'
 for url in p.resources:assert (DIST/url.removeprefix('./')).is_file(),url
+paths=sorted([*DIST.glob('*.js'),*(DIST/'benchmark-snapshots').rglob('*.js')])
+subprocess.run(['node','--experimental-vm-modules',str(ROOT/'tools/check-js-syntax.mjs')],
+               input=json.dumps([str(path) for path in paths]),check=True,capture_output=True,text=True)
 checked=0
-for path in sorted([*DIST.glob('*.js'),*(DIST/'benchmark-snapshots').rglob('*.js')]):
-    subprocess.run(['node','--check',str(path)],check=True,capture_output=True,text=True)
+for path in paths:
     text=path.read_text()
     for target in re.findall(r"(?:from\s+|new URL\()'([.][^']+)'",text):
         assert (path.parent/target).is_file(),f'{path.name}: нет {target}'
@@ -58,20 +60,28 @@ import {FOOD_LIMITS} from './dist/food-settings.js';
 import {WORLD_DEFAULTS} from './dist/world-defaults.js';
 import {SOURCE_CAPACITY_LIMITS} from './dist/world-edit.js';
 import {REPRODUCTION_PROFILES,DEFAULT_REPRODUCTION} from './dist/reproduction.js';
+import {ENVIRONMENT_DEFAULTS,ENVIRONMENT_RULES} from './dist/environment-settings.js';
 import {GEOGRAPHY_PROFILES,DEFAULT_GEOGRAPHY} from './dist/geography.js';
-console.log(JSON.stringify({benchmarkDefaults:DEFAULT_BENCHMARK_COUNTS,benchmarkMax:MAX_BENCHMARK_REPEATS,defaults:WORLD_DEFAULTS,help:Object.keys(HELP),aliases:ALIASES,limits:FOOD_LIMITS,capacity:SOURCE_CAPACITY_LIMITS,geography:GEOGRAPHY_PROFILES.map(p=>p.id),defaultGeography:DEFAULT_GEOGRAPHY,reproduction:REPRODUCTION_PROFILES.filter(p=>!p.automatic).map(p=>p.id),defaultReproduction:DEFAULT_REPRODUCTION}));
+console.log(JSON.stringify({environmentDefaults:ENVIRONMENT_DEFAULTS,environmentMaximumPeriod:ENVIRONMENT_RULES.maximumPeriod,benchmarkDefaults:DEFAULT_BENCHMARK_COUNTS,benchmarkMax:MAX_BENCHMARK_REPEATS,defaults:WORLD_DEFAULTS,help:Object.keys(HELP),aliases:ALIASES,limits:FOOD_LIMITS,capacity:SOURCE_CAPACITY_LIMITS,geography:GEOGRAPHY_PROFILES.map(p=>p.id),defaultGeography:DEFAULT_GEOGRAPHY,reproduction:REPRODUCTION_PROFILES.filter(p=>!p.automatic).map(p=>p.id),defaultReproduction:DEFAULT_REPRODUCTION}));
 """
 data=json.loads(subprocess.run(['node','--input-type=module','-e',js],cwd=ROOT,check=True,capture_output=True,text=True).stdout)
 aliases=data['aliases']
 for identity in p.controls:
-    if identity.startswith(('tab-','side-tab-','resident-tab-','test-tab-','start-tab-','food-tab-','wiki-tab-')) or identity=='help-close':continue
+    if identity.startswith(('tab-','side-tab-','resident-tab-','test-tab-','start-tab-','food-tab-','wiki-tab-')) or identity in {'help-close','experiment-notification-close'}:continue
     assert aliases.get(identity,identity) in data['help'],f'Нет подсказки для {identity}'
 for identity,attrs in p.ranges.items():
     if identity.startswith('history-'):
         # Диапазоны наблюдателя зависят от истории, а не от пищевой физики.
         width = int(re.search(r'id="history-width"[^>]*value="(\d+)"', (DIST/'index.html').read_text()).group(1))
-        expected=[0,width,width if identity=='history-period-end' else 0]
+        if identity=='history-curve-age-slider':
+            initial = int(re.search(r'id="history-curve-age-max"[^>]*value="(\d+)"', (DIST/'index.html').read_text()).group(1))
+            expected=[1,initial,initial]
+        else:
+            expected=[0,width,width if identity=='history-period-end' else 0]
         assert attrs.get('step')=='1', f'Точность периода {identity}'
+    elif identity in ['environment-rate-start', 'environment-rate-end']:
+        expected=[1/data['environmentMaximumPeriod'],10,data['environmentDefaults']['minimumRate' if identity.endswith('start') else 'maximumRate']]
+        assert attrs.get('step')=='any', f'Точность диапазона выработки {identity}'
     elif identity.endswith('food-capacity-mean'):
         expected=[data['capacity']['min'],data['capacity']['max'],4.5]
     elif identity.endswith('food-capacity-spread'):

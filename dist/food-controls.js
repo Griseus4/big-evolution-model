@@ -1,7 +1,7 @@
 /** Общие поля нового опыта и живущего мира; сами поля не изменяют симуляцию. */
 import {FOOD_LIMITS,SOURCE_CAPACITY_LIMITS} from './food-settings.js';
 import {foodDistribution} from './food-distribution.js';
-const format=n=>Number(n).toLocaleString('ru-RU',{maximumFractionDigits:2});
+import {formatNumber as format,inputNumber} from './ui-numbers.js';
 export function readFoodControls(prefix='',root=document){
  const field=name=>root.getElementById(prefix+'food-'+name),mean=field('capacity-mean'),spread=field('capacity-spread'),capacity=mean?Number(mean.value):null,range=spread?Number(spread.value)/100:0;
  return {foodSources:Number(field('sources').value),foodRegrowInterval:Number(field('period').value),
@@ -11,14 +11,14 @@ export function readFoodControls(prefix='',root=document){
 export function installFoodControls(prefix='',root=document){
  const field=name=>root.getElementById(prefix+'food-'+name),general=field('capacity-mean');
  const fields=[['sources','источников'],['period','Т'],['period-spread','%'],['size-spread','%'],...(general?[['size-mean','источников на островок'],['capacity-mean','порций'],['capacity-spread','%']]:[])];
- const update=()=>{for(const [name,unit]of fields){root.getElementById(prefix+'food-'+name+'-value').textContent=`${format(field(name).value)} ${unit}`;const number=field(name+'-number');if(number&&number.ownerDocument?.activeElement!==number)number.value=field(name).value;}};
+ const update=()=>{for(const [name,unit]of fields){root.getElementById(prefix+'food-'+name+'-value').textContent=`${format(field(name).value)} ${unit}`;const number=field(name+'-number');if(number&&number.ownerDocument?.activeElement!==number)number.value=inputNumber(field(name).value);}};
  for(const [name]of fields)field(name).addEventListener('input',update);
  if(general){
   const updateSize=()=>{const n=Number(field('sources').value),count=Math.min(Number(field('islands').value),n);field('size-mean').value=count?(n-Math.min(Math.floor(n*FOOD_LIMITS.scatteredFraction),n-count))/count:0;update();};
   for(const name of ['sources','islands'])field(name).addEventListener('input',updateSize);
   field('size-mean').addEventListener('input',()=>{const count=Number(field('islands').value);field('sources').value=Math.max(count,Math.min(FOOD_LIMITS.sourcesMax,Math.round(Number(field('size-mean').value)*count/(1-FOOD_LIMITS.scatteredFraction))));updateSize();});
   updateSize();
-  for(const [name]of fields){const number=field(name+'-number');if(!number)continue;number.addEventListener('change',()=>{
+  for(const [name]of fields){const number=field(name+'-number');if(!number)continue;number.addEventListener('blur',update);number.addEventListener('change',()=>{
    const n=Number(number.value);if(!Number.isFinite(n)||n<Number(number.min)||n>Number(number.max)||name==='sources'&&!Number.isInteger(n)){number.setCustomValidity('Значение вне допустимого диапазона или требует целого числа.');number.reportValidity();return;}
    number.setCustomValidity('');const control=field(name);control.min=Math.min(Number(control.min),n);control.max=Math.max(Number(control.max),n);control.step='any';control.value=n;
    if(name==='size-mean'){const count=Number(field('islands').value);field('sources').value=Math.max(count,Math.min(FOOD_LIMITS.sourcesMax,Math.round(n*count/(1-FOOD_LIMITS.scatteredFraction))));updateSize();}

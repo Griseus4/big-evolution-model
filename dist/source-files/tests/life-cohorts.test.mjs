@@ -61,7 +61,7 @@ test('food integral equals direct map totals without inspecting inventory or sto
 });
 test('observer counters preserve complete frozen physical/cognitive trajectories and every RNG',()=>{
  for(const seed of [42,77]){const settings={seed,population:8,limit:16},a=new Evolution(settings),b=new PreviousEvolution(settings);
-  for(let i=0;i<12;i++){a.step();b.step();const current=structuredClone(a.snapshot());for(const resident of current.agents){delete resident.life.observer;delete resident.life.heritable;delete resident.life.firstBirthAge;}assert.deepEqual(current,b.snapshot());}
+  for(let i=0;i<12;i++){a.step();b.step();const current=structuredClone(a.snapshot());delete current.reproduction.maturity;delete current.reproduction.birthInterval;for(const resident of current.agents){delete resident.life.observer;delete resident.life.heritable;delete resident.life.firstBirthAge;}assert.deepEqual(current,b.snapshot());}
  }
 });
 

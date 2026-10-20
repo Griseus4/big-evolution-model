@@ -9,7 +9,7 @@ export function windowLifeCohorts(base,members,tick,start,end){
  for(const g of base.cohorts){
   if(g.end<=start||g.start>=end)continue;
   if(g.start>=start&&g.end<=end){cohorts.push(g);continue;}
-  const rows=members.get(g.id)??[],partial=aggregateLifeCohorts({tick,omittedDetails:base.omittedDetails,dead:rows.filter(r=>r.status==='dead'),living:rows.filter(r=>r.status==='alive')},{...base,birthStart:start,birthEnd:end});
+  const rows=members.get(g.id)??[],partial=aggregateLifeCohorts({tick,weightMode:base.weightMode,omittedDetails:base.omittedDetails,dead:rows.filter(r=>r.status==='dead'),living:rows.filter(r=>r.status==='alive')},{...base,birthStart:start,birthEnd:end});
   cohorts.push(...partial.cohorts);
  }
  return {...base,cohorts,byId:new Map(cohorts.map(g=>[g.id,g])),domainStart:start,domainEnd:end};

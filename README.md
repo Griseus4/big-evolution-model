@@ -6,7 +6,15 @@ An artificial life simulation with evolving neural agents, individual learning, 
 
 Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments.
 
-**Status:** experimental prototype · **Current implementation:** 0.37.0 · **Interface:** Russian.
+**Status:** experimental prototype · **Current implementation:** 0.42.0 · **Interface:** Russian.
+
+Version 0.42.0 adds a selected-pair comparison table: A/B, differences, ratios, percentage changes, and approximate paired confidence intervals. Complete original repeats and missing data are disclosed; numerical chart summaries now wrap long labels correctly. [Release notes](docs/updates/v042-paired-comparison.md).
+
+Version 0.41.0 adds population statistics, approximate confidence bands, comparison histograms, and numerical summaries for the selected period. The statistics panel shares space with charts; large experiment JSON exports are assembled in chunks with progress and error reporting. [Release notes](docs/updates/v041-statistics-bands-export.md).
+
+Version 0.40.0 groups experiment worlds by parameter combination, adds a single statistics panel opened by clicking, modal lifecycle notifications, and clear terrain/food/resident seed and export labels. [Interface update](docs/updates/v040-experiment-organization.md).
+
+Version 0.37.1 keeps a fixed age scale while comparing survival cohorts and pins chart-line controls during scrolling. [Interface update](docs/updates/v037-fixed-survival-axis.md).
 
 Version 0.37 adds whole-island movement and expanded behavioral and genetic statistics. Full world save/load is available in the top bar; automatic food changes are configured in the food-sources panel. See the [release notes](docs/updates/v037-moving-islands-statistics.md).
 
@@ -112,3 +120,5 @@ Version 0.36.3 moves Play/Pause beside the main tabs and keeps the world running
 Version 0.36.2 adds survival mean/median markers for completed lives, aligned help controls without pausing, and a question-based reference. [Release notes](docs/updates/v036-interface-help-survival.md).
 
 Version 0.36.1 adds a wider panel with task screens, persistent world-save controls, a navigable reference, shared food controls and observation one substep every 0.5 seconds. [Release notes](docs/updates/v036-interface-screens.md).
+
+Experiments: open **Опыты → Конструктор**, choose a template or configure parameter values (all combinations, up to 64 per seed; shared terrain seed 42), then start. Results use the shared **Статистика** page. Plans and results can be exported as JSON; completed runs are stored in this browser.

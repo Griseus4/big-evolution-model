@@ -10,10 +10,15 @@ const point=c=>({x:c.x,y:c.y}),key=c=>`${c.x},${c.y}`,clamp=(v,a,b)=>Math.max(a,
 const neighbours=p=>{const a=worldAxial(p);return [{q:1,r:0},{q:0,r:1},{q:-1,r:1},{q:-1,r:0},{q:0,r:-1},{q:1,r:-1}].map(d=>worldOffset({q:a.q+d.q,r:a.r+d.r}));};
 function shuffle(a,r){for(let i=a.length-1;i>0;i--){const j=Math.floor(r.next()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 const offsets=[];for(let q=-R.relocationRadius;q<=R.relocationRadius;q++)for(let r=-R.relocationRadius;r<=R.relocationRadius;r++)if((q||r)&&Math.max(Math.abs(q),Math.abs(r),Math.abs(q+r))<=R.relocationRadius)offsets.push({q,r});
+// Геометрия кольца общая для всех островков, строится один раз при загрузке.
+// На событии не копируем/не перемешиваем всё кольцо, пробуем до 32 смещений.
+const islandOffsets=[];for(let q=-R.islandRelocationRadius;q<=R.islandRelocationRadius;q++)for(let r=-R.islandRelocationRadius;r<=R.islandRelocationRadius;r++){const d=Math.max(Math.abs(q),Math.abs(r),Math.abs(q+r));if(d>=R.islandRelocationMinimum&&d<=R.islandRelocationRadius)islandOffsets.push({q,r});}
 /** Сохраняет все относительные координаты группы или не двигает её вовсе. */
 export function translateFoodGroup(world,group,used,random){
- const own=new Set(group.sources.map(key)),origin=worldAxial(group.centre);
- for(const d of shuffle(offsets.slice(),random)){
+ const own=new Set(group.sources.map(key)),origin=worldAxial(group.centre),island=group.kind==='island';
+ const directions=island?islandOffsets:shuffle(offsets.slice(),random),attempts=island?R.islandRelocationAttempts:directions.length;
+ for(let attempt=0;attempt<attempts;attempt++){
+  const d=directions[island?Math.floor(random.next()*directions.length):attempt];
   const cells=[];let valid=true;
   for(const p of group.sources){const a=worldAxial(p),to=worldOffset({q:a.q+d.q,r:a.r+d.r}),c=world.tile(to.x,to.y);if(!c||c.terrain!=='land'||used.has(key(c))&&!own.has(key(c))){valid=false;break;}cells.push({...p,...point(c)});}
   if(!valid)continue;
@@ -36,7 +41,7 @@ function trim(group,size,used){
  const leaves=[...nodes.values()].filter(n=>!n.children);
  while(nodes.size>size){let at=0;for(let i=1;i<leaves.length;i++)if(leaves[i].d>leaves[at].d)at=i;const node=leaves.splice(at,1)[0];nodes.delete(key(node.p));used.delete(key(node.p));if(node.parent&&--node.parent.children===0)leaves.push(node.parent);}
  group.sources=group.sources.filter(p=>nodes.has(key(p)));
- if(!group.sources.some(p=>key(p)===key(group.centre)))group.centre=point(group.sources[0]);
+ if(group.sources.length&&!group.sources.some(p=>key(p)===key(group.centre)))group.centre=point(group.sources[0]);
 }
 function grow(world,group,size,used,random,capacity){
  const frontier=new Map();
@@ -47,7 +52,7 @@ function grow(world,group,size,used,random,capacity){
   const k=key(best);frontier.delete(k);if(used.has(k))continue;used.add(k);group.sources.push({...point(best),capacity});add(best);
  }
 }
-export function evolveFoodGroups(world,{sourceCount,islandCount,sizeSpread,periodSpread,capacityFactor,normal}){
+export function evolveFoodGroups(world,{sourceCount,islandCount,sizeSpread,periodSpread,capacityFactor,normal,meanPeriod=world.foodSettings.regrowInterval}){
  const random=world.automaticEnvironment.random,land=shuffle(world.tiles.filter(c=>c.terrain==='land'),random),old=world.foodIslands;
  const copy=g=>({...g,centre:point(g.centre),sources:g.sources.map(p=>({...point(p),capacity:world.tile(p.x,p.y).maxFood})),remaining:clamp((g.nextTick-world.tick)/g.period,0,1)});
  let islands=shuffle(old.filter(g=>g.kind==='island').map(copy),random),bushes=shuffle(old.filter(g=>g.kind==='bush').map(copy),random);
@@ -71,9 +76,45 @@ export function evolveFoodGroups(world,{sourceCount,islandCount,sizeSpread,perio
  for(const g of bushes.slice(0,Math.ceil(bushes.length*R.relocationFraction))){const movement=translateFoodGroup(world,g,used,random);if(movement)movedGroups.push(movement);}
  const groups=[...islands,...bushes],spread=clamp((world.foodSettings.capacitySpread??100/3)+normal*10,0,100),lo=clamp(Math.round(mean*capacityFactor*(1-spread/100)),SOURCE_CAPACITY_LIMITS.min,SOURCE_CAPACITY_LIMITS.max),hi=clamp(Math.round(mean*capacityFactor*(1+spread/100)),lo,SOURCE_CAPACITY_LIMITS.max);
  for(const g of groups){
-  g.period=Math.max(.1,world.foodSettings.regrowInterval*(1+(random.next()*2-1)*periodSpread/100));
+  g.period=Math.max(.1,meanPeriod*(1+(random.next()*2-1)*periodSpread/100));
   for(const p of g.sources)p.capacity=lo+Math.floor(random.next()*(hi-lo+1));
  }
  world.automaticEnvironment.nextGroupId=nextId;
  return {groups,movedGroups,moved:movedGroups.flatMap(g=>g.moved),sizeSpread,periodSpread};
+}
+
+/** Исправляет выработку количеством клеток, сохраняя периоды групп.
+ * Сначала работаем с краями целых островков; остаток роста — отдельные кусты.
+ * Число операций ограничено бюджетом источников, повторного переноса групп нет. */
+export function constrainFoodSources(world,plan,minimum,maximum){
+ const groups=plan.groups,random=world.automaticEnvironment.random;
+ let total=groups.reduce((n,g)=>n+g.sources.length,0),rate=groups.reduce((n,g)=>n+g.sources.length/g.period,0);
+ const used=new Set(groups.flatMap(g=>g.sources.map(key)));
+ if(rate>maximum){
+  for(let i=groups.length-1;i>=0&&(rate>maximum||rate<minimum);i--){
+   const g=groups[i],remove=Math.min(g.sources.length,total-1,rate<minimum?total-1:Math.ceil((rate-maximum)*g.period-1e-10));
+   if(remove<=0)continue;trim(g,g.sources.length-remove,used);total-=remove;rate-=remove/g.period;
+  }
+  plan.groups=groups.filter(g=>g.sources.length);
+ }else if(rate<minimum){
+  const land=world.tiles.filter(c=>c.terrain==='land'),limit=Math.min(FOOD_LIMITS.sourcesMax,land.length);
+  const islands=groups.filter(g=>g.kind==='island');
+  for(let i=0;i<islands.length&&(rate<minimum||rate>maximum)&&total<limit;i++){
+   const g=islands[i],before=g.sources.length,extra=rate>maximum?limit-total:Math.min(limit-total,Math.ceil((minimum-rate)*g.period/(islands.length-i)));
+   grow(world,g,before+extra,used,random,g.sources[0].capacity);
+   const added=g.sources.length-before;total+=added;rate+=added/g.period;
+  }
+  // Свободная суша обходится один раз; новые кусты получают период существующей
+  // группы и долю календаря, но не готовую еду. Копии групп не затрагивают мир.
+  let nextId=world.automaticEnvironment.nextGroupId;
+  const templates=groups.slice();shuffle(land,random);let at=0;
+  for(const cell of land){
+   if(rate>=minimum&&rate<=maximum||total>=limit)break;if(used.has(key(cell)))continue;
+   const template=templates[at++%templates.length],p=point(cell);
+   groups.push({id:nextId++,kind:'bush',centre:p,sources:[{...p,capacity:template.sources[0].capacity}],period:template.period,remaining:1-random.next()});
+   used.add(key(cell));total++;rate+=1/template.period;
+  }
+  world.automaticEnvironment.nextGroupId=nextId;
+ }
+ return {sourceCount:total,production:rate};
 }

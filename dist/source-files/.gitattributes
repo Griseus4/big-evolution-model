@@ -1,2 +1,4 @@
 # Keep sources byte exact: manifests and downloadable copies use SHA-256.
 * -text whitespace=cr-at-eol
+# Frozen files retain original EOF spacing; Git/SHA checks validate their bytes.
+dist/benchmark-snapshots/** whitespace=cr-at-eol,-blank-at-eof

@@ -21,7 +21,7 @@ test('whole-group translation preserves axial shape across odd rows and never ov
   const centre={x:8,y},a=worldAxial(centre),sources=[a,{q:a.q+1,r:a.r},{q:a.q,r:a.r+1}].map(worldOffset),g={id:3,kind:'island',centre,sources},blocked={x:15,y:15};
   const before=sources.map(worldAxial),used=new Set([...sources.map(key),key(blocked)]),m=translateFoodGroup(world,g,used,new Random(42));assert.ok(m);
   const after=g.sources.map(worldAxial),dq=after[0].q-before[0].q,dr=after[0].r-before[0].r;
-  assert.ok(Math.max(Math.abs(dq),Math.abs(dr),Math.abs(dq+dr))<=5);assert.ok(dq||dr);
+  const distance=Math.max(Math.abs(dq),Math.abs(dr),Math.abs(dq+dr));assert.ok(distance>=5&&distance<=20);
   for(let i=0;i<before.length;i++)assert.deepEqual(after[i],{q:before[i].q+dq,r:before[i].r+dr});assert.equal(used.size,4);assert.ok(used.has(key(blocked)));
  }
  const g={id:1,kind:'island',centre:{x:0,y:0},sources:[{x:0,y:0}]},before=structuredClone(g),used=new Set(['0,0']);
@@ -66,7 +66,7 @@ test('potential production integrates events and selected edges by time, includi
 
 test('first birth age is recorded on completion and four substeps per second preserves physical timing',async()=>{
  const w=new Evolution({population:1}),a=w.agents[0];w._primed=true;a.born=-100;a.bornSubtick=-1000;a.age=100;a.energy=80;a.process={action:9,elapsed:19,duration:20,destination:{x:a.x,y:a.y},localDestination:{...a.brain.position},direction:null};w.substep();assert.equal(a.children,1);assert.ok(a.life.firstBirthAge>=100);assert.equal(w.lifeReport().living.find(r=>r.id===a.id).firstBirthAge,a.life.firstBirthAge);assert.equal(w.agents[1].life.heritable.schema,HERITABLE_SCHEMA);
- let now=0,id=0;const runtime=new WorldRuntime({clock:()=>now,send(){}}),command=(type,payload={})=>runtime.handle({protocol:WORLD_PROTOCOL,epoch:1,id:++id,type,payload});
+ let now=0,id=0;const runtime=new WorldRuntime({clock:()=>now,send(message){if(message.type==='state')void command('ack',{sequence:message.sequence});}}),command=(type,payload={})=>runtime.handle({protocol:WORLD_PROTOCOL,epoch:1,id:++id,type,payload});
  await command('init',{settings:{population:1}});await command('speed',{value:.4,substeps:true});await command('running',{value:true});
  for(const t of [249,250,500,750,1000]){now=t;await runtime.pulse();}near(runtime.world.tick,.4);assert.equal(runtime.running,true);
 });

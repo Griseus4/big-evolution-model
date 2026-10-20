@@ -6,11 +6,17 @@ import {MODEL_VERSION} from '../dist/life-history.js';
 import {validateFoodSettings,FOOD_LIMITS} from '../dist/food-settings.js';
 import {scheduleFoodIslands} from '../dist/food-islands.js';
 import {installPerformanceTabs} from '../dist/performance-tabs.js';
+import {formatNumber,inputNumber} from '../dist/ui-numbers.js';
 const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
+
+test('UI numbers remove float tails and negative zero without changing their source',()=>{
+ const source={period:9.999999999999,spread:100/3},before={...source};
+ assert.equal(inputNumber(source.period),10);assert.equal(formatNumber(source.spread),'33,3');assert.equal(inputNumber(-.00001),0);assert.equal(formatNumber(-.00001),'0');assert.equal(formatNumber(null),'—');assert.deepEqual(source,before);
+});
 test('all page descriptions resolve from the shared catalog and footer follows model metadata',()=>{
  const nodes=[...html.matchAll(/data-ui-text="([^"]+)"/g)].map(m=>({dataset:{uiText:m[1]}}));
  installUIText({querySelectorAll:()=>nodes});
- for(const n of nodes)if(n.dataset.uiText==='release')assert.match(n.textContent,new RegExp(MODEL_VERSION.replaceAll('.','\\.')));else assert.equal(n.innerHTML,PAGE_TEXT[n.dataset.uiText]);
+ for(const n of nodes)if(n.dataset.uiText==='release')assert.equal(n.textContent,`Версия ${MODEL_VERSION}`);else assert.equal(n.innerHTML,PAGE_TEXT[n.dataset.uiText]);
  assert.ok(nodes.length>60);assert.doesNotMatch(html,/<footer>[\s\S]*?0\.32/);
  for(const value of Object.values(PAGE_TEXT))assert.doesNotMatch(value,/<(?:progress|section|input|button)\b|\bid="/);
  for(const [key,value]of Object.entries(HELP)){assert.ok(value[0]&&value[1],key);assert.doesNotMatch(value[1],/Опасная область пока остаётся|При его достижении рождения блокируются/);}

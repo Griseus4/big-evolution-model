@@ -38,12 +38,12 @@ test('single-substep parallel path retains birth completion and brain-payment de
  }
 });
 test('slow observation advances every 500ms; manual substep pauses and partial saves continue exactly',async()=>{
- let now=0,id=0;const runtime=new WorldRuntime({send:()=>{},clock:()=>now});
+ let now=0,id=0;const runtime=new WorldRuntime({send:message=>{if(message.type==='state')void command('ack',{sequence:message.sequence});},clock:()=>now});
  const command=(type,payload={})=>runtime.handle({protocol:WORLD_PROTOCOL,epoch:1,id:++id,type,payload});
  await command('init',{settings:{population:3}});await command('speed',{value:.2,substeps:true});await command('running',{value:true});
  now=499;await runtime.pulse();near(runtime.world.tick,0);now=500;await runtime.pulse();near(runtime.world.tick,.1);now=1000;await runtime.pulse();near(runtime.world.tick,.2);
  await command('substep');near(runtime.world.tick,.3);assert.equal(runtime.running,false);
- const saved=JSON.parse(JSON.stringify(saveWorld(runtime.world))),restored=['0.36.0','0.36.1','0.36.2'].map(modelVersion=>loadWorld({...saved,modelVersion}));
+ const saved=JSON.parse(JSON.stringify(saveWorld(runtime.world))),restored=[loadWorld(saved)];for(const modelVersion of ['0.36.0','0.36.1','0.36.2','0.37.3'])assert.throws(()=>loadWorld({...saved,modelVersion}));
  for(let i=0;i<12;i++){runtime.world.substep();for(const world of restored)world.substep();}for(const world of restored)assert.deepEqual(world.snapshot(),runtime.world.snapshot());
 });
 test('automatic food controls follow actual conditions and unlock without overwriting manual drafts',()=>{
@@ -52,6 +52,8 @@ test('automatic food controls follow actual conditions and unlock without overwr
  for(const name of ['relocate','apply','live-note'])elements.set('world-food-'+name,new Control());
  const root={getElementById:id=>elements.get(id)??null},refresh=installFoodControls('world-',root),editor=installLiveFoodControls({element:id=>root.getElementById(id),getWorld:()=>w,refresh});
  editor.update();assert.equal(elements.get('world-food-period').disabled,true);const stock=w.tiles.map(c=>c.food);
+ elements.get('world-food-period').value=9.999999999999;refresh();assert.equal(elements.get('world-food-period-number').value,10);assert.equal(readFoodControls('world-',root).foodRegrowInterval,9.999999999999);
+ elements.get('world-food-capacity-spread').value=100/3;refresh();assert.equal(elements.get('world-food-capacity-spread-number').value,33.3);assert.equal(Number(elements.get('world-food-capacity-spread').value),100/3);
  w.tick=1;w.subtick=10;advanceEnvironment(w);editor.update();const options=readFoodControls('world-',root);assert.equal(options.foodSources,w.foodSettings.sourceCount);assert.equal(w.changeFoodEnvironment(options),null);assert.deepEqual(w.tiles.map(c=>c.food),stock);
  const next=new Evolution({population:1,...options});assert.equal(next.foodSettings.sourceCount,options.foodSources);assert.equal(next.foodSettings.requestedIslandCount,options.foodIslandCount);
  w.automaticEnvironment.enabled=false;editor.update();elements.get('world-food-period').value=75;editor.update();assert.equal(elements.get('world-food-period').value,75);assert.equal(elements.get('world-food-period').disabled,false);

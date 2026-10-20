@@ -1,10 +1,11 @@
 import {WORLD_PROTOCOL,WorldView} from './world-view.js';
 /** Асинхронные команды имеют номер мира и запроса. Старые ответы после
  * перезапуска не обновляют показ; все ожидающие запросы завершаются ошибкой
- * при аварии Worker. ACK приходит из onmessage, независимо от rAF/видимости. */
+ * при аварии Worker. Только медленный показ карты подтверждается после кадра;
+ * обычный ACK приходит из onmessage, независимо от rAF/видимости. */
 export class WorldClient{
- constructor({onState=()=>{},onError=()=>{},worker=new Worker(new URL('./world-worker.js',import.meta.url),{type:'module'})}={}){
-  Object.assign(this,{worker,onState,onError});this.epoch=0;this.nextId=0;this.sequence=0;
+ constructor({onState=()=>{},onError=()=>{},afterPaint=callback=>typeof requestAnimationFrame==='function'?requestAnimationFrame(()=>requestAnimationFrame(callback)):callback(),worker=new Worker(new URL('./world-worker.js',import.meta.url),{type:'module'})}={}){
+  Object.assign(this,{worker,onState,onError,afterPaint});this.epoch=0;this.nextId=0;this.sequence=0;
   this.pending=new Map();this.view=new WorldView();this.ready=false;this.running=false;this.failure=null;
   worker.onmessage=event=>this.receive(event.data);
   worker.onerror=event=>this.fail(event.message||'Не удалось запустить расчётный Worker.');
@@ -26,9 +27,13 @@ export class WorldClient{
   if(message.type==='fatal'){this.fail(message.error);return;}
   if(message.protocol!==WORLD_PROTOCOL||message.epoch!==this.epoch)return;
   if(message.type==='state'){
-   this.worker.postMessage({protocol:WORLD_PROTOCOL,epoch:this.epoch,type:'ack',payload:{sequence:message.sequence}});
-   if(message.sequence<=this.sequence)return;
+   const ack=()=>{if(message.epoch===this.epoch&&!this.failure)this.worker.postMessage({protocol:WORLD_PROTOCOL,epoch:message.epoch,type:'ack',payload:{sequence:message.sequence}});};
+   if(message.sequence<=this.sequence){ack();return;}
+   if(!message.paintBeforeNext)ack();
    this.sequence=message.sequence;this.view.apply(message.state);this.ready=true;this.running=message.running;this.onState(message);
+   // Два rAF дают браузеру возможность нарисовать применённый снимок между
+   // callback. При скрытии runtime снимает ожидание через команду view.
+   if(message.paintBeforeNext)this.afterPaint(ack);
   }else if(message.type==='reply'){
    const p=this.pending.get(message.id);if(!p)return;this.pending.delete(message.id);
    if(message.error)p.reject(new Error(message.error));else p.resolve(message.result);

@@ -11,11 +11,11 @@
 <body>
 <!-- Разметка задаёт только представление. Физика и выбор действий находятся в evolution.js. -->
 <header><div><span class="eyebrow" data-ui-text="brand"></span><h1>Лаборатория поколений</h1><p data-ui-text="description1"></p></div><nav><a href="./source.html">Исходники</a><a href="./legacy.html">Первый опыт</a></nav></header>
-<div class="global-toolbar"><div class="lab-tablist" role="tablist" aria-label="Разделы лаборатории"><button id="tab-world" role="tab" aria-selected="true" aria-controls="panel-world">Мир</button><button id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history">Статистика</button><button id="tab-tests" role="tab" aria-selected="false" aria-controls="panel-tests">Испытания</button><button id="tab-analysis" role="tab" aria-selected="false" aria-controls="panel-analysis">Анализ генома</button><button id="tab-about" role="tab" aria-selected="false" aria-controls="panel-about">Об игре</button></div><div class="global-play-controls"><button id="play" class="primary" aria-pressed="false">▶ Наблюдать</button></div><div class="world-file-actions"><button id="world-save" class="primary">Сохранить мир</button><button id="world-load">Загрузить мир</button></div></div>
+<div class="global-toolbar"><div class="lab-tablist" role="tablist" aria-label="Разделы лаборатории"><button id="tab-world" role="tab" aria-selected="true" aria-controls="panel-world">Мир</button><button id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history">Статистика</button><button id="tab-tests" role="tab" aria-selected="false" aria-controls="panel-tests">Опыты</button><button id="tab-analysis" role="tab" aria-selected="false" aria-controls="panel-analysis">Анализ генома</button><button id="tab-about" role="tab" aria-selected="false" aria-controls="panel-about">Об игре</button></div><button id="history-drawer-left-handle" aria-controls="history-drawer-left-body" aria-expanded="false" hidden>Настройки статистики</button><div class="global-play-controls"><button id="play" class="primary" aria-pressed="false">▶ Наблюдать</button></div><div class="world-file-actions"><button id="world-save" class="primary">Сохранить мир</button><button id="world-load">Загрузить мир</button></div></div>
 <div class="global-status"><input id="world-load-file" type="file" accept=".json,application/json" hidden><p id="world-file-status" class="note" role="status" aria-live="polite"></p></div>
 <main id="panel-world" role="tabpanel" aria-labelledby="tab-world">
  <section class="workspace">
-  <div class="transport"><button id="step">Подшаг →</button><label>Темп <select id="speed"><option value="0.04">4 подшага/с</option><option value="0.02">Подшаг / 0,5 с</option><option value="1">1×</option><option value="8" selected>8×</option><option value="32">32×</option><option value="128">128×</option></select></label><span id="clock">Шаг 0</span><span id="rate" class="muted">На паузе</span><span id="compute-status" class="muted">Вычислителей: авто</span></div>
+  <div class="transport"><button id="step">Подшаг →</button><label>Темп <select id="speed"><option value="0.02">2 подшага/с</option><option value="0.04">4 подшага/с</option><option value="0.1">10 подшагов/с (1 шаг/с)</option><option value="8" selected>8×</option><option value="32">32×</option><option value="64">64×</option></select></label><span id="clock">Шаг 0</span><span id="rate" class="muted">На паузе</span><span id="compute-status" class="muted">Вычислителей: авто</span></div>
   <div class="scoreboard" aria-live="off"><div><small>Живые</small><strong id="population">48</strong></div><div><small>Рождений</small><strong id="births">0</strong></div><div><small>Гибелей</small><strong id="deaths">0</strong></div><div><small>Макс. поколение</small><strong id="generation">0</strong></div><div><small>Линий осталось</small><strong id="lineages">48</strong></div></div>
   <div class="memory-controls"><label class="check"><input id="show-memory" type="checkbox"> Обвести клетки в памяти выбранного жителя</label><span id="brain-mode" class="muted"></span></div><div class="map-shell"><canvas id="world" width="904" height="527" role="img" aria-label="Гексагональный мир с пищей и отдельными организмами"></canvas><div id="world-label" class="map-label">Обзор наблюдателя</div><div id="extinction" hidden>Популяция вымерла</div></div>
   <div class="map-caption"><span id="hover">Нажми на жителя, чтобы посмотреть его действия и геном.</span><span id="limit-status"></span></div>
@@ -59,15 +59,18 @@
 <div class="screen-tablist" role="tablist" aria-label="Источники пищи текущего мира"><button id="food-tab-conditions" role="tab" aria-controls="food-panel-conditions" aria-selected="true" tabindex="0">Условия</button><button id="food-tab-automatic" role="tab" aria-controls="food-panel-automatic" aria-selected="false" tabindex="-1">Автоматика</button><button id="food-tab-journal" role="tab" aria-controls="food-panel-journal" aria-selected="false" tabindex="-1">Журнал</button></div><section id="food-panel-conditions" class="screen-panel " role="tabpanel" aria-labelledby="food-tab-conditions" tabindex="0"><div class="settings-grid">   <div class="range-setting"><div class="range-heading"><label for="world-food-sources">Количество источников</label><input id="world-food-sources-number" class="range-number" type="number" aria-label="Количество источников: числом" min="0" max="384" step="any" value="384"></div><output id="world-food-sources-value" for="world-food-sources" hidden></output><input id="world-food-sources" type="range" min="0" max="384" step="1" value="384"></div>
    <div class="range-setting"><div class="range-heading"><label for="world-food-period">Средний период</label><input id="world-food-period-number" class="range-number" type="number" aria-label="Средний период: числом" min=".1" max="1000000000" step="any" value="20"></div><output id="world-food-period-value" for="world-food-period" hidden></output><input id="world-food-period" type="range" min="10" max="300" step="10" value="20"></div><label>Количество островков<input id="world-food-islands" type="number" min="0" max="384" value="8"></label><div class="range-setting"><div class="range-heading"><label for="world-food-size-spread">Разброс размеров</label><input id="world-food-size-spread-number" class="range-number" type="number" aria-label="Разброс размеров: числом" min="0" max="40000" step="any" value="30"></div><output id="world-food-size-spread-value" for="world-food-size-spread" hidden></output><input id="world-food-size-spread" type="range" min="0" max="90" step="5" value="30"></div><div class="range-setting"><div class="range-heading"><label for="world-food-period-spread">Разброс периодов</label><input id="world-food-period-spread-number" class="range-number" type="number" aria-label="Разброс периодов: числом" min="0" max="40000" step="any" value="30"></div><output id="world-food-period-spread-value" for="world-food-period-spread" hidden></output><input id="world-food-period-spread" type="range" min="0" max="90" step="5" value="30"></div>
 <div class="range-setting"><div class="range-heading"><label for="world-food-size-mean">Средний размер островка</label><input id="world-food-size-mean-number" class="range-number" type="number" aria-label="Средний размер островка: числом" min="0" max="384" step="any" value="38.5"></div><output id="world-food-size-mean-value" for="world-food-size-mean" hidden></output><input id="world-food-size-mean" type="range" min="0" max="384" step="any" value="38.5"></div><div class="range-setting"><div class="range-heading"><label for="world-food-capacity-mean">Средняя вместимость</label><input id="world-food-capacity-mean-number" class="range-number" type="number" aria-label="Средняя вместимость: числом" min="1" max="24" step="any" value="4.5"></div><output id="world-food-capacity-mean-value" for="world-food-capacity-mean" hidden></output><input id="world-food-capacity-mean" type="range" min="1" max="24" step="0.5" value="4.5"></div><div class="range-setting"><div class="range-heading"><label for="world-food-capacity-spread">Разброс вместимости</label><input id="world-food-capacity-spread-number" class="range-number" type="number" aria-label="Разброс вместимости: числом" min="0" max="100" step="any" value="33.333333333333336"></div><output id="world-food-capacity-spread-value" for="world-food-capacity-spread" hidden></output><input id="world-food-capacity-spread" type="range" min="0" max="100" step="any" value="33.333333333333336"></div></div><p id="world-food-live-note" class="automatic-summary" role="status"></p><p id="world-food-island-summary" class="note"></p>
+   <p id="world-food-production" class="automatic-summary" aria-live="polite"></p>
    <label class="check"><input id="world-food-relocate" type="checkbox"> Перераспределить источники по карте</label>
    <p class="note" data-ui-text="description6"></p>
    <button id="world-food-apply" class="wide primary">Применить к текущему миру</button>
    <p id="world-food-status" class="note" role="status" aria-live="polite"></p><p id="world-food-error" class="error" role="alert"></p>
 </section><section id="food-panel-automatic" class="screen-panel " role="tabpanel" aria-labelledby="food-tab-automatic" tabindex="0" hidden>   <h3>Автоматическое изменение среды</h3>
     <label class="check"><input id="environment-enabled" type="checkbox" checked> Автоматически менять пищевые условия</label>
-    <label>Первые пять обеднений, интервал Т<input id="environment-preparation-interval" type="number" min="1" max="1000000000" value="500"></label>
+    <div class="settings-grid"><label>Целевое число источников<input id="environment-target-sources" type="number" min="1" max="384" step="1" value="300"></label><label>Целевой средний период, Т<input id="environment-target-period" type="number" min="0.1" max="1000000000" step="any" value="100"></label></div>
+    <fieldset class="environment-rate-settings"><legend>Диапазон выработки, порции/Т</legend><div class="settings-grid"><label>Минимум<input id="environment-minimum-rate" type="number" min="0" step="any" value="2"></label><label>Максимум<input id="environment-maximum-rate" type="number" min="0" step="any" value="6"></label></div><div id="environment-rate-range" class="history-dual-range"><div class="history-range-track"></div><input id="environment-rate-start" type="range" min="0.000000001" max="10" step="any" value="2" aria-label="Минимальная выработка" data-help-shared="environment-minimum-rate"><input id="environment-rate-end" type="range" min="0.000000001" max="10" step="any" value="6" aria-label="Максимальная выработка" data-help-shared="environment-maximum-rate"></div></fieldset>
+    <label>Первые пять событий, интервал Т<input id="environment-preparation-interval" type="number" min="1" max="1000000000" value="500"></label>
     <label>Случайные изменения, интервал Т<input id="environment-random-interval" type="number" min="1" max="1000000000" value="1000"></label>
-    <button id="environment-apply" class="wide">Применить интервалы</button><p id="environment-status" class="note" role="status"></p>
+    <button id="environment-apply" class="wide">Применить настройки автоматики</button><p id="environment-status" class="note" role="status"></p><p id="environment-error" class="error" role="alert"></p>
 
 
 
@@ -106,11 +109,13 @@
  </aside>
 </main>
 <section id="panel-history" class="lab-panel" role="tabpanel" aria-labelledby="tab-history" hidden>
- <div class="section-title"><div><span class="eyebrow">ПРОЖИТЫЕ ЖИЗНИ</span><h2>Итоги и текущие наблюдения</h2></div><button id="history-export">Скачать истории (.json)</button></div>
- <p class="note" data-ui-text="description17"></p>
- <p id="history-summary" class="lab-summary"></p><p id="history-causes" class="note"></p><p id="history-cohorts" class="note"></p>
+ <div id="history-layout" class="history-layout" data-open="false">
+ <details id="history-drawer-left" class="history-drawer history-drawer-left"><summary hidden>Настройки статистики</summary><div id="history-drawer-left-body" class="history-drawer-body">
+ <h3>Источник и сравнение</h3>
+ <div class="history-settings"><label>Источник статистики<select id="experiment-stat-source"><option value="current">Текущий мир</option></select></label><label>Вес данных<select id="experiment-stat-weight"><option value="worlds">Каждый мир имеет равный вес</option><option value="individuals">Каждая особь имеет равный вес</option></select></label><label>Линии сравнения вариантов<select id="experiment-stat-line"><option value="mean">Среднее</option><option value="median">Медиана</option><option value="min">Минимум</option><option value="max">Максимум</option></select></label></div>
+ <label>Полоса вокруг линии<select id="history-band-mode"><option value="confidence">Доверительный интервал 95%</option><option value="spread">Разброс миров: 25–75%</option><option value="none">Без полосы</option></select></label><p class="note" data-ui-text="history-bands"></p>
+ <h3>Параметры групп</h3>
  <div class="lab-controls history-settings">
-  <label>Интервал рождения, Т<input id="history-width" type="number" min="1" step="1" value="100"></label>
   <label>Возраст дожития, Т<input id="history-survival-age" type="number" min="1" step="1" value="100"></label>
   <label>Происхождение<select id="history-origin"><option value="all">Все особи</option><option value="founders">Основатели</option><option value="descendants">Потомки</option></select></label>
   <label>Данные линий<select id="history-stat-mode"><option value="dead">Завершённые жизни</option><option value="observed">Включая прожитую часть живых</option></select></label>
@@ -118,22 +123,38 @@
  </div>
  <p id="history-method-note" class="note" data-ui-text="history-method"></p>
  <fieldset class="history-period"><legend>Общий период графиков и таблицы</legend>
-  <div class="lab-controls"><label>Начало, Т<input id="history-period-from" type="number" min="0" step="1" value="0"></label><label>Конец, Т<input id="history-period-to" type="number" min="1" step="1" value="100"></label><button id="history-period-all" type="button">Весь период</button><output id="history-period-value" aria-live="polite"></output></div>
+  <div class="lab-controls"><label>Интервал рождения, Т<input id="history-width" type="number" min="1" step="1" value="100"></label><label>Начало, Т<input id="history-period-from" type="number" min="0" step="1" value="0"></label><label>Конец, Т<input id="history-period-to" type="number" min="1" step="1" value="100"></label><button id="history-period-all" type="button">Весь период</button><output id="history-period-value" aria-live="polite"></output></div>
   <div class="history-dual-range"><div class="history-range-track"></div><input id="history-period-start" type="range" min="0" max="100" step="1" value="0" aria-label="Начало общего периода" aria-describedby="history-method-note" data-help-shared="history-period-from"><input id="history-period-end" type="range" min="0" max="100" step="1" value="100" aria-label="Конец общего периода" aria-describedby="history-method-note" data-help-shared="history-period-from"></div>
  </fieldset>
- <fieldset class="history-legend"><legend>Линии индивидуальных показателей</legend>
+ <fieldset id="history-line-controls" class="history-legend"><legend>Линии индивидуальных показателей</legend>
   <label class="check"><input id="history-show-min" type="checkbox" checked>Минимум</label><label class="check"><input id="history-show-median" type="checkbox" checked>Медиана</label><label class="check"><input id="history-show-mean" type="checkbox" checked>Среднее</label><label class="check"><input id="history-show-max" type="checkbox" checked>Максимум</label>
  </fieldset>
+ <div class="history-display-controls"><label>Экран <select id="history-display"><option value="survival" selected>Выживание</option><option value="behavior">Поведение</option><option value="resources">Ресурсы</option><option value="reproduction">Размножение</option><option value="genome">Наследуемые свойства</option><option value="distributions">Распределения чувствительностей</option><option value="table">Таблица</option><option value="pair">Сравнение пары</option><option value="all">Все графики и таблица</option><option value="custom">Мой набор графиков</option></select></label><details class="history-chart-picker"><summary>Выбрать графики для сравнения</summary><div id="history-chart-options" class="history-chart-options"></div></details></div>
+ </div></details>
+ <div class="history-main">
+ <div class="section-title"><div><span class="eyebrow">ПРОЖИТЫЕ ЖИЗНИ</span><h2>Итоги и текущие наблюдения</h2></div><button id="history-export">Скачать истории (.json)</button></div>
+ <p id="experiment-stat-note" class="note"></p><p class="note" data-ui-text="description17"></p>
+ <p id="history-summary" class="lab-summary"></p><p id="history-causes" class="note"></p><p id="history-cohorts" class="note"></p>
+ <p id="history-analysis-state" class="note" role="status"></p>
  <p id="history-warning" class="note" role="status"></p><p id="history-error" class="error" role="alert"></p>
- <div class="history-display-controls"><label>Экран <select id="history-display"><option value="survival" selected>Выживание</option><option value="behavior">Поведение</option><option value="resources">Ресурсы</option><option value="reproduction">Размножение</option><option value="genome">Наследуемые свойства</option><option value="distributions">Распределения чувствительностей</option><option value="table">Таблица</option><option value="all">Все графики и таблица</option><option value="custom">Мой набор графиков</option></select></label><details class="history-chart-picker"><summary>Выбрать графики для сравнения</summary><div id="history-chart-options" class="history-chart-options"></div></details></div>
+ <section id="history-pair-screen" hidden>
+  <h2>Сравнение выбранной пары</h2><div class="lab-controls pair-controls"><label>A — база<select id="pair-variant-a"></select></label><button id="pair-swap" type="button">Поменять A ↔ B</button><label>B — сравниваемый вариант<select id="pair-variant-b"></select></label><label>Сводка<select id="pair-statistic"><option value="both">Среднее и медиана</option><option value="mean">Среднее</option><option value="median">Медиана</option></select></label></div>
+  <p id="pair-label-a"></p><p id="pair-label-b"></p><p id="pair-period" class="note"></p><details><summary>Как читать сравнение и доверительные интервалы</summary><p class="note" data-ui-text="pair-method"></p></details><p id="pair-status" class="note" role="status"></p>
+  <div class="table-scroll pair-table-window" tabindex="0" role="region" aria-label="Парное сравнение показателей"><table class="pair-table" id="pair-rows"><thead><tr><th>Показатель и состав</th><th>A [95% ДИ]</th><th>B [95% ДИ]</th><th>B − A [95% ДИ]</th><th>B / A [95% ДИ]</th><th>Изменение, % [95% ДИ]</th><th>Полных пар</th></tr></thead></table></div>
+ </section>
  <div id="history-charts" class="history-chart-grid"></div>
  <p class="note" data-ui-text="history-food-context"></p>
  <section id="history-survival-section" class="history-chart-card history-survival-panel"><h3>Кривая дожития одной группы рождения</h3>
   <div class="lab-controls"><label>Начало периода рождения, Т<input id="history-curve-start" type="number" min="0" step="1" value="0"></label><span id="history-curve-period"></span></div>
   <input id="history-curve-slider" type="range" min="0" max="100" step="1" value="0" aria-label="Начало периода рождения для кривой дожития" aria-describedby="history-curve-method-note" data-help-shared="history-curve-start">
+  <div class="range-setting history-age-scale">
+   <div class="range-heading"><label for="history-curve-age-max">Максимальный возраст на оси, Т</label><input id="history-curve-age-max" class="range-number" type="number" min="1" step="1" value="1000" aria-describedby="history-curve-scale-note"></div>
+   <input id="history-curve-age-slider" type="range" min="1" max="1000" step="1" value="1000" aria-label="Максимальный возраст на оси кривой дожития" aria-describedby="history-curve-scale-note" data-help-shared="history-curve-age-max">
+  </div>
+  <p id="history-curve-scale-note" class="note" data-ui-text="history-curve-scale"></p>
   <p id="history-curve-method-note" class="note" data-ui-text="history-curve-method"></p><p id="history-curve-statistics" class="note" aria-live="polite"></p><p id="history-curve-summary" class="note"></p><div id="history-curve-chart"></div>
  </section>
- <div class="lab-controls"><strong id="history-selected">Все интервалы рождения.</strong><button id="history-clear-selection" disabled>Снять выбор интервала</button></div>
+ <div id="history-selection-controls" class="lab-controls"><strong id="history-selected">Все интервалы рождения.</strong><button id="history-clear-selection" disabled>Снять выбор интервала</button></div>
  <section id="history-table-screen"><div class="lab-controls"><label>Таблица<select id="history-table-mode"><option value="cohorts">Сводка по рождениям</option><option value="lives">Отдельные жизни</option></select></label><label id="history-table-metric-label">Показатель сводки<select id="history-table-metric"></select></label></div>
  <div id="history-resident-filters" class="lab-controls" hidden><label>Показать<select id="history-filter"><option value="all">Все жизни</option><option value="alive">Живые</option><option value="dead">Завершённые</option><option value="starvation">Истощение</option><option value="age">Предел возраста</option></select></label><label>Порядок<select id="history-sort"><option value="recent">Новые жители</option><option value="age">По возрасту</option><option value="children">По потомству</option></select></label><label>Номер жителя или линии<input id="history-search" type="number" min="1" placeholder="Все"></label></div>
  <div class="table-scroll history-table-window" tabindex="0" role="region" aria-label="Истории: таблица с внутренней прокруткой"><table><thead><tr id="history-head"></tr></thead><tbody id="history-rows"></tbody></table></div>
@@ -141,17 +162,47 @@
  <p id="history-detail" class="panel note" data-ui-text="description18"></p>
  <p class="note" data-ui-text="description19"></p>
 </section>
+ </div></div>
 </section>
 <section id="panel-tests" class="lab-panel" role="tabpanel" aria-labelledby="tab-tests" hidden>
- <div class="section-title"><div><span class="eyebrow">РАСЧЁТ НА ТВОЁМ УСТРОЙСТВЕ</span><h2>Испытания</h2></div><button id="tests-export" class="primary" disabled>Скачать весь отчёт (.json)</button></div>
+ <div class="section-title"><div><span class="eyebrow">РАСЧЁТ НА ТВОЁМ УСТРОЙСТВЕ</span><h2>Опыты</h2></div><button id="tests-export" class="primary" disabled>Скачать проверки и замеры (.json)</button></div>
  <p class="note" data-ui-text="description20"></p>
  <div class="test-tablist" role="tablist" aria-label="Виды испытаний">
+  <button id="test-tab-templates" role="tab" aria-selected="false" aria-controls="test-panel-templates" tabindex="-1">Шаблоны</button>
+  <button id="test-tab-constructor" role="tab" aria-selected="false" aria-controls="test-panel-constructor" tabindex="-1">Конструктор</button>
+  <button id="test-tab-runs" role="tab" aria-selected="false" aria-controls="test-panel-runs" tabindex="-1">Запуски</button>
   <button id="test-tab-mechanisms" role="tab" aria-selected="true" aria-controls="test-panel-mechanisms">Проверки механизмов</button>
   <button id="test-tab-benchmark" role="tab" aria-selected="false" aria-controls="test-panel-benchmark" tabindex="-1">Замеры скорости</button>
-  <button id="test-tab-long" role="tab" aria-selected="false" aria-controls="test-panel-long" tabindex="-1">Длинные испытания</button>
+  <button hidden id="test-tab-long" role="tab" aria-selected="false" aria-controls="test-panel-long" tabindex="-1">Длинные испытания</button>
  </div>
-<div class="panel"><p id="tests-summary" class="lab-summary" aria-live="polite"></p><p id="tests-progress" class="note"></p><div class="lab-controls"><button id="tests-stop" disabled>Остановить и собрать итоги</button><button id="tests-force-stop" disabled>Прервать немедленно</button></div><p class="note" data-ui-text="description21"></p><p id="tests-storage-note" class="note"></p><p id="tests-error" class="error" role="alert"></p></div>
+<div id="legacy-test-status" class="panel"><p id="tests-summary" class="lab-summary" aria-live="polite"></p><p id="tests-progress" class="note"></p><div class="lab-controls"><button id="tests-stop" disabled>Остановить и собрать итоги</button><button id="tests-force-stop" disabled>Прервать немедленно</button></div><p class="note" data-ui-text="description21"></p><p id="tests-storage-note" class="note"></p><p id="tests-error" class="error" role="alert"></p></div>
 
+
+ <section id="test-panel-templates" role="tabpanel" aria-labelledby="test-tab-templates" hidden>
+  <h3>Готовые планы опытов</h3><p class="note">Выберите шаблон, затем измените общие условия и варианты в конструкторе.</p><div id="constructor-builtins" class="constructor-grid"></div>
+  <h3>Ваши шаблоны в этом браузере</h3><div id="constructor-saved-templates" class="constructor-grid"></div>
+ </section>
+ <section id="test-panel-constructor" role="tabpanel" aria-labelledby="test-tab-constructor" hidden>
+  <div class="panel"><h3>План опыта</h3><div class="constructor-grid">
+   <label>Название опыта<input id="constructor-name" value="Новый опыт" maxlength="120"></label>
+   <label>Миров на каждый вариант<input id="constructor-worlds" type="number" min="1" max="64" value="5"></label>
+   <label>Длительность мира, Т<input id="constructor-steps" type="number" min="1" max="1000000" value="20000"></label>
+   <label>Общий бюджет потоков<input id="constructor-budget" type="number" min="1" max="64"></label>
+   <label>Вычислителей на мир, максимум<select id="constructor-workers"></select></label>
+   <label>Распределение<select id="constructor-allocation"><option value="auto">Сначала независимые миры, затем усиление оставшихся</option><option value="fixed">Фиксированное число на мир</option></select></label>
+  </div><p class="note">Параллельный мир дополнительно использует один поток координатора. Бюджет ограничивает расчёты серии, а не все процессы браузера.</p>
+  <p id="constructor-map-note" class="note"></p><label>Seed жителей по повторам — одинаковые для сравниваемых вариантов<textarea id="constructor-seeds" rows="3"></textarea></label><button id="constructor-random">Случайная последовательность seed жителей</button>
+  <p class="note">При вымирании — до трёх попыток с заранее заданными новыми seed. Для итогов берётся успешная попытка или самая длительная из вымерших; все попытки сохраняются.</p></div>
+  <div class="panel"><h3>Общие условия</h3><div id="constructor-common"></div><label>Геном основателей<input id="constructor-base" type="file" accept=".json,application/json"></label><p id="constructor-base-note" class="note">Случайные геномы</p><button id="constructor-clear-base">Вернуть случайные геномы</button></div>
+  <div class="constructor-design-layout"><section class="panel"><h3>Изменяемые параметры</h3><p class="note">Все сочетания выбранных значений. Один параметр добавляется один раз; остальные условия берутся из общей таблицы.</p><table class="constructor-factor-table"><tbody id="constructor-factors"></tbody></table><select id="constructor-factor-add" aria-label="Добавить изменение"></select></section><aside class="panel constructor-scheme"><h3>Схема опыта</h3><p id="constructor-design-summary" class="note" role="status"></p><p class="note">Вторая и третья попытки используют новые seed мира, сохраняя общую карту. Раскройте ветви, чтобы увидеть состав серии.</p><div id="constructor-design-tree"></div></aside></div>
+  <div class="panel lab-controls"><button id="constructor-run" class="primary">Начать опыты</button><button id="constructor-save-template">Сохранить шаблон</button><button id="constructor-export-plan">Скачать план JSON</button><label>Открыть план<input id="constructor-import-plan" type="file" accept=".json,application/json"></label></div>
+ </section>
+ <section id="test-panel-runs" role="tabpanel" aria-labelledby="test-tab-runs" hidden>
+  <div class="panel"><p id="constructor-progress" role="status">Серия ещё не запущена.</p><div class="lab-controls"><button id="constructor-stop" disabled>Остановить и собрать итоги</button><button id="constructor-force-stop" disabled>Прервать немедленно</button><button id="constructor-export" disabled>Скачать результаты опытов (.json)</button><button id="constructor-open-comparison">Сравнить в статистике</button></div><p class="note" data-ui-text="experiment-export-kind"></p><p class="note" data-ui-text="experiment-retry-comparison"></p></div>
+  <p id="constructor-export-state" class="note" role="status"></p><div class="lab-controls experiment-pages"><button id="constructor-results-prev" disabled>← Предыдущие сочетания</button><span id="constructor-results-page">Серия ещё не выбрана.</span><button id="constructor-results-next" disabled>Следующие сочетания →</button></div>
+  <div id="constructor-results" class="experiment-results-grid"></div><h3>Сохранённые серии</h3><label>Открыть результаты опытов (.json)<input id="constructor-import-report" type="file" accept=".json,application/json"></label><div id="constructor-archive"></div>
+ </section>
+ <p id="constructor-error" class="error" role="alert"></p><p id="constructor-storage" class="note"></p>
  <section id="test-panel-mechanisms" role="tabpanel" aria-labelledby="test-tab-mechanisms">
  <div class="panel"><h3>Правильность механизмов</h3><p class="note" data-ui-text="description22"></p><button id="run-checks" class="wide primary">Запустить проверки механизмов</button></div>
  <h3>Результаты проверок</h3><div id="check-results"></div>
@@ -219,6 +270,7 @@
 </section>
 <footer><span id="release-version" data-ui-text="release"></span></footer>
 <dialog id="help-dialog" aria-labelledby="help-title" aria-describedby="help-body"><h2 id="help-title"></h2><p id="help-body"></p><button id="help-close" class="primary">Понятно</button></dialog>
+<dialog id="experiment-notification-dialog" aria-labelledby="experiment-notification-title" aria-describedby="experiment-notification-body"><h2 id="experiment-notification-title">Опыты</h2><p id="experiment-notification-body"></p><button id="experiment-notification-close" class="primary">Понятно</button></dialog>
 <script type="module" src="./evolution-app.js"></script>
 </body>
 </html>

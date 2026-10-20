@@ -12,6 +12,7 @@ import {BIRTH_BLOCK_LABELS,reproductionSummary} from './reproduction.js';
 import {WorldClient} from './world-client.js';
 import {installWorldFiles} from './world-files-ui.js';
 import {installEnvironmentUI} from './environment-ui.js';
+import {formatNumber as format} from './ui-numbers.js';
 import {WorldProfiler} from './world-profiler.js';
 import {installPerformancePanel} from './performance-ui.js';
 import {updateTextRows} from './stable-text-list.js';
@@ -85,7 +86,7 @@ async function singleStep(){
  controlPending=true;update();try{await command('substep');}catch{}finally{controlPending=false;update();}
 }
 async function restart(){
- if(controlPending)return;
+ if(controlPending||labTabs?.isBenchmarkActive())return;
  try{const options=settings();controlPending=true;await client.init(options);
   running=false;actualRate=0;
   element('error').textContent='';element('save-status').textContent='';labTabs?.onRestart();syncWorldFoodEditor();update();draw();
@@ -109,7 +110,7 @@ element('randomize-seed').addEventListener('click',()=>{
  try{element('seed').value=randomExperienceSeed(Number(element('seed').value));element('error').textContent='';}
  catch(error){element('error').textContent=error.message;}
 });
-element('speed').addEventListener('change',()=>{if(client.ready)void command('speed',{value:10*Number(element('speed').value),substeps:Number(element('speed').value)<=.04}).catch(()=>{});});
+element('speed').addEventListener('change',()=>{if(client.ready)void command('speed',{value:10*Number(element('speed').value),substeps:Number(element('speed').value)<=.1}).catch(()=>{});});
 installFoodControls();
 /** Поля вмешательства независимы от полей следующего нового опыта.
  * Движение ползунка только готовит ввод. Worker применяет пищевые условия
@@ -132,7 +133,7 @@ element('world-food-apply').addEventListener('click',async()=>{
   const change=await command('food',{...readFoodControls('world-'),relocate:element('world-food-relocate').checked});
   element('world-food-error').textContent='';
   const mode=running?'Мир продолжает работу.':'Мир остаётся на паузе.';
-  element('world-food-status').textContent=change?`Применено на шаге ${change.tick}. ${mode} Следующее пополнение: ${change.nextRegrowthTick===null?'нет источников':'шаг '+change.nextRegrowthTick}.`:
+  element('world-food-status').textContent=change?`Применено на шаге ${format(change.tick)}. ${mode} Следующее пополнение: ${change.nextRegrowthTick===null?'нет источников':'шаг '+format(change.nextRegrowthTick)}.`:
    `Условия совпадают с текущими. ${mode} Цикл восстановления сохранён.`;
   // Перестановка — одно вмешательство. Повторный обычный Apply не должен
   // случайно ещё раз перераспределять источники из-за оставленной галочки.
@@ -142,7 +143,7 @@ element('world-food-apply').addEventListener('click',async()=>{
 element('world-food-export').addEventListener('click',()=>{pause();labTabs?.exportWorldObservation();});
 syncWorldFoodEditor();
 environmentUI=installEnvironmentUI({element,command,getWorld:()=>sim});
-installWorldFiles({element,command,onLoad:()=>{labTabs?.onRestart();syncWorldFoodEditor();update();draw();}});
+installWorldFiles({element,command,isBlocked:()=>labTabs?.isBenchmarkActive(),onLoad:()=>{labTabs?.onRestart();environmentUI.reset();syncWorldFoodEditor();update();draw();}});
 element('next-agent').addEventListener('click',()=>{
  if(!sim.agents.length)return;
  const index=sim.agents.findIndex(a=>a.id===selected?.id);selectResident(sim.agents[(index+1)%sim.agents.length]);update();draw();
@@ -206,6 +207,8 @@ function update(){
 function updateTransport(){
  element('play').textContent=controlPending?'Ожидание…':running?'Ⅱ Пауза':'▶ Наблюдать';
  element('play').setAttribute('aria-pressed',String(running));
+ element('restart').disabled=controlPending||labTabs?.isBenchmarkActive();
+ element('world-load').disabled=Boolean(labTabs?.isBenchmarkActive());
  element('play').disabled=!client.ready||controlPending||!sim.agents.length||labTabs?.isBenchmarkActive();
 }
 function updateContents(){
@@ -220,7 +223,7 @@ function updateContents(){
  element('clock').textContent=`Шаг ${sim.tick}`;
  element('step').disabled=controlPending||!total.population||labTabs?.isBenchmarkActive();
  element('next-agent').disabled=!total.population;
- element('rate').textContent=running?(Number(element('speed').value)<=.04?`${(actualRate*10).toFixed(1)} подшага/с фактически`:`${Math.round(actualRate)} шагов/с фактически`):'На паузе';
+ element('rate').textContent=running?(Number(element('speed').value)<=.1?`${(actualRate*10).toFixed(1)} подшага/с фактически`:`${Math.round(actualRate)} шагов/с фактически`):'На паузе';
  element('compute-status').textContent=`Вычислителей: ${sim.execution?.computeWorkers??1}`;
  activeComputationMode=sim.execution?.mode??activeComputationMode;
  element('compute-current').textContent=UI_TEXT.currentComputations(sim.execution?.computeWorkers??1,activeComputationMode);
@@ -233,17 +236,18 @@ function updateContents(){
  element('geography-region').textContent=`${geographyLabel(sim.geography)} · воды ${(geography.waterFraction*100).toFixed(1)}% · рек ${geography.riverCount}, озёр ${geography.lakeCount}, бродов ${geography.fordCells}. Районов суши ${geography.regionCount}, сейчас населены ${populatedRegions}. Обзор жителя: радиус 1.`;
  const environment=sim.environment,looseFood=sim.tiles.filter(c=>c.maxFood===0).reduce((n,c)=>n+c.food,0);
  const capacity=environment.sourceCount?`${environment.capacityMin}…${environment.capacityMax} порций`:'нет источников';
- element('world-food-current').textContent=`Сейчас: ${environment.sourceCount} источников, периоды ${environment.periodMin??environment.regrowInterval}…${environment.periodMax??environment.regrowInterval}, ёмкость ${capacity}. Еды на карте ${sim.tiles.reduce((n,c)=>n+c.food,0)}, из неё вне источников ${looseFood}. Следующее пополнение: ${sim.nextFoodRegrowth()===null?'нет источников':'шаг '+sim.nextFoodRegrowth()}.`;
+ element('world-food-current').textContent=`Сейчас: ${environment.sourceCount} источников, периоды ${format(environment.periodMin??environment.regrowInterval)}…${format(environment.periodMax??environment.regrowInterval)}, ёмкость ${capacity}. Еды на карте ${sim.tiles.reduce((n,c)=>n+c.food,0)}, из неё вне источников ${looseFood}. Следующее пополнение: ${sim.nextFoodRegrowth()===null?'нет источников':'шаг '+format(sim.nextFoodRegrowth())}.`;
  if(displayedEnvironmentRevision!==sim.environmentRevision){
   displayedEnvironmentRevision=sim.environmentRevision;
+  element('world-food-production').textContent=`Ожидаемая выработка текущего мира: ${format(sim.automaticEnvironment?.production)} порции/Т. Полные источники пропускают рост; неприменённые настройки здесь не учитываются.`;
   element('world-food-changes').replaceChildren(...sim.environmentChanges.slice(-8).reverse().map(change=>{
    const row=document.createElement('li'),a=change.after;
-   if(change.kind==='automatic-food'){row.textContent=`${change.tick} Т · ${change.operation==='impoverish'?'Обеднение':'Случайное изменение'}: ${change.before.production.toFixed(3)} → ${a.production.toFixed(3)} порции/Т; источников ${a.sourceCount}, перемещено ${change.moved.length}.`;return row;}
-   row.textContent=`Шаг ${change.tick}: ${a.sourceCount} источников, период ${a.regrowInterval}, ёмкость ${a.capacityMin??'—'}…${a.capacityMax??'—'}. ${change.operation==='redistribute'?'Перераспределены. ':''}Живых ${change.summary.population}, линий ${change.summary.survivingFounders}.`;
+   if(change.kind==='automatic-food'){row.textContent=`${format(change.tick)} Т · ${change.operation==='prepare'?'Подготовка':'Колебания около целей'}: ${format(change.before.production)} → ${format(a.production)} порции/Т; источников ${a.sourceCount}, средний период ${format(a.meanPeriod)} Т, перемещено ${change.moved.length}.${change.countAdjusted?' Число источников скорректировано по выработке.':''}${change.periodsAdjusted?' Дополнительно скорректированы периоды.':''}`;return row;}
+   row.textContent=`Шаг ${format(change.tick)}: ${a.sourceCount} источников, период ${format(a.regrowInterval)}, ёмкость ${format(a.capacityMin)}…${format(a.capacityMax)}. ${change.operation==='redistribute'?'Перераспределены. ':''}Живых ${change.summary.population}, линий ${change.summary.survivingFounders}.`;
    return row;
   }));
   element('world-food-no-changes').hidden=sim.environmentChanges.length>0;
-  element('world-food-island-summary').textContent=`Островков ${environment.islandCount} (запрошено ${environment.requestedIslandCount}), размер ${environment.sizeMin??'—'}…${environment.sizeMax??'—'} источников; одиночных кустов ${environment.bushCount??0}. Центральный период ${environment.regrowInterval}, разброс ±${environment.periodSpread??0}%; реальные периоды ${environment.periodMin??'—'}…${environment.periodMax??'—'}.`;
+  element('world-food-island-summary').textContent=`Островков ${environment.islandCount} (запрошено ${environment.requestedIslandCount}), размер ${environment.sizeMin??'—'}…${environment.sizeMax??'—'} источников; одиночных кустов ${environment.bushCount??0}. Центральный период ${format(environment.regrowInterval)} Т, разброс ±${format(environment.periodSpread??0)}%; реальные периоды ${format(environment.periodMin)}…${format(environment.periodMax)} Т.`;
  }
  element('limit-status').textContent=total.atLimit?'Достигнут лимит: рождения приостановлены':'';
  element('extinction').hidden=total.population>0;
@@ -501,10 +505,12 @@ function frame(now){
  }
  requestAnimationFrame(frame);
 }
-labTabs=installLabTabs({getSimulation:()=>sim,pauseWorld:pause,getPerformanceReport:()=>profiler.report(),
+labTabs=installLabTabs({getSimulation:()=>sim,pauseWorld:pause,getWorldState:()=>({running,epoch:client.epoch}),
+ suspendWorld:async()=>{if(!client.ready)throw new Error('Основной мир ещё не готов.');await command('running',{value:false});},
+ resumeWorld:async state=>{if(client.epoch!==state.epoch)throw new Error('Основной мир сменился.');await command('running',{value:true});},getPerformanceReport:()=>profiler.report(),
  getWorldObservation:()=>command('observation'),onTabChange:()=>{if(client.ready)void sendView().catch(()=>{});}});
 performancePanel=installPerformancePanel({profiler,getSimulation:()=>sim,isRunning:()=>running});
 sidebar=installSidebar(()=>{if(client.ready)void sendView().catch(()=>{});});
 installHelp();
 update();requestAnimationFrame(frame);
-void client.init().then(async()=>{syncWorldFoodEditor();await command('speed',{value:10*Number(element('speed').value),substeps:Number(element('speed').value)<=.04});await sendView();}).catch(error=>{element('error').textContent=error.message;});
+void client.init().then(async()=>{syncWorldFoodEditor();await command('speed',{value:10*Number(element('speed').value),substeps:Number(element('speed').value)<=.1});await sendView();}).catch(error=>{element('error').textContent=error.message;});

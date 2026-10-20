@@ -10,7 +10,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parent.parent
 FILES = [ROOT / 'AGENTS.md', ROOT / 'README.md', ROOT / 'README.ru.md', *sorted((ROOT / 'docs').rglob('*.md'))]
-REQUIRED = ['START_HERE.md', 'architecture.md', 'current-model.md', 'decisions.md', 'next-memory.md', 'verification.md']
+REQUIRED = ['START_HERE.md', 'architecture.md', 'mechanics-reference.md', 'decisions.md', 'future-ideas.md', 'work/current.md', 'workflows/context.md', 'workflows/local.md', 'templates/contract.md', 'verification.md']
 errors = []
 for name in REQUIRED:
     if not (ROOT / 'docs' / name).is_file():
@@ -45,11 +45,10 @@ experience:EXPERIENCE_SIZE,features:FEATURE_NAMES.length,bodyWeights:BODY_WEIGHT
 """
 result = subprocess.run(['node', '--input-type=module', '-e', js], cwd=ROOT, text=True, capture_output=True, check=True)
 facts = json.loads(result.stdout)
-start = (ROOT / 'docs' / 'START_HERE.md').read_text(encoding='utf-8')
-current = (ROOT / 'docs' / 'current-model.md').read_text(encoding='utf-8')
+current = (ROOT / 'docs' / 'mechanics-reference.md').read_text(encoding='utf-8')
 checks = [
-    (start, f"{facts['width']}×{facts['height']}", 'размер карты'),
-    (start, f"{facts['setGenes']} наследуемых", 'размер текущего генома'),
+    (current, f"{facts['width']}×{facts['height']}", 'размер карты'),
+    (current, f"{facts['setGenes']} наследуемых", 'размер текущего генома'),
     (current, f"v{facts['setVersion']}", 'текущая схема'),
 ]
 

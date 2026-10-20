@@ -16,16 +16,18 @@ import {geographyLabel} from './geography.js';
 import {installGenomeAnalysis} from './genome-analysis-ui.js';
 import {installBenchmarkUI} from './benchmark-ui.js';
 import {createLabReportBundle,interruptedLabReport} from './lab-reports.js';
+import {installExperimentUI,downloadExperiment} from './experiment-ui.js';
 import {installHistoryUI} from './history-ui.js';
 import {createHelpButton} from './help.js';
 const byId=id=>document.getElementById(id),number=v=>v===null||v===undefined?'—':Number(v).toFixed(1);
 function download(name,data){const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function cell(value){const td=document.createElement('td');td.textContent=value;return td;}
-export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerformanceReport=()=>null,getWorldObservation}){
+export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerformanceReport=()=>null,getWorldObservation,getWorldState,suspendWorld,resumeWorld}){
  const tabs=['world','history','tests','analysis','about'];
  installGenomeAnalysis();
- let current='world';
- const historyUI=installHistoryUI({getSimulation});
+ let current='world',constructorUI=null;
+ const testPages=['templates','constructor','runs','benchmark','mechanisms'];
+ const historyUI=installHistoryUI({getSimulation:()=>constructorUI?.getSimulation()??getSimulation(),getComparisons:()=>constructorUI?.comparisons()});
  const reports={mechanisms:null,benchmark:null,long:null};
  let testPage='mechanisms';
  let jobReport=null,active=false,stopping=false,pending=[],workers=[],benchBase=null,build=null,benchmarkUI=null;
@@ -64,16 +66,16 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  restore();
  function updateExportButton(){byId('tests-export').disabled=!Object.values(reports).some(Boolean);}
  function selectTestPage(name){
-  testPage=name;
-  for(const tab of ['mechanisms','benchmark','long']){
+  testPage=name;byId('legacy-test-status').hidden=!['mechanisms','benchmark','long'].includes(name);
+  for(const tab of [...testPages,'long']){
    const selected=tab===name;byId(`test-tab-${tab}`).setAttribute('aria-selected',String(selected));byId(`test-tab-${tab}`).tabIndex=selected?0:-1;byId(`test-panel-${tab}`).hidden=!selected;
   }
   renderTests();
  }
- for(const name of ['mechanisms','benchmark','long']){
+ for(const name of testPages){
   const button=byId(`test-tab-${name}`);button.addEventListener('click',()=>selectTestPage(name));
   button.addEventListener('keydown',event=>{
-   const names=['mechanisms','benchmark','long'];let index=names.indexOf(testPage);
+   const names=testPages;let index=names.indexOf(testPage);
    if(event.key==='ArrowRight')index=(index+1)%names.length;else if(event.key==='ArrowLeft')index=(index+names.length-1)%names.length;
    else if(event.key==='Home')index=0;else if(event.key==='End')index=names.length-1;else return;
    event.preventDefault();selectTestPage(names[index]);byId(`test-tab-${names[index]}`).focus();
@@ -83,7 +85,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  function selectTab(name){
   current=name;onTabChange?.(name);
   for(const tab of tabs){byId(`tab-${tab}`).setAttribute('aria-selected',String(tab===name));byId(`tab-${tab}`).tabIndex=tab===name?0:-1;byId(`panel-${tab}`).hidden=tab!==name;}
-  if(name==='history')renderHistory(true);if(name==='tests')renderTests();
+  byId('history-drawer-left-handle').hidden=name!=='history';if(name==='history')renderHistory(true);if(name==='tests')renderTests();
  }
  for(const name of tabs){
   const button=byId(`tab-${name}`);button.tabIndex=name==='world'?0:-1;button.addEventListener('click',()=>selectTab(name));
@@ -91,6 +93,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  }
  function renderHistory(force=false){if(current==='history'||force)historyUI.refresh(force);}
  async function exportWorldObservation(){
+  const selected=constructorUI?.report();if(selected){try{await downloadExperiment('big-evolution-experiment-lives.json',{format:'big-evolution-lives',version:4,modelVersion:MODEL_VERSION,...selected});}catch(error){byId('history-error').textContent='Ошибка экспорта: '+error.message;}return;}
   try{
   const s=await getWorldObservation();download(`big-evolution-lives-seed-${s.seed}-step-${s.tick}.json`,
    {format:'big-evolution-lives',version:4,modelVersion:MODEL_VERSION,build,createdAt:new Date().toISOString(),seed:s.seed,
@@ -112,7 +115,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
   return validateExperimentConfig({seeds:byId('test-seeds').value.split(/[\s,;]+/).filter(Boolean).map(Number),steps:Number(byId('test-steps').value),parallel:Number(byId('test-parallel').value),population:Number(byId('test-founders').value),limit:Number(byId('test-limit').value),geography:byId('test-geography').value,reproduction:byId('test-reproduction').value,...readFoodControls('test-'),modes:BRAIN_MODES.filter(m=>byId(`mode-${m.id}`).checked).map(m=>m.id),mutations:byId('test-mutations').checked,saveGenomes:byId('test-save-genomes').checked,upgradeMutationGenes:byId('tests-upgrade-mutations').checked,baseGenome:benchBase});
  }
  async function start(kind,ids=null){
-  if(active||benchmarkUI?.isActive())return;if(typeof Worker==='undefined'){byId('tests-error').textContent='Этот браузер не поддерживает Workers. Открой лабораторию в другом браузере.';return;}
+  if(active||benchmarkUI?.isActive()||constructorUI?.isActive())return;if(typeof Worker==='undefined'){byId('tests-error').textContent='Этот браузер не поддерживает Workers. Открой лабораторию в другом браузере.';return;}
   try{
    const reportKey=kind==='checks'?'mechanisms':'long';jobReport=reports[reportKey];
    const config=kind==='checks'?{ids:ids??BROWSER_CHECKS.map(c=>c.id)}:configFromUI();
@@ -166,8 +169,8 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
   finishIfReady();renderTests();queuePersist();
  }
  function renderTests(){
-  const busy=active||benchmarkUI?.isActive();
-  byId('run-checks').disabled=busy;byId('run-experiments').disabled=busy;benchmarkUI?.refresh();
+  const busy=active||benchmarkUI?.isActive()||constructorUI?.isActive();
+  byId('run-checks').disabled=busy;byId('run-experiments').disabled=busy;benchmarkUI?.refresh();constructorUI?.refresh();
   byId('tests-stop').disabled=!active;byId('tests-force-stop').disabled=!active;
   updateExportButton();byId('tests-base-file').disabled=active;byId('tests-upgrade-mutations').disabled=active;byId('tests-clear-base').disabled=active||!benchBase;
   const mechanismReport=reports.mechanisms??{checks:[],jobs:[]},longReport=reports.long??{checks:[],jobs:[],build:null};
@@ -206,8 +209,12 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  window.addEventListener('pagehide',()=>{for(const key of ['mechanisms','benchmark','long'])if(reports[key])persist(key);});
  // Настройки испытаний независимы от обычного мира и снимком уходят в jobs.
  installFoodControls('test-');
- benchmarkUI=installBenchmarkUI({pauseWorld,isOtherTestActive:()=>active,onBusyChange:()=>renderTests(),onReportChange:(next,finished)=>{reports.benchmark=next;updateExportButton();if(finished)persist('benchmark');else queuePersist('benchmark');}});
+ benchmarkUI=installBenchmarkUI({pauseWorld,isOtherTestActive:()=>active||Boolean(constructorUI?.isActive()),onBusyChange:()=>renderTests(),onReportChange:(next,finished)=>{reports.benchmark=next;updateExportButton();if(finished)persist('benchmark');else queuePersist('benchmark');}});
+ constructorUI=installExperimentUI({getSimulation,getWorldState,pauseWorld:suspendWorld,resumeWorld,
+  isOtherActive:()=>active||benchmarkUI.isActive(),onBusyChange:()=>renderTests(),openStatistics:()=>selectTab('history'),
+  sourceChanged:(reset=false)=>{if(reset)historyUI.reset();renderHistory(true);}});
+ selectTestPage('constructor');
  const initialTab=new URL(location.href).searchParams.get('tab');
  if(tabs.includes(initialTab))selectTab(initialTab);
- renderTests();return {isBenchmarkActive:()=>benchmarkUI.isActive(),refresh:()=>renderHistory(),onRestart:()=>{historyUI.reset();if(current==='history')renderHistory(true);},currentTab:()=>current,exportWorldObservation};
+ renderTests();return {isBenchmarkActive:()=>active||benchmarkUI.isActive()||constructorUI.isActive(),refresh:()=>renderHistory(),onRestart:()=>{historyUI.reset();if(current==='history')renderHistory(true);},currentTab:()=>current,exportWorldObservation};
 }
