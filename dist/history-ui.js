@@ -16,9 +16,10 @@ import {analysisWorlds} from './statistical-series.js';
 import {populationCohorts} from './population-statistics.js';
 import {installPairComparison} from './pair-comparison-ui.js';
 import {installHistoryDifferences} from './history-differences-ui.js';
+import {installAnalysisBuilder} from './analysis-builder-ui.js';
 const format=(v,digits=1)=>v===null||v===undefined?'—':Number(v).toLocaleString('ru-RU',{maximumFractionDigits:Math.min(1,digits)});
 const SENSITIVITY_TICKS=Object.freeze([-100,-80,-60,-40,-20,0,20,40,60,80,100]);
-export function installHistoryUI({root=document,getSimulation,getComparisons=()=>null,prepareSimulation=()=>null}){
+export function installHistoryUI({root=document,getSimulation,getComparisons=()=>null,prepareSimulation=()=>null,getExperiment=()=>null}){
  const drawComparison=createComparisonCharts();
  const byId=id=>root.getElementById(id),make=(tag,text)=>{const e=root.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
  let cachedReport=null,cachedKey='',data=null,food=[],allRows=[],tableRows=[],page=0,selected=null,selectedLife=null,dirtyTable=true;
@@ -62,7 +63,10 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  const pairs=installPairComparison({root,onChange:()=>drawCharts()});
  const differences=installHistoryDifferences({root,cards:chartCards,onChange:()=>drawCharts()});
  for(const [metric,control]of [['survival','history-survival-controls'],['interruptions','history-interruption-controls']])chartCards.find(c=>c.m.id===metric).card.append(byId(control));
+ const builder=installAnalysisBuilder({root,getExperiment});
  const display=byId('history-display'),picked=new Set(),pickers=new Map();
+ if(byId('history-builder-screen')){const option=make('option','Конструктор анализа');option.value='builder';display.append(option);}
+ byId('history-open-builder')?.addEventListener('click',()=>{display.value='builder';applyDisplay();});
  const groups=[
   {id:'survival',label:'Выживание',charts:['population','lifetime','survival','curve']},
   {id:'behavior',label:'Поведение',charts:['movement','eating','reviews','interruptions','brainCalls']},
@@ -82,7 +86,8 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  function applyDisplay(){
   const mode=display.value||'all';if(mode!=='custom'){picked.clear();for(const id of mode==='all'?pickers.keys():groups.find(g=>g.id===mode)?.charts??[])picked.add(id);}
   byId('history-pair-screen').hidden=mode!=='pair';
-  for(const id of ['history-summary','history-causes','history-cohorts','history-selection-controls'])byId(id).hidden=mode==='pair';
+  if(byId('history-builder-screen')){byId('history-builder-screen').hidden=mode!=='builder';if(mode==='builder')builder.refresh();}
+  for(const id of ['history-summary','history-causes','history-cohorts','history-selection-controls'])byId(id).hidden=['pair','builder'].includes(mode);
   for(const [id,input]of pickers)input.checked=picked.has(id);
   for(const {m,card}of chartCards)card.hidden=!picked.has(m.id);
   for(const {m,card}of histogramCards)card.hidden=!picked.has('distribution-'+m.id);
@@ -91,6 +96,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  }
  display.addEventListener('change',applyDisplay);applyDisplay();
  function drawCharts(){
+  if(display.value==='builder'){pairs.suspend();differences.update({pair:null,options:options(),start:rangeStart,end:rangeEnd});estimates.update({sources:[],options:options(),start:rangeStart,end:rangeEnd});builder.refresh();return;}
   if(!data)return;
   const comparison=getComparisons(),bandMode=byId('history-band-mode').value||'confidence';
   const pair=pairs.selection(comparison);
@@ -199,6 +205,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  curveCanvas.addEventListener('pointermove',e=>{if(!curveView?.points.length)return;const age=Math.round(chartTimeAt(curveCanvas,e.clientX,0,curveMaximum)*SUBSTEPS)/SUBSTEPS;curveDescription(survivalAtAge(curve,age));});
  curveCanvas.addEventListener('keydown',e=>{if(!curveView?.points.length)return;if(e.key==='ArrowRight')curveIndex++;else if(e.key==='ArrowLeft')curveIndex--;else if(e.key==='Home')curveIndex=0;else if(e.key==='End')curveIndex=curveView.points.length-1;else return;e.preventDefault();curveIndex=Math.max(0,Math.min(curveView.points.length-1,curveIndex));curveDescription();drawCharts();});
  function refresh(force=false){
+  if(display.value==='builder'){builder.refresh();return;}
   let pending;try{pending=prepareSimulation({start:rangeStart,end:rangeEnd,width:options().width,curveStart:Number(byId('history-curve-start').value)});}catch(error){byId('history-error').textContent=error.message;return;}
   if(pending){
    if(awaiting!==pending){awaiting=pending;byId('history-load-state').textContent='Загрузка выбранных миров и периодов… До завершения показаны предыдущие данные.';

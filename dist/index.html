@@ -133,11 +133,12 @@
  <div class="history-display-controls"><label>Экран <select id="history-display"><option value="survival" selected>Выживание</option><option value="behavior">Поведение</option><option value="resources">Ресурсы</option><option value="reproduction">Размножение</option><option value="genome">Наследуемые свойства</option><option value="distributions">Распределения чувствительностей</option><option value="table">Таблица</option><option value="pair">Сравнение пары</option><option value="all">Все графики и таблица</option><option value="custom">Мой набор графиков</option></select></label><details class="history-chart-picker"><summary>Выбрать графики для сравнения</summary><div id="history-chart-options" class="history-chart-options"></div></details></div>
  </div></details>
  <div class="history-main">
- <div class="section-title"><div><span class="eyebrow">ПРОЖИТЫЕ ЖИЗНИ</span><h2>Итоги и текущие наблюдения</h2></div><button id="history-export">Скачать истории (.json)</button></div>
+ <div class="section-title"><div><span class="eyebrow">ПРОЖИТЫЕ ЖИЗНИ</span><h2>Итоги и текущие наблюдения</h2></div><button id="history-open-builder">Конструктор анализа</button><button id="history-export">Скачать истории (.json)</button></div>
  <p id="experiment-stat-note" class="note"></p><p class="note" data-ui-text="description17"></p>
  <p id="history-summary" class="lab-summary"></p><p id="history-causes" class="note"></p><p id="history-cohorts" class="note"></p>
  <p id="history-analysis-state" class="note" role="status"></p>
  <p id="history-warning" class="note" role="status"></p><p id="history-load-state" class="note" role="status"></p><p id="history-error" class="error" role="alert"></p>
+ <section id="history-builder-screen" class="panel" hidden></section>
  <section id="history-pair-screen" hidden>
   <h2>Сравнение выбранной пары</h2><div class="lab-controls"><label>Возраст дожития, Т<input id="pair-survival-age" type="number" min="1" step="1" value="100"></label><label>Прерывания<select id="pair-interruption-kind"><option value="all">Отмена и физический срыв</option><option value="voluntary">Добровольная отмена</option><option value="physical">Физический срыв</option></select></label></div><div class="lab-controls pair-controls"><label>Сводка<select id="pair-statistic"><option value="both">Среднее и медиана</option><option value="mean">Среднее</option><option value="median">Медиана</option></select></label></div>
   <p id="pair-label-a"></p><p id="pair-label-b"></p><p id="pair-period" class="note"></p><details><summary>Как читать сравнение и доверительные интервалы</summary><p class="note" data-ui-text="pair-method"></p></details><p id="pair-status" class="note" role="status"></p>

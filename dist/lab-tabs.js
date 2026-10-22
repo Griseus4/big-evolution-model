@@ -27,7 +27,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  installGenomeAnalysis();
  let current='world',constructorUI=null;
  const testPages=['templates','constructor','runs','benchmark','mechanisms'];
- const historyUI=installHistoryUI({getSimulation:()=>constructorUI?.getSimulation()??getSimulation(),getComparisons:()=>constructorUI?.comparisons(),prepareSimulation:options=>constructorUI?.prepareStatistics(options)});
+ const historyUI=installHistoryUI({getSimulation:()=>constructorUI?.getSimulation()??getSimulation(),getComparisons:()=>constructorUI?.comparisons(),prepareSimulation:options=>constructorUI?.prepareStatistics(options),getExperiment:()=>constructorUI?.analysisSeries()});
  const reports={mechanisms:null,benchmark:null,long:null};
  let testPage='mechanisms';
  let jobReport=null,active=false,stopping=false,pending=[],workers=[],benchBase=null,build=null,benchmarkUI=null;
