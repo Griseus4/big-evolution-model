@@ -14,27 +14,28 @@ class Element{
  replaceChildren(...children){this.children=[];this.append(...children);}
  addEventListener(key,fn){this.listeners[key]=fn;}
  setAttribute(k,v){this.attributes[k]=v;}
+ focus(){this.focused=true;}
  emit(key,event={}){return this.listeners[key]?.({target:this,preventDefault(){},...event});}
  getBoundingClientRect(){return {width:600,left:0,height:this.height??72};}
  getContext(){return {setTransform(){},clearRect(){},beginPath(){},moveTo(...v){assert.ok(v.every(Number.isFinite));},lineTo(...v){assert.ok(v.every(Number.isFinite));},stroke(){},fill(){},fillRect(...v){assert.ok(v.every(Number.isFinite));},arc(...v){assert.ok(v.every(Number.isFinite));},setLineDash(){},fillText(){}};}
 }
-function boot(){
+function boot({prepareSimulation=()=>null}={}){
  const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8'),elements=new Map(),created=[];
  for(const m of html.matchAll(/<([a-z]+)\b[^>]*\bid="([^"]+)"[^>]*>/g)){const e=new Element(m[1]),value=m[0].match(/\bvalue="([^"]*)"/);if(value)e.value=value[1];elements.set(m[2],e);}
  for(const m of html.matchAll(/<select\b[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/select>/g)){const options=[...m[2].matchAll(/<option\b([^>]*)value="([^"]+)"([^>]*)>/g)],chosen=options.find(o=>/selected/.test(o[1]+o[3]))??options[0];if(chosen)elements.get(m[1]).value=chosen[2];}
  const rows=Array.from({length:125},(_,i)=>({id:i+1,parentId:i%2?1:null,founderId:1,generation:i%2,born:i,age:20,status:'dead',observedSteps:20,moved:i,eaten:2,hungerSteps:1,meanEnergy:60,cause:'starvation'}));
  const report={tick:300,dead:rows,living:[],omittedDetails:0,completed:{count:125,meanAge:20,medianAge:20},byCause:{starvation:{count:125}},foodAvailability:{schema:'ground-food-exposure-v1',prefix:Float64Array.from({length:301},(_,i)=>i*100),substeps:0,partialSum:0}};
  const toolbar=new Element(),sim={tick:300,lives:report},root={getElementById:id=>{assert.ok(elements.has(id),id);return elements.get(id);},querySelector:selector=>selector==='.global-toolbar'?toolbar:null,createElement:tag=>{const e=new Element(tag);created.push(e);return e;}};
- const ui=installHistoryUI({root,getSimulation:()=>sim});return {elements,created,ui,sim,toolbar};
+ const ui=installHistoryUI({root,getSimulation:()=>sim,prepareSimulation});return {elements,created,ui,sim,toolbar};
 }
 test('standard copy becomes an editable native card in the same grid, with persistence, new category and restore',async()=>{
  const old=globalThis.localStorage,stored=new Map();globalThis.localStorage={getItem:k=>stored.get(k)??null,setItem:(k,v)=>stored.set(k,v)};
  try{const b=boot();b.ui.refresh();const walk=n=>[n,...n.children.flatMap(walk)],grid=b.elements.get('history-charts'),canvas=b.created.find(n=>n.id==='history-chart-lifetime'),card=grid.children.find(n=>n.children.includes(canvas));
   walk(card).find(n=>n.textContent==='Создать копию').emit('click');const editor=b.elements.get('history-builder-screen'),fields=walk(editor),name=fields.find(n=>n.name==='catalogue-name');name.value='Срок жизни';fields.find(n=>n.name==='catalogue-newCategory').value='Моя категория';await fields.find(n=>n.tagName==='form').emit('submit');
-  let state=JSON.parse(stored.get('big-evolution-chart-catalogue-v1'));assert.equal(state.charts.length,1);assert.equal(state.charts[0].metric,'lifetime');assert.equal(state.categories[0].label,'Моя категория');assert.equal(b.elements.get('history-display').value,state.categories[0].id);
+  let state=JSON.parse(stored.get('big-evolution-chart-catalogue-v2'));assert.equal(state.charts.length,1);assert.equal(state.charts[0].metric,'lifetime');assert.equal(state.categories[0].label,'Моя категория');assert.equal(b.elements.get('history-display').value,state.categories[0].id);
   const copy=grid.children.find(n=>n.children.some(c=>c.tagName==='h3'&&c.textContent==='Срок жизни'));assert.ok(copy&&!copy.hidden);assert.ok(walk(copy).some(n=>n.tagName==='select'&&n.value==='original'));
-  walk(card).find(n=>n.textContent==='Скрыть').emit('click');assert.equal(card.hidden,true);b.elements.get('history-catalogue-controls').children.find(n=>n.textContent==='Восстановить стандартные').emit('click');state=JSON.parse(stored.get('big-evolution-chart-catalogue-v1'));assert.ok(!state.hidden.includes('lifetime'));assert.equal(state.charts.length,1);
-  walk(copy).find(n=>n.textContent==='Редактировать').emit('click');fields.find(n=>n.name==='catalogue-name').value='Обновлённая копия';await fields.find(n=>n.tagName==='form').emit('submit');assert.equal(grid.children.filter(n=>n.children.some(c=>c.tagName==='h3'&&c.textContent==='Срок жизни')).length,0);assert.equal(JSON.parse(stored.get('big-evolution-chart-catalogue-v1')).charts.length,1);
+  walk(card).find(n=>n.textContent==='Скрыть').emit('click');assert.equal(card.hidden,true);b.elements.get('history-catalogue-controls').children.find(n=>n.textContent==='Восстановить стандартные').emit('click');state=JSON.parse(stored.get('big-evolution-chart-catalogue-v2'));assert.ok(!state.hidden.includes('lifetime'));assert.equal(state.charts.length,1);
+  walk(copy).find(n=>n.textContent==='Редактировать').emit('click');fields.find(n=>n.name==='catalogue-name').value='Обновлённая копия';await fields.find(n=>n.tagName==='form').emit('submit');assert.equal(grid.children.filter(n=>n.children.some(c=>c.tagName==='h3'&&c.textContent==='Срок жизни')).length,0);assert.equal(JSON.parse(stored.get('big-evolution-chart-catalogue-v2')).charts.length,1);
   const again=boot();again.ui.refresh();assert.ok(again.elements.get('history-charts').children.some(n=>n.children.some(c=>c.tagName==='h3'&&c.textContent==='Обновлённая копия')));
  }finally{if(old===undefined)delete globalThis.localStorage;else globalThis.localStorage=old;}
 });
@@ -43,6 +44,11 @@ test('native survival copies keep shared controls when the original is hidden',a
  try{const b=boot();b.ui.refresh();b.elements.get('history-open-builder').emit('click');const editor=b.elements.get('history-builder-screen'),walk=n=>[n,...n.children.flatMap(walk)],fields=walk(editor);fields.find(n=>n.name==='catalogue-type').value='metric:survival';fields.find(n=>n.name==='catalogue-name').value='Моё дожитие';await fields.find(n=>n.tagName==='form').emit('submit');
   const copy=b.elements.get('history-charts').children.find(n=>n.children.some(c=>c.textContent==='Моё дожитие')),input=walk(copy).find(n=>n.type==='number');assert.ok(input);input.value=50;input.emit('change');assert.equal(b.elements.get('history-survival-age').value,50);assert.equal(b.ui.getSummary().survivalAge,50);
  }finally{if(old!==undefined)globalThis.localStorage=old;}
+});
+test('creating a pinned native copy requests its extra archive window and displays its override',async()=>{
+ const previous=globalThis.localStorage;delete globalThis.localStorage;const calls=[];
+ try{const b=boot({prepareSimulation:input=>{calls.push(input);return null;}});b.ui.refresh();b.elements.get('history-period-to').value='50';b.elements.get('history-period-to').emit('change');const walk=n=>[n,...n.children.flatMap(walk)],original=b.elements.get('history-charts').children.find(c=>c.children.some(n=>n.id==='history-chart-lifetime'));walk(original).find(n=>n.textContent==='Создать копию').emit('click');let nodes=walk(b.elements.get('history-builder-screen'));nodes.find(n=>n.name==='catalogue-name').value='Отдельный период';const add=nodes.find(n=>n.name==='catalogue-pin-add');add.value='period';add.emit('change');nodes=walk(b.elements.get('history-builder-screen'));nodes.find(n=>n.name==='pin-period-start').value='100';nodes.find(n=>n.name==='pin-period-end').value='120';await nodes.find(n=>n.tagName==='form').emit('submit');assert.equal(b.elements.get('history-error').textContent,'');assert.deepEqual(calls.at(-1).windows,[[100,120]]);assert.equal(b.ui.getSummary().domainEnd,50);const copy=b.elements.get('history-charts').children.find(c=>c.children.some(n=>n.textContent==='Отдельный период'));assert.ok(walk(copy).some(n=>n.textContent.includes('Закреплено: рождения [100; 120)')));const canvas=walk(copy).find(n=>n.tagName==='canvas');canvas.emit('pointermove',{clientX:200});assert.ok(walk(copy).some(n=>n.textContent.includes('Рождения [100; 120)')));b.ui.reset();
+ }finally{if(previous!==undefined)globalThis.localStorage=previous;}
 });
 test('formula cards render in the same category/grid, using the shared period and life filter',async()=>{
  const old=globalThis.Worker,oldStorage=globalThis.localStorage;delete globalThis.localStorage;let done;const finished=new Promise(r=>done=r);

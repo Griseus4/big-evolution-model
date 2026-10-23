@@ -21,8 +21,8 @@ export function installHistoryDifferences({root=document,cards,onChange,createCl
   return s?`B−A: ${format(s.difference)}${ci?` [${format(ci.low)}; ${format(ci.high)}], 95% ДИ`:''}; полных пар ${p.pairs}, пропусков ${p.excludedCount??p.excluded?.length??0}. ${p.reason??''}`:'Нет полных пар или расчёт ещё не готов.';
  }
  function update(input){
-  register();last=input;const visible=cards.filter(c=>!c.card.hidden&&isDifference(c));
-  for(const c of cards){c.difference.hidden=!isDifference(c);if(c.numeric)c.numeric.hidden=isDifference(c);}
+  register();last=input;const active=input.cards??cards,visible=active.filter(c=>!c.card.hidden&&isDifference(c));
+  for(const c of active){c.difference.hidden=!isDifference(c);if(c.numeric)c.numeric.hidden=isDifference(c);}
   if(!visible.length||!input.pair)client.suspend();
   else client.update({...input.pair,metrics:[...new Set(visible.map(c=>c.m.id))],options:{...input.options,start:input.start,end:input.end},weightMode:input.weightMode,series:true});
   for(const c of visible){

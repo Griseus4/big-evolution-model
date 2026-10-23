@@ -9,6 +9,7 @@ import {COMPUTATION_WORKER_COUNTS} from './computation-settings.js';
 import {validateGenomeFile} from './evolution.js';
 import {downloadJson,snapshotExperiment,saveJsonBlob} from './json-export.js';
 import {experimentArchive,openExperimentArchive,readExperimentFile,materializeExperiment,archiveOrigin,archiveWindowReady,loadArchiveWindow} from './experiment-archive.js';
+import {normalizeChartWindows} from './chart-context.js';
 import {historyDomainEnd} from './history-window.js';
 import {registerAnalysisWorlds,analysisWorlds} from './statistical-series.js';
 import {installExperimentGrouping,groupedExperimentSources} from './experiment-grouping.js';
@@ -119,12 +120,12 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
   const pairVariants=comparisons?grouped.map(({report,...rest})=>rest):null;
   statsCache={source:selected,weight:weight.value,report:result,comparisons,pairVariants,error:problem};return statsCache;
  }
- function prepareStatistics({start=0,end=null,width=100,curveStart=0}){
+ function prepareStatistics({start=0,end=null,width=100,curveStart=0,windows:extra=[]}){
   const selected=source.value;if(selected==='current'||!report)return null;
   if(!Number.isSafeInteger(width)||width<1||!Number.isSafeInteger(start)||start<0||end!==null&&(!Number.isSafeInteger(end)||end<=start)||!Number.isSafeInteger(curveStart)||curveStart<0)throw new Error('Неверный период статистики.');
   const attempts=report.groups.flatMap(g=>selected==='compare'?g.status==='completed'?g.attempts.filter(a=>a.id===g.selectedId):[]:selected==='variant:'+g.variantId?g.status==='completed'?g.attempts.filter(a=>a.id===g.selectedId):[]:g.attempts.filter(a=>selected==='attempt:'+a.id));
   const targets=attempts.map(a=>({a,key:a.lives?'lives':'live'})).filter(t=>t.a[t.key]);
-  const last=end??historyDomainEnd(Math.max(0,...targets.map(t=>t.a[t.key].tick)),width),windows=[[start,last],[curveStart,curveStart+width]];
+  const last=end??historyDomainEnd(Math.max(0,...targets.map(t=>t.a[t.key].tick)),width),windows=normalizeChartWindows([[start,last],[curveStart,curveStart+width],...extra]);
   if(targets.every(t=>archiveWindowReady(t.a[t.key],windows)))return null;
   const key=JSON.stringify([report.createdAt,selected,windows]);if(windowTask&&windowKey===key)return windowTask;
   const current=report;windowKey=key;

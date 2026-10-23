@@ -6,9 +6,9 @@ An artificial life simulation with evolving neural agents, individual learning, 
 
 Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments.
 
-**Status:** experimental prototype · **Current implementation:** 0.48.0 · **Interface:** Russian.
+**Status:** experimental prototype · **Current implementation:** 0.49.0 · **Interface:** Russian.
 
-Version 0.48.0 unifies standard and custom charts in one catalogue. Group all familiar experiment charts by settings; hide or copy built-ins, create formulas and categories, and export the catalogue. Shared period, filters and weights apply throughout. World mechanics are unchanged. [User guide (Russian)](docs/analysis-builder-guide.md), [release notes](docs/updates/v048-chart-catalogue.md).
+Version 0.49.0 adds compact chart templates with pinned settings. Dashboard filters and grouping remain shared; each editable template can override applicable birth periods, bin widths, life status and origin. Pins are saved in catalogue v2; existing v1 catalogues still load. World mechanics are unchanged. [User guide (Russian)](docs/analysis-builder-guide.md), [release notes](docs/updates/v049-chart-settings.md).
 
 Version 0.46.0 adds digestion time per food portion to experiment settings and factors. Compare custom values, including combinations with genome sensitivities; the default remains 20 simulation steps. Compact `.beexp` archives and JSON import/export remain available. [Release notes](docs/updates/v046-digestion-experiments.md).
 

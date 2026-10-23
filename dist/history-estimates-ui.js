@@ -3,14 +3,14 @@ import {formatStatistic as format,estimateCell} from './statistics-format.js';
 const interval=(s,stat)=>s?.confidence?.[stat]?` [${format(s.confidence[stat].low)}; ${format(s.confidence[stat].high)}]`:' [ДИ недоступен]';
 /** Числа относятся ко всему выбранному периоду, наведение — к одной корзине.
  * DOM чисел заменяется только при новом результате фонового расчёта. */
-export function installHistoryEstimates({root=document,cards,onChange}){
+export function installHistoryEstimates({root=document,cards,onChange,createClient=createStatisticsClient,showStatus=true}){
  const make=(tag,text)=>{const n=root.createElement(tag);if(text!==undefined)n.textContent=text;return n;},rendered=new WeakMap();
- const client=createStatisticsClient({onChange}),state=root.getElementById('history-analysis-state');let sources=[];
+ const client=createClient({onChange}),state=root.getElementById('history-analysis-state');let sources=[];
  function register(){for(const card of cards)if(!card.numeric){card.numeric=make('div');card.numeric.className='history-numeric-summary';card.card.append(card.numeric);}}
  register();
  function update(input){
-  register();sources=input.sources;const visible=cards.filter(c=>!c.card.hidden&&c.view?.value!=='difference');client.update({...input,metrics:[...new Set(visible.map(c=>c.m.id))]});
-  const progress=client.state();state.textContent=progress.error??(progress.total?progress.completed<progress.total?`Статистика в фоне: ${progress.completed}/${progress.total} показателей. Графики обновятся по готовности.`:'Числа — за выбранный период. Полосы ДИ приближённые, поточечные; при 5–9 мирах особенно осторожная интерпретация.':'');
+  register();sources=input.sources;const visible=(input.cards??cards).filter(c=>!c.card.hidden&&c.view?.value!=='difference');client.update({...input,metrics:[...new Set(visible.map(c=>c.m.id))]});
+  const progress=client.state();if(showStatus)state.textContent=progress.error??(progress.total?progress.completed<progress.total?`Статистика в фоне: ${progress.completed}/${progress.total} показателей. Графики обновятся по готовности.`:'Числа — за выбранный период. Полосы ДИ приближённые, поточечные; при 5–9 мирах особенно осторожная интерпретация.':'');
   for(const c of visible){
    const results=sources.map(s=>client.get(s.id,c.m.id)),key=results.map((r,i)=>r??sources[i].report);
    const previous=rendered.get(c);if(previous&&previous.length===key.length&&previous.every((r,i)=>r===key[i]))continue;rendered.set(c,key);

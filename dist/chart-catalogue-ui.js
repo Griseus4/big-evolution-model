@@ -3,16 +3,17 @@ import {ANALYSIS_FIELDS,ANALYSIS_DEFAULT} from './analysis-builder-core.js';
 import {HERITABLE_METRICS} from './heritable-statistics.js';
 import {saveJsonBlob} from './json-export.js';
 import {analysisPlan} from './analysis-builder-core.js';
+import {installChartPins} from './chart-pins-ui.js';
 import {groupingLabel} from './experiment-grouping.js';
-const KEY='big-evolution-chart-catalogue-v1';let serial=0;
+const KEY='big-evolution-chart-catalogue-v2';let serial=0;
 const unique=()=>globalThis.crypto?.randomUUID?.()??`${Date.now()}-${++serial}`;
-export function installChartCatalogue({root=document,onChange=()=>{},getExperiment=()=>null}={}){
+export function installChartCatalogue({root=document,onChange=()=>{},getExperiment=()=>null,getCommon=()=>({start:0,end:100,width:100,origin:'all',mode:'dead'})}={}){
  const host=root.getElementById('history-builder-screen');
  const make=(tag,text)=>{const n=root.createElement(tag);if(text!==undefined)n.textContent=text;return n;};let state=emptyCatalogue(),editing=null;
  const message=make('p');message.setAttribute('role','status');
- try{const value=globalThis.localStorage?.getItem(KEY);if(value)state=validateCatalogue(JSON.parse(value));else{const old=JSON.parse(globalThis.localStorage?.getItem('big-evolution-analysis-v1')??'[]');if(Array.isArray(old)&&old.length)state=validateCatalogue({...state,charts:old.slice(0,50).map(c=>migrateAnalysisTemplate(c,'user-'+unique()))});}}catch{message.textContent='Каталог браузера недоступен или повреждён. Показан стандартный набор; исходное сохранение не перезаписано.';}
- const editor=make('form'),title=make('h3','Создать график'),fields=make('div');fields.className='analysis-builder-grid';const inputs={};
- function control(key,label,choices){const l=make('label',label),n=make(choices?'select':'input');n.name='catalogue-'+key;if(choices)for(const [value,text]of choices){const o=make('option',text);o.value=value;n.append(o);}else n.type='text';inputs[key]=n;l.append(n);fields.append(l);return n;}
+ try{const value=globalThis.localStorage?.getItem(KEY)??globalThis.localStorage?.getItem('big-evolution-chart-catalogue-v1');if(value)state=validateCatalogue(JSON.parse(value));else{const old=JSON.parse(globalThis.localStorage?.getItem('big-evolution-analysis-v1')??'[]');if(Array.isArray(old)&&old.length)state=validateCatalogue({...state,charts:old.slice(0,50).map(c=>migrateAnalysisTemplate(c,'user-'+unique()))});}}catch{message.textContent='Каталог браузера недоступен или повреждён. Показан стандартный набор; исходное сохранение не перезаписано.';}
+ const editor=make('form'),title=make('h3','Создать график'),fields=make('div');fields.className='analysis-builder-grid';const inputs={},labels={};
+ function control(key,label,choices){const l=make('label',label),n=make(choices?'select':'input');n.name='catalogue-'+key;if(choices)for(const [value,text]of choices){const o=make('option',text);o.value=value;n.append(o);}else n.type='text';inputs[key]=n;labels[key]=l;l.append(n);fields.append(l);return n;}
  control('name','Название');control('category','Категория',[]);control('newCategory','Или новая категория');
  const metricTypes=[...CATALOGUE_METRICS.map(m=>['metric:'+m.id,m.label]),...HERITABLE_METRICS.filter(m=>m.signed).map(m=>['histogram:'+m.id,'Распределение: '+m.label]),['curve:curve','Кривая дожития'],['expression:','Собственная формула']];
  control('type','Показатель / тип расчёта',metricTypes);control('expression','Формула');control('filter','Условие отбора');control('unit','Единицы своего показателя');
@@ -20,18 +21,23 @@ export function installChartCatalogue({root=document,onChange=()=>{},getExperime
  control('axis','Ось своей формулы',[['born','Период рождения'],['child','Номер ребёнка']]);const child=control('maxChild','Номера детей от 1 до');child.type='number';child.min=1;child.max=20;child.step=1;
  control('chart','Вид своей формулы',[['line','Линии'],['bar','Столбцы'],['table','Таблица']]);
  const insert=make('select');insert.setAttribute('aria-label','Поля для формулы');for(const [value,label]of [...ANALYSIS_FIELDS,['birthAge(2)','Возраст второго рождения'],['birthAge(N)','Возраст рождения на оси N']]){const o=make('option',`${label} — ${value}`);o.value=value;insert.append(o);}
- const insertButton=make('button','Вставить поле');insertButton.type='button';insertButton.addEventListener('click',()=>{const n=inputs.expression,a=n.selectionStart??n.value.length,b=n.selectionEnd??a;n.value=n.value.slice(0,a)+insert.value+n.value.slice(b);n.focus();});
- const submit=make('button','Сохранить график'),cancel=make('button','Отмена');submit.type='submit';cancel.type='button';cancel.addEventListener('click',()=>{host.hidden=true;});const actions=make('div');actions.className='lab-controls';actions.append(insert,insertButton,submit,cancel);
- const note=make('p','Период, источник, происхождение, веса и группировка общие для каталога. Для своей формулы: age, children == 0, 100 * eaten / age, birthAge(3), birthAge(3) - birthAge(2). Для оси номера ребёнка: birthAge(N). Условие true включает всех. missing(x) проверяет пропуск; деление на ноль даёт пропуск. Стандартные графики сохраняют прежние расчёты.');
- editor.append(title,fields,note,actions);host.replaceChildren(editor,message);host.hidden=true;
+ const insertButton=make('button','Заменить формулу выбранным полем');insertButton.type='button';insertButton.addEventListener('click',()=>{inputs.expression.value=insert.value;inputs.expression.focus();});
+ const submit=make('button','Сохранить график'),cancel=make('button','Отмена');submit.type='submit';cancel.type='button';cancel.addEventListener('click',()=>{host.hidden=true;});const actions=make('div');actions.className='lab-controls';const helpers=make('div');helpers.className='lab-controls';helpers.append(insert,insertButton);actions.append(submit,cancel);
+ const note=make('p','Источник, фильтры миров, группировка и веса задаются в боковой панели. Период и отбор жизней берутся оттуда же, пока ты не закрепишь отдельную настройку. Примеры формул: age, children == 0, birthAge(3); на оси номера ребёнка — birthAge(N). Условие true включает всех, missing(x) проверяет пропуск. Стандартные показатели сохраняют свои единицы и правила.');
+ const pinHost=make('fieldset');pinHost.className='catalogue-pins';pinHost.append(make('legend','Закрепления шаблона'));
+ const definition=()=>{const [kind,metric]=inputs.type.value.split(':');return {kind,metric};};
+ const pins=installChartPins({root,host:pinHost,getDefinition:definition,getCommon});
+ function updateFields(){const formula=inputs.type.value==='expression:';for(const key of ['expression','filter','unit','aggregate','axis','chart'])labels[key].hidden=!formula;labels.maxChild.hidden=!formula||inputs.axis.value!=='child';helpers.hidden=!formula;pins.refresh();}
+ inputs.type.addEventListener('change',updateFields);inputs.axis.addEventListener('change',updateFields);
+ editor.append(title,fields,helpers,pinHost,note,actions);host.replaceChildren(editor,message);host.hidden=true;
  function change(next){next=validateCatalogue(next);try{if(globalThis.localStorage)globalThis.localStorage.setItem(KEY,JSON.stringify(next));else message.textContent='Хранилище браузера недоступно: скачай каталог в файл.';}catch{message.textContent='Не удалось сохранить каталог в браузере. Скачай его в файл.';}state=next;onChange(state);}
  const guard=fn=>async event=>{try{await fn(event);}catch(e){message.textContent=e.message;host.hidden=false;}};
  function edit(def=null){editing=def&&!def.standard?def:null;host.hidden=false;title.textContent=def?.standard?'Создать редактируемую копию':editing?'Редактировать график':'Создать график';const categories=catalogueCategories(state);inputs.category.replaceChildren(...categories.map(c=>{const o=make('option',c.label);o.value=c.id;return o;}));inputs.category.value=def?.category??'resources';inputs.newCategory.value='';inputs.name.value=def?(def.standard?'Копия: ':'')+def.name:'Мой график';inputs.type.value=def?def.kind+':'+(def.metric??''):'expression:';
   const experiment=getExperiment();inputs.axis.replaceChildren(...[['born','Период рождения'],['child','Номер ребёнка'],...(experiment?analysisPlan(experiment.plan).factors.map(f=>[f.key,groupingLabel(f.key)]):[])].map(([value,text])=>{const o=make('option',text);o.value=value;return o;}));
-  const recipe=def?.recipe??ANALYSIS_DEFAULT;for(const key of ['expression','filter','aggregate','axis','maxChild','chart'])inputs[key].value=String(recipe[key]);inputs.unit.value=def?.unit??'';}
+  const recipe=def?.recipe??ANALYSIS_DEFAULT;for(const key of ['expression','filter','aggregate','axis','maxChild','chart'])inputs[key].value=String(recipe[key]);inputs.unit.value=def?.unit??'';pins.fill(def?.pins??{});updateFields();}
  editor.addEventListener('submit',guard(event=>{event.preventDefault();const [kind,metric]=inputs.type.value.split(':');let category=inputs.category.value,categories=state.categories;const name=inputs.newCategory.value.trim();if(name){const found=catalogueCategories(state).find(c=>c.label===name);if(found)category=found.id;else{category='user-'+unique();categories=[...categories,{id:category,label:name}];}}
-  const id=editing?.id??'user-'+unique(),def={id,name:inputs.name.value,category,kind,metric,unit:inputs.unit.value};if(kind==='expression')def.recipe={...ANALYSIS_DEFAULT,expression:inputs.expression.value,filter:inputs.filter.value,aggregate:inputs.aggregate.value,axis:inputs.axis.value,maxChild:Number(inputs.maxChild.value),chart:inputs.chart.value};
-  change({...state,categories,charts:[...state.charts.filter(d=>d.id!==id),def]});host.hidden=true;editing=null;
+  const id=editing?.id??'user-'+unique(),def={id,name:inputs.name.value,category,kind,metric,unit:inputs.unit.value,pins:pins.read()};if(kind==='expression')def.recipe={...ANALYSIS_DEFAULT,expression:inputs.expression.value,filter:inputs.filter.value,aggregate:inputs.aggregate.value,axis:inputs.axis.value,maxChild:Number(inputs.maxChild.value),chart:inputs.chart.value};
+  change({...state,categories,charts:editing?state.charts.map(d=>d.id===id?def:d):[...state.charts,def]});host.hidden=true;editing=null;
  }));
  function actionsFor(def,card){const bar=make('div');bar.className='lab-controls catalogue-card-actions';const copy=make('button',def.standard?'Создать копию':'Редактировать'),hide=make('button','Скрыть');copy.type=hide.type='button';copy.addEventListener('click',()=>edit(def));hide.addEventListener('click',()=>change({...state,hidden:[...state.hidden,def.id]}));bar.append(copy,hide);card.append(bar);}
  function setVisible(id,visible){change({...state,hidden:visible?state.hidden.filter(k=>k!==id):[...state.hidden,id]});}
