@@ -1,6 +1,7 @@
 /** Анализ готовых миров, без RNG симуляции. Приближённые поточечные 95% ДИ
  * percentile cluster bootstrap: перевыбирается мир целиком, веса особей
  * внутри мира сохраняют выбранный смысл. 999 повторов не равны 999 новым мирам. */
+import {selectCompleteBlocks} from './statistical-blocks.js';
 export const BOOTSTRAP_REPEATS=999,MIN_CONFIDENCE_WORLDS=5;
 export const quantile=(a,p)=>{const x=(a.length-1)*p,i=Math.floor(x);return a[i]+(a[Math.ceil(x)]-a[i])*(x-i);};
 const upper=(a,x)=>{let l=0,r=a.length;while(l<r){const m=(l+r)>>>1;if(a[m]<=x)l=m+1;else r=m;}return l;};
@@ -30,18 +31,18 @@ export function createWorldEstimator(input,weightMode='worlds'){
  const center=summarize(new Uint16Array(n).fill(1)),individual=worlds.map(w=>({id:w.id,count:w.values.length,mean:w.sum/w.values.length,median:(w.values[(w.values.length-1)>>>1]+w.values[w.values.length>>>1])/2}));
  return {summarize,center,individual,count:all.length,worlds:n,min:all[0],max:all.at(-1)};
 }
-export function estimateWorlds(input,weightMode='worlds',{confidence=true}={}){
- const compiled=createWorldEstimator(input,weightMode);
- if(!compiled)return {count:0,worlds:0,mean:null,median:null,min:null,max:null,confidence:null,reason:'Нет доступных данных.',spread:null,individual:[]};
- const {summarize,center,individual,worlds:n}=compiled;
+export function estimateWorlds(input,weightMode='worlds',{confidence=true,blockDesign=null}={}){
+ const selection=selectCompleteBlocks(input,blockDesign),compiled=createWorldEstimator(selection.worlds,weightMode),extra=blockDesign?{repeats:selection.units.length,excluded:selection.excluded}:{};
+ if(!compiled)return {...extra,count:0,worlds:0,mean:null,median:null,min:null,max:null,confidence:null,reason:'Нет доступных данных.',spread:null,individual:[]};
+ const {summarize,center,individual}=compiled,n=selection.units?.length??compiled.worlds,indices=selection.units?new Map(selection.units.map((u,i)=>[u.pairId,i])):null;
  const spread=Object.fromEntries(['mean','median'].map(stat=>{const a=individual.map(w=>w[stat]).sort((a,b)=>a-b);return [stat,{low:quantile(a,.25),high:quantile(a,.75)}];}));
- let intervals=null,reason=n<MIN_CONFIDENCE_WORLDS?`ДИ недоступен: ${n} миров, нужно не менее ${MIN_CONFIDENCE_WORLDS}.`:null;
+ let intervals=null,reason=n<MIN_CONFIDENCE_WORLDS?`ДИ недоступен: ${n} ${blockDesign?'исходных повторов':'миров'}, нужно не менее ${MIN_CONFIDENCE_WORLDS}.`:null;
  if(confidence&&n>=MIN_CONFIDENCE_WORLDS){
   const memo=new Map(),means=[],medians=[];
-  for(const counts of bootstrapDraws(n)){const key=counts.join(','),result=memo.get(key)??summarize(counts);memo.set(key,result);means.push(result.mean);medians.push(result.median);}
+  for(const counts of bootstrapDraws(n)){const key=counts.join(','),expanded=indices?Uint16Array.from(selection.worlds.map(w=>counts[indices.get(w.pairId)])):counts,result=memo.get(key)??summarize(expanded);memo.set(key,result);means.push(result.mean);medians.push(result.median);}
   means.sort((a,b)=>a-b);medians.sort((a,b)=>a-b);
   intervals={mean:{low:quantile(means,.025),high:quantile(means,.975)},median:{low:quantile(medians,.025),high:quantile(medians,.975)}};
   if(means[0]===means.at(-1)||medians[0]===medians.at(-1))reason='Нулевой наблюдаемый разброс не доказывает точность оценки.';
  }
- return {...center,count:compiled.count,worlds:n,min:compiled.min,max:compiled.max,confidence:intervals,reason,spread,individual,smallSample:n<10};
+ return {...extra,...center,count:compiled.count,worlds:compiled.worlds,min:compiled.min,max:compiled.max,confidence:intervals,reason,spread,individual,smallSample:n<10};
 }

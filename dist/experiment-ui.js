@@ -10,7 +10,8 @@ import {validateGenomeFile} from './evolution.js';
 import {downloadJson,snapshotExperiment,saveJsonBlob} from './json-export.js';
 import {experimentArchive,openExperimentArchive,readExperimentFile,materializeExperiment,archiveOrigin,archiveWindowReady,loadArchiveWindow} from './experiment-archive.js';
 import {historyDomainEnd} from './history-window.js';
-import {registerAnalysisWorlds} from './statistical-series.js';
+import {registerAnalysisWorlds,analysisWorlds} from './statistical-series.js';
+import {installExperimentGrouping,groupedExperimentSources} from './experiment-grouping.js';
 const PALETTE=['#86bf80','#e1c88c','#91b8d0','#cba4e4','#e89f72','#77c5bb','#d9a4bd','#c1c878'];
 const EMPTY_REPORT=Object.freeze({tick:0,dead:[],living:[],completed:{count:0,meanAge:null,medianAge:null},byCause:{},omittedDetails:0});
 export const downloadExperiment=downloadJson;
@@ -91,6 +92,7 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
   finally{importing=false;render();await runList();}
  });
  const source=byId('experiment-stat-source'),weight=byId('experiment-stat-weight'),stat=byId('experiment-stat-line');
+ const grouping=installExperimentGrouping({onChange:()=>{statsCache=null;updateStatNote();sourceChanged(false);}});
  const runs=installExperimentRuns({openAttempt:id=>{source.value='attempt:'+id;changeSource();openStatistics();},openVariant:id=>{source.value='variant:'+id;changeSource();openStatistics();}});
  function updateSources(){const key=report?.createdAt+'|'+report?.groups.map(g=>g.attempts.map(a=>a.id+Boolean(a.lives||a.live)).join(',')).join(';');if(key===lastSourcesKey)return;lastSourcesKey=key;const previous=source.value,options=[['current','Текущий мир']];if(report){options.push(['compare',`${report.plan.name} · сравнение вариантов`]);for(const v of report.plan.variants){options.push(['variant:'+v.id,v.name+' · выбранные попытки']);for(const g of report.groups.filter(g=>g.variantId===v.id))for(const a of g.attempts)if(a.lives||a.live)options.push(['attempt:'+a.id,`${v.name} · мир ${g.index+1} · попытка ${a.number} · seed ${a.seed}`]);}}
   source.replaceChildren(...options.map(([value,label])=>{const o=make('option',label);o.value=value;return o;}));source.value=options.some(o=>o[0]===previous)?previous:'current';}
@@ -108,13 +110,14 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
  weight.addEventListener('change',()=>{statsCache=null;updateStatNote();sourceChanged(false);});
  stat.addEventListener('change',()=>{updateStatNote();sourceChanged(false);});
  function data(){
+  grouping.refresh(report,source.value!=='current');
   const selected=source.value;if(selected==='current'||!report)return null;
   if(statsCache?.source===selected&&statsCache.weight===weight.value)return statsCache;
-  let result=null,comparisons=null;
+  let result=null,comparisons=null,grouped=[],problem='';
   if(selected.startsWith('attempt:')){const id=selected.slice(8),a=report.groups.flatMap(g=>g.attempts).find(a=>a.id===id);result=a?.lives??a?.live??null;if(result)registerAnalysisWorlds(result,[{id,report:result,targetTick:report.plan.steps,extinct:Boolean(a.extinct)}]);}
-  else{const variants=selected==='compare'?report.plan.variants:report.plan.variants.filter(v=>'variant:'+v.id===selected),sources=variants.map(v=>({id:v.id,name:v.name,color:PALETTE[report.plan.variants.indexOf(v)%PALETTE.length],report:mergeLifeReports(reportSources(report,v.id),weight.value)})).filter(s=>s.report);result=sources[0]?.report??null;if(selected==='compare'){comparisons=sources;if(result){const first=result;result={...first,tick:Math.max(...sources.map(s=>s.report.tick))};registerAnalysisWorlds(result,reportSources(report,sources[0].id));}}}
-  const pairVariants=comparisons?report.plan.variants.map((v,i)=>({id:v.id,name:v.name,color:PALETTE[i%PALETTE.length],worlds:experimentWorlds(report,v.id)})):null;
-  statsCache={source:selected,weight:weight.value,report:result,comparisons,pairVariants};return statsCache;
+  else{const variants=selected==='compare'?report.plan.variants:report.plan.variants.filter(v=>'variant:'+v.id===selected);try{grouped=groupedExperimentSources(report,variants,grouping.read(),weight.value);}catch(e){problem=e.message;}const sources=grouped.filter(s=>s.report);result=sources[0]?.report??null;if(selected==='compare'){comparisons=sources;if(result){const first=result;result={...first,tick:Math.max(...sources.map(s=>s.report.tick))};registerAnalysisWorlds(result,analysisWorlds(first));}}}
+  const pairVariants=comparisons?grouped.map(({report,...rest})=>rest):null;
+  statsCache={source:selected,weight:weight.value,report:result,comparisons,pairVariants,error:problem};return statsCache;
  }
  function prepareStatistics({start=0,end=null,width=100,curveStart=0}){
   const selected=source.value;if(selected==='current'||!report)return null;
@@ -138,8 +141,14 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
   const variant=full.plan.variants.find(v=>selected==='compare'||selected==='variant:'+v.id);return mergeLifeReports(reportSources(full,variant.id),weight.value);
  }
  byId('constructor-open-comparison').addEventListener('click',()=>{source.value='compare';changeSource();openStatistics();});
- function updateStatNote(){const node=byId('experiment-stat-note'),d=data();node.replaceChildren();if(source.value==='current')return;node.textContent=d?.report?'Итоги выбранных попыток; неудачные старты видны в разделе «Запуски». '+(weight.value==='worlds'?'Каждый непустой мир имеет равный вес в метриках особей. ':'Каждая особь имеет равный вес в метриках жизней. ')+ 'Население и пища: сначала среднее по времени каждого мира, затем равный вес миров. ':'Пока нет данных для выбранного источника. ';if(d?.comparisons){node.append(make('span','Таблица отдельных жизней и маркеры возраста относятся к первому варианту; графики, численные сводки и подсказки сравнивают все выбранные варианты. Цвета: '));for(const s of d.comparisons){const label=make('span',s.name+' · ');label.style.color=s.color;node.append(label);}}}
+ function updateStatNote(){
+  const node=byId('experiment-stat-note'),d=data();node.replaceChildren();if(source.value==='current')return;
+  if(d?.error){node.textContent=d.error;return;}
+  node.textContent=d?.report?'Итоги выбранных попыток; неудачные старты видны в разделе «Запуски». '+(weight.value==='worlds'?'Каждый непустой мир имеет равный вес в метриках особей. ':'Каждая особь имеет равный вес в метриках жизней. ')+'Население и пища: сначала среднее по времени каждого мира, затем равный вес миров. ':'Пока нет данных для выбранного источника. ';
+  if(d?.comparisons){node.append(make('span','Таблица жизней и маркеры возраста относятся к первой группе; графики и сводки сравнивают выбранные группы. Связанные варианты одного повтора не считаются независимыми мирами в ДИ. Цвета: '));for(const s of d.comparisons){const label=make('span',s.name+' · ');label.style.color=s.color;node.append(label);}for(const s of d.pairVariants)if(!d.comparisons.some(c=>c.id===s.id))node.append(make('span',s.name+': пока нет полного набора результатов. '));}
+ }
+
  setInterval(()=>{if(!byId('panel-history').hidden&&source.value!=='current'){updateStatNote();sourceChanged();}},5000);
  updateDesign();render();
- return {analysisSeries:()=>report,isActive:()=>busy||importing,refresh:render,prepareStatistics,exportObservation,report:()=>source.value==='current'?null:data()?.report,getSimulation:()=>source.value==='current'?getSimulation():{lives:data()?.report??EMPTY_REPORT},comparisons:()=>{const d=data();return d?.comparisons?{sources:d.comparisons,statistic:stat.value,variants:d.pairVariants,weightMode:weight.value}:null;}};
+ return {analysisSeries:()=>source.value==='compare'||source.value.startsWith('variant:')?report:null,isActive:()=>busy||importing,refresh:render,prepareStatistics,exportObservation,report:()=>source.value==='current'?null:data()?.report,getSimulation:()=>source.value==='current'?getSimulation():{lives:data()?.report??EMPTY_REPORT},comparisons:()=>{const d=data();return d?.comparisons?{sources:d.comparisons,statistic:stat.value,variants:d.pairVariants,weightMode:weight.value}:null;}};
 }

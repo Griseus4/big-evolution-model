@@ -4,11 +4,12 @@ const interval=(s,stat)=>s?.confidence?.[stat]?` [${format(s.confidence[stat].lo
 /** Числа относятся ко всему выбранному периоду, наведение — к одной корзине.
  * DOM чисел заменяется только при новом результате фонового расчёта. */
 export function installHistoryEstimates({root=document,cards,onChange}){
- const make=(tag,text)=>{const n=root.createElement(tag);if(text!==undefined)n.textContent=text;return n;},rendered=new Map();
+ const make=(tag,text)=>{const n=root.createElement(tag);if(text!==undefined)n.textContent=text;return n;},rendered=new WeakMap();
  const client=createStatisticsClient({onChange}),state=root.getElementById('history-analysis-state');let sources=[];
- for(const card of cards){card.numeric=make('div');card.numeric.className='history-numeric-summary';card.card.append(card.numeric);}
+ function register(){for(const card of cards)if(!card.numeric){card.numeric=make('div');card.numeric.className='history-numeric-summary';card.card.append(card.numeric);}}
+ register();
  function update(input){
-  sources=input.sources;const visible=cards.filter(c=>!c.card.hidden&&c.view?.value!=='difference');client.update({...input,metrics:visible.map(c=>c.m.id)});
+  register();sources=input.sources;const visible=cards.filter(c=>!c.card.hidden&&c.view?.value!=='difference');client.update({...input,metrics:[...new Set(visible.map(c=>c.m.id))]});
   const progress=client.state();state.textContent=progress.error??(progress.total?progress.completed<progress.total?`Статистика в фоне: ${progress.completed}/${progress.total} показателей. Графики обновятся по готовности.`:'Числа — за выбранный период. Полосы ДИ приближённые, поточечные; при 5–9 мирах особенно осторожная интерпретация.':'');
   for(const c of visible){
    const results=sources.map(s=>client.get(s.id,c.m.id)),key=results.map((r,i)=>r??sources[i].report);
@@ -22,6 +23,8 @@ export function installHistoryEstimates({root=document,cards,onChange}){
    for(let i=0;i<sources.length;i++){
     const result=results[i],s=result?.summary;if(result?.error)nodes.push(make('p',sources[i].name+': '+result.error));
     if(s?.reason&&!(result?.error&&s.worlds===0))nodes.push(make('p',sources[i].name+': '+s.reason));
+    if(s?.repeats!==undefined)nodes.push(make('p',`Независимых исходных повторов: ${s.repeats}. Связанные миры разных настроек перевыбираются совместно.`));
+    if(s?.excluded?.length)nodes.push(make('p','Пропущены неполные повторы: '+s.excluded.map(e=>`${e.pairId+1} (нет данных: ${e.variants.join(', ')})`).join('; ')));
     if(s?.individual?.length){const details=make('details'),summary=make('summary',sources[i].name+' · значения отдельных миров');let built=false;details.append(summary);details.addEventListener('toggle',()=>{if(!details.open||built)return;built=true;const table=make('table');for(const w of s.individual){const row=make('tr');row.append(...[w.id,`среднее ${format(w.mean)}`,`медиана ${format(w.median)}`,`наблюдений ${w.count}`].map(t=>make('td',t)));table.append(row);}details.append(table);});nodes.push(details);}
    }c.numeric.replaceChildren(...nodes);
   }

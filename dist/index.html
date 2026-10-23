@@ -127,13 +127,23 @@
   <div class="lab-controls"><label>Интервал рождения, Т<input id="history-width" type="number" min="1" step="1" value="100"></label><label>Начало, Т<input id="history-period-from" type="number" min="0" step="1" value="0"></label><label>Конец, Т<input id="history-period-to" type="number" min="1" step="1" value="100"></label><button id="history-period-all" type="button">Весь период</button><output id="history-period-value" aria-live="polite"></output></div>
   <div class="history-dual-range"><div class="history-range-track"></div><input id="history-period-start" type="range" min="0" max="100" step="1" value="0" aria-label="Начало общего периода" aria-describedby="history-method-note" data-help-shared="history-period-from"><input id="history-period-end" type="range" min="0" max="100" step="1" value="100" aria-label="Конец общего периода" aria-describedby="history-method-note" data-help-shared="history-period-from"></div>
  </fieldset>
+ <div id="history-catalogue-controls" class="catalogue-toolbar"></div>
+ <details id="history-curve-shared-controls"><summary>Кривая дожития: период и масштаб</summary>  <div class="lab-controls"><label>Начало периода рождения, Т<input id="history-curve-start" type="number" min="0" step="1" value="0"></label><span id="history-curve-period"></span></div>
+  <input id="history-curve-slider" type="range" min="0" max="100" step="1" value="0" aria-label="Начало периода рождения для кривой дожития" aria-describedby="history-curve-method-note" data-help-shared="history-curve-start">
+  <div class="range-setting history-age-scale">
+   <div class="range-heading"><label for="history-curve-age-max">Максимальный возраст на оси, Т</label><input id="history-curve-age-max" class="range-number" type="number" min="1" step="1" value="1000" aria-describedby="history-curve-scale-note"></div>
+   <input id="history-curve-age-slider" type="range" min="1" max="1000" step="1" value="1000" aria-label="Максимальный возраст на оси кривой дожития" aria-describedby="history-curve-scale-note" data-help-shared="history-curve-age-max">
+  </div>
+  <p id="history-curve-scale-note" class="note" data-ui-text="history-curve-scale"></p>
+  <p id="history-curve-method-note" class="note" data-ui-text="history-curve-method"></p><p id="history-curve-statistics" class="note" aria-live="polite"></p><p id="history-curve-summary" class="note"></p></details>
+ <div id="history-group-controls" class="history-settings"></div>
  <fieldset id="history-line-controls" class="history-legend"><legend>Линии индивидуальных показателей</legend>
   <label class="check"><input id="history-show-min" type="checkbox" checked>Минимум</label><label class="check"><input id="history-show-median" type="checkbox" checked>Медиана</label><label class="check"><input id="history-show-mean" type="checkbox" checked>Среднее</label><label class="check"><input id="history-show-max" type="checkbox" checked>Максимум</label>
  </fieldset>
  <div class="history-display-controls"><label>Экран <select id="history-display"><option value="survival" selected>Выживание</option><option value="behavior">Поведение</option><option value="resources">Ресурсы</option><option value="reproduction">Размножение</option><option value="genome">Наследуемые свойства</option><option value="distributions">Распределения чувствительностей</option><option value="table">Таблица</option><option value="pair">Сравнение пары</option><option value="all">Все графики и таблица</option><option value="custom">Мой набор графиков</option></select></label><details class="history-chart-picker"><summary>Выбрать графики для сравнения</summary><div id="history-chart-options" class="history-chart-options"></div></details></div>
  </div></details>
  <div class="history-main">
- <div class="section-title"><div><span class="eyebrow">ПРОЖИТЫЕ ЖИЗНИ</span><h2>Итоги и текущие наблюдения</h2></div><button id="history-open-builder">Конструктор анализа</button><button id="history-export">Скачать истории (.json)</button></div>
+ <div class="section-title"><div><span class="eyebrow">ПРОЖИТЫЕ ЖИЗНИ</span><h2>Итоги и текущие наблюдения</h2></div><button id="history-open-builder">Создать график</button><button id="history-export">Скачать истории (.json)</button></div>
  <p id="experiment-stat-note" class="note"></p><p class="note" data-ui-text="description17"></p>
  <p id="history-summary" class="lab-summary"></p><p id="history-causes" class="note"></p><p id="history-cohorts" class="note"></p>
  <p id="history-analysis-state" class="note" role="status"></p>
@@ -147,14 +157,7 @@
  <div id="history-charts" class="history-chart-grid"></div>
  <p class="note" data-ui-text="history-food-context"></p>
  <section id="history-survival-section" class="history-chart-card history-survival-panel"><h3>Кривая дожития одной группы рождения</h3>
-  <div class="lab-controls"><label>Начало периода рождения, Т<input id="history-curve-start" type="number" min="0" step="1" value="0"></label><span id="history-curve-period"></span></div>
-  <input id="history-curve-slider" type="range" min="0" max="100" step="1" value="0" aria-label="Начало периода рождения для кривой дожития" aria-describedby="history-curve-method-note" data-help-shared="history-curve-start">
-  <div class="range-setting history-age-scale">
-   <div class="range-heading"><label for="history-curve-age-max">Максимальный возраст на оси, Т</label><input id="history-curve-age-max" class="range-number" type="number" min="1" step="1" value="1000" aria-describedby="history-curve-scale-note"></div>
-   <input id="history-curve-age-slider" type="range" min="1" max="1000" step="1" value="1000" aria-label="Максимальный возраст на оси кривой дожития" aria-describedby="history-curve-scale-note" data-help-shared="history-curve-age-max">
-  </div>
-  <p id="history-curve-scale-note" class="note" data-ui-text="history-curve-scale"></p>
-  <p id="history-curve-method-note" class="note" data-ui-text="history-curve-method"></p><p id="history-curve-statistics" class="note" aria-live="polite"></p><p id="history-curve-summary" class="note"></p><div id="history-curve-chart"></div>
+<div id="history-curve-chart"></div>
  </section>
  <div id="history-selection-controls" class="lab-controls"><strong id="history-selected">Все интервалы рождения.</strong><button id="history-clear-selection" disabled>Снять выбор интервала</button></div>
  <section id="history-table-screen"><div class="lab-controls"><label>Таблица<select id="history-table-mode"><option value="cohorts">Сводка по рождениям</option><option value="lives">Отдельные жизни</option></select></label><label id="history-table-metric-label">Показатель сводки<select id="history-table-metric"></select></label></div>

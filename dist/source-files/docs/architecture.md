@@ -52,7 +52,7 @@
 
 [population-statistics.js](../dist/population-statistics.js): N(t). [statistical-series.js](../dist/statistical-series.js): выборки; [statistics-client.js](../dist/statistics-client.js): кэш/отмена Worker. [statistics-worker.js](../dist/statistics-worker.js)/[statistics-estimates.js](../dist/statistics-estimates.js): оценки/ДИ без RNG мира. [history-estimates-ui.js](../dist/history-estimates-ui.js): сводки; [json-export.js](../dist/json-export.js): порционный JSON.
 
-[experiment-archive.js](../dist/experiment-archive.js): .beexp. [Анализ](navigation/experiments-and-statistics.md#statistics): столбцы → Worker, группы повторов.
+[experiment-archive.js](../dist/experiment-archive.js): .beexp. [Каталог](navigation/experiments-and-statistics.md#statistics): определения → группы/Worker; без копий историй.
 
 Пара: [pair-statistics.js](../dist/pair-statistics.js) — общий оценщик; [pair-series.js](../dist/pair-series.js) — корзины; [pair-statistics-client.js](../dist/pair-statistics-client.js) — Worker/отмена; [pair-comparison-ui.js](../dist/pair-comparison-ui.js) — таблица/общая A/B; [history-differences-ui.js](../dist/history-differences-ui.js) — режимы карточек. [Протокол](updates/v043-difference-charts.md).
 

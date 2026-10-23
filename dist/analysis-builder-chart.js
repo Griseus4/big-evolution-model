@@ -1,6 +1,6 @@
 /** Рисуем только готовые ячейки. Изменение размера не запускает статистику. */
 const palette=['#86bf80','#e1c86e','#91b8d0','#cba4e4','#ed9a7a','#73c8bd','#d7a6bc','#c2ca8a'];
-export function analysisColor(group,index){return group.label==='learning: вкл'?palette[0]:group.label==='learning: выкл'?palette[1]:palette[index%palette.length];}
+export function analysisColor(group,index){return group.color??(group.label==='learning: вкл'?palette[0]:group.label==='learning: выкл'?palette[1]:palette[index%palette.length]);}
 const number=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:1,notation:'compact'});
 export function drawAnalysis(canvas,result){
  if(!result||result.config.chart==='table')return;const ctx=canvas.getContext('2d');if(!ctx)return;

@@ -14,7 +14,7 @@ export function createPairStatisticsClient({onChange=()=>{},createWorker=()=>new
   worker.onerror=e=>{e.preventDefault?.();if(current!==request)return;error=e.message??'Ошибка сравнения.';worker?.terminate();worker=null;onChange();};
   (async()=>{for(const metric of metrics){
    if(current!==request||!worker)return;
-   try{const prepared=series?preparePairSeries(a.worlds,b.worlds,metric,options):{a:preparePairSide(a.worlds,metric,options),b:preparePairSide(b.worlds,metric,options)},transfer=[prepared,...(prepared.points??[])].flatMap(task=>[...task.a,...task.b].map(w=>w.values.buffer));worker.postMessage({request:current,metric,...prepared,weightMode:['population','food','production'].includes(metric)?'worlds':weightMode},transfer);}
+   try{const prepared=series?preparePairSeries(a.worlds,b.worlds,metric,options):{a:preparePairSide(a.worlds,metric,options),b:preparePairSide(b.worlds,metric,options)},transfer=[prepared,...(prepared.points??[])].flatMap(task=>[...task.a,...task.b].flatMap(w=>[w.values.buffer,...(w.members??[]).map(m=>m.values.buffer)]));worker.postMessage({request:current,metric,...prepared,weightMode:['population','food','production'].includes(metric)?'worlds':weightMode},transfer);}
    catch(e){results.set(metric,{error:e.message});completed++;onChange();}
    await new Promise(resolve=>setTimeout(resolve,0));
   }})();

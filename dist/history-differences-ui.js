@@ -5,8 +5,8 @@ import {formatStatistic as format,estimateCell} from './statistics-format.js';
  * Bootstrap выполняется в Worker; смена линии и размера использует кэш. */
 export function installHistoryDifferences({root=document,cards,onChange,createClient=createPairStatisticsClient}){
  const make=(tag,text)=>{const n=root.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
- const client=createClient({onChange}),rendered=new Map();let last=null;
- for(const c of cards){
+ const client=createClient({onChange}),rendered=new WeakMap();let last=null;
+ function register(){for(const c of cards){if(c.view)continue;
   const label=make('label','Показать '),select=make('select');select.setAttribute('aria-label',c.m.label+': исходные данные или разность');
   for(const [value,text]of [['original','Исходные данные'],['difference','Разность B−A']]){const o=make('option',text);o.value=value;select.append(o);}select.value='original';
   label.append(select);label.className='history-chart-mode';
@@ -14,17 +14,17 @@ export function installHistoryDifferences({root=document,cards,onChange,createCl
   const control=make('div');control.className='help-control';control.append(label,help);if(c.card.insertBefore)c.card.insertBefore(control,c.canvas);else c.card.append(control);c.view=select;
   c.difference=make('div');c.difference.className='history-numeric-summary';c.card.append(c.difference);
   select.addEventListener('change',onChange);
- }
- const isDifference=c=>c.view?.value==='difference';
+ }}register();
+ const isDifference=c=>c?.view?.value==='difference';
  function pointText(p,stat){
   const s=p?.[stat],ci=s?.confidence?.difference;
   return s?`B−A: ${format(s.difference)}${ci?` [${format(ci.low)}; ${format(ci.high)}], 95% ДИ`:''}; полных пар ${p.pairs}, пропусков ${p.excludedCount??p.excluded?.length??0}. ${p.reason??''}`:'Нет полных пар или расчёт ещё не готов.';
  }
  function update(input){
-  last=input;const visible=cards.filter(c=>!c.card.hidden&&isDifference(c));
+  register();last=input;const visible=cards.filter(c=>!c.card.hidden&&isDifference(c));
   for(const c of cards){c.difference.hidden=!isDifference(c);if(c.numeric)c.numeric.hidden=isDifference(c);}
   if(!visible.length||!input.pair)client.suspend();
-  else client.update({...input.pair,metrics:visible.map(c=>c.m.id),options:{...input.options,start:input.start,end:input.end},weightMode:input.weightMode,series:true});
+  else client.update({...input.pair,metrics:[...new Set(visible.map(c=>c.m.id))],options:{...input.options,start:input.start,end:input.end},weightMode:input.weightMode,series:true});
   for(const c of visible){
    const answer=input.pair?client.get(c.m.id):null,result=answer?.result,stat=c.m.single||c.m.id==='survival'?'mean':input.statistic??'mean';
    const points=(answer?.points??[]).map(p=>{const s=p[stat],range=input.bandMode==='spread'?p.spread?.[stat]:s?.confidence?.difference;return {...p,value:s?.difference??null,low:range?.low??null,high:range?.high??null};});

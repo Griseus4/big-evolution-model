@@ -6,9 +6,11 @@ import {readFileSync} from 'node:fs';
 import {LIFE_METRICS} from '../dist/life-cohorts.js';
 import {installHistoryUI} from '../dist/history-ui.js';
 import {installHistoryDrawers} from '../dist/history-drawers.js';
+import {createAnalysisEngine} from '../dist/analysis-builder-core.js';
 class Element{
  constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.value='';this.checked=true;this.textContent='';this.hidden=false;this.attributes={};this.style={setProperty:(k,v)=>{this.attributes[k]=v;}};}
- append(...children){this.children.push(...children);if(this.tagName==='select'&&!this.value)this.value=this.children[0]?.value??'';}
+ append(...children){this.children.push(...children);for(const child of children)child.parent=this;if(this.tagName==='select'&&!this.value)this.value=this.children[0]?.value??'';}
+ remove(){if(this.parent)this.parent.children=this.parent.children.filter(c=>c!==this);}
  replaceChildren(...children){this.children=[];this.append(...children);}
  addEventListener(key,fn){this.listeners[key]=fn;}
  setAttribute(k,v){this.attributes[k]=v;}
@@ -25,8 +27,32 @@ function boot(){
  const toolbar=new Element(),sim={tick:300,lives:report},root={getElementById:id=>{assert.ok(elements.has(id),id);return elements.get(id);},querySelector:selector=>selector==='.global-toolbar'?toolbar:null,createElement:tag=>{const e=new Element(tag);created.push(e);return e;}};
  const ui=installHistoryUI({root,getSimulation:()=>sim});return {elements,created,ui,sim,toolbar};
 }
+test('standard copy becomes an editable native card in the same grid, with persistence, new category and restore',async()=>{
+ const old=globalThis.localStorage,stored=new Map();globalThis.localStorage={getItem:k=>stored.get(k)??null,setItem:(k,v)=>stored.set(k,v)};
+ try{const b=boot();b.ui.refresh();const walk=n=>[n,...n.children.flatMap(walk)],grid=b.elements.get('history-charts'),canvas=b.created.find(n=>n.id==='history-chart-lifetime'),card=grid.children.find(n=>n.children.includes(canvas));
+  walk(card).find(n=>n.textContent==='Создать копию').emit('click');const editor=b.elements.get('history-builder-screen'),fields=walk(editor),name=fields.find(n=>n.name==='catalogue-name');name.value='Срок жизни';fields.find(n=>n.name==='catalogue-newCategory').value='Моя категория';await fields.find(n=>n.tagName==='form').emit('submit');
+  let state=JSON.parse(stored.get('big-evolution-chart-catalogue-v1'));assert.equal(state.charts.length,1);assert.equal(state.charts[0].metric,'lifetime');assert.equal(state.categories[0].label,'Моя категория');assert.equal(b.elements.get('history-display').value,state.categories[0].id);
+  const copy=grid.children.find(n=>n.children.some(c=>c.tagName==='h3'&&c.textContent==='Срок жизни'));assert.ok(copy&&!copy.hidden);assert.ok(walk(copy).some(n=>n.tagName==='select'&&n.value==='original'));
+  walk(card).find(n=>n.textContent==='Скрыть').emit('click');assert.equal(card.hidden,true);b.elements.get('history-catalogue-controls').children.find(n=>n.textContent==='Восстановить стандартные').emit('click');state=JSON.parse(stored.get('big-evolution-chart-catalogue-v1'));assert.ok(!state.hidden.includes('lifetime'));assert.equal(state.charts.length,1);
+  walk(copy).find(n=>n.textContent==='Редактировать').emit('click');fields.find(n=>n.name==='catalogue-name').value='Обновлённая копия';await fields.find(n=>n.tagName==='form').emit('submit');assert.equal(grid.children.filter(n=>n.children.some(c=>c.tagName==='h3'&&c.textContent==='Срок жизни')).length,0);assert.equal(JSON.parse(stored.get('big-evolution-chart-catalogue-v1')).charts.length,1);
+  const again=boot();again.ui.refresh();assert.ok(again.elements.get('history-charts').children.some(n=>n.children.some(c=>c.tagName==='h3'&&c.textContent==='Обновлённая копия')));
+ }finally{if(old===undefined)delete globalThis.localStorage;else globalThis.localStorage=old;}
+});
+test('native survival copies keep shared controls when the original is hidden',async()=>{
+ const old=globalThis.localStorage;delete globalThis.localStorage;
+ try{const b=boot();b.ui.refresh();b.elements.get('history-open-builder').emit('click');const editor=b.elements.get('history-builder-screen'),walk=n=>[n,...n.children.flatMap(walk)],fields=walk(editor);fields.find(n=>n.name==='catalogue-type').value='metric:survival';fields.find(n=>n.name==='catalogue-name').value='Моё дожитие';await fields.find(n=>n.tagName==='form').emit('submit');
+  const copy=b.elements.get('history-charts').children.find(n=>n.children.some(c=>c.textContent==='Моё дожитие')),input=walk(copy).find(n=>n.type==='number');assert.ok(input);input.value=50;input.emit('change');assert.equal(b.elements.get('history-survival-age').value,50);assert.equal(b.ui.getSummary().survivalAge,50);
+ }finally{if(old!==undefined)globalThis.localStorage=old;}
+});
+test('formula cards render in the same category/grid, using the shared period and life filter',async()=>{
+ const old=globalThis.Worker,oldStorage=globalThis.localStorage;delete globalThis.localStorage;let done;const finished=new Promise(r=>done=r);
+ globalThis.Worker=class{postMessage(m){if(!m.type)return;if(m.type==='start')this.items=m.configs.map(c=>({id:c.id,engine:createAnalysisEngine(m.plan,c.config)}));if(m.type==='world')for(const item of this.items)item.engine.add(m.meta,m.projection);queueMicrotask(()=>{this.onmessage({data:m.type==='finish'?{results:this.items.map(i=>({id:i.id,result:i.engine.finish()}))}:{ready:true}});if(m.type==='finish')done();});}terminate(){}};
+ try{const b=boot();b.ui.refresh();const walk=n=>[n,...n.children.flatMap(walk)];b.elements.get('history-open-builder').emit('click');const fields=walk(b.elements.get('history-builder-screen'));fields.find(n=>n.name==='catalogue-name').value='Моя формула';fields.find(n=>n.name==='catalogue-expression').value='age * 2';await fields.find(n=>n.tagName==='form').emit('submit');await finished;await new Promise(r=>setTimeout(r,0));
+  const card=b.elements.get('history-charts').children.find(n=>n.children.some(c=>c.textContent==='Моя формула'));assert.ok(card&&!card.hidden);assert.ok(walk(card).some(n=>n.textContent==='40,0'));assert.ok(walk(card).some(n=>n.textContent==='[0; 100) Т'));assert.equal(b.elements.get('history-error').textContent,'');b.ui.reset();
+ }finally{if(old===undefined)delete globalThis.Worker;else globalThis.Worker=old;if(oldStorage!==undefined)globalThis.localStorage=oldStorage;}
+});
 test('history UI creates metric and distribution charts, four cohort statistics and a bounded paged table',()=>{
- const b=boot();b.ui.refresh();assert.equal(b.created.filter(e=>e.tagName==='canvas').length,LIFE_METRICS.length+6);assert.equal(b.ui.getSummary().cohorts.length,2);assert.equal(b.elements.get('history-rows').children.length,2);
+ const b=boot();b.ui.refresh();assert.equal(b.created.filter(e=>e.tagName==='canvas').length,LIFE_METRICS.length+5);assert.equal(b.ui.getSummary().cohorts.length,2);assert.equal(b.elements.get('history-rows').children.length,2);
  b.elements.get('history-table-mode').value='lives';b.elements.get('history-table-mode').emit('input');assert.equal(b.elements.get('history-rows').children.length,50);
  const cached=b.ui.getSummary();b.elements.get('history-next').emit('click');assert.equal(b.elements.get('history-rows').children.length,50);assert.equal(b.ui.getSummary(),cached);
  b.elements.get('history-next').emit('click');assert.equal(b.elements.get('history-rows').children.length,25);assert.equal(b.elements.get('history-next').disabled,true);

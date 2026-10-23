@@ -27,12 +27,12 @@ function boot({running=true,pauseError=false,realTimers=false}={}){
  const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8'),elements=new Map(),workers=[],intervals=[];
  for(const m of html.matchAll(/<([a-z]+)\b[^>]*\bid="([^"]+)"[^>]*>/g)){const node=new Element(m[1]);node.value=m[0].match(/\bvalue="([^"]*)"/)?.[1]??'';elements.set(m[2],node);}
  for(const m of html.matchAll(/<select\b[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/select>/g)){const first=m[2].match(/<option[^>]*value="([^"]+)"/);if(first)elements.get(m[1]).value=first[1];}
- const state={running,epoch:1},calls={pause:0,resume:0,source:0,statistics:0},toolbar=new Element();
+ const state={running,epoch:1},calls={pause:0,resume:0,source:0,statistics:0,resets:[]},toolbar=new Element();
  globalThis.document={getElementById:id=>{assert.ok(elements.has(id),id);return elements.get(id);},createElement:tag=>new Element(tag),querySelector:()=>toolbar};
  globalThis.Worker=class{constructor(){this.sent=[];workers.push(this);}postMessage(m){this.sent.push(m);}terminate(){this.closed=true;}};
  const oldFetch=globalThis.fetch,oldInterval=globalThis.setInterval,oldTimeout=globalThis.setTimeout;
  globalThis.fetch=async()=>({ok:true,json:async()=>({sourceFingerprint:'test'})});globalThis.setInterval=fn=>{intervals.push(fn);return 0;};if(!realTimers)globalThis.setTimeout=()=>0;
- const ui=installExperimentUI({getSimulation:()=>({lives:{tick:77}}),getWorldState:()=>({...state}),pauseWorld:async()=>{calls.pause++;if(pauseError)throw new Error('pause failed');state.running=false;},resumeWorld:async previous=>{assert.equal(previous.epoch,state.epoch);calls.resume++;state.running=true;},sourceChanged:()=>calls.source++,openStatistics:()=>calls.statistics++});
+ const ui=installExperimentUI({getSimulation:()=>({lives:{tick:77}}),getWorldState:()=>({...state}),pauseWorld:async()=>{calls.pause++;if(pauseError)throw new Error('pause failed');state.running=false;},resumeWorld:async previous=>{assert.equal(previous.epoch,state.epoch);calls.resume++;state.running=true;},sourceChanged:reset=>{calls.source++;calls.resets.push(reset);},openStatistics:()=>calls.statistics++});
  const done=(worker,status='completed')=>worker.onmessage({data:{type:'done',jobId:worker.sent.find(m=>m.type==='run').job.id,result:{status,modelVersion:MODEL_VERSION,tick:1,extinct:false,lives:{tick:1,dead:[],living:[],completed:{count:0,meanAge:null,medianAge:null},byCause:{}}}}});
  const flush=async()=>{for(let i=0;i<20;i++)await Promise.resolve();};
  return {ui,elements,workers,state,calls,toolbar,intervals,done,flush,restore(){globalThis.fetch=oldFetch;globalThis.setInterval=oldInterval;globalThis.setTimeout=oldTimeout;}};
@@ -137,5 +137,12 @@ test('archive import is atomic, loads requested birth periods and exports all ob
   const before=b.ui.getSimulation().lives;input.files=[new Blob(['broken'])];await input.emit('change');assert.equal(b.ui.getSimulation().lives,before);assert.match(b.elements.get('constructor-export-state').textContent,/не открыт/);
   input.files=[];const error=b.elements.get('constructor-error').textContent;await input.emit('change');assert.equal(b.elements.get('constructor-error').textContent,error);
   const observations=await b.ui.exportObservation();assert.deepEqual(observations.dead.map(r=>r.originalId),[1,2,3]);assert.equal(observations.completed.count,3);
+ }finally{b.restore();}
+});
+test('common grouping reaches native graphs and pair sources; empty filters remain visible and do not reset the period',async()=>{
+ const plan=validatePlan({worlds:2,seeds:[42,7],steps:100,factors:[{key:'learning',values:[true,false]},{key:'digestionTime',values:[2,5,20]}]}),report={format:'big-evolution-experiment',version:1,createdAt:'2026-10-23T12:00:00.000Z',status:'completed',plan,groups:plan.variants.flatMap(v=>Array.from({length:2},(_,index)=>{const id=v.id+'-'+index;return {id,variantId:v.id,index,status:'completed',selectedId:id+'-1',attempts:[{id:id+'-1',number:1,seed:plan.seedMatrix[index][0],tick:100,status:'completed',lives:{tick:100,dead:[{id:1,parentId:null,born:0,age:20,status:'dead'}],living:[],completed:{count:1,meanAge:20,medianAge:20},byCause:{},omittedDetails:0}}]};}))};
+ const b=boot({realTimers:true});try{const input=b.elements.get('constructor-import-report');input.files=[await experimentArchive(report)];await input.emit('change');b.elements.get('constructor-open-comparison').click();await b.ui.prepareStatistics({start:0,end:100,width:100});assert.equal(b.ui.comparisons().sources.length,6);
+  const host=b.elements.get('history-group-controls'),select=descendants(host,n=>n.tagName==='select')[0];select.value='learning';select.emit('change');assert.equal(b.calls.resets.at(-1),false);const comparison=b.ui.comparisons();assert.equal(comparison.sources.length,2);assert.ok(comparison.sources.every(s=>s.report.dead.length===6));assert.ok(comparison.variants.every(s=>s.worlds.length===6&&s.worlds[0].blockDesign));
+  const field=descendants(host,n=>n.tagName==='fieldset')[0],checks=descendants(field,n=>n.type==='checkbox');for(const n of checks)n.checked=false;checks[0].emit('change');assert.equal(b.ui.getSimulation().lives.dead.length,0);assert.match(b.elements.get('experiment-stat-note').textContent,/Фильтры исключили/);
  }finally{b.restore();}
 });

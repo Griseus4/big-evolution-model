@@ -11,7 +11,7 @@ export function installPairComparison({root=document,onChange=()=>{},createClien
  function details(result){
   const node=make('details'),summary=make('summary',`Состав: ${result.pairs} пар; пропусков ${result.excluded.length}`);node.append(summary);let built=false;
   node.addEventListener('toggle',()=>{if(!node.open||built)return;built=true;const list=make('ul');
-   const describe=w=>`seed ${w.seed??'—'}, попытка ${w.number??'—'}, среднее ${format(w.mean)}, медиана ${format(w.median)}, наблюдений ${w.count}; вымираний ${w.extinctions??0}`;
+   const describe=w=>w.members?w.members.map(m=>`${m.variantId}: seed ${m.seed??'—'}, попытка ${m.number??'—'}, среднее ${format(m.mean)}, медиана ${format(m.median)}, наблюдений ${m.count}; вымираний ${m.extinctions??0}`).join('; '):`seed ${w.seed??'—'}, попытка ${w.number??'—'}, среднее ${format(w.mean)}, медиана ${format(w.median)}, наблюдений ${w.count}; вымираний ${w.extinctions??0}`;
    for(const p of result.included){const item=make('li',`Повтор ${p.pairId+1}. A: ${describe(p.a)}. B: ${describe(p.b)}.`);if(p.a.extinctions||p.b.extinctions)item.className='extinction-warning';list.append(item);}
    for(const p of result.excluded)list.append(make('li',`Повтор ${p.pairId+1} исключён только из этого показателя. A: ${p.a??'данные есть'} B: ${p.b??'данные есть'}`));node.append(list);
   });return node;
