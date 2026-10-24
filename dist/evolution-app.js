@@ -271,7 +271,7 @@ function updateContents(){
    const main=document.createElement('div');main.className='body-grid';
    for(const [i,[label,value]]of metrics.entries()){
     const box=document.createElement('div'),name=document.createElement('span'),number=document.createElement('strong');
-    name.textContent=label;name.append(createHelpButton(metricHelp[i]));number.className='metric-value';number.dataset.index=i;number.textContent=value;box.append(name,number);
+    name.append(createHelpButton(metricHelp[i],label));number.className='metric-value';number.dataset.index=i;number.textContent=value;box.append(name,number);
     (i<5?main:position).append(box);
    }
    body.replaceChildren(main);

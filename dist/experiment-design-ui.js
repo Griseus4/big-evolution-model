@@ -46,5 +46,5 @@ export function installExperimentDesign({root=document,readCommon,onChange=()=>{
    for(const seed of seeds){const details=make('details'),title=make('summary',`Seed ${seed} · ${count} условий`),children=make('ul');let built=false;details.append(title,children);details.addEventListener('toggle',()=>{if(details.open&&!built){built=true;branch(children,0,0);}});tree.append(details);}return true;
   }catch(e){summary.textContent=e.message;summary.className='error';tree.replaceChildren();treeKey=null;return false;}
  }
- refreshPicker();return {read,preview,write(factors){rows.clear();byId('constructor-factors').replaceChildren();for(const f of factors)add(f.key,f.values);refreshPicker();treeKey=null;}};
+ refreshPicker();return {read,preview,snapshot(){return [...rows].map(([key,r])=>({key,values:r.field[3]==='genome'?r.genomes:r.field[3]==='check'?r.inputs.filter(i=>i.checked).map(i=>i.factorValue):r.inputs.map(i=>i.value)}));},write(factors){rows.clear();byId('constructor-factors').replaceChildren();for(const f of factors)add(f.key,f.values);refreshPicker();treeKey=null;}};
 }

@@ -3,7 +3,7 @@
  * Прокрутка не запускает JS и не пересчитывает статистику. */
 export function installHistoryDrawers(root=document,onResize=()=>{}){
  const drawer=root.getElementById('history-drawer-left'),handle=root.getElementById('history-drawer-left-handle');
- const sync=()=>{root.getElementById('history-layout').setAttribute('data-open',String(Boolean(drawer.open)));handle.setAttribute('aria-expanded',String(Boolean(drawer.open)));onResize();};
+ const sync=()=>{root.getElementById('history-layout').setAttribute('data-open',String(Boolean(drawer.open)));handle.setAttribute('aria-expanded',String(Boolean(drawer.open)));const body=root.getElementById('history-drawer-left-body');body.inert=!drawer.open;body.setAttribute('aria-hidden',String(!drawer.open));onResize();};
  handle.addEventListener('click',()=>{drawer.open=!drawer.open;sync();});
  drawer.addEventListener('keydown',event=>{if(event.key==='Escape'){
   event.preventDefault();event.stopPropagation();
@@ -11,6 +11,8 @@ export function installHistoryDrawers(root=document,onResize=()=>{}){
   if(drawer.contains(root.activeElement))root.activeElement.blur();
   drawer.open=false;sync();handle.focus();
  }});
+ root.getElementById('history-drawer-left-body').inert=true;
+ root.getElementById('history-layout').addEventListener('transitionend',event=>{if(event.propertyName==='grid-template-columns')onResize();});
  // Перенос навигации изменяет её высоту, но не требует обработчика scroll.
  const toolbar=root.querySelector?.('.global-toolbar'),panel=root.getElementById('panel-history');
  if(toolbar&&typeof ResizeObserver!=='undefined'){

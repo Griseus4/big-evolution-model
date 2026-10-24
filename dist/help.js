@@ -1,48 +1,30 @@
-/** Справка относится только к наблюдателю. Открытие не расходует RNG, не меняет
- * геном и не добавляет знаний жителям. Тексты хранятся централизованно, чтобы
- * у одинаковых настроек обычной игры и испытаний был одинаковый смысл.
- * Нативный dialog открывается кликом/Enter/Space, удерживает фокус и закрывается
- * Escape. Поэтому помощь доступна на телефоне и с клавиатуры, без hover.
- */
+/** Справка на подписи: мышь, фокус, Enter/Space и касание. Не вызывает паузу.
+ * Один общий popover обслуживает также динамические карточки без наблюдения DOM. */
 import {HELP,ALIASES} from './ui-text.js';
 export {HELP,ALIASES} from './ui-text.js';
-export function createHelpButton(key){
- const button=document.createElement('button');button.type='button';button.className='help-trigger';button.dataset.help=ALIASES[key]??key;
- button.textContent='?';button.setAttribute('aria-label',`Подсказка: ${HELP[button.dataset.help][0]}`);button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-controls','help-dialog');return button;
+export function createHelpButton(key,text){
+ const span=document.createElement('span');span.className='help-label';span.dataset.help=ALIASES[key]??key;span.dataset.helpLabel='true';span.tabIndex=0;span.setAttribute('role','button');span.textContent=text??HELP[span.dataset.help]?.[0]??key;span.setAttribute('aria-label','Справка: '+span.textContent);return span;
 }
 export function installHelp(){
- const dialog=document.getElementById('help-dialog'),title=document.getElementById('help-title'),body=document.getElementById('help-body');let opener=null;
+ const tooltip=document.createElement('div');tooltip.id='help-tooltip';tooltip.className='help-tooltip';tooltip.setAttribute('popover','manual');tooltip.setAttribute('role','tooltip');document.body.append(tooltip);let opener=null,timer=null;
+ function hide(){clearTimeout(timer);if(tooltip.matches(':popover-open'))tooltip.hidePopover();if(opener)opener.removeAttribute('aria-describedby');opener=null;}
+ function show(target){const entry=HELP[target.dataset.help];if(!entry)return;clearTimeout(timer);if(opener&&opener!==target)opener.removeAttribute('aria-describedby');opener=target;tooltip.textContent=entry[1];target.setAttribute('aria-describedby',tooltip.id);if(!tooltip.matches(':popover-open'))tooltip.showPopover();const r=target.getBoundingClientRect(),box=tooltip.getBoundingClientRect();tooltip.style.left=Math.max(8,Math.min(r.left,innerWidth-box.width-8))+'px';tooltip.style.top=Math.max(8,r.bottom+8+box.height<=innerHeight?r.bottom+8:r.top-box.height-8)+'px';}
+ function labelHelp(label,key){if(label.querySelector('[data-help]'))return;const nodes=[...label.childNodes].filter(n=>n.nodeType===3&&n.textContent.trim());if(!nodes.length)return;const span=createHelpButton(key,nodes.map(n=>n.textContent).join('').trim());nodes[0].before(span);for(const node of nodes)node.remove();}
  const ranges=new Set();
  for(const [id,key]of [...Object.keys(HELP).map(id=>[id,id]),...Object.entries(ALIASES)]){
   const control=document.getElementById(id);if(!control||control.hidden||control.type==='hidden')continue;
-  // Составной диапазон делит справку с числовым полем. Дополнительная
-  // обёртка разрушила бы общую дорожку двух нативных ползунков.
-  if(control.dataset.helpShared){if(!document.getElementById(control.dataset.helpShared))throw new Error('Нет связанного поля справки: '+id);control.title=HELP[key][1];continue;}
-  // У ползунка и числового ввода одна подпись и одна подсказка.
-  const range=control.closest('.range-setting');
-  if(range){if(!ranges.has(range)){range.querySelector('.range-heading').append(createHelpButton(key));ranges.add(range);}continue;}
-  // Кнопка помощи — сосед label, а не интерактивный элемент внутри него:
-  // нажатие вопроса не должно переключать checkbox или активировать действие.
-  const label=control.closest('label');
-  if(label||control.tagName==='BUTTON'){
-   const target=label??control,wrapper=document.createElement('div');wrapper.className='help-control'+(label?(control.type==='checkbox'?'':' help-field'):' help-action');target.before(wrapper);wrapper.append(target,createHelpButton(key));
-  }else if(['population','births','deaths','generation','lineages'].includes(id))control.parentElement.querySelector('small').append(createHelpButton(key));
-  else{
-   const wrapper=document.createElement('div');wrapper.className='help-explained';
-   control.before(wrapper);wrapper.append(control,createHelpButton(key));
-  }
+  if(control.dataset.helpShared)continue;
+  const range=control.closest('.range-setting');if(range){if(!ranges.has(range)){const label=range.querySelector('.range-heading label');if(label)labelHelp(label,key);ranges.add(range);}continue;}
+  const label=control.closest('label');if(label)labelHelp(label,key);
+  else if(control.tagName==='BUTTON'){control.dataset.help=key;}
+  else if(['population','births','deaths','generation','lineages'].includes(id))labelHelp(control.parentElement.querySelector('small'),key);
+  else{control.dataset.help=key;control.tabIndex=0;}
  }
- document.addEventListener('click',event=>{
-  const button=event.target.closest?.('[data-help]');if(!button)return;
-  event.preventDefault();event.stopPropagation();const entry=HELP[button.dataset.help];if(!entry)return;
-  opener=button;title.textContent=entry[0];body.textContent=entry[1];dialog.showModal();
- });
- document.getElementById('help-close').addEventListener('click',()=>dialog.close());
- dialog.addEventListener('click',event=>{if(event.target===dialog){const box=dialog.getBoundingClientRect();if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)dialog.close();}});
- dialog.addEventListener('close',()=>{
-  // Панель тела обновляется во время наблюдения. Если её прежняя кнопка уже заменена,
-  // возвращаем фокус на новую кнопку той же подсказки, а не на исчезнувший узел.
-  const fallback=[...document.querySelectorAll('[data-help]')].find(b=>b.dataset.help===opener?.dataset.help&&!b.closest('[hidden]'));
-  (opener?.isConnected?opener:fallback)?.focus();
- });
+ document.addEventListener('pointerover',e=>{const target=e.target.closest?.('[data-help]');if(target)show(target);else if(tooltip.contains(e.target))clearTimeout(timer);});
+ document.addEventListener('pointerout',e=>{if(e.target.closest?.('[data-help]')||tooltip.contains(e.target)){clearTimeout(timer);timer=setTimeout(hide,150);}});
+ document.addEventListener('focusin',e=>{const target=e.target.closest?.('[data-help]');if(target)show(target);else hide();});
+ document.addEventListener('focusout',()=>{clearTimeout(timer);timer=setTimeout(hide,100);});
+ document.addEventListener('click',e=>{const target=e.target.closest?.('[data-help]');if(target?.dataset.helpLabel){e.preventDefault();e.stopPropagation();show(target);}else if(!target&&!tooltip.contains(e.target))hide();});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'){hide();return;}const target=e.target.closest?.('[data-help]');if(target?.dataset.helpLabel&&['Enter',' '].includes(e.key)){e.preventDefault();show(target);}});
+ document.addEventListener('scroll',e=>{if(!tooltip.contains(e.target))hide();},true);globalThis.addEventListener('resize',hide);
 }

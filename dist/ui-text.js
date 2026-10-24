@@ -15,6 +15,11 @@ import {ENERGY_DEFICIT_FACTOR} from './energy-budget.js';
 // Числа округляются только для чтения; расчётные значения модели не меняются.
 const readable=value=>Number(value).toLocaleString('ru-RU',{maximumFractionDigits:4});
 export const HELP={
+ 'experiment-digestion':['Усвоение одной порции','Время перевода одной съеденной порции в энергию, в Т. Условия опыта заменяют это значение у всех его жителей; остальные правила пищеварения сохраняются.'],
+ 'experiment-reproduction':['Пороги размножения','Для начала родов одновременно должны выполняться пороги энергии и здоровья, возраст зрелости и интервал после предыдущего рождения. Значения — общие условия этого опыта; роды остаются действием мозга.'],
+ 'constructor-new':['Новый опыт','Заполняет черновик личным стандартным набором, а при его отсутствии — исходными настройками. Уже рассчитанные результаты не меняет.'],
+ 'constructor-restore-defaults':['Вернуть стандартные','Заменяет текущий черновик сохранёнными личными настройками; если их нет, исходными настройками приложения.'],
+ 'constructor-make-defaults':['Сделать стандартными','Проверяет и сохраняет текущий план как личный стандартный набор в этом браузере. Редактирование и запуск сами по себе этот набор не изменяют.'],
  'pair-survival-age':['Возраст дожития','Общий возраст дожития для таблицы пары и соответствующего графика. Неизвестный исход не считается нулём.'],
  'pair-interruption-kind':['Прерывания','Общая причина прерываний для таблицы пары и графика частоты прерываний.'],
  'history-chart-mode':['Исходные данные или B−A','Режим меняется только в этой карточке. Разность использует общую пару A/B и полные исходные повторы с данными в обеих сторонах каждого интервала. Полоса — парный 95% ДИ самой разности, а не вычитание границ отдельных ДИ. Меньше пяти пар — без ДИ.'],
@@ -379,3 +384,11 @@ export function installUIText(root=document){
   else throw new Error('Отсутствует текст интерфейса: '+key);
  }
 }
+
+// Общие условия опытов ссылаются на те же пояснения, что настройки мира.
+export const EXPERIMENT_HELP=Object.freeze({
+ population:'founders',limit:'population-limit',digestionTime:'experiment-digestion',memory:'memory',learning:'learning',mutations:'mutations',
+ 'reproduction.energy':'experiment-reproduction','reproduction.health':'experiment-reproduction','reproduction.maturity':'experiment-reproduction','reproduction.birthInterval':'experiment-reproduction',
+ foodSources:'food-sources',foodRegrowInterval:'food-period',foodIslandCount:'food-islands',foodSizeSpread:'food-size-spread',foodPeriodSpread:'food-period-spread',foodCapacityMin:'world-food-capacity',foodCapacityMax:'world-food-capacity',
+ 'automaticEnvironment.enabled':'environment-enabled','automaticEnvironment.targetSources':'environment-target-sources','automaticEnvironment.targetPeriod':'environment-target-period','automaticEnvironment.minimumRate':'environment-minimum-rate','automaticEnvironment.maximumRate':'environment-maximum-rate','automaticEnvironment.preparationInterval':'environment-preparation-interval','automaticEnvironment.randomInterval':'environment-random-interval',
+});

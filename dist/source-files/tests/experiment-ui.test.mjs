@@ -11,9 +11,10 @@ import {MODEL_VERSION} from '../dist/life-history.js';
 import {validatePlan} from '../dist/experiment-plan.js';
 import {experimentArchive,archiveOrigin} from '../dist/experiment-archive.js';
 class Element{
- constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.value='';this.checked=false;this.textContent='';this.style={};this.files=[];}
+ constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.value='';this.checked=false;this.textContent='';this.style={};this.files=[];this.dataset={};}
  append(...nodes){for(const node of nodes){node.parent=this;this.children.push(node);}if(this.tagName==='select'&&!this.value)this.value=String(nodes[0]?.value??'');}
  replaceChildren(...nodes){this.children=[];this.append(...nodes);}
+ prepend(...nodes){for(const node of nodes)node.parent=this;this.children.unshift(...nodes);}
  addEventListener(name,fn){this.listeners[name]=fn;}
  setAttribute(){}
  remove(){this.parent.children=this.parent.children.filter(n=>n!==this);}
@@ -37,6 +38,18 @@ function boot({running=true,pauseError=false,realTimers=false}={}){
  const flush=async()=>{for(let i=0;i<20;i++)await Promise.resolve();};
  return {ui,elements,workers,state,calls,toolbar,intervals,done,flush,restore(){globalThis.fetch=oldFetch;globalThis.setInterval=oldInterval;globalThis.setTimeout=oldTimeout;}};
 }
+test('personal defaults remain separate from editing and starting; restore and new use the saved plan',async()=>{
+ const old=globalThis.localStorage,values=new Map();globalThis.localStorage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)};
+ const b=boot();try{const steps=b.elements.get('constructor-steps');steps.value='123';b.elements.get('constructor-make-defaults').click();assert.match(b.elements.get('constructor-storage').textContent,/сохранены/);
+  steps.value='456';b.elements.get('constructor-worlds').value='1';b.elements.get('constructor-worlds').emit('change');await b.elements.get('constructor-run').click();assert.equal(b.ui.isActive(),true);b.elements.get('constructor-force-stop').click();await b.flush();
+  const saved=JSON.parse(values.get('big-evolution-experiment-preferences-v1'));assert.equal(saved.standard.steps,123);b.elements.get('constructor-restore-defaults').click();assert.equal(Number(steps.value),123);steps.value='999';b.elements.get('constructor-new').click();assert.equal(Number(steps.value),123);
+ }finally{b.restore();globalThis.localStorage=old;}
+});
+test('draft restores raw fields, seeds and unfinished factors after reload',()=>{
+ const old=globalThis.localStorage,oldEvents=globalThis.addEventListener,values=new Map();let flushDraft;globalThis.localStorage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)};globalThis.addEventListener=(key,fn)=>{if(key==='pagehide')flushDraft=fn;};
+ let b;try{b=boot();b.elements.get('constructor-name').value='Черновик';b.elements.get('constructor-steps').value='';const picker=b.elements.get('constructor-factor-add');picker.value='reproduction.maturity';picker.emit('change');const factor=b.elements.get('constructor-factors');descendants(factor,n=>n.tagName==='button'&&n.textContent==='+ Значение')[0].click();flushDraft();b.restore();b=boot();assert.equal(b.elements.get('constructor-name').value,'Черновик');assert.equal(b.elements.get('constructor-steps').value,'');assert.equal(descendants(b.elements.get('constructor-factors'),n=>n.type==='number').length,2);assert.equal(descendants(b.elements.get('constructor-factors'),n=>n.type==='number')[1].value,'');assert.equal(JSON.parse(values.get('big-evolution-experiment-preferences-v1')).standard,null);
+ }finally{b?.restore();globalThis.localStorage=old;globalThis.addEventListener=oldEvents;}
+});
 test('real UI builds templates, passes independent variants, pauses and restores the main world',async()=>{
  const b=boot();try{
  assert.equal(b.elements.get('constructor-builtins').children.length,5);b.elements.get('constructor-builtins').children[1].click();assert.equal(b.elements.get('constructor-factors').children.length,1);
@@ -59,9 +72,9 @@ test('persistence writes immutable completed attempts once and marks interrupted
  await store.delete('test');assert.equal(tables.get('runs').size,0);assert.equal(tables.get('attempts').size,0);
 });
 const descendants=(node,predicate)=>node.children.flatMap(n=>[...(predicate(n)?[n]:[]),...descendants(n,predicate)]);
-test('common table is fully visible; boolean factors default to both states and never duplicate rows',()=>{
+test('common tabs retain fields; boolean factors default to both states and never duplicate rows',()=>{
  const b=boot();try{
- const common=b.elements.get('constructor-common');assert.equal(common.children[0].tagName,'table');assert.equal(common.children[0].children[0].children.length,6);assert.equal(descendants(common,n=>n.tagName==='details').length,0);
+ const common=b.elements.get('constructor-common'),rows=common.children[1].children[0].children;assert.equal(rows.length,6);assert.equal(rows.filter(r=>!r.hidden).length,1);common.children[0].children[2].click();assert.equal(rows[2].hidden,false);assert.equal(rows[0].hidden,true);assert.equal(descendants(common,n=>n.tagName==='details').length,0);
  const picker=b.elements.get('constructor-factor-add'),factors=b.elements.get('constructor-factors');picker.value='memory';picker.emit('change');assert.equal(factors.children.length,1);const boxes=descendants(factors,n=>n.type==='checkbox');assert.equal(boxes.length,2);assert.ok(boxes.every(i=>i.checked));assert.match(b.elements.get('constructor-design-summary').textContent,/Сочетаний на seed: 2/);
  picker.value='memory';picker.emit('change');assert.equal(factors.children.length,1);boxes[0].checked=false;boxes[0].emit('change');assert.match(b.elements.get('constructor-design-summary').textContent,/Сочетаний на seed: 1/);
  boxes[1].checked=false;boxes[1].emit('change');assert.equal(b.elements.get('constructor-run').disabled,true);assert.match(b.elements.get('constructor-design-summary').textContent,/хотя бы одно/);

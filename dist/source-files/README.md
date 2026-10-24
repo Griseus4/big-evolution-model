@@ -4,7 +4,7 @@ English · [Русский](README.ru.md)
 
 An artificial life simulation with evolving neural agents, individual learning, and spatial memory in a hex-grid world.
 
-Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments.
+Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments. Version 0.50 adds a compact workspace with separate experiment setup/results and independent draft/personal defaults.
 
 **Status:** experimental prototype · **Current implementation:** 0.49.0 · **Interface:** Russian.
 

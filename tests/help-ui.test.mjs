@@ -5,11 +5,18 @@ import assert from 'node:assert/strict';
 import {installHelp} from '../dist/help.js';
 import {readFileSync} from 'node:fs';
 class Element{
- constructor(tag='div',className=''){this.tagName=tag.toUpperCase();this.className=className;this.children=[];this.dataset={};this.listeners={};this.hidden=false;}
+ constructor(tag='div',className=''){this.tagName=tag.toUpperCase();this.className=className;this.children=[];this.dataset={};this.listeners={};this.hidden=false;this.style={};}
  append(...nodes){for(const n of nodes){if(n.parentElement)n.parentElement.children=n.parentElement.children.filter(x=>x!==n);this.children.push(n);n.parentElement=this;}}
  before(n){const p=this.parentElement;p.children.splice(p.children.indexOf(this),0,n);n.parentElement=p;}
  closest(selector){for(let n=this;n;n=n.parentElement)if(selector==='label'?n.tagName==='LABEL':selector==='[data-help]'?Boolean(n.dataset.help):selector==='[hidden]'?n.hidden:n.className.split(' ').includes(selector.slice(1)))return n;return null;}
- querySelector(selector){return this.children.flatMap(n=>[n,...n.all()]).find(n=>selector==='small'?n.tagName==='SMALL':n.className.split(' ').includes(selector.slice(1)))??null;}
+ querySelector(selector){if(selector==='.range-heading label')return this.querySelector('.range-heading')?.querySelector('label');return this.children.flatMap(n=>[n,...n.all()]).find(n=>selector==='small'?n.tagName==='SMALL':selector==='label'?n.tagName==='LABEL':selector==='[data-help]'?Boolean(n.dataset.help):n.className.split(' ').includes(selector.slice(1)))??null;}
+ get childNodes(){const self=this;return [...(this.textContent?[{nodeType:3,textContent:this.textContent,before(n){self.children.unshift(n);n.parentElement=self;},remove(){self.textContent='';}}]:[]),...this.children];}
+ contains(n){return n===this||this.all().includes(n);}
+ removeAttribute(k){delete this[k];}
+ matches(){return Boolean(this.open);}
+ showPopover(){this.open=true;}
+ hidePopover(){this.open=false;}
+ getBoundingClientRect(){return {left:20,top:20,bottom:40,width:250,height:80};}
  all(){return this.children.flatMap(n=>[n,...n.all()]);}
  setAttribute(k,v){this[k]=v;}
  addEventListener(k,v){this.listeners[k]=v;}
@@ -17,28 +24,24 @@ class Element{
  close(){this.open=false;this.listeners.close?.();}
  focus(){this.focused=true;}
 }
-test('help attaches once to range pairs, skips hidden input and never calls pause',()=>{
- const old=globalThis.document,root=new Element(),ids=new Map(),add=(id,tag='div',parent=root)=>{const e=new Element(tag);e.id=id;ids.set(id,e);parent.append(e);return e;};
- const dialog=add('help-dialog');add('help-title');add('help-body');add('help-close','button');
- const file=add('world-load-file','input');file.hidden=true;add('world-load','button');
- const label=new Element('label');root.append(label);const seed=add('seed','input',label);seed.type='number';
- const checkboxLabel=new Element('label');root.append(checkboxLabel);const checkbox=add('show-memory','input',checkboxLabel);checkbox.type='checkbox';
- for(const prefix of ['','world-']){
-  const range=new Element('div','range-setting'),heading=new Element('div','range-heading');root.append(range);range.append(heading);
-  for(const suffix of ['','-number']){const input=add(prefix+'food-period-spread'+suffix,'input',suffix?heading:range);input.type=suffix?'number':'range';}
- }
- let paused=0;
- globalThis.document={getElementById:id=>ids.get(id),createElement:tag=>new Element(tag),addEventListener:(k,fn)=>root.addEventListener(k,fn),querySelectorAll:()=>root.all().filter(e=>e.dataset.help)};
- try{
-  installHelp(()=>paused++);
-  assert.equal(file.parentElement,root);assert.equal(root.all().filter(e=>e.dataset.help==='world-load-file').length,0);
+test('label help works by focus, touch and keyboard, deduplicates ranges and never pauses',()=>{
+ const saved=Object.fromEntries(['document','innerWidth','innerHeight','addEventListener'].map(k=>[k,globalThis[k]])),root=new Element(),ids=new Map();
+ const add=(id,tag='div',parent=root)=>{const e=new Element(tag);e.id=id;ids.set(id,e);parent.append(e);return e;};
+ const hidden=add('world-load-file','input');hidden.hidden=true;add('world-load','button');
+ const label=new Element('label');label.textContent='Номер опыта';root.append(label);const seed=add('seed','input',label);seed.type='number';
+ const checkLabel=new Element('label');checkLabel.textContent='Память';root.append(checkLabel);const check=add('show-memory','input',checkLabel);check.type='checkbox';
+ for(const prefix of ['','world-']){const range=new Element('div','range-setting'),heading=new Element('div','range-heading'),caption=new Element('label');caption.textContent='Разброс';root.append(range);range.append(heading);heading.append(caption);for(const suffix of ['','-number']){const input=add(prefix+'food-period-spread'+suffix,'input',suffix?heading:range);input.type=suffix?'number':'range';}}
+ globalThis.document={body:root,getElementById:id=>ids.get(id),createElement:tag=>new Element(tag),addEventListener:(k,fn)=>root.addEventListener(k,fn)};globalThis.innerWidth=900;globalThis.innerHeight=600;globalThis.addEventListener=()=>{};
+ try{installHelp();const help=root.all().find(e=>e.dataset.help==='seed'),tooltip=root.all().find(e=>e.id==='help-tooltip');
+  assert.equal(seed.parentElement,label);assert.equal(check.parentElement,checkLabel);assert.equal(hidden.parentElement,root);
   for(const range of root.children.filter(e=>e.className==='range-setting'))assert.equal(range.all().filter(e=>e.dataset.help).length,1);
-  assert.ok(seed.parentElement.parentElement.className.includes('help-field'));assert.equal(checkbox.parentElement,checkboxLabel);
-  const button=root.all().find(e=>e.dataset.help==='seed');assert.equal(button.parentElement,seed.parentElement.parentElement);
-  root.listeners.click({target:button,preventDefault(){},stopPropagation(){}});assert.equal(dialog.open,true);assert.equal(paused,0);
-  // Неизменённая кнопка получает фокус после закрытия; сам input не активируется.
-  button.isConnected=true;dialog.close();assert.equal(button.focused,true);
- }finally{globalThis.document=old;}
+  assert.ok(help);assert.equal(help.textContent,'Номер опыта');assert.ok(!root.all().some(e=>e.textContent==='?'));
+  root.listeners.focusin({target:help});assert.equal(tooltip.open,true);assert.match(tooltip.textContent,/seed|номер/i);
+  root.listeners.click({target:help,preventDefault(){},stopPropagation(){}});assert.equal(tooltip.open,true,'touch after focus keeps help visible');
+  root.listeners.keydown({target:help,key:'Escape'});assert.equal(tooltip.open,false);
+  root.listeners.keydown({target:help,key:'Enter',preventDefault(){}});assert.equal(tooltip.open,true);
+  root.listeners.click({target:root});assert.equal(tooltip.open,false);assert.equal(check.checked,undefined);
+ }finally{for(const [key,value]of Object.entries(saved))globalThis[key]=value;}
 });
 test('world rules live in thematic reference articles and visible numbers have no float tails',async()=>{
  const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');

@@ -3,7 +3,7 @@
 [Выбор темы](README.md). План опыта, результат попытки, полный мир и геном имеют разные назначения/форматы.
 
 ## design
-**Задача:** общие условия, значения отличий, все сочетания, основы геномов/чувствительности, шаблоны.
+**Задача:** общие условия, значения отличий, все сочетания, основы геномов/чувствительности, шаблоны. Черновик/личный стандартный набор — [experiment-preferences.js](../../dist/experiment-preferences.js), [контракт](../ui-redesign.md).
 **Сейчас:** поля — [experiment-fields.js](../../dist/experiment-fields.js), редактор — [experiment-design-ui.js](../../dist/experiment-design-ui.js); `validateWorldOptions`/`validatePlan` — [experiment-plan.js](../../dist/experiment-plan.js). Геномы — [experiment-genomes.js](../../dist/experiment-genomes.js), подмена коэффициентов — [founder-senses.js](../../dist/founder-senses.js).
 **Граница:** редактор даёт план, валидатор определяет допустимые сочетания, исполнитель получает отдельные настройки мира. Отличия не должны менять общие условия другого варианта; замена чувствительности не заменяет остальные случайные гены. Изменение поля проверить в UI, плане, исполнении и экспорте.
 **Проверка:** [experiment-factors.test.mjs](../../tests/experiment-factors.test.mjs), [experiment-ui.test.mjs](../../tests/experiment-ui.test.mjs), [genome-experiments044.test.mjs](../../tests/genome-experiments044.test.mjs): сочетания/границы, отсутствие дублей, основы и числовые коэффициенты.

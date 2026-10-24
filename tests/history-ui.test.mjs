@@ -153,6 +153,7 @@ test('chart picker groups each chart once and keeps all sensitivities only as di
 test('toolbar button docks statistics controls; Escape commits input and restores focus',()=>{
  const elements=new Map(),root={activeElement:null,getElementById:id=>elements.get(id)};
  elements.set('history-layout',new Element());
+ elements.set('history-drawer-left-body',new Element());
  for(const side of ['left']){const drawer=new Element('details'),handle=new Element('summary'),field=new Element('input');drawer.contains=e=>e===handle||e===field;handle.focus=()=>{root.activeElement=handle;};field.blur=()=>{field.committed=true;root.activeElement=null;};drawer.field=field;elements.set('history-drawer-'+side,drawer);elements.set('history-drawer-'+side+'-handle',handle);}
  installHistoryDrawers(root);
  for(const side of ['left']){const drawer=elements.get('history-drawer-'+side),handle=elements.get('history-drawer-'+side+'-handle');

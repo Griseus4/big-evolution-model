@@ -26,10 +26,11 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  const tabs=['world','history','tests','analysis','about'];
  installGenomeAnalysis();
  let current='world',constructorUI=null;
- const testPages=['templates','constructor','runs','benchmark','mechanisms'];
+ const testPages=['constructor','runs','benchmark','mechanisms'];
+ let preferences;try{preferences=globalThis.localStorage;}catch{}
  const historyUI=installHistoryUI({getSimulation:()=>constructorUI?.getSimulation()??getSimulation(),getComparisons:()=>constructorUI?.comparisons(),prepareSimulation:options=>constructorUI?.prepareStatistics(options),getExperiment:()=>constructorUI?.analysisSeries()});
  const reports={mechanisms:null,benchmark:null,long:null};
- let testPage='mechanisms';
+ let testPage='constructor';
  let jobReport=null,active=false,stopping=false,pending=[],workers=[],benchBase=null,build=null,benchmarkUI=null;
  const hardware=navigator.hardwareConcurrency||2;
  byId('test-parallel').value=String(Math.min(4,Math.max(1,Math.floor(hardware/2))));
@@ -66,12 +67,13 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  restore();
  function updateExportButton(){byId('tests-export').disabled=!Object.values(reports).some(Boolean);}
  function selectTestPage(name){
-  testPage=name;byId('legacy-test-status').hidden=!['mechanisms','benchmark','long'].includes(name);
+  testPage=name;document.querySelector('.diagnostics-menu').open=['benchmark','mechanisms'].includes(name);try{preferences?.setItem('big-evolution-experiment-page',name);}catch{}byId('constructor-actions').hidden=name!=='constructor';byId('legacy-test-status').hidden=!['mechanisms','benchmark','long'].includes(name);
   for(const tab of [...testPages,'long']){
    const selected=tab===name;byId(`test-tab-${tab}`).setAttribute('aria-selected',String(selected));byId(`test-tab-${tab}`).tabIndex=selected?0:-1;byId(`test-panel-${tab}`).hidden=!selected;
   }
   renderTests();
  }
+ try{const saved=preferences?.getItem('big-evolution-experiment-page');if(testPages.includes(saved))testPage=saved;}catch{}
  for(const name of testPages){
   const button=byId(`test-tab-${name}`);button.addEventListener('click',()=>selectTestPage(name));
   button.addEventListener('keydown',event=>{
@@ -213,7 +215,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  constructorUI=installExperimentUI({getSimulation,getWorldState,pauseWorld:suspendWorld,resumeWorld,
   isOtherActive:()=>active||benchmarkUI.isActive(),onBusyChange:()=>renderTests(),openStatistics:()=>selectTab('history'),
   sourceChanged:(reset=false)=>{if(reset)historyUI.reset();renderHistory(true);}});
- selectTestPage('constructor');
+ selectTestPage(testPage);
  const initialTab=new URL(location.href).searchParams.get('tab');
  if(tabs.includes(initialTab))selectTab(initialTab);
  renderTests();return {isBenchmarkActive:()=>active||benchmarkUI.isActive()||constructorUI.isActive(),refresh:()=>renderHistory(),onRestart:()=>{historyUI.reset();if(current==='history')renderHistory(true);},currentTab:()=>current,exportWorldObservation};

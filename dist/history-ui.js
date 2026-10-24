@@ -1,3 +1,4 @@
+import {installChoiceTabs} from './workspace-ui.js';
 import {createComparisonCharts} from './comparison-charts.js';
 /** Истории считаются только при открытии вкладки/смене фильтра. Пагинация,
  * выбор точки и перерисовка Canvas повторно не сортируют жизни по группам. */
@@ -80,7 +81,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  const pairs=installPairComparison({root,onChange:()=>drawCharts()});
  const differences=installHistoryDifferences({root,cards:chartCards,onChange:()=>drawCharts()});
  for(const [metric,control]of [['survival','history-survival-controls'],['interruptions','history-interruption-controls']])chartCards.find(c=>c.m.id===metric).card.append(byId(control));
- const display=byId('history-display'),picked=new Set(),pickers=new Map();
+ const display=byId('history-display'),syncViewTabs=installChoiceTabs(display,byId('history-view-tabs'),root),picked=new Set(),pickers=new Map();
  const formulaClient=createCatalogueExpressionClient({onChange:()=>drawCharts()});
  const catalogue=installChartCatalogue({root,getExperiment,getCommon:()=>({...options(),start:rangeStart,end:rangeEnd??rangeMaximum,curveStart:Number(byId('history-curve-start').value)}),onChange:()=>syncCatalogue()});
  for(const c of [...chartCards,...histogramCards])catalogue.actionsFor(c.definition,c.card);
@@ -106,7 +107,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
   const hidden=new Set(catalogue.state().hidden);picked.clear();
   for(const group of groups){const column=make('fieldset');column.className='history-picker-group';column.append(make('legend',group.label));byId('history-chart-options').append(column);
    for(const id of group.charts){const def=definitions.find(d=>d.id===id),label=make('label'),input=make('input');input.type='checkbox';input.checked=!hidden.has(id);input.setAttribute('aria-label',def.name);label.append(input,make('span',def.name));column.append(label);if(input.checked)picked.add(id);pickers.set(id,input);input.addEventListener('change',()=>{display.value='custom';catalogue.setVisible(id,input.checked);});}
-  }applyDisplay();
+  }syncViewTabs();applyDisplay();
  }
  function applyDisplay(){
   const mode=display.value||'all',hidden=new Set(catalogue.state().hidden);picked.clear();for(const def of definitions)if(!hidden.has(def.id)&&(mode==='all'||mode==='custom'||def.category===mode))picked.add(def.id);

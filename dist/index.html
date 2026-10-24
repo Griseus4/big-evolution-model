@@ -7,8 +7,9 @@
  <link rel="stylesheet" href="./evolution.css">
  <link rel="stylesheet" href="./controls.css">
  <link rel="stylesheet" href="./layout.css">
+ <link rel="stylesheet" href="./workspace.css">
 </head>
-<body>
+<body class="workspace">
 <!-- Разметка задаёт только представление. Физика и выбор действий находятся в evolution.js. -->
 <header><div><span class="eyebrow" data-ui-text="brand"></span><h1>Лаборатория поколений</h1><p data-ui-text="description1"></p></div><nav><a href="./source.html">Исходники</a><a href="./legacy.html">Первый опыт</a></nav></header>
 <div class="global-toolbar"><div class="lab-tablist" role="tablist" aria-label="Разделы лаборатории"><button id="tab-world" role="tab" aria-selected="true" aria-controls="panel-world">Мир</button><button id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history">Статистика</button><button id="tab-tests" role="tab" aria-selected="false" aria-controls="panel-tests">Опыты</button><button id="tab-analysis" role="tab" aria-selected="false" aria-controls="panel-analysis">Анализ генома</button><button id="tab-about" role="tab" aria-selected="false" aria-controls="panel-about">Об игре</button></div><button id="history-drawer-left-handle" aria-controls="history-drawer-left-body" aria-expanded="false" hidden>Настройки статистики</button><div class="global-play-controls"><button id="play" class="primary" aria-pressed="false">▶ Наблюдать</button></div><div class="world-file-actions"><button id="world-save" class="primary">Сохранить мир</button><button id="world-load">Загрузить мир</button></div></div>
@@ -110,7 +111,7 @@
 </main>
 <section id="panel-history" class="lab-panel" role="tabpanel" aria-labelledby="tab-history" hidden>
  <div id="history-layout" class="history-layout" data-open="false">
- <details id="history-drawer-left" class="history-drawer history-drawer-left"><summary hidden>Настройки статистики</summary><div id="history-drawer-left-body" class="history-drawer-body">
+ <aside id="history-drawer-left" class="history-drawer history-drawer-left" aria-label="Настройки статистики"><div id="history-drawer-left-body" class="history-drawer-body">
  <h3>Источник и сравнение</h3>
  <div class="history-settings"><label>Источник статистики<select id="experiment-stat-source"><option value="current">Текущий мир</option></select></label><label>Вес данных<select id="experiment-stat-weight"><option value="worlds">Каждый мир имеет равный вес</option><option value="individuals">Каждая особь имеет равный вес</option></select></label><label>Линии сравнения вариантов<select id="experiment-stat-line"><option value="mean">Среднее</option><option value="median">Медиана</option><option value="min">Минимум</option><option value="max">Максимум</option></select></label></div>
  <label>Полоса вокруг линии<select id="history-band-mode"><option value="confidence">Доверительный интервал 95%</option><option value="spread">Разброс миров: 25–75%</option><option value="none">Без полосы</option></select></label><p class="note" data-ui-text="history-bands"></p>
@@ -140,9 +141,10 @@
  <fieldset id="history-line-controls" class="history-legend"><legend>Линии индивидуальных показателей</legend>
   <label class="check"><input id="history-show-min" type="checkbox" checked>Минимум</label><label class="check"><input id="history-show-median" type="checkbox" checked>Медиана</label><label class="check"><input id="history-show-mean" type="checkbox" checked>Среднее</label><label class="check"><input id="history-show-max" type="checkbox" checked>Максимум</label>
  </fieldset>
- <div class="history-display-controls"><label>Экран <select id="history-display"><option value="survival" selected>Выживание</option><option value="behavior">Поведение</option><option value="resources">Ресурсы</option><option value="reproduction">Размножение</option><option value="genome">Наследуемые свойства</option><option value="distributions">Распределения чувствительностей</option><option value="table">Таблица</option><option value="pair">Сравнение пары</option><option value="all">Все графики и таблица</option><option value="custom">Мой набор графиков</option></select></label><details class="history-chart-picker"><summary>Выбрать графики для сравнения</summary><div id="history-chart-options" class="history-chart-options"></div></details></div>
- </div></details>
+
+ </div></aside>
  <div class="history-main">
+ <div id="history-view-toolbar" class="history-view-toolbar"> <div class="history-display-controls"><label>Экран <select id="history-display" hidden><option value="survival" selected>Выживание</option><option value="behavior">Поведение</option><option value="resources">Ресурсы</option><option value="reproduction">Размножение</option><option value="genome">Наследуемые свойства</option><option value="distributions">Распределения чувствительностей</option><option value="table">Таблица</option><option value="pair">Сравнение пары</option><option value="all">Все графики и таблица</option><option value="custom">Мой набор графиков</option></select></label><details class="history-chart-picker"><summary>Выбрать графики для сравнения</summary><div id="history-chart-options" class="history-chart-options"></div></details></div><div id="history-view-tabs" role="tablist" aria-label="Графики и таблицы" class="screen-tablist"></div></div>
  <div class="section-title"><div><span class="eyebrow">ПРОЖИТЫЕ ЖИЗНИ</span><h2>Итоги и текущие наблюдения</h2></div><button id="history-open-builder">Создать график</button><button id="history-export">Скачать истории (.json)</button></div>
  <p id="experiment-stat-note" class="note"></p><p class="note" data-ui-text="description17"></p>
  <p id="history-summary" class="lab-summary"></p><p id="history-causes" class="note"></p><p id="history-cohorts" class="note"></p>
@@ -173,42 +175,42 @@
  <div class="section-title"><div><span class="eyebrow">РАСЧЁТ НА ТВОЁМ УСТРОЙСТВЕ</span><h2>Опыты</h2></div><button id="tests-export" class="primary" disabled>Скачать проверки и замеры (.json)</button></div>
  <p class="note" data-ui-text="description20"></p>
  <div class="test-tablist" role="tablist" aria-label="Виды испытаний">
-  <button id="test-tab-templates" role="tab" aria-selected="false" aria-controls="test-panel-templates" tabindex="-1">Шаблоны</button>
-  <button id="test-tab-constructor" role="tab" aria-selected="false" aria-controls="test-panel-constructor" tabindex="-1">Конструктор</button>
-  <button id="test-tab-runs" role="tab" aria-selected="false" aria-controls="test-panel-runs" tabindex="-1">Запуски</button>
-  <button id="test-tab-mechanisms" role="tab" aria-selected="true" aria-controls="test-panel-mechanisms">Проверки механизмов</button>
-  <button id="test-tab-benchmark" role="tab" aria-selected="false" aria-controls="test-panel-benchmark" tabindex="-1">Замеры скорости</button>
+  <button hidden id="test-tab-templates" role="tab" aria-selected="false" aria-controls="test-panel-templates" tabindex="-1">Шаблоны</button>
+  <button id="test-tab-constructor" role="tab" aria-selected="true" aria-controls="test-panel-constructor" tabindex="0">Настройка опыта</button>
+  <button id="test-tab-runs" role="tab" aria-selected="false" aria-controls="test-panel-runs" tabindex="-1">Запуски и результаты</button>
+  <details class="diagnostics-menu"><summary>Проверки и замеры</summary><button id="test-tab-mechanisms" role="tab" aria-selected="false" aria-controls="test-panel-mechanisms">Проверки механизмов</button>
+  <button id="test-tab-benchmark" role="tab" aria-selected="false" aria-controls="test-panel-benchmark" tabindex="-1">Замеры скорости</button></details>
   <button hidden id="test-tab-long" role="tab" aria-selected="false" aria-controls="test-panel-long" tabindex="-1">Длинные испытания</button>
  </div>
-<div id="legacy-test-status" class="panel"><p id="tests-summary" class="lab-summary" aria-live="polite"></p><p id="tests-progress" class="note"></p><div class="lab-controls"><button id="tests-stop" disabled>Остановить и собрать итоги</button><button id="tests-force-stop" disabled>Прервать немедленно</button></div><p class="note" data-ui-text="description21"></p><p id="tests-storage-note" class="note"></p><p id="tests-error" class="error" role="alert"></p></div>
+<div id="legacy-test-status" class="panel" hidden><p id="tests-summary" class="lab-summary" aria-live="polite"></p><p id="tests-progress" class="note"></p><div class="lab-controls"><button id="tests-stop" disabled>Остановить и собрать итоги</button><button id="tests-force-stop" disabled>Прервать немедленно</button></div><p class="note" data-ui-text="description21"></p><p id="tests-storage-note" class="note"></p><p id="tests-error" class="error" role="alert"></p></div>
 
 
- <section id="test-panel-templates" role="tabpanel" aria-labelledby="test-tab-templates" hidden>
-  <h3>Готовые планы опытов</h3><p class="note">Выберите шаблон, затем измените общие условия и варианты в конструкторе.</p><div id="constructor-builtins" class="constructor-grid"></div>
-  <h3>Ваши шаблоны в этом браузере</h3><div id="constructor-saved-templates" class="constructor-grid"></div>
- </section>
- <section id="test-panel-constructor" role="tabpanel" aria-labelledby="test-tab-constructor" hidden>
-  <div class="panel"><h3>План опыта</h3><div class="constructor-grid">
+
+ <section id="test-panel-constructor" role="tabpanel" aria-labelledby="test-tab-constructor">
+  <div class="constructor-workspace"><div class="panel constructor-plan"><h3>План опыта</h3><div class="constructor-grid">
    <label>Название опыта<input id="constructor-name" value="Новый опыт" maxlength="120"></label>
    <label>Миров на каждый вариант<input id="constructor-worlds" type="number" min="1" max="64" value="5"></label>
    <label>Длительность мира, Т<input id="constructor-steps" type="number" min="1" max="1000000" value="20000"></label>
    <label>Общий бюджет потоков<input id="constructor-budget" type="number" min="1" max="64"></label>
    <label>Вычислителей на мир, максимум<select id="constructor-workers"></select></label>
-   <label>Распределение<select id="constructor-allocation"><option value="auto">Сначала независимые миры, затем усиление оставшихся</option><option value="fixed">Фиксированное число на мир</option></select></label>
-  </div><p class="note">Параллельный мир дополнительно использует один поток координатора. Бюджет ограничивает расчёты серии, а не все процессы браузера.</p>
+   <label>Распределение<select id="constructor-allocation"><option value="auto">Авто: сначала миры</option><option value="fixed">Фиксировано на мир</option></select></label>
+  </div></div><div class="panel constructor-seed-panel"><h3>Сиды жителей</h3>
   <p id="constructor-map-note" class="note"></p><label>Seed жителей по повторам — одинаковые для сравниваемых вариантов<textarea id="constructor-seeds" rows="3"></textarea></label><button id="constructor-random">Случайная последовательность seed жителей</button>
-  <p class="note">При вымирании — до трёх попыток с заранее заданными новыми seed. Для итогов берётся успешная попытка или самая длительная из вымерших; все попытки сохраняются.</p></div>
-  <div class="panel"><h3>Общие условия</h3><div id="constructor-common"></div><label>Геном основателей<input id="constructor-base" type="file" accept=".json,application/json"></label><p id="constructor-base-note" class="note">Случайные геномы</p><button id="constructor-clear-base">Вернуть случайные геномы</button></div>
+  <p class="note">До трёх попыток при вымирании. Все попытки сохраняются.</p></div>
+  <div class="panel constructor-conditions"><h3>Общие условия мира</h3><div id="constructor-common"></div><label>Геном основателей<input id="constructor-base" type="file" accept=".json,application/json"></label><p id="constructor-base-note" class="note">Случайные геномы</p><button id="constructor-clear-base">Вернуть случайные геномы</button></div></div>
   <div class="constructor-design-layout"><section class="panel"><h3>Изменяемые параметры</h3><p class="note" data-ui-text="constructor-genetics"></p><table class="constructor-factor-table"><tbody id="constructor-factors"></tbody></table><select id="constructor-factor-add" aria-label="Добавить изменение"></select></section><aside class="panel constructor-scheme"><h3>Схема опыта</h3><p id="constructor-design-summary" class="note" role="status"></p><p class="note">Вторая и третья попытки используют новые seed мира, сохраняя общую карту. Раскройте ветви, чтобы увидеть состав серии.</p><div id="constructor-design-tree"></div></aside></div>
-  <div class="panel lab-controls"><button id="constructor-run" class="primary">Начать опыты</button><button id="constructor-save-template">Сохранить шаблон</button><button id="constructor-export-plan">Скачать план JSON</button><label>Открыть план<input id="constructor-import-plan" type="file" accept=".json,application/json"></label></div>
+  <details id="constructor-template-tools"><summary>Шаблоны и файлы планов</summary> <section id="test-panel-templates" role="tabpanel" aria-labelledby="test-tab-templates">
+  <h3>Готовые планы опытов</h3><p class="note">Выберите шаблон, затем измените общие условия и варианты в конструкторе.</p><div id="constructor-builtins" class="constructor-grid"></div>
+  <h3>Ваши шаблоны в этом браузере</h3><div id="constructor-saved-templates" class="constructor-grid"></div>
+ </section><div class="lab-controls"><button id="constructor-save-template">Сохранить шаблон</button><button id="constructor-export-plan">Скачать план JSON</button><label>Открыть план<input id="constructor-import-plan" type="file" accept=".json,application/json"></label></div></details>
  </section>
  <section id="test-panel-runs" role="tabpanel" aria-labelledby="test-tab-runs" hidden>
   <div class="panel"><p id="constructor-progress" role="status">Серия ещё не запущена.</p><div class="lab-controls"><button id="constructor-stop" disabled>Остановить и собрать итоги</button><button id="constructor-force-stop" disabled>Прервать немедленно</button><label>Формат результатов<select id="constructor-export-format"><option value="archive">Сжатый архив (.beexp)</option><option value="json">Обычный JSON (.json)</option></select></label><button id="constructor-export" disabled>Скачать результаты опытов</button><button id="constructor-open-comparison">Сравнить в статистике</button></div><p class="note" data-ui-text="experiment-export-kind"></p><p class="note" data-ui-text="experiment-retry-comparison"></p></div>
   <p id="constructor-export-state" class="note" role="status"></p><div class="lab-controls experiment-pages"><button id="constructor-results-prev" disabled>← Предыдущие сочетания</button><span id="constructor-results-page">Серия ещё не выбрана.</span><button id="constructor-results-next" disabled>Следующие сочетания →</button></div>
   <div id="constructor-results" class="experiment-results-grid"></div><h3>Сохранённые серии</h3><label>Открыть результаты опытов (.beexp, .json, .json.gz)<input id="constructor-import-report" type="file" accept=".beexp,.json,.gz,application/json,application/gzip,application/octet-stream"></label><div id="constructor-archive"></div>
  </section>
- <p id="constructor-error" class="error" role="alert"></p><p id="constructor-storage" class="note"></p>
- <section id="test-panel-mechanisms" role="tabpanel" aria-labelledby="test-tab-mechanisms">
+ <div id="constructor-actions" class="constructor-actions"><button id="constructor-run" class="primary">Начать опыты</button><button id="constructor-new">Новый опыт</button><button id="constructor-restore-defaults">Вернуть стандартные</button><button id="constructor-make-defaults">Сделать стандартными</button></div><div class="constructor-notes"><p id="constructor-error" class="error" role="alert"></p><p id="constructor-storage" class="note" role="status"></p></div>
+ <section id="test-panel-mechanisms" role="tabpanel" aria-labelledby="test-tab-mechanisms" hidden>
  <div class="panel"><h3>Правильность механизмов</h3><p class="note" data-ui-text="description22"></p><button id="run-checks" class="wide primary">Запустить проверки механизмов</button></div>
  <h3>Результаты проверок</h3><div id="check-results"></div>
  </section>
