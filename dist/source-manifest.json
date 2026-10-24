@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 33,
-    "bytes": 4016,
+    "bytes": 4017,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 119,
-    "bytes": 14769,
+    "lines": 121,
+    "bytes": 14919,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -644,6 +644,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v052-summary-without-notes.md",
+    "url": "./source-files/docs/updates/v052-summary-without-notes.md",
+    "lines": 9,
+    "bytes": 1962,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "dist/food-island-evolution.js",
     "url": "./food-island-evolution.js",
     "lines": 120,
@@ -775,7 +783,7 @@
     "name": "dist/world-save.js",
     "url": "./world-save.js",
     "lines": 56,
-    "bytes": 10120,
+    "bytes": 10129,
     "aliases": [],
     "purpose": "Полный ручной снимок, проверка и восстановление текущей модели."
   },
@@ -791,7 +799,7 @@
     "name": "tests/environment-save.test.mjs",
     "url": "./source-files/tests/environment-save.test.mjs",
     "lines": 92,
-    "bytes": 10117,
+    "bytes": 10126,
     "aliases": [],
     "purpose": "Энергетика, среда, точное продолжение и атомарный отказ загрузки."
   },
@@ -7350,8 +7358,8 @@
   {
     "name": "dist/history-estimates-ui.js",
     "url": "./history-estimates-ui.js",
-    "lines": 36,
-    "bytes": 4139,
+    "lines": 33,
+    "bytes": 3517,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7823,7 +7831,7 @@
     "name": "docs/navigation/interface-and-files.md",
     "url": "./source-files/docs/navigation/interface-and-files.md",
     "lines": 35,
-    "bytes": 9463,
+    "bytes": 9471,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7942,8 +7950,8 @@
   {
     "name": "docs/ui-redesign.md",
     "url": "./source-files/docs/ui-redesign.md",
-    "lines": 71,
-    "bytes": 21536,
+    "lines": 73,
+    "bytes": 22446,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8222,8 +8230,8 @@
   {
     "name": "tests/ui052.test.mjs",
     "url": "./source-files/tests/ui052.test.mjs",
-    "lines": 48,
-    "bytes": 5098,
+    "lines": 49,
+    "bytes": 5435,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8631,7 +8639,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 10,
-    "bytes": 2121,
+    "bytes": 1758,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },

@@ -42,7 +42,8 @@ test('slider coalesces movement, flushes final input and cancels deferred work',
 test('card keeps its numerical summary until every new source result is ready',()=>{
  const make=()=>({children:[],style:{setProperty(){}},setAttribute(){},append(...n){this.children.push(...n);},replaceChildren(...n){this.children=n;}}),root={createElement:make,getElementById:make},card={m:{id:'energy',unit:'%'},canvas:make(),card:make(),view:{value:'original'}},answers=new Map(),client={update(){},get:id=>answers.get(id),state:()=>({}),suspend(){}};
  const ui=installHistoryEstimates({root,cards:[card],onChange(){},createClient:()=>client}),input={sources:[{id:'a',name:'A'},{id:'b',name:'B'}],options,start:0,end:10};
- answers.set('a',{summary:{mean:10}});answers.set('b',{summary:{mean:20}});ui.update(input);const previous=card.numeric.children,display=card.displayEstimates;
+ answers.set('a',{summary:{mean:10,repeats:0,reason:'Исходы неизвестны',excluded:[{pairId:0,variants:['v1','v4']}]}});answers.set('b',{error:'Нет доступных данных',summary:{mean:20}});ui.update(input);const previous=card.numeric.children,display=card.displayEstimates;
+ assert.equal(previous.length,2);assert.equal(display.get('a').summary.reason,'Исходы неизвестны');assert.equal(display.get('b').error,'Нет доступных данных');
  answers.delete('b');answers.set('a',{summary:{mean:30}});ui.update({...input,end:20});assert.equal(card.numeric.children,previous);assert.equal(card.displayEstimates,display);assert.equal(card.pending,true);
  answers.set('b',{summary:{mean:40}});ui.update({...input,end:20});assert.equal(card.pending,false);assert.notEqual(card.numeric.children,previous);assert.equal(card.displayEstimates.get('a').summary.mean,30);
 });

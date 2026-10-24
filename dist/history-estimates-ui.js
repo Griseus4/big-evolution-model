@@ -24,10 +24,7 @@ export function installHistoryEstimates({root=document,cards,onChange,createClie
    }
    const nodes=[make('p',`${['population','food','production'].includes(c.m.id)?'Время мира':'Рождения'} [${input.start}; ${input.end}) Т · ${c.m.unit}`),table];
    for(let i=0;i<sources.length;i++){
-    const result=results[i],s=result?.summary;if(result?.error)nodes.push(make('p',sources[i].name+': '+result.error));
-    if(s?.reason&&!(result?.error&&s.worlds===0))nodes.push(make('p',sources[i].name+': '+s.reason));
-    if(s?.repeats!==undefined)nodes.push(make('p',`Независимых исходных повторов: ${s.repeats}. Связанные миры разных настроек перевыбираются совместно.`));
-    if(s?.excluded?.length)nodes.push(make('p','Пропущены неполные повторы: '+s.excluded.map(e=>`${e.pairId+1} (нет данных: ${e.variants.join(', ')})`).join('; ')));
+    const s=results[i]?.summary;
     if(s?.individual?.length){const details=make('details'),summary=make('summary',sources[i].name+' · значения отдельных миров');let built=false;details.append(summary);details.addEventListener('toggle',()=>{if(!details.open||built)return;built=true;const table=make('table');for(const w of s.individual){const row=make('tr');row.append(...[w.id,`среднее ${format(w.mean)}`,`медиана ${format(w.median)}`,`наблюдений ${w.count}`].map(t=>make('td',t)));table.append(row);}details.append(table);});nodes.push(details);}
    }c.numeric.replaceChildren(...nodes);
   }
