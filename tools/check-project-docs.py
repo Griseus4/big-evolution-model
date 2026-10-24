@@ -12,6 +12,12 @@ ROOT = Path(__file__).resolve().parent.parent
 FILES = [ROOT / 'AGENTS.md', ROOT / 'README.md', ROOT / 'README.ru.md', *sorted((ROOT / 'docs').rglob('*.md'))]
 REQUIRED = ['START_HERE.md', 'architecture.md', 'mechanics-reference.md', 'decisions.md', 'future-ideas.md', 'work/current.md', 'workflows/context.md', 'workflows/local.md', 'templates/contract.md', 'verification.md']
 errors = []
+model_version = re.search(r"MODEL_VERSION='([^']+)'", (ROOT / 'dist/life-history.js').read_text(encoding='utf-8')).group(1)
+for name, pattern in [('README.md', r'Current implementation:\*\* ([0-9.]+)'), ('README.ru.md', r'Текущая версия:\*\* ([0-9.]+)')]:
+    marker = re.search(pattern, (ROOT / name).read_text(encoding='utf-8'))
+    if not marker or marker.group(1).rstrip('.') != model_version:
+        errors.append(f'{name}: текущая версия должна совпадать с MODEL_VERSION={model_version}')
+
 for name in REQUIRED:
     if not (ROOT / 'docs' / name).is_file():
         errors.append(f'Отсутствует docs/{name}')

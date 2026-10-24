@@ -45,15 +45,15 @@ test('standard copy becomes an editable native card in the same grid, with persi
   const again=boot();again.ui.refresh();assert.ok(again.elements.get('history-charts').children.some(n=>n.children.some(c=>c.tagName==='h3'&&c.textContent==='Обновлённая копия')));
  }finally{if(old===undefined)delete globalThis.localStorage;else globalThis.localStorage=old;}
 });
-test('native survival copies keep shared controls when the original is hidden',async()=>{
+test('native survival copies have independent controls and preserve the common summary',async()=>{
  const old=globalThis.localStorage;delete globalThis.localStorage;
  try{const b=boot();b.ui.refresh();b.elements.get('history-open-builder').emit('click');const editor=b.elements.get('history-builder-screen'),walk=n=>[n,...n.children.flatMap(walk)],fields=walk(editor);fields.find(n=>n.name==='catalogue-type').value='metric:survival';fields.find(n=>n.name==='catalogue-name').value='Моё дожитие';await fields.find(n=>n.tagName==='form').emit('submit');
-  const copy=b.elements.get('history-charts').children.find(n=>n.children.some(c=>c.textContent==='Моё дожитие')),input=walk(copy).find(n=>n.type==='number');assert.ok(input);input.value=50;input.emit('change');assert.equal(b.elements.get('history-survival-age').value,50);assert.equal(b.ui.getSummary().survivalAge,50);
+  const summary=b.ui.getSummary(),copy=b.elements.get('history-charts').children.find(n=>n.children.some(c=>c.textContent==='Моё дожитие')),input=walk(copy).find(n=>n.type==='number');assert.ok(input);input.value=50;input.emit('change');assert.equal(b.elements.get('history-survival-age').value,'100');assert.equal(b.ui.getSummary(),summary);assert.equal(b.ui.getSummary().survivalAge,100);
  }finally{if(old!==undefined)globalThis.localStorage=old;}
 });
 test('creating a pinned native copy requests its extra archive window and displays its override',async()=>{
  const previous=globalThis.localStorage;delete globalThis.localStorage;const calls=[];
- try{const b=boot({prepareSimulation:input=>{calls.push(input);return null;}});b.ui.refresh();b.elements.get('history-period-to').value='50';b.elements.get('history-period-to').emit('change');const walk=n=>[n,...n.children.flatMap(walk)],original=b.elements.get('history-charts').children.find(c=>c.children.some(n=>n.id==='history-chart-lifetime'));walk(original).find(n=>n.textContent==='Создать копию').emit('click');let nodes=walk(b.elements.get('history-builder-screen'));nodes.find(n=>n.name==='catalogue-name').value='Отдельный период';const add=nodes.find(n=>n.name==='catalogue-pin-add');add.value='period';add.emit('change');nodes=walk(b.elements.get('history-builder-screen'));nodes.find(n=>n.name==='pin-period-start').value='100';nodes.find(n=>n.name==='pin-period-end').value='120';await nodes.find(n=>n.tagName==='form').emit('submit');assert.equal(b.elements.get('history-error').textContent,'');assert.deepEqual(calls.at(-1).windows,[[100,120]]);assert.equal(b.ui.getSummary().domainEnd,50);const copy=b.elements.get('history-charts').children.find(c=>c.children.some(n=>n.textContent==='Отдельный период'));assert.ok(walk(copy).some(n=>n.textContent.includes('Закреплено: рождения [100; 120)')));const canvas=walk(copy).find(n=>n.tagName==='canvas');canvas.emit('pointermove',{clientX:200});assert.ok(walk(copy).some(n=>n.textContent.includes('Рождения [100; 120)')));b.ui.reset();
+ try{const b=boot({prepareSimulation:input=>{calls.push(input);return null;}});b.ui.refresh();b.elements.get('history-period-to').value='50';b.elements.get('history-period-to').emit('change');const walk=n=>[n,...n.children.flatMap(walk)],original=b.elements.get('history-charts').children.find(c=>c.children.some(n=>n.id==='history-chart-lifetime'));walk(original).find(n=>n.textContent==='Создать копию').emit('click');let nodes=walk(b.elements.get('history-builder-screen'));nodes.find(n=>n.name==='catalogue-name').value='Отдельный период';const add=nodes.find(n=>n.name==='catalogue-pin-add');add.value='period';add.emit('change');nodes=walk(b.elements.get('history-builder-screen'));nodes.find(n=>n.name==='pin-period-start').value='100';nodes.find(n=>n.name==='pin-period-end').value='120';await nodes.find(n=>n.tagName==='form').emit('submit');assert.equal(b.elements.get('history-error').textContent,'');assert.deepEqual(calls.at(-1).windows,[[100,120]]);assert.equal(b.ui.getSummary().domainEnd,50);const copy=b.elements.get('history-charts').children.find(c=>c.children.some(n=>n.textContent==='Отдельный период'));assert.ok(walk(copy).some(n=>n.textContent.includes('Локальные фильтры: рождения [100; 120)')));const canvas=walk(copy).find(n=>n.tagName==='canvas');canvas.emit('pointermove',{clientX:200});assert.ok(walk(copy).some(n=>n.textContent.includes('Рождения [100; 120)')));b.ui.reset();
  }finally{if(previous!==undefined)globalThis.localStorage=previous;}
 });
 test('formula cards render in the same category/grid, using the shared period and life filter',async()=>{
@@ -120,6 +120,15 @@ test('shared numeric window filters charts and table; independent age cohort sta
  b.elements.get('history-curve-start').value='100';b.elements.get('history-curve-start').emit('change');assert.equal(b.ui.getCurve().count,25);assert.equal(b.ui.getSummary().domainStart,50);
  b.elements.get('history-period-all').emit('click');assert.equal(b.ui.getSummary().domainStart,0);assert.equal(b.ui.getCurve().start,100);
 });
+test('local curve and metric controls leave the common cohorts and unrelated requests unchanged',async()=>{
+ const old=globalThis.Worker,requests=[];globalThis.Worker=class{postMessage(m){requests.push(m.prepared.metric);setTimeout(()=>{if(!this.closed)this.onmessage?.({data:{request:m.request,owner:m.owner,metric:m.prepared.metric,points:[],summary:{mean:1}}});},0);}terminate(){this.closed=true;}};
+ const b=boot();try{b.ui.refresh();for(let i=0;i<100&&!requests.includes('survival');i++)await new Promise(r=>setTimeout(r,4));await new Promise(r=>setTimeout(r,15));const summary=b.ui.getSummary(),before=requests.length;
+  b.elements.get('history-curve-start').value='100';b.elements.get('history-curve-start').emit('change');assert.equal(b.ui.getSummary(),summary);assert.equal(requests.length,before);
+  b.elements.get('history-curve-age-max').value='50';b.elements.get('history-curve-age-max').emit('change');assert.equal(requests.length,before);
+  b.elements.get('history-survival-age').value='50';b.elements.get('history-survival-age').emit('change');await new Promise(r=>setTimeout(r,15));assert.equal(b.ui.getSummary(),summary);assert.ok(requests.slice(before).every(m=>m==='survival'));
+ }finally{b.ui.reset();globalThis.Worker=old;}
+});
+
 test('range handles cannot cross and invalid numeric boundaries preserve the last valid window',()=>{
  const b=boot();b.ui.refresh();b.elements.get('history-period-start').value='350';b.elements.get('history-period-start').emit('input');assert.equal(b.ui.getSummary().domainStart,350);
  b.elements.get('history-period-end').value='100';b.elements.get('history-period-end').emit('input');assert.equal(b.ui.getSummary().domainEnd,351);
@@ -131,7 +140,7 @@ test('fixed age axis survives cohort changes and live refresh, with matching poi
  field.value='50';field.emit('change');assert.equal(b.ui.getSummary(),summary);assert.equal(b.ui.getCurve(),curve);assert.equal(slider.value,50);
  canvas.emit('pointermove',{clientX:322});assert.match(note.textContent,/Возраст 25 Т/);
  canvas.emit('keydown',{key:'End'});assert.match(note.textContent,/Возраст 50 Т/);
- b.elements.get('history-curve-slider').value='100';b.elements.get('history-curve-slider').emit('input');assert.equal(field.value,50);assert.equal(slider.value,50);assert.equal(b.ui.getCurve().start,100);
+ b.elements.get('history-curve-slider').value='100';b.elements.get('history-curve-slider').emit('input');b.elements.get('history-curve-slider').emit('change');assert.equal(field.value,50);assert.equal(slider.value,50);assert.equal(b.ui.getCurve().start,100);
  b.sim.lives={...b.sim.lives,tick:301};b.ui.refresh();assert.equal(field.value,50);
  const current=b.ui.getCurve();field.value='0';field.emit('change');assert.equal(b.ui.getCurve(),current);assert.match(b.elements.get('history-error').textContent,/положительное целое/);
  slider.value='80';slider.emit('input');assert.equal(field.value,80);assert.equal(b.elements.get('history-error').textContent,'');

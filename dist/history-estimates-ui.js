@@ -1,4 +1,5 @@
 import {createStatisticsClient} from './statistics-client.js';
+import {chartUpdateState} from './chart-update-state.js';
 import {formatStatistic as format,estimateCell} from './statistics-format.js';
 const interval=(s,stat)=>s?.confidence?.[stat]?` [${format(s.confidence[stat].low)}; ${format(s.confidence[stat].high)}]`:' [ДИ недоступен]';
 /** Числа относятся ко всему выбранному периоду, наведение — к одной корзине.
@@ -11,9 +12,11 @@ export function installHistoryEstimates({root=document,cards,onChange,createClie
  function update(input){
   register();sources=input.sources;const visible=(input.cards??cards).filter(c=>!c.card.hidden&&c.view?.value!=='difference');client.update({...input,metrics:[...new Set([...visible,...(input.prefetch??[])].filter(c=>c.view?.value!=='difference').map(c=>c.m.id))]});
   if(input.render===false)return;
-  const progress=client.state();if(showStatus)state.textContent=progress.error??(progress.total?progress.completed<progress.total?`Статистика в фоне: ${progress.completed}/${progress.total} показателей. Графики обновятся по готовности.`:'':'');
+  const progress=client.state();if(showStatus)state.textContent=progress.error??'';
   for(const c of visible){
-   const results=sources.map(s=>client.get(s.id,c.m.id)),key=results.map((r,i)=>r??sources[i].report);
+   const results=sources.map(s=>client.get(s.id,c.m.id)),key=results.map((r,i)=>r??sources[i].report),pending=results.some(r=>!r)&&!progress.error;
+   c.statisticsManaged=true;chartUpdateState(root,c,pending);if(pending)continue;
+   c.displayEstimates=new Map(sources.map((s,i)=>[s.id,results[i]]));c.displayContext={start:input.start,end:input.end,width:input.options.width};
    const previous=rendered.get(c);if(previous&&previous.length===key.length&&previous.every((r,i)=>r===key[i]))continue;rendered.set(c,key);
    const table=make('table'),head=make('tr');head.append(...['Вариант','Среднее [95% ДИ]','Медиана [95% ДИ]','Миров'].map(t=>make('th',t)));table.append(head);
    for(let i=0;i<sources.length;i++){

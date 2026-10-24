@@ -1,4 +1,5 @@
 import {createPairStatisticsClient} from './pair-statistics-client.js';
+import {chartUpdateState} from './chart-update-state.js';
 import {drawHistoryChart,HISTORY_LINES} from './history-charts.js';
 import {formatStatistic as format,estimateCell} from './statistics-format.js';
 /** Разность считается по полным исходным повторам в каждой корзине.
@@ -28,7 +29,8 @@ export function installHistoryDifferences({root=document,cards,onChange,createCl
   else client.update({...input.pair,metrics:[...new Set(requested.map(c=>c.m.id))],options:{...input.options,start:input.start,end:input.end},weightMode:input.weightMode,series:true});
   if(input.render===false)return;
   for(const c of visible){
-   const answer=input.pair?client.get(c.m.id):null,result=answer?.result,stat=c.m.single||c.m.id==='survival'?'mean':input.statistic??'mean';
+   const answer=input.pair?client.get(c.m.id):null,pending=Boolean(input.pair&&!answer&&!client.state().error);chartUpdateState(root,c,pending);if(pending)continue;
+   c.displayDifference=answer;const result=answer?.result,stat=c.m.single||c.m.id==='survival'?'mean':input.statistic??'mean';
    const points=(answer?.points??[]).map(p=>{const s=p[stat],range=input.bandMode==='spread'?p.spread?.[stat]:s?.confidence?.difference;return {...p,value:s?.difference??null,low:range?.low??null,high:range?.high??null};});
    let low=0,high=0;for(const p of points)for(const k of input.bandMode==='none'?['value']:['value','low','high'])if(Number.isFinite(p[k])){low=Math.min(low,p[k]);high=Math.max(high,p[k]);}
    const bound=Math.max(Math.abs(low),Math.abs(high))*1.08||1;

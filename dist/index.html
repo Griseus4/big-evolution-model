@@ -12,7 +12,7 @@
 <body class="workspace">
 <!-- Разметка задаёт только представление. Физика и выбор действий находятся в evolution.js. -->
 <header><div><span class="eyebrow" data-ui-text="brand"></span><h1>Лаборатория поколений</h1><p data-ui-text="description1"></p></div><nav><a href="./source.html">Исходники</a><a href="./legacy.html">Первый опыт</a></nav></header>
-<div class="global-toolbar"><div class="lab-tablist" role="tablist" aria-label="Разделы лаборатории"><button id="tab-world" role="tab" aria-selected="true" aria-controls="panel-world">Мир</button><button id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history">Статистика</button><button id="tab-tests" role="tab" aria-selected="false" aria-controls="panel-tests">Опыты</button><button id="tab-analysis" role="tab" aria-selected="false" aria-controls="panel-analysis">Анализ генома</button><button id="tab-about" role="tab" aria-selected="false" aria-controls="panel-about">Об игре</button></div><button id="history-drawer-left-handle" aria-controls="history-drawer-left-body" aria-expanded="false" hidden>Настройки статистики</button><div class="global-play-controls"><button id="play" class="primary" aria-pressed="false">▶ Наблюдать</button></div><div class="world-file-actions"><button id="world-save" class="primary">Сохранить мир</button><button id="world-load">Загрузить мир</button></div></div>
+<div class="global-toolbar"><div class="lab-tablist" role="tablist" aria-label="Разделы лаборатории"><button id="tab-world" role="tab" aria-selected="true" aria-controls="panel-world">Мир</button><button id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history">Статистика</button><button id="tab-tests" role="tab" aria-selected="false" aria-controls="panel-tests">Опыты</button><button id="tab-analysis" role="tab" aria-selected="false" aria-controls="panel-analysis">Анализ генома</button><button id="tab-about" role="tab" aria-selected="false" aria-controls="panel-about">Об игре</button></div><div class="global-play-controls"><button id="play" class="primary" aria-pressed="false">▶ Наблюдать</button></div><div class="world-file-actions"><button id="world-save" class="primary">Сохранить мир</button><button id="world-load">Загрузить мир</button></div></div>
 <div class="global-status"><input id="world-load-file" type="file" accept=".json,application/json" hidden><p id="world-file-status" class="note" role="status" aria-live="polite"></p></div>
 <main id="panel-world" role="tabpanel" aria-labelledby="tab-world">
  <section class="workspace">
@@ -109,7 +109,7 @@
  </aside>
 </main>
 <section id="panel-history" class="lab-panel" role="tabpanel" aria-labelledby="tab-history" hidden>
- <div id="history-layout" class="history-layout" data-open="false">
+ <div id="history-layout" class="history-layout" data-open="false"><div class="history-drawer-rail"><button id="history-drawer-left-handle" aria-controls="history-drawer-left-body" aria-expanded="false" aria-label="Открыть настройки статистики" data-help="history-drawer-left-handle">›</button></div>
  <aside id="history-drawer-left" class="history-drawer history-drawer-left" aria-label="Настройки статистики"><div id="history-drawer-left-body" class="history-drawer-body">
  <h3>Источник и сравнение</h3>
  <div class="history-settings"><label>Источник статистики<select id="experiment-stat-source"><option value="current">Текущий мир</option></select></label><label>Вес данных<select id="experiment-stat-weight"><option value="worlds">Каждый мир имеет равный вес</option><option value="individuals">Каждая особь имеет равный вес</option></select></label><label>Линии сравнения вариантов<select id="experiment-stat-line"><option value="mean">Среднее</option><option value="median">Медиана</option><option value="min">Минимум</option><option value="max">Максимум</option></select></label></div>
@@ -128,14 +128,6 @@
   <div class="history-dual-range"><div class="history-range-track"></div><input id="history-period-start" type="range" min="0" max="100" step="1" value="0" aria-label="Начало общего периода" aria-describedby="history-method-note" data-help-shared="history-period-from"><input id="history-period-end" type="range" min="0" max="100" step="1" value="100" aria-label="Конец общего периода" aria-describedby="history-method-note" data-help-shared="history-period-from"></div>
  </fieldset>
  <div id="history-catalogue-controls" class="catalogue-toolbar"></div>
- <details id="history-curve-shared-controls"><summary>Кривая дожития: период и масштаб</summary>  <div class="lab-controls"><label>Начало периода рождения, Т<input id="history-curve-start" type="number" min="0" step="1" value="0"></label><span id="history-curve-period"></span></div>
-  <input id="history-curve-slider" type="range" min="0" max="100" step="1" value="0" aria-label="Начало периода рождения для кривой дожития" aria-describedby="history-curve-method-note" data-help-shared="history-curve-start">
-  <div class="range-setting history-age-scale">
-   <div class="range-heading"><label for="history-curve-age-max">Максимальный возраст на оси, Т</label><input id="history-curve-age-max" class="range-number" type="number" min="1" step="1" value="1000" aria-describedby="history-curve-scale-note"></div>
-   <input id="history-curve-age-slider" type="range" min="1" max="1000" step="1" value="1000" aria-label="Максимальный возраст на оси кривой дожития" aria-describedby="history-curve-scale-note" data-help-shared="history-curve-age-max">
-  </div>
-  <p id="history-curve-scale-note" class="note" data-ui-text="history-curve-scale"></p>
-  <p id="history-curve-method-note" class="note" data-ui-text="history-curve-method"></p><p id="history-curve-statistics" class="note" aria-live="polite"></p><p id="history-curve-summary" class="note"></p></details>
  <div id="history-group-controls" class="history-settings"></div>
  <fieldset id="history-line-controls" class="history-legend"><legend>Линии индивидуальных показателей</legend>
   <label class="check"><input id="history-show-min" type="checkbox" checked>Минимум</label><label class="check"><input id="history-show-median" type="checkbox" checked>Медиана</label><label class="check"><input id="history-show-mean" type="checkbox" checked>Среднее</label><label class="check"><input id="history-show-max" type="checkbox" checked>Максимум</label>
@@ -158,6 +150,14 @@
  <div id="history-charts" class="history-chart-grid"></div>
  <p class="note" data-ui-text="history-food-context"></p>
  <section id="history-survival-section" class="history-chart-card history-survival-panel"><h3>Кривая дожития одной группы рождения</h3>
+ <div id="history-curve-shared-controls" class="history-curve-controls">  <div class="lab-controls"><label>Начало периода рождения, Т<input id="history-curve-start" type="number" min="0" step="1" value="0"></label><span id="history-curve-period"></span></div>
+  <input id="history-curve-slider" type="range" min="0" max="100" step="1" value="0" aria-label="Начало периода рождения для кривой дожития" aria-describedby="history-curve-method-note" data-help-shared="history-curve-start">
+  <div class="range-setting history-age-scale">
+   <div class="range-heading"><label for="history-curve-age-max">Максимальный возраст на оси, Т</label><input id="history-curve-age-max" class="range-number" type="number" min="1" step="1" value="1000" aria-describedby="history-curve-scale-note"></div>
+   <input id="history-curve-age-slider" type="range" min="1" max="1000" step="1" value="1000" aria-label="Максимальный возраст на оси кривой дожития" aria-describedby="history-curve-scale-note" data-help-shared="history-curve-age-max">
+  </div>
+  <p hidden id="history-curve-scale-note" class="note" data-ui-text="history-curve-scale"></p>
+  <p hidden id="history-curve-method-note" class="note" data-ui-text="history-curve-method"></p><p id="history-curve-statistics" class="note" aria-live="polite"></p><p id="history-curve-summary" class="note"></p></div>
 <div id="history-curve-chart"></div>
  </section>
  <div id="history-selection-controls" class="lab-controls"><strong id="history-selected">Все интервалы рождения.</strong><button id="history-clear-selection" disabled>Снять выбор интервала</button></div>

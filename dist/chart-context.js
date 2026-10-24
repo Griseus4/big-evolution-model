@@ -38,5 +38,5 @@ export function chartPinLabel(def){
  if(p.width!==undefined)labels.push(`интервал ${p.width} Т`);
  if(p.mode)labels.push(p.mode==='dead'?'только завершённые жизни':'включая прожитую часть живых');
  if(p.origin)labels.push({all:'все происхождения',founders:'основатели',descendants:'потомки'}[p.origin]);
- return labels.length?'Закреплено: '+labels.join(' · '):'';
+ return labels.length?'Локальные фильтры: '+labels.join(' · '):'';
 }
