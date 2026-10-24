@@ -1,8 +1,7 @@
 import {createStatisticsClient} from './statistics-client.js';
 import {chartUpdateState} from './chart-update-state.js';
 import {formatStatistic as format,estimateCell} from './statistics-format.js';
-const interval=(s,stat)=>s?.confidence?.[stat]?` [${format(s.confidence[stat].low)}; ${format(s.confidence[stat].high)}]`:' [ДИ недоступен]';
-/** Числа относятся ко всему выбранному периоду, наведение — к одной корзине.
+/** Числа относятся ко всему выбранному периоду; наведение не выводит подпись.
  * DOM чисел заменяется только при новом результате фонового расчёта. */
 export function installHistoryEstimates({root=document,cards,onChange,createClient=createStatisticsClient,showStatus=true}){
  const make=(tag,text)=>{const n=root.createElement(tag);if(text!==undefined)n.textContent=text;return n;},rendered=new WeakMap();
@@ -33,8 +32,5 @@ export function installHistoryEstimates({root=document,cards,onChange,createClie
    }c.numeric.replaceChildren(...nodes);
   }
  }
- function pointDescription(metric,id){
-  return sources.map(source=>{const p=client.get(source.id,metric)?.byId?.get(id);return p?`${source.name}: среднее ${format(p.mean)}${interval(p,'mean')}; медиана ${format(p.median)}${interval(p,'median')}; миров ${p.worlds}. ${p.reason??''}`:`${source.name}: расчёт ещё не готов или данных нет.`;}).join(' ');
- }
- return {update,get:client.get,pointDescription,state:client.state,suspend:client.suspend,dispose:client.dispose};
+ return {update,get:client.get,state:client.state,suspend:client.suspend,dispose:client.dispose};
 }

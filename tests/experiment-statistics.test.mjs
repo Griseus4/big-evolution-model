@@ -35,5 +35,5 @@ test('shared comparison cards draw finite variant lines, distributions and censo
  const cards=['lifetime','food','production','survival'].map(id=>({m:{id},canvas:canvas(),card:{hidden:false},note:{}})),histograms=['senseEnergy','senseHealth','senseStomach'].map(id=>({m:{id},canvas:canvas(),card:{hidden:false},note:{}}));
  const variants=sources.map((s,i)=>({id:'v'+i,name:s.id,color:i?'#ff0000':'#00ff00',report:mergeLifeReports([s])}));
  assert.equal(createComparisonCharts()({sources:variants,options:{width:100,survivalAge:100,origin:'all',mode:'dead',interruptionKind:'all'},start:0,end:200,statistic:'mean',chartCards:cards,histogramCards:histograms,curveCanvas:canvas(),curveMaximum:120,curveStart:0,curveVisible:true}),true);
- assert.ok(colors.has('#ff0000'));assert.ok(colors.has('#00ff00'));assert.ok(labels.includes('Время мира, Т'));assert.ok(cards.every(c=>c.note.textContent.includes('small')));
+ assert.ok(colors.has('#ff0000'));assert.ok(colors.has('#00ff00'));assert.ok(labels.includes('Время мира, Т'));assert.ok([...cards,...histograms].every(c=>!c.note.textContent));
 });

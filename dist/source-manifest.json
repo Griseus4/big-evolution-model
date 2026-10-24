@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 33,
-    "bytes": 4053,
+    "bytes": 4016,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 117,
-    "bytes": 14618,
+    "lines": 119,
+    "bytes": 14769,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -636,6 +636,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v052-no-chart-captions.md",
+    "url": "./source-files/docs/updates/v052-no-chart-captions.md",
+    "lines": 12,
+    "bytes": 2647,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "dist/food-island-evolution.js",
     "url": "./food-island-evolution.js",
     "lines": 120,
@@ -767,7 +775,7 @@
     "name": "dist/world-save.js",
     "url": "./world-save.js",
     "lines": 56,
-    "bytes": 10111,
+    "bytes": 10120,
     "aliases": [],
     "purpose": "Полный ручной снимок, проверка и восстановление текущей модели."
   },
@@ -783,7 +791,7 @@
     "name": "tests/environment-save.test.mjs",
     "url": "./source-files/tests/environment-save.test.mjs",
     "lines": 92,
-    "bytes": 10108,
+    "bytes": 10117,
     "aliases": [],
     "purpose": "Энергетика, среда, точное продолжение и атомарный отказ загрузки."
   },
@@ -822,8 +830,8 @@
   {
     "name": "dist/history-ui.js",
     "url": "./history-ui.js",
-    "lines": 321,
-    "bytes": 47992,
+    "lines": 304,
+    "bytes": 43306,
     "aliases": [],
     "purpose": "Кешируемые сводки и таблица с ограничением высоты и50 строками."
   },
@@ -878,8 +886,8 @@
   {
     "name": "tests/history-ui.test.mjs",
     "url": "./source-files/tests/history-ui.test.mjs",
-    "lines": 183,
-    "bytes": 26293,
+    "lines": 195,
+    "bytes": 27937,
     "aliases": [],
     "purpose": "Настоящий UI историй в управляемом DOM: выбор, страницы, ошибки и кеш."
   },
@@ -1318,8 +1326,8 @@
   {
     "name": "README.ru.md",
     "url": "./source-files/README.ru.md",
-    "lines": 111,
-    "bytes": 15172,
+    "lines": 113,
+    "bytes": 15483,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7159,7 +7167,7 @@
     "name": "dist/chart-local-renderer.js",
     "url": "./chart-local-renderer.js",
     "lines": 44,
-    "bytes": 7095,
+    "bytes": 6350,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7182,8 +7190,8 @@
   {
     "name": "dist/comparison-charts.js",
     "url": "./comparison-charts.js",
-    "lines": 43,
-    "bytes": 5590,
+    "lines": 42,
+    "bytes": 5449,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7334,16 +7342,16 @@
   {
     "name": "dist/history-differences-ui.js",
     "url": "./history-differences-ui.js",
-    "lines": 46,
-    "bytes": 5701,
+    "lines": 41,
+    "bytes": 4624,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
     "name": "dist/history-estimates-ui.js",
     "url": "./history-estimates-ui.js",
-    "lines": 40,
-    "bytes": 4709,
+    "lines": 36,
+    "bytes": 4139,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7575,7 +7583,7 @@
     "name": "dist/workspace.css",
     "url": "./workspace.css",
     "lines": 61,
-    "bytes": 19856,
+    "bytes": 19929,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7591,7 +7599,7 @@
     "name": "docs/analysis-builder-guide.md",
     "url": "./source-files/docs/analysis-builder-guide.md",
     "lines": 87,
-    "bytes": 20699,
+    "bytes": 20786,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7815,7 +7823,7 @@
     "name": "docs/navigation/interface-and-files.md",
     "url": "./source-files/docs/navigation/interface-and-files.md",
     "lines": 35,
-    "bytes": 9473,
+    "bytes": 9463,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7934,8 +7942,8 @@
   {
     "name": "docs/ui-redesign.md",
     "url": "./source-files/docs/ui-redesign.md",
-    "lines": 67,
-    "bytes": 20115,
+    "lines": 71,
+    "bytes": 21536,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7975,7 +7983,7 @@
     "name": "tests/chart-context049.test.mjs",
     "url": "./source-files/tests/chart-context049.test.mjs",
     "lines": 76,
-    "bytes": 12783,
+    "bytes": 12874,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8047,7 +8055,7 @@
     "name": "tests/experiment-statistics.test.mjs",
     "url": "./source-files/tests/experiment-statistics.test.mjs",
     "lines": 39,
-    "bytes": 4930,
+    "bytes": 4932,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8623,7 +8631,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 10,
-    "bytes": 2116,
+    "bytes": 2121,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -8950,8 +8958,8 @@
   {
     "name": "README.md",
     "url": "./source-files/README.md",
-    "lines": 128,
-    "bytes": 11039,
+    "lines": 130,
+    "bytes": 11240,
     "aliases": [],
     "purpose": "Устройство проекта, ограничения, запуск исходников и проверки."
   },

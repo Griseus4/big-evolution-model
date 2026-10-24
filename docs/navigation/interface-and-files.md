@@ -8,7 +8,7 @@
 **Граница:** DOM показывает проекцию, физикой владеет [исполнитель](world-and-brain.md#execution). Справка/внутренние вкладки не включают программную паузу; опыты имеют отдельную аренду мира. Общий стиль проверить в layout.css/evolution.css, не добавлять повторную кнопку подсказки к уже оформленному полю.
 **Проверка:** [локальные графики 0.52](../../tests/ui052.test.mjs), [UI/кэш 0.51](../../tests/ui051.test.mjs), [world-ui.test.mjs](../../tests/world-ui.test.mjs), [help-ui.test.mjs](../../tests/help-ui.test.mjs), [experiment-ui.test.mjs](../../tests/experiment-ui.test.mjs), [history-ui.test.mjs](../../tests/history-ui.test.mjs); настоящая раскладка/прокрутка/попадание мышью требуют отдельной проверки браузера.
 **История:** [экраны 0.36.1](../updates/v036-interface-screens.md), [живая статистика 0.36.3](../updates/v036-live-history.md), [баннер/модальное окно](../updates/v045-notifications-and-documentation.md).
-**Дальше:** [контракт рабочего окна](../ui-redesign.md), [0.52 и ограничения приёмки](../updates/v052-local-chart-updates.md). Оболочка — [workspace.css](../../dist/workspace.css), вкладки — [workspace-ui.js](../../dist/workspace-ui.js), черновик/стандартный набор — [experiment-preferences.js](../../dist/experiment-preferences.js).
+**Дальше:** [контракт рабочего окна](../ui-redesign.md), [0.52.1: подписи удалены](../updates/v052-no-chart-captions.md). Оболочка — [workspace.css](../../dist/workspace.css), вкладки — [workspace-ui.js](../../dist/workspace-ui.js), черновик/стандартный набор — [experiment-preferences.js](../../dist/experiment-preferences.js).
 
 ## world-save
 **Задача:** сохранить/загрузить мир, точно продолжить текущие действия и случайность.
