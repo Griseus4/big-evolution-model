@@ -7,6 +7,8 @@ import {ExperimentStore} from './experiment-store.js';
 import {experimentPreferences} from './experiment-preferences.js';
 import {installConditionTabs} from './workspace-ui.js';
 import {createHelpButton} from './help.js';
+import {experimentOutcomes} from './experiment-outcomes.js';
+import {transientStatus} from './transient-status.js';
 import {EXPERIMENT_HELP} from './ui-text.js';
 import {mergeLifeReports,reportSources,experimentWorlds} from './experiment-statistics.js';
 import {COMPUTATION_WORKER_COUNTS} from './computation-settings.js';
@@ -32,6 +34,7 @@ export function validateExperimentReport(report){
 export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resumeWorld,onBusyChange=()=>{},isOtherActive=()=>false,openStatistics,sourceChanged=()=>{}}){
  const byId=id=>document.getElementById(id),make=(tag,text)=>{const node=document.createElement(tag);if(text!==undefined)node.textContent=text;return node;};
  const controls=new Map(),store=new ExperimentStore();let busy=false,exporting=false,importing=false,lease=null,report=null,saveTimer=null,saveChain=Promise.resolve(),baseGenome=null,statsCache=null,design=null,windowTask=null,windowKey=null;
+ const storageStatus=transientStatus(byId('constructor-storage')),exportStatus=transientStatus(byId('constructor-export-state'));
  const error=message=>{byId('constructor-error').textContent=message;};
  let local;try{local=globalThis.localStorage;}catch{}
  const preferences=experimentPreferences(local,message=>byId('constructor-storage').textContent=message);let draftTimer=null,restoring=true;
@@ -65,7 +68,7 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
  function resetDraft(){restoring=true;try{fill(preferences.standard()??factoryPlan);}finally{restoring=false;}saveDraft();}
  byId('constructor-restore-defaults').addEventListener('click',()=>{try{resetDraft();error('');}catch(e){error(e.message);}});
  byId('constructor-new').addEventListener('click',()=>{try{resetDraft();byId('test-tab-constructor').click();}catch(e){error(e.message);}});
- byId('constructor-make-defaults').addEventListener('click',()=>{try{if(preferences.saveStandard(readPlan()))byId('constructor-storage').textContent='Личные стандартные настройки сохранены.';}catch(e){error(e.message);}});
+ byId('constructor-make-defaults').addEventListener('click',()=>{try{if(preferences.saveStandard(readPlan()))storageStatus('Личные стандартные настройки сохранены.',{success:true});}catch(e){error(e.message);}});
  for(const name of ['input','change'])byId('test-panel-constructor').addEventListener(name,scheduleDraft);
  globalThis.addEventListener?.('pagehide',saveDraft);
  try{const draft=preferences.draft();if(draft){if(!draft.meta||!draft.common||!Array.isArray(draft.factors))throw new Error('Черновик повреждён.');for(const [id,value]of Object.entries(draft.meta))if(['name','worlds','steps','budget','workers','allocation','seeds'].includes(id))byId('constructor-'+id).value=value;for(const [key,node]of controls)if(Object.hasOwn(draft.common,key)){if(node.type==='checkbox')node.checked=Boolean(draft.common[key]);else node.value=draft.common[key];}baseGenome=draft.baseGenome?validateGenomeFile(draft.baseGenome):null;seedPool=draft.seedPool??seedPool;design.write(draft.factors);byId('constructor-base-note').textContent=baseGenome?'Загруженная основа генома':'Случайные геномы';}else if(preferences.standard())fill(preferences.standard());}catch(e){fill(factoryPlan);error('Не удалось восстановить форму: '+e.message);}finally{restoring=false;}
@@ -74,7 +77,7 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
  function templateCard(name,action){const button=make('button',name);button.className='template-card';button.addEventListener('click',()=>{try{action();}catch(e){error(e.message);}});return button;}
  for(const template of EXPERIMENT_TEMPLATES)byId('constructor-builtins').append(templateCard(template.name,()=>{fill({name:template.name,factors:template.factors});byId('test-tab-constructor').click();}));
  async function savedTemplates(){try{const names=[];for(const name of await store.templates()){const p=await store.template(name);if(EXPERIMENT_PLAN_PROTOCOLS.includes(p?.protocolId)&&Array.isArray(p.factors))names.push(name);}byId('constructor-saved-templates').replaceChildren(...names.map(name=>templateCard(name,async()=>{try{fill(await store.template(name));byId('test-tab-constructor').click();}catch(e){error(e.message);}})));}catch{}}
- byId('constructor-save-template').addEventListener('click',async()=>{try{const plan=readPlan();await store.saveTemplate(plan.name,plan);await savedTemplates();byId('constructor-storage').textContent='Шаблон сохранён в этом браузере.';}catch(e){error(e.message);}});savedTemplates();
+ byId('constructor-save-template').addEventListener('click',async()=>{try{const plan=readPlan();await store.saveTemplate(plan.name,plan);await savedTemplates();storageStatus('Шаблон сохранён в этом браузере.',{success:true});}catch(e){error(e.message);}});savedTemplates();
  byId('constructor-export-plan').addEventListener('click',async()=>{try{await downloadExperiment('big-evolution-experiment-plan.json',{format:'big-evolution-experiment-plan',version:EXPERIMENT_PLAN_VERSION,plan:readPlan()});}catch(e){error(e.message);}});
  byId('constructor-import-plan').addEventListener('change',async e=>{try{const f=e.target.files?.[0];if(!f)return;if(f.size>16000000)throw new Error('Слишком большой план.');const data=JSON.parse(await f.text());if(data.format!=='big-evolution-experiment-plan'||![2,EXPERIMENT_PLAN_VERSION].includes(data.version))throw new Error('Нужен план опытов v2/v3 с наборами значений параметров. Старые планы не поддерживаются.');fill(data.plan);}catch(e){error(e.message);}});
  function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(save,1500);}
@@ -90,7 +93,7 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
   try{const selected=report,name='big-evolution-experiment-'+selected.createdAt.replace(/[:.]/g,'-'),onProgress=bytes=>{status.textContent=`Подготовка ${plain?'JSON':'архива'}: ${(bytes/1048576).toFixed(1)} МиБ…`;};let bytes;
    if(plain)bytes=await downloadExperiment(name+'.json',snapshotExperiment(await materializeExperiment(selected)),{onProgress});
    else{const blob=await experimentArchive(selected,{onProgress});bytes=blob.size;saveJsonBlob(name+'.beexp',blob);}
-   status.textContent=`${plain?'JSON':'Архив'} подготовлен: ${(bytes/1048576).toFixed(1)} МиБ. Файл передан браузеру для скачивания.`;
+   exportStatus(`${plain?'JSON':'Архив'} подготовлен: ${(bytes/1048576).toFixed(1)} МиБ. Файл передан браузеру для скачивания.`,{success:true});
   }
   catch(e){status.textContent='Не удалось подготовить или передать файл: '+e.message;error(status.textContent);}
   finally{exporting=false;button.disabled=!report;}
@@ -105,7 +108,7 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
    // прежний выбранный опыт; отмена/ошибка не очищает его статистику.
    if(!next.groups.some(g=>g.attempts.some(a=>archiveOrigin(a.lives)||archiveOrigin(a.live))))next=await openExperimentArchive(await experimentArchive(next,{onProgress:bytes=>{status.textContent=`Упаковка JSON: ${(bytes/1048576).toFixed(1)} МиБ…`;}}),{validate:false});
    if(['running','stopping'].includes(next.status)){next.status='interrupted';for(const g of next.groups){if(['running','pending'].includes(g.status))g.status='interrupted';for(const a of g.attempts)if(a.status==='running')a.status='interrupted';}}
-   report=next;statsCache=null;windowKey=null;lastSourcesKey=null;error('');status.textContent='Опыт открыт. Истории будут загружаться для выбранных миров и периодов.';render();sourceChanged(true);await save();
+   report=next;statsCache=null;windowKey=null;lastSourcesKey=null;error('');exportStatus('Опыт открыт. Истории загружаются по выбранному периоду.',{success:true});render();sourceChanged(true);await save();
   }catch(e){error(e.message);status.textContent='Файл не открыт: '+e.message;}
   finally{importing=false;render();await runList();}
  });
@@ -159,7 +162,9 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
   const variant=full.plan.variants.find(v=>selected==='compare'||selected==='variant:'+v.id);return mergeLifeReports(reportSources(full,variant.id),weight.value);
  }
  byId('constructor-open-comparison').addEventListener('click',()=>{source.value='compare';changeSource();openStatistics();});
+ let outcomesKey='';
  function updateStatNote(){
+  const outcomes=source.value==='current'?[]:experimentOutcomes(report),key=JSON.stringify(outcomes);if(key!==outcomesKey){outcomesKey=key;const host=byId('experiment-extinctions');host.replaceChildren();if(outcomes.length){const table=make('table'),head=make('tr');head.append(...['Вариант','Вымершие попытки / завершённые','Вымершие итоговые миры / итоговые','Без определённого исхода'].map(t=>make('th',t)));table.append(head);for(const o of outcomes){const row=make('tr');if(o.extinctAttempts)row.className='extinction-warning';row.append(...[o.name,`${o.extinctAttempts}/${o.attempts}`,`${o.extinctWorlds}/${o.worlds}`,`${o.unknownWorlds} миров; ${o.unknownAttempts} попыток`].map(t=>make('td',t)));table.append(row);}host.append(table);}}
   const node=byId('experiment-stat-note'),d=data();node.replaceChildren();if(source.value==='current')return;
   if(d?.error){node.textContent=d.error;return;}
   node.textContent=d?.report?'Итоги выбранных попыток; неудачные старты видны в разделе «Запуски». '+(weight.value==='worlds'?'Каждый непустой мир имеет равный вес в метриках особей. ':'Каждая особь имеет равный вес в метриках жизней. ')+'Население и пища: сначала среднее по времени каждого мира, затем равный вес миров. ':'Пока нет данных для выбранного источника. ';
@@ -168,5 +173,5 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
 
  setInterval(()=>{if(!byId('panel-history').hidden&&source.value!=='current'){updateStatNote();sourceChanged();}},5000);
  updateDesign();render();
- return {analysisSeries:()=>source.value==='compare'||source.value.startsWith('variant:')?report:null,isActive:()=>busy||importing,refresh:render,prepareStatistics,exportObservation,report:()=>source.value==='current'?null:data()?.report,getSimulation:()=>source.value==='current'?getSimulation():{lives:data()?.report??EMPTY_REPORT},comparisons:()=>{const d=data();return d?.comparisons?{sources:d.comparisons,statistic:stat.value,variants:d.pairVariants,weightMode:weight.value}:null;}};
+ return {statisticsStable:()=>source.value==='current'?!getWorldState().running:!busy&&['completed','completed-with-errors'].includes(report?.status),analysisSeries:()=>source.value==='compare'||source.value.startsWith('variant:')?report:null,isActive:()=>busy||importing,refresh:render,prepareStatistics,exportObservation,report:()=>source.value==='current'?null:data()?.report,getSimulation:()=>source.value==='current'?getSimulation():{lives:data()?.report??EMPTY_REPORT},comparisons:()=>{const d=data();return d?.comparisons?{sources:d.comparisons,statistic:stat.value,variants:d.pairVariants,weightMode:weight.value}:null;}};
 }

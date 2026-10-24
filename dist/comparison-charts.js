@@ -9,7 +9,7 @@ import {HISTORY_LINES,drawHistoryChart} from './history-charts.js';
  * Кэш зависит от отчёта и фильтров, хранит только последнюю проекцию варианта. */
 export function createComparisonCharts(){
  const cache=new WeakMap();
- return function draw({sources,options,start,end,statistic,chartCards,histogramCards,curveCanvas,curveMaximum,curveStart,curveVisible,getEstimate=()=>null,bandMode='confidence'}){
+ return function draw({sources,options,start,end,statistic,chartCards,histogramCards,curveCanvas,curveMaximum,curveStart,curveVisible,getEstimate=()=>null,bandMode='confidence',precompute=null}){
   if(!sources?.length)return false;
   const key=JSON.stringify([options,start,end,curveStart]),prepared=sources.map(s=>{
    let data=cache.get(s.report);if(!data||data.key!==key){data={key};cache.set(s.report,data);}return {...s,data};
@@ -20,6 +20,7 @@ export function createComparisonCharts(){
   const production=s=>s.data.production??=productionCohorts(s.report.foodProductionHistory,s.report.environmentTick??s.report.tick,options.width,start,end);
   const distributions=s=>s.data.distributions??=sensitivityDistributions([...s.report.dead,...s.report.living],{start,end,origin:options.origin,weightMode:s.report.weightMode});
   const curve=s=>s.data.curve??=survivalCurve(s.report,{start:curveStart,width:options.width,origin:options.origin});
+  if(precompute){for(const s of prepared){if(precompute==='histogram')distributions(s);if(precompute==='curve')curve(s);}return true;}
   const lines=prepared.map(s=>({id:s.id,color:s.color,label:s.name})),keys=lines.map(l=>l.id);
   const join=lists=>{const rows=new Map();lists.forEach((list,index)=>{for(const p of list){let row=rows.get(p.id);if(!row){row={id:p.id,start:p.start,end:p.end,x:p.x,complete:true};rows.set(p.id,row);}row[keys[index]]=p.value;row.complete&&=p.complete;}});return [...rows.values()].sort((a,b)=>a.id-b.id);};
   for(const {m,canvas,card,note}of chartCards){if(card.hidden)continue;

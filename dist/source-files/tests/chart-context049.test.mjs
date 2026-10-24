@@ -56,6 +56,11 @@ test('one real statistics Worker distinguishes same metric across contexts and c
  let count=0;const client=createStatisticsClient({available:()=>true,createWorker:()=>{count++;return new BrowserWorker(new URL('../dist/statistics-worker.js',import.meta.url));}}),sources=[{id:'s',report}],queries=[{id:'early',sources,metrics:['lifetime'],options:common,start:0,end:50},{id:'late',sources,metrics:['lifetime'],options:common,start:100,end:150}];
  try{client.updateBatch(queries);await until(()=>client.get('s','lifetime','late'));assert.equal(client.get('s','lifetime','early').summary.mean,10);assert.equal(client.get('s','lifetime','late').summary.mean,80);client.updateBatch(queries);assert.equal(count,1);}finally{client.dispose();}
 });
+
+test('formula result survives hiding the category and returns without another Worker',async()=>{
+ let workers=0;const client=createCatalogueExpressionClient({createWorker:()=>{workers++;return new BrowserWorker(new URL('../dist/analysis-builder-worker.js',import.meta.url));}}),card={definition:{id:'cached',name:'Возраст',kind:'expression',recipe:{...ANALYSIS_DEFAULT,expression:'age',filter:'1',axis:'born'}}},input={cards:[card],report,options:common,start:0,end:50};
+ try{client.update(input);await until(()=>client.get('cached'));const first=client.get('cached');client.update({...input,cards:[]});client.update(input);assert.equal(workers,1);assert.deepEqual(client.get('cached').cells,first.cells);}finally{client.dispose();}
+});
 test('one real pair Worker retains B−A for multiple pinned contexts',async()=>{
  const a={id:'a',worlds:[{id:'a0',pairId:0,report}]},b={id:'b',worlds:[{id:'b0',pairId:0,report:{...report,dead:[record(1,0,20),record(2,100,100)]}}]};let count=0;
  const client=createPairStatisticsClient({available:()=>true,createWorker:()=>{count++;return new BrowserWorker(new URL('../dist/pair-statistics-worker.js',import.meta.url));}}),queries=[{id:'early',a,b,metrics:['lifetime'],options:{...common,start:0,end:50}},{id:'late',a,b,metrics:['lifetime'],options:{...common,start:100,end:150},series:true}];

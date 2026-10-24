@@ -93,6 +93,13 @@ test('UI sends play/pause/step; frames do not move world and hiding continues',a
  await e.get('step').emit('click');assert.equal(b.runtime.world.tick,Math.round((tick+.1)*10)/10);assert.equal(b.runtime.running,false);
  await e.get('play').emit('click');vm.runInContext("labTabs.select('history')",b.context);await settle();assert.equal(b.runtime.running,true);await b.pulse(1000);assert.ok(b.runtime.world.tick>tick);assert.match(e.get('play').textContent,/Пауза/);await e.get('play').emit('click');assert.equal(b.runtime.running,false);
 });
+
+test('population chart uses CSS dimensions and DPR without repeated bitmap growth',async()=>{
+ const b=await boot(),chart=b.elements.get('chart');chart.getBoundingClientRect=()=>({width:640,height:190,left:0,top:0});b.context.devicePixelRatio=2;vm.runInContext('drawChartContents()',b.context);assert.equal(chart.width,1280);assert.equal(chart.height,380);vm.runInContext('drawChartContents()',b.context);assert.equal(chart.width,1280);assert.equal(chart.height,380);b.elements.get('panel-world').hidden=true;chart.getBoundingClientRect=()=>{throw new Error('hidden canvas layout');};vm.runInContext('drawChartContents()',b.context);
+});
+test('world conditions are populated on opening the popover without changing run state',async()=>{
+ const b=await boot(),before=b.runtime.running;b.elements.get('world-info').emit('toggle',{newState:'open'});assert.match(b.elements.get('geography-region').textContent,/воды/);assert.match(b.elements.get('food-region').textContent,/источник/);assert.ok(b.elements.get('geography-region').textContent.includes('\n'));assert.equal(b.runtime.running,before);
+});
 test('global play availability follows benchmark activity even without new world messages',async()=>{
  const b=await boot(),e=b.elements;vm.runInContext("labTabs.select('tests')",b.context);await settle();
  b.setBenchmarkActive(true);b.frame(300);assert.equal(e.get('play').disabled,true);

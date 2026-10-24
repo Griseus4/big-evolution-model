@@ -25,20 +25,21 @@ class Element{
  focus(){this.focused=true;}
 }
 test('label help works by focus, touch and keyboard, deduplicates ranges and never pauses',()=>{
- const saved=Object.fromEntries(['document','innerWidth','innerHeight','addEventListener'].map(k=>[k,globalThis[k]])),root=new Element(),ids=new Map();
+ const saved=Object.fromEntries(['document','innerWidth','innerHeight','addEventListener','setTimeout','clearTimeout'].map(k=>[k,globalThis[k]])),root=new Element(),ids=new Map();
  const add=(id,tag='div',parent=root)=>{const e=new Element(tag);e.id=id;ids.set(id,e);parent.append(e);return e;};
  const hidden=add('world-load-file','input');hidden.hidden=true;add('world-load','button');
  const label=new Element('label');label.textContent='Номер опыта';root.append(label);const seed=add('seed','input',label);seed.type='number';
  const checkLabel=new Element('label');checkLabel.textContent='Память';root.append(checkLabel);const check=add('show-memory','input',checkLabel);check.type='checkbox';
  for(const prefix of ['','world-']){const range=new Element('div','range-setting'),heading=new Element('div','range-heading'),caption=new Element('label');caption.textContent='Разброс';root.append(range);range.append(heading);heading.append(caption);for(const suffix of ['','-number']){const input=add(prefix+'food-period-spread'+suffix,'input',suffix?heading:range);input.type=suffix?'number':'range';}}
  globalThis.document={body:root,getElementById:id=>ids.get(id),createElement:tag=>new Element(tag),addEventListener:(k,fn)=>root.addEventListener(k,fn)};globalThis.innerWidth=900;globalThis.innerHeight=600;globalThis.addEventListener=()=>{};
+ let clock=0,serial=0;const timers=new Map();globalThis.setTimeout=(fn,delay)=>{const id=++serial;timers.set(id,{fn,at:clock+delay});return id;};globalThis.clearTimeout=id=>timers.delete(id);const advance=ms=>{clock+=ms;for(const [id,t]of [...timers])if(t.at<=clock){timers.delete(id);t.fn();}};
  try{installHelp();const help=root.all().find(e=>e.dataset.help==='seed'),tooltip=root.all().find(e=>e.id==='help-tooltip');
   assert.equal(seed.parentElement,label);assert.equal(check.parentElement,checkLabel);assert.equal(hidden.parentElement,root);
   for(const range of root.children.filter(e=>e.className==='range-setting'))assert.equal(range.all().filter(e=>e.dataset.help).length,1);
   assert.ok(help);assert.equal(help.textContent,'Номер опыта');assert.ok(!root.all().some(e=>e.textContent==='?'));
-  root.listeners.focusin({target:help});assert.equal(tooltip.open,true);assert.match(tooltip.textContent,/seed|номер/i);
-  root.listeners.click({target:help,preventDefault(){},stopPropagation(){}});assert.equal(tooltip.open,true,'touch after focus keeps help visible');
-  root.listeners.keydown({target:help,key:'Escape'});assert.equal(tooltip.open,false);
+  root.listeners.focusin({target:help});assert.ok(!tooltip.open);advance(699);assert.ok(!tooltip.open);advance(1);assert.equal(tooltip.open,true);assert.match(tooltip.textContent,/seed|номер/i);
+  root.listeners.click({target:help,preventDefault(){},stopPropagation(){}});root.listeners.pointerout({target:help,pointerType:'touch'});advance(200);assert.equal(tooltip.open,true,'touch release keeps help visible');
+  root.listeners.keydown({target:help,key:'Escape'});assert.equal(tooltip.open,false);root.listeners.pointerover({target:help});advance(300);root.listeners.pointerout({target:help});advance(700);assert.equal(tooltip.open,false,'leaving cancels pending tooltip');
   root.listeners.keydown({target:help,key:'Enter',preventDefault(){}});assert.equal(tooltip.open,true);
   root.listeners.click({target:root});assert.equal(tooltip.open,false);assert.equal(check.checked,undefined);
  }finally{for(const [key,value]of Object.entries(saved))globalThis[key]=value;}

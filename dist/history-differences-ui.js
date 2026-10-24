@@ -7,11 +7,11 @@ export function installHistoryDifferences({root=document,cards,onChange,createCl
  const make=(tag,text)=>{const n=root.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
  const client=createClient({onChange}),rendered=new WeakMap();let last=null;
  function register(){for(const c of cards){if(c.view)continue;
-  const label=make('label','Показать '),select=make('select');select.setAttribute('aria-label',c.m.label+': исходные данные или разность');
+  const label=make('label'),caption=make('span','Показать'),select=make('select');select.setAttribute('aria-label',c.m.label+': исходные данные или разность');
   for(const [value,text]of [['original','Исходные данные'],['difference','Разность B−A']]){const o=make('option',text);o.value=value;select.append(o);}select.value='original';
-  label.append(select);label.className='history-chart-mode';
-  const help=make('button','?');help.type='button';help.className='help-trigger';help.setAttribute('data-help','history-chart-mode');help.setAttribute('aria-label','Подсказка: исходные данные или B−A');
-  const control=make('div');control.className='help-control';control.append(label,help);if(c.card.insertBefore)c.card.insertBefore(control,c.canvas);else c.card.append(control);c.view=select;
+  caption.className='help-label';caption.setAttribute('data-help','history-chart-mode');caption.setAttribute('data-help-label','true');caption.tabIndex=0;caption.setAttribute('role','button');label.append(caption,select);label.className='history-chart-mode';
+  
+  const control=make('div');control.className='help-control';control.append(label);if(c.card.insertBefore)c.card.insertBefore(control,c.canvas);else c.card.append(control);c.view=select;
   c.difference=make('div');c.difference.className='history-numeric-summary';c.card.append(c.difference);
   select.addEventListener('change',onChange);
  }}register();
@@ -22,9 +22,11 @@ export function installHistoryDifferences({root=document,cards,onChange,createCl
  }
  function update(input){
   register();last=input;const active=input.cards??cards,visible=active.filter(c=>!c.card.hidden&&isDifference(c));
-  for(const c of active){c.difference.hidden=!isDifference(c);if(c.numeric)c.numeric.hidden=isDifference(c);}
-  if(!visible.length||!input.pair)client.suspend();
-  else client.update({...input.pair,metrics:[...new Set(visible.map(c=>c.m.id))],options:{...input.options,start:input.start,end:input.end},weightMode:input.weightMode,series:true});
+  if(input.render!==false)for(const c of active){c.difference.hidden=!isDifference(c);if(c.numeric)c.numeric.hidden=isDifference(c);}
+  const requested=[...new Set([...visible,...(input.prefetch??[]).filter(isDifference)])];
+  if(!requested.length||!input.pair)client.suspend();
+  else client.update({...input.pair,metrics:[...new Set(requested.map(c=>c.m.id))],options:{...input.options,start:input.start,end:input.end},weightMode:input.weightMode,series:true});
+  if(input.render===false)return;
   for(const c of visible){
    const answer=input.pair?client.get(c.m.id):null,result=answer?.result,stat=c.m.single||c.m.id==='survival'?'mean':input.statistic??'mean';
    const points=(answer?.points??[]).map(p=>{const s=p[stat],range=input.bandMode==='spread'?p.spread?.[stat]:s?.confidence?.difference;return {...p,value:s?.difference??null,low:range?.low??null,high:range?.high??null};});
@@ -38,5 +40,5 @@ export function installHistoryDifferences({root=document,cards,onChange,createCl
   }
  }
  function pointDescription(metric,id){const answer=client.get(metric),stat=cards.find(c=>c.m.id===metric)?.m.single||metric==='survival'?'mean':last?.statistic??'mean';if(answer&&!answer.byId)answer.byId=new Map((answer.points??[]).map(p=>[p.id,p]));return pointText(answer?.byId?.get(id),stat);}
- return {update,isDifference,pointDescription,dispose:client.dispose};
+ return {update,isDifference,pointDescription,state:client.state,suspend:client.suspend,dispose:client.dispose};
 }

@@ -28,7 +28,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  let current='world',constructorUI=null;
  const testPages=['constructor','runs','benchmark','mechanisms'];
  let preferences;try{preferences=globalThis.localStorage;}catch{}
- const historyUI=installHistoryUI({getSimulation:()=>constructorUI?.getSimulation()??getSimulation(),getComparisons:()=>constructorUI?.comparisons(),prepareSimulation:options=>constructorUI?.prepareStatistics(options),getExperiment:()=>constructorUI?.analysisSeries()});
+ const historyUI=installHistoryUI({getSimulation:()=>constructorUI?.getSimulation()??getSimulation(),getComparisons:()=>constructorUI?.comparisons(),prepareSimulation:options=>constructorUI?.prepareStatistics(options),getExperiment:()=>constructorUI?.analysisSeries(),canPrepare:()=>constructorUI?.statisticsStable()??!getWorldState?.()?.running});
  const reports={mechanisms:null,benchmark:null,long:null};
  let testPage='constructor';
  let jobReport=null,active=false,stopping=false,pending=[],workers=[],benchBase=null,build=null,benchmarkUI=null;
@@ -67,7 +67,7 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  restore();
  function updateExportButton(){byId('tests-export').disabled=!Object.values(reports).some(Boolean);}
  function selectTestPage(name){
-  testPage=name;document.querySelector('.diagnostics-menu').open=['benchmark','mechanisms'].includes(name);try{preferences?.setItem('big-evolution-experiment-page',name);}catch{}byId('constructor-actions').hidden=name!=='constructor';byId('legacy-test-status').hidden=!['mechanisms','benchmark','long'].includes(name);
+  testPage=name;try{preferences?.setItem('big-evolution-experiment-page',name);}catch{}byId('constructor-actions').hidden=name!=='constructor';byId('legacy-test-status').hidden=!['mechanisms','benchmark','long'].includes(name);
   for(const tab of [...testPages,'long']){
    const selected=tab===name;byId(`test-tab-${tab}`).setAttribute('aria-selected',String(selected));byId(`test-tab-${tab}`).tabIndex=selected?0:-1;byId(`test-panel-${tab}`).hidden=!selected;
   }
@@ -218,5 +218,5 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  selectTestPage(testPage);
  const initialTab=new URL(location.href).searchParams.get('tab');
  if(tabs.includes(initialTab))selectTab(initialTab);
- renderTests();return {isBenchmarkActive:()=>active||benchmarkUI.isActive()||constructorUI.isActive(),refresh:()=>renderHistory(),onRestart:()=>{historyUI.reset();if(current==='history')renderHistory(true);},currentTab:()=>current,exportWorldObservation};
+ renderTests();return {isBenchmarkActive:()=>active||benchmarkUI.isActive()||constructorUI.isActive(),refresh:()=>{historyUI.activity();renderHistory();},onRestart:()=>{historyUI.reset();if(current==='history')renderHistory(true);},currentTab:()=>current,exportWorldObservation};
 }

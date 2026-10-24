@@ -41,7 +41,10 @@ for(const count of COMPUTATION_WORKER_COUNTS){const option=document.createElemen
 element('compute-hardware').textContent=computationHardwareLabel();
 import {mutationProfile} from './mutation-parameters.js';
 const canvas=element('world'),context=canvas.getContext('2d');
-const chart=element('chart'),graph=chart.getContext('2d');
+const chart=element('chart'),graph=chart.getContext('2d');let worldInfoOpen=false;
+element('world-info').addEventListener('toggle',event=>{worldInfoOpen=event.newState==='open';if(worldInfoOpen)update();});
+if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(!element('panel-world').hidden)drawChart();}).observe(chart);
+
 canvas.width=CANVAS_WIDTH;canvas.height=CANVAS_HEIGHT;
 let selected=null,running=false,baseGenome=null,legacyBase=false,controlPending=false,activeComputationMode='auto';
 const trail={points:[]};
@@ -229,11 +232,13 @@ function updateContents(){
  element('compute-current').textContent=UI_TEXT.currentComputations(sim.execution?.computeWorkers??1,activeComputationMode);
  element('compute-apply').disabled=controlPending||labTabs?.isBenchmarkActive();element('compute-workers').disabled=controlPending||labTabs?.isBenchmarkActive();
  // Показатель наблюдателя: использует настоящие источники, но не входит в мозг.
+ if(worldInfoOpen){
  const sources=sim.foodIslands.flatMap(g=>g.sources);
  const nearFood=sim.agents.filter(a=>sources.some(p=>worldDistance(a,p)<=3)).length;
- element('food-region').textContent=`${foodLabel({scenario:sim.scenario,foodSettings:sim.foodSettings})} · начальный запас ${sim.initialFood} порций. Не дальше 3 шагов от источника: ${nearFood}/${total.population} живых · островков ${sim.foodSettings.islandCount}, одиночных кустов ${sim.foodSettings.bushCount??0} · карта ${WORLD_WIDTH}×${WORLD_HEIGHT}`;
+ element('food-region').textContent=`${foodLabel({scenario:sim.scenario,foodSettings:sim.foodSettings})} · начальный запас ${sim.initialFood} порций. Не дальше 3 шагов от источника: ${nearFood}/${total.population} живых · островков ${sim.foodSettings.islandCount}, одиночных кустов ${sim.foodSettings.bushCount??0} · карта ${WORLD_WIDTH}×${WORLD_HEIGHT}`.replaceAll(' · ','\n');
  const geography=sim.geographyInfo,populatedRegions=new Set(sim.agents.map(a=>sim.tile(a.x,a.y).regionId)).size;
- element('geography-region').textContent=`${geographyLabel(sim.geography)} · воды ${(geography.waterFraction*100).toFixed(1)}% · рек ${geography.riverCount}, озёр ${geography.lakeCount}, бродов ${geography.fordCells}. Районов суши ${geography.regionCount}, сейчас населены ${populatedRegions}. Обзор жителя: радиус 1.`;
+ element('geography-region').textContent=`${geographyLabel(sim.geography)} · воды ${(geography.waterFraction*100).toFixed(1)}% · рек ${geography.riverCount}, озёр ${geography.lakeCount}, бродов ${geography.fordCells}. Районов суши ${geography.regionCount}, сейчас населены ${populatedRegions}. Обзор жителя: радиус 1.`.replaceAll(' · ','\n');
+ }
  const environment=sim.environment,looseFood=sim.tiles.filter(c=>c.maxFood===0).reduce((n,c)=>n+c.food,0);
  const capacity=environment.sourceCount?`${environment.capacityMin}…${environment.capacityMax} порций`:'нет источников';
  element('world-food-current').textContent=`Сейчас: ${environment.sourceCount} источников, периоды ${format(environment.periodMin??environment.regrowInterval)}…${format(environment.periodMax??environment.regrowInterval)}, ёмкость ${capacity}. Еды на карте ${sim.tiles.reduce((n,c)=>n+c.food,0)}, из неё вне источников ${looseFood}. Следующее пополнение: ${sim.nextFoodRegrowth()===null?'нет источников':'шаг '+format(sim.nextFoodRegrowth())}.`;
@@ -474,13 +479,16 @@ canvas.addEventListener('mousemove',event=>{
  */
 function drawChart(){return profiler.measureUI('chart',drawChartContents);}
 function drawChartContents(){
- const w=chart.width,h=chart.height,left=38,right=w-38,top=14,bottom=h-24;
+ if(element('panel-world').hidden)return;
+ const rect=chart.getBoundingClientRect(),ratio=globalThis.devicePixelRatio||1,w=Math.max(220,rect.width||900),h=Math.max(160,rect.height||180);
+ if(chart.width!==Math.round(w*ratio)||chart.height!==Math.round(h*ratio)){chart.width=Math.round(w*ratio);chart.height=Math.round(h*ratio);}graph.setTransform(ratio,0,0,ratio,0,0);
+ const left=56,right=w-56,top=18,bottom=h-30;
  graph.clearRect(0,0,w,h);graph.font='11px Segoe UI';
  const populationMax=Math.max(sim.initialPopulation,...sim.history.map(p=>p.population),1);
  for(const fraction of [0,.5,1]){
   const y=bottom-fraction*(bottom-top);graph.strokeStyle='#344333';graph.beginPath();graph.moveTo(left,y);graph.lineTo(right,y);graph.stroke();
-  graph.fillStyle='#9aab90';graph.textAlign='left';graph.fillText(Math.round(populationMax*fraction),0,y+4);
-  graph.textAlign='right';graph.fillText(Math.round(100*fraction),w,y+4);
+  graph.fillStyle='#9aab90';graph.textAlign='left';graph.fillText(Math.round(populationMax*fraction),8,y+4);
+  graph.textAlign='right';graph.fillText(Math.round(100*fraction),w-8,y+4);
  }
  const history=sim.history,start=history[0]?.tick??0,end=history.at(-1)?.tick??1;
  for(const [field,color,maximum]of [['population','#9ec48a',populationMax],['meanEnergy','#dfc98c',100]]){

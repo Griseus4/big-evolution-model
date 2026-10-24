@@ -19,15 +19,21 @@ class Element{
  getBoundingClientRect(){return {width:600,left:0,height:this.height??72};}
  getContext(){return {setTransform(){},clearRect(){},beginPath(){},moveTo(...v){assert.ok(v.every(Number.isFinite));},lineTo(...v){assert.ok(v.every(Number.isFinite));},stroke(){},fill(){},fillRect(...v){assert.ok(v.every(Number.isFinite));},arc(...v){assert.ok(v.every(Number.isFinite));},setLineDash(){},fillText(){}};}
 }
-function boot({prepareSimulation=()=>null}={}){
+function boot({prepareSimulation=()=>null,canPrepare=()=>false}={}){
  const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8'),elements=new Map(),created=[];
  for(const m of html.matchAll(/<([a-z]+)\b[^>]*\bid="([^"]+)"[^>]*>/g)){const e=new Element(m[1]),value=m[0].match(/\bvalue="([^"]*)"/);if(value)e.value=value[1];elements.set(m[2],e);}
  for(const m of html.matchAll(/<select\b[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/select>/g)){const options=[...m[2].matchAll(/<option\b([^>]*)value="([^"]+)"([^>]*)>/g)],chosen=options.find(o=>/selected/.test(o[1]+o[3]))??options[0];if(chosen)elements.get(m[1]).value=chosen[2];}
  const rows=Array.from({length:125},(_,i)=>({id:i+1,parentId:i%2?1:null,founderId:1,generation:i%2,born:i,age:20,status:'dead',observedSteps:20,moved:i,eaten:2,hungerSteps:1,meanEnergy:60,cause:'starvation'}));
  const report={tick:300,dead:rows,living:[],omittedDetails:0,completed:{count:125,meanAge:20,medianAge:20},byCause:{starvation:{count:125}},foodAvailability:{schema:'ground-food-exposure-v1',prefix:Float64Array.from({length:301},(_,i)=>i*100),substeps:0,partialSum:0}};
  const toolbar=new Element(),sim={tick:300,lives:report},root={getElementById:id=>{assert.ok(elements.has(id),id);return elements.get(id);},querySelector:selector=>selector==='.global-toolbar'?toolbar:null,createElement:tag=>{const e=new Element(tag);created.push(e);return e;}};
- const ui=installHistoryUI({root,getSimulation:()=>sim,prepareSimulation});return {elements,created,ui,sim,toolbar};
+ const ui=installHistoryUI({root,getSimulation:()=>sim,prepareSimulation,canPrepare});return {elements,created,ui,sim,toolbar};
 }
+
+test('paused dashboard warms a hidden category and reopening it reuses its numerical answer',async()=>{
+ const original=globalThis.Worker,requested=[];let stable=false;
+ globalThis.Worker=class {postMessage(m){requested.push(m.prepared.metric);setTimeout(()=>{if(!this.closed)this.onmessage?.({data:{request:m.request,owner:m.owner,metric:m.prepared.metric,summary:{mean:1,median:1,worlds:1},points:[]}});},2);}terminate(){this.closed=true;}};
+ const b=boot({canPrepare:()=>stable});try{b.ui.refresh();await new Promise(r=>setTimeout(r,220));assert.ok(!requested.includes('movement'));stable=true;b.ui.refresh(true);for(let i=0;i<100&&!requested.includes('movement');i++)await new Promise(r=>setTimeout(r,30));assert.ok(requested.includes('movement'));await new Promise(r=>setTimeout(r,20));const before=requested.filter(m=>m==='movement').length;b.elements.get('history-display').value='behavior';b.elements.get('history-display').emit('change');await new Promise(r=>setTimeout(r,20));assert.equal(requested.filter(m=>m==='movement').length,before);stable=false;b.ui.activity();b.ui.reset();}finally{b.ui.reset();globalThis.Worker=original;}
+});
 test('standard copy becomes an editable native card in the same grid, with persistence, new category and restore',async()=>{
  const old=globalThis.localStorage,stored=new Map();globalThis.localStorage={getItem:k=>stored.get(k)??null,setItem:(k,v)=>stored.set(k,v)};
  try{const b=boot();b.ui.refresh();const walk=n=>[n,...n.children.flatMap(walk)],grid=b.elements.get('history-charts'),canvas=b.created.find(n=>n.id==='history-chart-lifetime'),card=grid.children.find(n=>n.children.includes(canvas));

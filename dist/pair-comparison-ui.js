@@ -46,5 +46,5 @@ export function installPairComparison({root=document,onChange=()=>{},createClien
  for(const [select,other,old]of [[a,b,()=>previousA],[b,a,()=>previousB]])select.addEventListener('change',()=>{if(select.value===other.value)other.value=old();onChange();});
  stat.addEventListener('change',()=>{if(last)update(last);});
  byId('pair-swap').addEventListener('click',()=>{const old=a.value;a.value=b.value;b.value=old;onChange();});
- return {update,selection,suspend:client.suspend,dispose:client.dispose};
+ return {update,selection,state:client.state,prefetch(input){const pair=selection(input.comparison);if(pair)client.update({...pair,metrics:PAIR_METRICS.map(m=>m.id),options:{...input.options,start:input.start,end:input.end},weightMode:input.comparison.weightMode});},suspend:client.suspend,dispose:client.dispose};
 }

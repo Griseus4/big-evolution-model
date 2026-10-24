@@ -9,8 +9,9 @@ export function installHistoryEstimates({root=document,cards,onChange,createClie
  function register(){for(const card of cards)if(!card.numeric){card.numeric=make('div');card.numeric.className='history-numeric-summary';card.card.append(card.numeric);}}
  register();
  function update(input){
-  register();sources=input.sources;const visible=(input.cards??cards).filter(c=>!c.card.hidden&&c.view?.value!=='difference');client.update({...input,metrics:[...new Set(visible.map(c=>c.m.id))]});
-  const progress=client.state();if(showStatus)state.textContent=progress.error??(progress.total?progress.completed<progress.total?`Статистика в фоне: ${progress.completed}/${progress.total} показателей. Графики обновятся по готовности.`:'Числа — за выбранный период. Полосы ДИ приближённые, поточечные; при 5–9 мирах особенно осторожная интерпретация.':'');
+  register();sources=input.sources;const visible=(input.cards??cards).filter(c=>!c.card.hidden&&c.view?.value!=='difference');client.update({...input,metrics:[...new Set([...visible,...(input.prefetch??[])].filter(c=>c.view?.value!=='difference').map(c=>c.m.id))]});
+  if(input.render===false)return;
+  const progress=client.state();if(showStatus)state.textContent=progress.error??(progress.total?progress.completed<progress.total?`Статистика в фоне: ${progress.completed}/${progress.total} показателей. Графики обновятся по готовности.`:'':'');
   for(const c of visible){
    const results=sources.map(s=>client.get(s.id,c.m.id)),key=results.map((r,i)=>r??sources[i].report);
    const previous=rendered.get(c);if(previous&&previous.length===key.length&&previous.every((r,i)=>r===key[i]))continue;rendered.set(c,key);
@@ -32,5 +33,5 @@ export function installHistoryEstimates({root=document,cards,onChange,createClie
  function pointDescription(metric,id){
   return sources.map(source=>{const p=client.get(source.id,metric)?.byId?.get(id);return p?`${source.name}: среднее ${format(p.mean)}${interval(p,'mean')}; медиана ${format(p.median)}${interval(p,'median')}; миров ${p.worlds}. ${p.reason??''}`:`${source.name}: расчёт ещё не готов или данных нет.`;}).join(' ');
  }
- return {update,get:client.get,pointDescription,dispose:client.dispose};
+ return {update,get:client.get,pointDescription,state:client.state,suspend:client.suspend,dispose:client.dispose};
 }
