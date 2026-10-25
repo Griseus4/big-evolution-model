@@ -734,8 +734,8 @@
   {
     "name": "docs/updates/v054-guide-series-plan.md",
     "url": "./source-files/docs/updates/v054-guide-series-plan.md",
-    "lines": 15,
-    "bytes": 3785,
+    "lines": 17,
+    "bytes": 4281,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8998,8 +8998,8 @@
   {
     "name": "docs/guide-plan/README.md",
     "url": "./source-files/docs/guide-plan/README.md",
-    "lines": 87,
-    "bytes": 22165,
+    "lines": 89,
+    "bytes": 22991,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -10095,7 +10095,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 11,
-    "bytes": 2921,
+    "bytes": 2951,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -10103,7 +10103,7 @@
     "name": "docs/workflows/context.md",
     "url": "./source-files/docs/workflows/context.md",
     "lines": 67,
-    "bytes": 14252,
+    "bytes": 14162,
     "aliases": [],
     "purpose": "Как обсуждать контракты и передавать контекст без повторения всей истории."
   },
@@ -10134,8 +10134,8 @@
   {
     "name": "AGENTS.md",
     "url": "./source-files/AGENTS.md",
-    "lines": 40,
-    "bytes": 11210,
+    "lines": 39,
+    "bytes": 10916,
     "aliases": [],
     "purpose": "Постоянные инструкции агенту: договорённости, ограничения и завершение работы."
   },
