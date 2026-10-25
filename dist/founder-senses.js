@@ -1,4 +1,5 @@
 import {STRUCTURAL_TYPE} from './structural-brain.js';
+import {DUAL_BRAIN_TYPE} from './dual-brain-layout.js';
 import {COGNITIVE_GENES} from './brain-parameters.js';
 import {NEURAL_TRAIT_INDICES} from './neural-layout.js';
 import {TEMPORAL_BRAIN_TYPE,TEMPORAL_TRAIT_INDICES} from './temporal-layout.js';
@@ -20,6 +21,6 @@ export function validateFounderSenses(input){
  * Геном каждого основателя уже собственный: исходный файл не изменяется. */
 export function compileFounderSenses(input,layout){
  const settings=validateFounderSenses(input);if(!settings)return [];
- const indices=[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout?.brainType)?TEMPORAL_TRAIT_INDICES:NEURAL_TRAIT_INDICES;
+ const indices=[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(layout?.brainType)?TEMPORAL_TRAIT_INDICES:NEURAL_TRAIT_INDICES;
  return Object.entries(settings).map(([key,value])=>{const f=FOUNDER_SENSE_FIELDS.find(f=>f.key===key);return [layout?layout.traitOffset+indices.indexOf(f.oldIndex):COGNITIVE_GENES[f.oldIndex].index,value];});
 }

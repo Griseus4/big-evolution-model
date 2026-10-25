@@ -4,7 +4,7 @@ import {brainCostProfile} from './brain-cost.js';
  * Два барьера на подшаг: оценки -> мировой RNG/исполнение -> подтверждение.
  * Буферы возвращаются владельцу и переиспользуются; полные мозги передаются
  * только при рождении и по явному запросу снимка выбранного жителя/проверки. */
-import {advanceTemporalBodies,prepareTemporalBoundary,prepareTemporalAgent,sampleCells,sampleLife,temporalAvailableMask,temporalSelectedChoice,acceptTemporalChoice,compactTemporalAgents,finishTemporal} from './temporal-world.js';
+import {advanceTemporalBodies,prepareTemporalBoundary,prepareTemporalAgent,sampleCells,sampleLife,temporalAvailableMask,temporalSelectedChoice,acceptTemporalChoice,compactTemporalAgents,finishTemporal,payAttention,attentionDeath} from './temporal-world.js';
 import {CALL_REVIEW} from './action-timing.js';
 import {setCognitionSummary} from './cognition-summary.js';
 import {COGNITION_PROTOCOL,INPUT_WIDTH,RESULT_WIDTH,RESULT,writeCognitionRow} from './cognition-packet.js';
@@ -24,7 +24,7 @@ class Endpoint{
  }
  close(error){if(this.pending){clearTimeout(this.pending.timer);this.pending.reject(error);this.pending=null;}return this.worker.terminate();}
 }
-function mirrorBrain(b){return {costProfile:b.costProfile,traits:b.traits,controllerType:b.controllerType,temporal:b.temporal,position:b.position,facing:b.facing,updates:b.updates,feelingTotal:b.feelingTotal,feelingSamples:b.feelingSamples,wellbeing:b.wellbeing,memory:new Map(),longMemory:new Map()};}
+function mirrorBrain(b){return {costProfile:b.costProfile,traits:b.traits,controllerType:b.controllerType,temporal:b.temporal,dual:b.dual,lastDecisionSubtick:b.lastDecisionSubtick,position:b.position,facing:b.facing,updates:b.updates,feelingTotal:b.feelingTotal,feelingSamples:b.feelingSamples,wellbeing:b.wellbeing,memory:new Map(),longMemory:new Map()};}
 export class ParallelWorld{
  constructor(world,{workers=4,createWorker=()=>new Worker(new URL('./cognition-worker.js',import.meta.url),{type:'module'}),timeout=30000}={}){
   if(!world.temporal)throw new Error('Параллельный расчёт поддерживает модель v13.');
@@ -67,7 +67,7 @@ export class ParallelWorld{
   for(const l of this.lanes){l.agents.length=0;l.added.length=0;l.addedAgents.length=0;}
   for(const a of w.agents){
    const cells=priming?sampleCells(w,a):prepareTemporalAgent(w,a);if(!cells)continue;
-   if(!priming){sampleLife(w,a);if(a.process&&a.process.action!==9)w.stats.gateCalls++;}
+   if(!priming){sampleLife(w,a);if((a.process||a.resting)&&a.process?.action!==9)w.stats.gateCalls++;}
    let index=this.owners.get(a.id);
    if(index===undefined){index=(a.id-1)%this.lanes.length;this.owners.set(a.id,index);this.lanes[index].added.push({id:a.id,x:a.x,y:a.y,brain:a.brain,lastDecision:a.lastDecision,cells:a._cells});this.lanes[index].addedAgents.push(a);this.metrics.registrations++;}
    const l=this.lanes[index];let row=this.rows.get(a);if(!row){row={l};this.rows.set(a,row);}row.i=l.agents.length;row.at=row.i*RESULT_WIDTH;row.batch=this.batch;row.cells=cells;l.agents.push(a);
@@ -94,12 +94,13 @@ export class ParallelWorld{
   }
   for(const a of w.agents){
    const row=this.rows.get(a);if(!row||row.batch!==this.batch)continue;const {l,i,at}=row,r=l.result;
-   if(!r[at+RESULT.decision])continue;
+   if(!r[at+RESULT.decision]){if(a.brain.dual&&r[at+RESULT.gateCost]>0){payAttention(w,a,r[at+RESULT.gateCost]);if(a.health===0){attentionDeath(w,a);l.selections[i]=-2;this.removed(a);}}continue;}
    if(r[at+RESULT.decision]===2)a.callReason=CALL_REVIEW;
    w.recordBirthDecision(a);let roll=w.random.next(),action=-1;const mask=r[at+RESULT.mask];
    for(let k=0;k<11;k++)if(mask&(1<<k)){action=k;const p=r[at+RESULT.probabilities+k];if(!Number.isFinite(p)||p<0||p>1)throw new Error('Некорректная вероятность действия.');roll-=p;if(roll<=0)break;}
    if(action<0)throw new Error('Вычислитель не вернул доступных действий.');
    a.brain.learningCharge=r[at+RESULT.learningCost];const choice=temporalSelectedChoice(w,a,action);choice.computeCharge=r[at+RESULT.costs+action];
+   if(a.brain.dual&&r[at+RESULT.gateCost])payAttention(w,a,r[at+RESULT.gateCost]);
    if(acceptTemporalChoice(w,a,choice))l.selections[i]=action;
    else{l.selections[i]=-2;this.removed(a);}
   }

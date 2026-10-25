@@ -26,13 +26,13 @@ export function initialNeuronsInput(doc,value=INITIAL_NEURONS,getLimits=()=>({ma
  host.setDisabled=value=>{disabled=value;for(const input of inputs)input.disabled=value;};
  host.value=value;return host;
 }
-export function wireInitialStructure(neurons,percent,maxNeurons,maxLayers,{onChange=()=>{},isGenome=()=>false}={}){
+export function wireInitialStructure(neurons,percent,maxNeurons,maxLayers,{onChange=()=>{},isGenome=()=>false,connectionBudget=initialConnectionBudget}={}){
  const doc=neurons.ownerDocument??globalThis.document,note=doc.createElement('p');note.className='note';neurons.append(note);
  function refresh(rebuild=false){
   if(rebuild)neurons.refresh();const imported=isGenome();neurons.setDisabled(imported);percent.disabled=imported;
   if(imported){note.textContent='Геном из файла задаёт свою структуру; начальные нейроны и связность не применяются.';return;}
-  try{const counts=neurons.readSetting(),budget=initialConnectionBudget(counts);percent.max=budget.maxPercent;
-   const actual=initialConnectionBudget(counts,String(percent.value).trim()===''?NaN:Number(percent.value));note.textContent=`Связей: ${actual.count}. 100% = ${budget.base} соседних; максимум ${budget.maximum} (${budget.maxPercent.toLocaleString('ru-RU',{maximumFractionDigits:2})}%).`;percent.setCustomValidity?.('');
+  try{const counts=neurons.readSetting(),budget=connectionBudget(counts);percent.max=budget.maxPercent;
+   const actual=connectionBudget(counts,String(percent.value).trim()===''?NaN:Number(percent.value));note.textContent=`Связей: ${actual.count}. 100% = ${budget.base} соседних; максимум ${budget.maximum} (${budget.maxPercent.toLocaleString('ru-RU',{maximumFractionDigits:2})}%).`;percent.setCustomValidity?.('');
   }catch(e){note.textContent=e.message;percent.setCustomValidity?.(e.message);}
  }
  for(const cap of [maxNeurons,maxLayers])cap.addEventListener('change',()=>{refresh(true);onChange();});

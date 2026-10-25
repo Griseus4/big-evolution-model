@@ -67,7 +67,7 @@ export function installGenomeAnalysis(){
    const file=fileControl.files?.[0];if(!file)return;
    const request=++revision[index];slots[index]=null;clear.disabled=false;status.className='note';status.textContent=`Читаю ${file.name}…`;render();
    try{
-    if(file.size>MAX_GENOME_BYTES)throw new Error('Файл больше 100 КБ. Нужен экспорт генома, не история мира.');
+    if(file.size>MAX_GENOME_BYTES)throw new Error('Превышен размер генома. Нужен экспорт генома, не история мира.');
     const bytes=await file.arrayBuffer();let sha256=null;
     if(globalThis.crypto?.subtle){try{const digest=await crypto.subtle.digest('SHA-256',bytes);sha256=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('');}catch{/* Анализ работает и без отпечатка; отсутствие отражаем явно. */}}
     const genome=parseGenomeText(new TextDecoder('utf-8',{fatal:true}).decode(bytes),{name:file.name,sha256});

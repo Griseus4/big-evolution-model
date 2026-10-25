@@ -3,6 +3,9 @@ import {STRUCTURE_RULES} from './brain-structure-rules.js';
 import {RULES,validateDigestionTime,actionEnergyCost,BODY_LIMITS} from './model-rules.js';
 import {SUBSTEPS,HISTORY_SAMPLE_T,ACTION_DURATIONS} from './action-timing.js';
 import {STRUCTURAL_TYPE,structuralSettings,structuralLayout} from './structural-brain.js';
+import {DUAL_BRAIN_TYPE,unpackDualBrain} from './dual-brain-layout.js';
+import {dualStructureSettings} from './dual-brain-settings.js';
+import {EVOLUTION_RULES} from './brain-evolution-rules.js';
 /**
  * Лаборатория отбора и личного обучения, версия 0.29.
  *
@@ -95,12 +98,13 @@ export class Evolution {
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?STRUCTURAL_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections}={}){
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections,attentionMaxNeurons=EVOLUTION_RULES.maxNeurons,attentionMaxLayers=EVOLUTION_RULES.maxLayers,attentionInitialNeurons=[],attentionInitialConnections=100,initialMutation}={}){
   this.temporal=Boolean(temporal);
   Object.assign(this,structuralSettings({maxNeurons,maxLayers,structuralMutations,initialNeurons:baseGenome?null:initialNeurons,initialConnections:baseGenome?STRUCTURE_RULES.initialConnections:initialConnections}));
+  if(brainType===DUAL_BRAIN_TYPE)Object.assign(this,dualStructureSettings({maxNeurons,maxLayers,initialNeurons,initialConnections,structuralMutations,attentionMaxNeurons,attentionMaxLayers,attentionInitialNeurons,attentionInitialConnections,initialMutation,baseGenome}));
   this.digestionTime=validateDigestionTime(digestionTime);
   this.digestionRate=RULES.foodEnergy/this.digestionTime;
-  if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(brainType))throw new Error('В0.32 нужен мозг v13; старые основы не поддерживаются.');
+  if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(brainType))throw new Error('Неизвестная схема временного мозга.');
   if(!['custom','balanced','scarce'].includes(scenario))throw new Error('Неизвестная пищевая среда.');
   const foodOptions=validateFoodSettings({foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax});
   this.individualFood=Boolean(individualFood);
@@ -126,7 +130,8 @@ export class Evolution {
   this.baseGenome=baseGenome?validateGenomeFile({format:'big-evolution-genome',
    ...genomeMetadata(baseGenome),genes:baseGenome}):null;
   if(this.baseGenome){this.brainType=genomeMetadata(this.baseGenome).brainType;const l=structuralLayout(this.baseGenome);if(l&&(l.hidden>this.maxNeurons||Math.max(0,...this.baseGenome.slice(l.topologyOffset,l.topologyOffset+l.hidden))>this.maxLayers))throw new Error('Геном превышает выбранные пределы нейронов/слоёв.');}
-  if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(this.brainType))throw new Error('В0.32 нужны новые геномыv13; старые основы не преобразуются.');
+  if(this.baseGenome&&this.brainType===DUAL_BRAIN_TYPE){const d=unpackDualBrain(this.baseGenome);for(const [graph,n,l]of [[d.main,this.maxNeurons,this.maxLayers],[d.attention,this.attentionMaxNeurons,this.attentionMaxLayers]])if(graph.layers.length>n||Math.max(0,...graph.layers)>l)throw new Error('Геном превышает пределы двух структур.');}
+  if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(this.brainType))throw new Error('Неизвестная схема временного мозга.');
   if(this.temporal&&this.reproduction.automatic)throw new Error('Автоматическое рождение удалено из новых испытаний0.32.');
   this.tick=0;this.nextId=1;this.maxGeneration=0;this.events=[];this.history=[];this.agents=[];
   // Нулевое начало цикла сохраняет прежние сроки восстановления до первого
@@ -279,6 +284,7 @@ export class Evolution {
    children:0,lastAction:null,lastDecision:null,lastDamage:0,alive:true,genome,frameRotation,brain:createControllerState(genome),life:createLifeCounters(),born:this.tick};
   if(this.temporal){delete a.pain;delete a.lastDamage;for(const k of ['painTotal','painSteps','injuries','damage'])delete a.life[k];a.process=null;a.callReason=0;a.lastAction=8;a.readyAt=(this.subtick??0)+(parent?1:0);a.lastProcess={action:8,localDestination:{...a.brain.position},direction:null,elapsed:ACTION_DURATIONS[8],duration:ACTION_DURATIONS[8]};}
   if(this.temporal){a.life.observer=createLifeObservations(RULES.inventoryCapacity);a.life.heritable=captureHeritable(a);}
+  if(a.brain.dual)Object.assign(a.life.observer,{restTime:0,attentionCalls:0,attentionEnergyCost:0,mainDecisionEnergyCost:0,learningEnergyCost:0});
   a.brain.wellbeing=this.feeling(a);
   this.agents.push(a);placeOccupant(this.occupancy,a);this.records.set(id,{id,parentId:a.parentId,founderId,generation:a.generation,born:this.tick,death:null,cause:null});
   // Счётчик достигнутых поколений не уменьшается после смерти старшей ветви.

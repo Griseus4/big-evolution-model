@@ -48,6 +48,7 @@ export function temporalBirthAvailability(w,a){
  const blocked=[];if(a.energy<w.reproduction.energy)blocked.push('energy');if(a.health<w.reproduction.health)blocked.push('health');if(a.age<w.reproduction.maturity)blocked.push('immature');if(a.age-a.lastBirthAge<w.reproduction.birthInterval-1e-9)blocked.push('interval');if(w.agents.length>=w.limit)blocked.push('limit');if(!a.alive||a.age>=RULES.maxAge)blocked.push('terminal');if(a.process?.action===9)blocked.push('inProgress');return {eligible:blocked.length===0,blocked};
 }
 function processView(w,a,cells){
+ if(a.brain.dual&&a.resting){const place=a.brain.position;return {action:8,active:false,progress:0,remaining:0,localDestination:place,cell:cells.find(c=>c.q===place.q&&c.r===place.r)};}
  const p=a.process??a.lastProcess,place=p?.localDestination??a.brain.position,cell=cells.find(c=>c.q===place.q&&c.r===place.r);
  return {action:p?.action??8,active:Boolean(a.process),progress:p?p.elapsed/p.duration:1,remaining:a.process?p.duration-p.elapsed:0,localDestination:place,cell};
 }
@@ -93,6 +94,7 @@ function temporalCandidate(a,observation,action,neighbours=temporalNavigation(a)
    const continuation=Boolean(a.process&&a.process.action===action&&(action>=6||place.q===a.process.localDestination.q&&place.r===a.process.localDestination.r));
    const cell=cells.find(c=>c.q===place.q&&c.r===place.r);if(!cell)return null;
    const repeat=a.callReason===CALL_COMPLETE&&sameActivity(a,action,place),decisionCost=repeat?REPEAT_COST:DECISION_COST,id=`action-${action}`;
+   if(a.brain.dual&&action===8)return {id,action,label:'Покой',localDestination:{q:place.q,r:place.r},cell,continuation:Boolean(a.resting),repeat:Boolean(a.resting),decisionCost:a.resting?REPEAT_COST:DECISION_COST,duration:0};
    return {id,action,label:ACTIONS[action],localDestination:{q:place.q,r:place.r},cell,continuation,repeat,decisionCost,duration:continuation?a.process.duration-a.process.elapsed:ACTION_DURATIONS[action]};
 }
 export function temporalSelectedChoice(w,a,action){
@@ -140,19 +142,30 @@ export function acceptTemporalChoice(w,a,choice){
  const computeCost=(choice.computeCharge??choice.decisionCost)+(b.learningCharge??0);
  if(!Number.isFinite(computeCost)||computeCost<0)throw new Error('Неверная стоимость вычислений мозга.');
  if(b.costProfile&&a.life.observer)a.life.observer.brainEnergyCost=(a.life.observer.brainEnergyCost??0)+computeCost;
+ if(b.dual&&a.life.observer){a.life.observer.mainDecisionEnergyCost=(a.life.observer.mainDecisionEnergyCost??0)+(choice.computeCharge??choice.decisionCost);a.life.observer.learningEnergyCost=(a.life.observer.learningEnergyCost??0)+(b.learningCharge??0);}
  spend(w,a,computeCost,true);if(b.costProfile)b.learningCharge=0;
  if(a.health===0){fail(w,a,'death');w.die(a,'starvation');b.pending=null;return false;}
- if(!choice.continuation){if(a.process)fail(w,a,'voluntary');const direction=choice.action<6?{q:choice.localDestination.q-b.position.q,r:choice.localDestination.r-b.position.r}:null;a.process={action:choice.action,destination:choice.destination,localDestination:choice.localDestination,direction,duration:ACTION_DURATIONS[choice.action],elapsed:0};w.stats.started[choice.action]++;w.stats.actions[choice.action]++;if(choice.action===9){a.life.reproduction.chosen++;w.stats.reproduction.chosen++;}}
+ if(b.dual&&choice.action===8){if(a.process)fail(w,a,'voluntary');a.resting=true;}
+ else{if(b.dual)a.resting=false;if(!choice.continuation){if(a.process)fail(w,a,'voluntary');const direction=choice.action<6?{q:choice.localDestination.q-b.position.q,r:choice.localDestination.r-b.position.r}:null;a.process={action:choice.action,destination:choice.destination,localDestination:choice.localDestination,direction,duration:ACTION_DURATIONS[choice.action],elapsed:0};w.stats.started[choice.action]++;w.stats.actions[choice.action]++;if(choice.action===9){a.life.reproduction.chosen++;w.stats.reproduction.chosen++;}}}
+ if(b.dual)b.lastDecisionSubtick=w.subtick;
  a.lastAction=choice.action;
  a.callReason=CALL_COMPLETE;
  return true;
 }
 export function commitTemporalBrain(w,a,decision,choice,beforeFeeling){
  const b=a.brain;rememberAttention(a,decision.frame.request.observation.cells);
+ if(b.dual)b.lastDecisionSubtick=w.subtick;
  if(w.memoryEnabled)rememberDecision(b,b.position,w.tick);
  if(w.learningEnabled||w.memoryEnabled)b.pending={choice:{id:choice.id,action:choice.action,row:0,features:choice.features.slice(),senses:choice.senses.slice(),place:{...b.position},batchInput:cloneSetInput(choice.batchInput)},beforeFeeling,...(b.costProfile?{costRate:choice.decisionCost,costCandidates:decision.frame.request.candidates.length,costOperations:new Set(decision.frame.request.candidates.map(c=>c.action<6?0:c.action-5)).size}:{}),startSubtick:w.subtick,sum:0,discount:1};
 }
-function decide(w,a){const decision=prepareTemporalDecision(w,a);w.recordBirthDecision(a);const beforeFeeling=w.feeling(a),choice=w.choose(a,decision);choice.computeCharge=decisionCharge(a.brain,decision,choice.decisionCost);if(acceptTemporalChoice(w,a,choice)){delete choice.computeCharge;commitTemporalBrain(w,a,decision,choice,beforeFeeling);}}
+export function payAttention(w,a,cost){
+ if(!a.brain.dual)return;
+ if(!Number.isFinite(cost)||cost<0)throw new Error('Неверная цена диспетчера.');
+ spend(w,a,cost,true);w.stats.attentionSpent=(w.stats.attentionSpent??0)+cost;
+ if(a.life.observer){a.life.observer.attentionEnergyCost=(a.life.observer.attentionEnergyCost??0)+cost;a.life.observer.attentionCalls=(a.life.observer.attentionCalls??0)+1;}
+}
+export function attentionDeath(w,a){fail(w,a,'death');w.die(a,'starvation');a.brain.pending=null;}
+function decide(w,a,gateCost=0){const decision=prepareTemporalDecision(w,a);w.recordBirthDecision(a);const beforeFeeling=w.feeling(a),choice=w.choose(a,decision);choice.computeCharge=decisionCharge(a.brain,decision,choice.decisionCost);if(gateCost)payAttention(w,a,gateCost);if(acceptTemporalChoice(w,a,choice)){delete choice.computeCharge;commitTemporalBrain(w,a,decision,choice,beforeFeeling);}}
 export function sampleLife(w,a){const c=a.life,f=w.feeling(a);c.samples+=DT;c.energyTotal+=a.energy*DT;c.healthTotal+=a.health*DT;c.hungerSteps+=Number(a.energy<BODY_THRESHOLDS.hungry)*DT;c.emptyEnergySteps+=Number(a.energy===0)*DT;a.brain.feelingTotal+=f*DT;a.brain.feelingSamples+=DT;a.brain.wellbeing=f;w.lifeExposure.steps+=DT;w.lifeExposure.feelingTotal+=f*DT;}
 export function compactTemporalAgents(w){let k=0;for(let i=0;i<w.agents.length;i++)if(w.agents[i].alive)w.agents[k++]=w.agents[i];w.agents.length=k;}
 export function observeTime(w,a,cells,elapsed){const mark=beginComputeGroup('memory');try{observe(a.brain,cells,a.brain.position,w.tick,true,elapsed);}finally{endComputeGroup(mark);}}
@@ -175,8 +188,12 @@ export function advanceTemporal(w){
   const a=w.agents[i],cells=prepareTemporalAgent(w,a);if(!cells)continue;
   if(w.memoryEnabled)observeTime(w,a,cells,DT);
   accrueTemporalReward(w,a);sampleLife(w,a);
-  if(!a.process)decide(w,a);
-  else if(a.process.action!==9){w.stats.gateCalls++;if(attentionRequest(a,cells,RULES.inventoryCapacity,RULES.stomachCapacity)){a.callReason=CALL_REVIEW;decide(w,a);}}
+  if(!a.process&&!a.resting)decide(w,a);
+  else if(a.process?.action!==9){
+   w.stats.gateCalls++;const wants=attentionRequest(a,cells,RULES.inventoryCapacity,RULES.stomachCapacity,w.subtick),cost=a.brain.dual?a.brain.gateCharge:0;
+   if(wants){a.callReason=CALL_REVIEW;decide(w,a,cost);}
+   else if(a.brain.dual){payAttention(w,a,cost);if(a.health===0)attentionDeath(w,a);}
+  }
  }
  compactTemporalAgents(w);finishTemporal(w);
 }
@@ -192,6 +209,7 @@ export function advanceTemporalBodies(w,onDeath=null){
   if(a.life.observer)a.life.observer.inventorySubsteps[a.inventory]++;
   const amount=Math.min(a.stomach,w.digestionRate*DT),gain=Math.min(amount,BODY_LIMITS.energy-a.energy);a.stomach-=amount;a.energy+=gain;w.stats.digested+=amount;w.stats.overflow+=amount-gain;
   if(a.process){if(a.process.action!==9)spend(w,a,actionEnergyCost(a.process.action)*DT);a.process.elapsed++;}
+  else if(a.brain.dual&&a.resting){spend(w,a,actionEnergyCost(8)*DT);if(a.life.observer)a.life.observer.restTime=(a.life.observer.restTime??0)+DT;}
   if(a.health===0||a.age>=RULES.maxAge){fail(w,a,'death');sampleLife(w,a);w.die(a,a.health===0?'starvation':'age');a.brain.pending=null;onDeath?.(a);continue;}
   if(a.process&&a.process.elapsed>=a.process.duration)due.push(a);
  }

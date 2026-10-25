@@ -3,10 +3,12 @@ import {diagramLayout,fitViewport,resizeViewport,zoomViewport,panViewport,diagra
 /** Только представление выбранного мозга. Клик читает существующие веса;
  * ни активаций, ни выбора, ни обучения, ни RNG просмотр не выполняет. */
 import {structuralData,STRUCTURAL_BLOCKS,FIXED_PARAMETERS} from './structural-brain.js';
+import {dualBrainLayout,unpackDualBrain} from './dual-brain-layout.js';
 import {CONTEXT_NAMES,CELL_NAMES,CANDIDATE_NAMES,OPERATION_NAMES,GATE_NAMES,GATE_HIDDEN_BIAS,GATE_OUTPUT_WEIGHTS,GATE_OUTPUT_BIAS} from './temporal-layout.js';
 const views=new WeakMap();
 export function brainDiagramModel(agent,component='context',learningEnabled=true){
- const d=structuralData(agent.genome);if(!d)return null;const b=agent.brain,l=d.layout;
+ const dual=dualBrainLayout(agent.genome)?unpackDualBrain(agent.genome):null;
+ const d=dual?{layout:dual.layout,layers:dual.main.layers,edges:dual.main.edges}:structuralData(agent.genome);if(!d)return null;const b=agent.brain,l=d.layout;
  const nodes=[],edges=[],base=agent.genome,delta=b.networkDelta;
  const node=(id,layer,label,index=null)=>nodes.push({id,layer,label,index});
  const edge=(from,to,index,gate=false)=>edges.push({from,to,index,base:gate?b.gateBase[index]:base[index],delta:gate?0:delta?.[index]??0,enabled:gate||learningEnabled});
@@ -16,6 +18,12 @@ export function brainDiagramModel(agent,component='context',learningEnabled=true
   d.layers.forEach((v,j)=>node(I+j,v,`Скрытый ${j+1}`,FIXED_PARAMETERS+j));
   for(let j=0;j<16;j++)node(I+n+j,depth+1,`Выход контекста ${j+1}`,STRUCTURAL_BLOCKS[1].bias+j);
   d.edges.forEach((e,j)=>edge(e.from,e.to,FIXED_PARAMETERS+n+j));
+ }else if(component==='gate'&&dual){
+  const graph=dual.attention,I=graph.inputs,H=graph.layers.length,depth=Math.max(0,...graph.layers);
+  [...GATE_NAMES,'Давность основного решения'].forEach((name,j)=>node(j,0,name));
+  graph.layers.forEach((layer,j)=>node(I+j,layer,`Диспетчер ${j+1}`,l.gateOffset+j));
+  node(I+H,depth+1,'Запросить основной мозг',l.gateOffset+H);
+  graph.edges.forEach((e,j)=>edge(e.from,e.to,H+1+j,true));
  }else if(component==='gate'){
   GATE_NAMES.forEach((name,j)=>node(j,0,name));
   for(let h=0;h<4;h++){node(17+h,1,`Контроллер ${h+1}`,l.gateOffset+GATE_HIDDEN_BIAS+h);for(let i=0;i<17;i++)edge(i,17+h,h*17+i,true);edge(17+h,21,GATE_OUTPUT_WEIGHTS+h,true);}

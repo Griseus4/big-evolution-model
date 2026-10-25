@@ -5,6 +5,7 @@ import {FEELING_SCALES,LEARNING_RULES} from './brain-input-scales.js';
  * личные добавки и записи памяти — нет. Пакет не означает многопоточность.
  */
 import {FEATURE_NAMES} from './cognition.js';
+import {restProbabilities} from './rest-policy.js';
 import {beginComputePart,endComputePart} from './performance-probe.js';
 /** Один алгоритм прямого прохода/градиента, две именованные схемы. */
 export function createSetBrainEngine(layout,inputs){
@@ -104,6 +105,12 @@ function evaluateSetBrain(brain,request,detailed=true,decision=null){
    ...(detailed?{features:row.features,senses:prepared.senses.slice(),input:displayInput,candidateInput:Array.from(row.input),batchInput:{body:prepared.body,cells:prepared.cells,memory:prepared.memory,candidate:row.input,...(prepared.process?{process:prepared.process}:{})}}:{})};
   }finally{endComputePart(copyMark);}
  });
+ if(brain.dual){
+  const probabilities=restProbabilities(options.map(o=>o.learningValue),options.map(o=>o.action),options.map(o=>o.operation),TEMPERATURE),totals=new Float64Array(OPERATION_NAMES.length);
+  for(let i=0;i<options.length;i++)totals[options[i].operation]+=probabilities[i];
+  for(let i=0;i<options.length;i++){const o=options[i];o.probability=probabilities[i];o.operationProbability=totals[o.operation];o.targetProbability=totals[o.operation]?probabilities[i]/totals[o.operation]:0;}
+  return options;
+ }
  return operationProbabilities(options,probabilityBuffers(buffers,options.length));
 }
 function expectedSetValue(brain,request,decision=null){
@@ -124,7 +131,8 @@ function expectedSetValue(brain,request,decision=null){
  }
  const mark=beginComputePart('probabilities');
  try{
-  normalizeProbabilities(s,count);
+  if(brain.dual)s.probabilities.set(restProbabilities(s.values.subarray(0,count),request.candidates.map(c=>c.action),s.operations.subarray(0,count),TEMPERATURE));
+  else normalizeProbabilities(s,count);
   let expected=0;for(let i=0;i<count;i++)expected+=s.probabilities[i]*s.values[i];
   return expected;
  }finally{endComputePart(mark);}

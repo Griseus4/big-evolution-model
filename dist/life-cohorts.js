@@ -26,6 +26,9 @@ export const LIFE_METRICS=Object.freeze([
  {id:'firstBirth',label:'Возраст рождения первого ребёнка',unit:'Т',digits:1},
  {id:'brainCost',label:'Средняя стоимость вызова и обучения',unit:'энергии / вызов',digits:3},
  {id:'brainCalls',label:'Вызовы основного мозга',unit:'вызовов / 100 Т',digits:2},
+ {id:'restTime',label:'Доля времени покоя',unit:'%',digits:1},
+ {id:'attentionCalls',label:'Проверки диспетчера',unit:'проверок / 100 Т',digits:1},
+ ...[['attentionEnergyCost','Цена диспетчера'],['mainDecisionEnergyCost','Цена основного выбора'],['learningEnergyCost','Цена обучения']].map(([id,label])=>({id,label,unit:'энергии / 100 Т',digits:3})),
  ...HERITABLE_METRICS,
  {id:'reviews',label:'Частота пересмотров',unit:'пересмотров / 100 Т',digits:2},
  {id:'interruptions',label:'Частота прерываний',unit:'прерываний / 100 Т',digits:2},
@@ -47,6 +50,7 @@ export function lifeMetric(row,id,interruptionKind='all'){
   case 'firstBirth':return finite(row.firstBirthAge)?row.firstBirthAge:null;
   case 'brainCost':return o?.brainCalls>0&&finite(o.brainEnergyCost)?o.brainEnergyCost/o.brainCalls:null;
   case 'brainCalls':return o?rate(row,o.brainCalls):null;
+  case 'restTime':case 'attentionCalls':case 'attentionEnergyCost':case 'mainDecisionEnergyCost':case 'learningEnergyCost':return finite(o?.[id])?rate(row,o[id]):null;
   case 'reviews':return o?rate(row,o.reviews):null;
   case 'interruptions':return o?rate(row,interruptionKind==='all'?o.interruptions.voluntary+o.interruptions.physical:o.interruptions[interruptionKind]):null;
   default:throw new Error('Неизвестный показатель истории.');

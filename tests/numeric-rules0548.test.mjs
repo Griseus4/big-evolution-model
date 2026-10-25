@@ -12,7 +12,8 @@ import {numericRuleRows,NUMERIC_RULE_GROUPS} from '../dist/numeric-rules.js';
 import {formatRuleNumber,GUIDE_NUMBERS_TEXT} from '../dist/guide-numbers-text.js';
 import {MUTATION_RULES} from '../dist/mutation-parameters.js';
 const fixture=JSON.parse(readFileSync(new URL('./fixtures/numeric-rules0548.json',import.meta.url),'utf8'));
-const hash=w=>{const s=saveWorld(w);delete s.modelVersion;return createHash('sha256').update(JSON.stringify(s)).digest('hex');};
+// Фикстура сравнивает физику v14; новая оболочка сохранения v4 — отдельный контракт.
+const hash=w=>{const s=saveWorld(w);delete s.modelVersion;s.version=3;return createHash('sha256').update(JSON.stringify(s)).digest('hex');};
 
 for(const {options,samples} of fixture.cases)test(`full pre-refactor state, memory, learning and RNG stay exact: seed ${options.seed}`,()=>{
  const w=new Evolution(options);for(const point of samples){while(w.subtick<point.subtick)w.substep();assert.equal(hash(w),point.hash,`subtick ${point.subtick}`);}

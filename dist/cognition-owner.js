@@ -28,14 +28,15 @@ export class CognitionOwner{
    const a=this.agents.get(input[i*INPUT_WIDTH]);if(!a||a.dead)throw new Error('Нет живого владельца мозга.');
    const cells=readCognitionRow(input,i*INPUT_WIDTH,a);if(memoryEnabled)observeTime(w,a,cells,priming?0:DT);
    if(!priming)accrueTemporalReward(w,a);
-   let wants=priming||!a.process;
-   if(!wants&&a.process.action!==9&&attentionRequest(a,cells,RULES.inventoryCapacity,RULES.stomachCapacity)){a.callReason=CALL_REVIEW;wants=true;}
+   let wants=priming||(!a.process&&!a.resting),gateCost=0;
+   if(!wants&&a.process?.action!==9){const request=attentionRequest(a,cells,RULES.inventoryCapacity,RULES.stomachCapacity,subtick);gateCost=a.brain.dual?a.brain.gateCharge:0;if(request){a.callReason=CALL_REVIEW;wants=true;}}
    let decision=null,options=null,beforeFeeling=null;
    if(wants){decision=prepareTemporalDecision(w,a);beforeFeeling=w.feeling(a);options=evaluateController(a.brain,null,decision.frame.request,decision.input);}
    batch.push({a,decision,options,beforeFeeling});const at=i*RESULT_WIDTH;
    result[at+RESULT.decision]=wants?(a.callReason===CALL_REVIEW?2:1):0;result[at+RESULT.updates]=a.brain.updates;result[at+RESULT.short]=a.brain.memory.size;result[at+RESULT.long]=a.brain.longMemory.size;
    if(options)for(const o of options){result[at+RESULT.mask]|=1<<o.action;result[at+RESULT.probabilities+o.action]=o.probability;result[at+RESULT.costs+o.action]=decisionCharge(a.brain,decision,o.decisionCost);}
    result[at+RESULT.learningCost]=a.brain.learningCharge??0;
+   result[at+RESULT.gateCost]=gateCost;
   }
   this.batch={items:batch,w};return result;
  }
@@ -43,9 +44,9 @@ export class CognitionOwner{
   const batch=this.batch;if(!batch||selections.length<batch.items.length)throw new Error('Нет согласованной оценки для подтверждения.');
   for(let i=0;i<batch.items.length;i++){
    const {a,decision,options,beforeFeeling}=batch.items[i],action=selections[i];
-   if(!options){if(action!==-1)throw new Error('Лишнее подтверждение выбора.');continue;}
    // Координатор сообщил смерть при оплате решения: нового перехода нет.
    if(action===-2){a.alive=false;a.brain.pending=null;if(a.brain.costProfile)a.brain.learningCharge=0;continue;}
+   if(!options){if(action!==-1)throw new Error('Лишнее подтверждение выбора.');continue;}
    const option=options.find(o=>o.action===action);if(!option)throw new Error('Подтверждено недоступное действие.');
    if(a.brain.costProfile)a.brain.learningCharge=0;
    const executable=o=>({...o,localDestination:{...o.localDestination},destination:o.action<6?memoryWorldPosition(a,o.localDestination):{x:a.x,y:a.y}});

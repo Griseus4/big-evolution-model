@@ -1,0 +1,42 @@
+{
+  "kind": "bounded-dual-brain-smoke-measurement",
+  "modelVersion": "0.54.18",
+  "node": "v24.19.0",
+  "platform": "win32",
+  "architecture": "x64",
+  "cpu": "Intel(R) Core(TM) i5-14600KF",
+  "logicalProcessors": 20,
+  "population": 1000,
+  "limitations": "Node CPU; один подшаг, включая прогрев/аллокации. Не браузер, не предел плотности всех разрешённых графов, не доказательство ускорения.",
+  "samples": [
+    {
+      "preset": "direct-founders",
+      "population": 1000,
+      "initializationMs": 629.0686999999999,
+      "oneSubstepIncludingPrimingMs": 196.44500000000005,
+      "heapGrowthBytes": 213769648,
+      "mainHidden": 0,
+      "mainActiveEdges": 1040,
+      "gateHidden": 0,
+      "gateActiveEdges": 18,
+      "mainCalls": 1503,
+      "gateCalls": 1000,
+      "energyError": 0
+    },
+    {
+      "preset": "default-limit-adjacent",
+      "population": 1000,
+      "initializationMs": 1587.2016000000003,
+      "oneSubstepIncludingPrimingMs": 218.57449999999972,
+      "heapGrowthBytes": 232903376,
+      "mainHidden": 64,
+      "mainActiveEdges": 2064,
+      "gateHidden": 64,
+      "gateActiveEdges": 1072,
+      "mainCalls": 1487,
+      "gateCalls": 1000,
+      "energyError": -2.9103830456733704e-11
+    }
+  ],
+  "stage": "Предрелизная реализация двух сетей до смены номера версии; не замер прежней выпущенной 0.54.18"
+}

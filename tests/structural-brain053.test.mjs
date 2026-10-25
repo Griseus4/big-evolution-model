@@ -52,7 +52,7 @@ test('birth inherits base genes, not lifetime deltas; structure is opt-out indep
 
 test('historical experiment genome factors remain readable without conversion or invented metrics',()=>{
  const w=new Evolution({population:1,brainType:'set-duration-activity-v1'}),g=w.agents[0].genome,factors=[{key:'baseGenome',values:[{name:'legacy.json',genes:g}]}];
- assert.throws(()=>validatePlan({worlds:1,factors}),/v14/);
+ assert.throws(()=>validatePlan({worlds:1,factors}),/v15/);
  const plan=validatePlan({worlds:1,steps:1,factors},{historical:true}),report={format:'big-evolution-experiment',version:1,modelVersion:'0.52.2',plan,groups:[{id:'v1-0',variantId:'v1',index:0,status:'pending',attempts:[],selectedId:null}]};
  assert.doesNotThrow(()=>validateExperimentReport(report));assert.equal(captureHeritable(w.agents[0]).brainNeurons,undefined);
 });

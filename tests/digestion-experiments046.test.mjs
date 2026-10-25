@@ -28,5 +28,5 @@ test('world snapshots retain custom digestion and old worlds acquire only the or
  assert.equal(restored.digestionTime,5);assert.equal(restored.digestionRate,4.4);
  const old=saveWorld(new Evolution({population:2})),state=decodeState(old.state);
  delete state.digestionTime;old.state=encodeState(state);old.modelVersion='0.45.0';
- const loaded=loadWorld(old);assert.equal(loaded.digestionTime,20);assert.equal(loaded.digestionRate,RULES.digestionRate);
+ assert.throws(()=>loadWorld(old),/Неподдерживаемый формат|версия/);
 });

@@ -498,3 +498,4 @@
 | [tools/verify-local.py](../../tools/verify-local.py) | служебное | локальная проверка/анализ/сборка; `development`, для измерений также `performance` |
 | [docs/updates/v054-test-baselines.md](../../docs/updates/v054-test-baselines.md) | историческое | Технический протокол эталонов проверок; `performance`, `development` |
 | [docs/updates/v054-guide-panes.md](../../docs/updates/v054-guide-panes.md) | историческое | Отдельная прокрутка и компактное дерево; `development` |
+| [docs/product-analytics.md](../../docs/product-analytics.md) | служебное | Обсуждение аналитики посетителей; интеграция не реализована |

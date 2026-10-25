@@ -51,6 +51,6 @@ test('label help works by focus, touch and keyboard, deduplicates ranges and nev
 test('world rules live in thematic reference articles and visible numbers have no float tails',async()=>{
  const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
  assert.doesNotMatch(html,/id="rules(?:-open|-close)?"/);assert.match(html,/class="wiki-branch"/);assert.doesNotMatch(html,/>Автосреда</);
- for(let i=65;i<=71;i++)assert.equal([...html.matchAll(new RegExp('data-ui-text="description'+i+'"','g'))].length,1);
+ for(const key of ['guide-time-body','guide-energy-body','guide-actions-body'])assert.equal([...html.matchAll(new RegExp('data-ui-text="'+key+'"','g'))].length,1);
  const {PAGE_TEXT}=await import('../dist/ui-text.js');assert.doesNotMatch(PAGE_TEXT.description67,/\d[.,]\d{5,}/);assert.match(PAGE_TEXT.description68,/включая мышление/);
 });

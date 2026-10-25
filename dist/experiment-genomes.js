@@ -1,11 +1,13 @@
 import {STRUCTURAL_TYPE} from './structural-brain.js';
+import {DUAL_BRAIN_TYPE} from './dual-brain-layout.js';
+import {EVOLUTION_RULES} from './brain-evolution-rules.js';
 import {genomeMetadata,validateGenomeFile} from './genome.js';
 import {TEMPORAL_BRAIN_TYPE} from './temporal-layout.js';
-export const MAX_GENOME_FILE_BYTES=2*1024*1024;
+export const MAX_GENOME_FILE_BYTES=EVOLUTION_RULES.maxGenomeFileBytes;
 export function genomeChoice(value,{historical=false}={}){
  if(!value||typeof value.name!=='string'||!value.name.trim()||!Array.isArray(value.genes))throw new Error('Геном варианта: нужны имя и проверенные гены.');
  const genes=validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(value.genes),genes:value.genes});
- if(!historical&&genomeMetadata(genes).brainType!==STRUCTURAL_TYPE)throw new Error('Для новых опытов нужен текущий геном v14; старые типы мозга не преобразуются.');
+ if(!historical&&genomeMetadata(genes).brainType!==DUAL_BRAIN_TYPE)throw new Error('Для новых опытов нужен геном двух сетей v15; старые результаты доступны для анализа.');
  return {name:value.name.trim().slice(0,120),genes};
 }
 export function uniqueGenomeChoices(values,options){

@@ -63,7 +63,7 @@
 **Проверка:** [activity-perception.test.mjs](../../tests/activity-perception.test.mjs), [genome-experiments044.test.mjs](../../tests/genome-experiments044.test.mjs), [environment-save.test.mjs](../../tests/environment-save.test.mjs): именованная схема, подмена только выбранных генов, точное сохранение.
 **История:** [наследуемая изменчивость 0.26](../updates/v026-heritable-mutations.md), [схема деятельности 0.34](../updates/v034-visible-activities.md), [основы опытов 0.44](../updates/v044-genome-experiments.md).
 **Старт 0.53.2:** [brain-initialization.js](../../dist/brain-initialization.js) — таблица уровней и точное число связей; [контракт/инструкция](../updates/v053-initial-structure.md), [проверка](../../tests/brain-initialization0532.test.mjs).
-**Сейчас, 0.53:** [structural-brain.js](../../dist/structural-brain.js) — геном v14, мутации DAG/план; [brain-cost.js](../../dist/brain-cost.js) — цена выбора/обучения. [Проверки](../../tests/structural-brain053.test.mjs), [протокол и инструкция](../updates/v053-structural-brain.md). Циклы отложены.
+**Сейчас, 0.55:** [dual-brain-layout.js](../../dist/dual-brain-layout.js) — v15, [dual-brain-genome.js](../../dist/dual-brain-genome.js) — три пары p/s и два графа; [dag-network.js](../../dist/dag-network.js) — общий прямой/обратный проход. [dual-brain-state.js](../../dist/dual-brain-state.js) сохраняет индексы фиксированных блоков. [rest-policy.js](../../dist/rest-policy.js) — покой/допуск; [brain-cost.js](../../dist/brain-cost.js) — цена обеих сетей. [Проверки](../../tests/dual-world.test.mjs), [выпуск](../updates/v055-dual-brain.md). v14 остаётся исторической схемой. Циклы отложены.
 
 ## execution
 **Задача:** скорость/пауза/темп, число вычислителей, Worker-ошибка или рассогласование.

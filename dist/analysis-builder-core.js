@@ -1,7 +1,10 @@
 import {compileExpression} from './analysis-expression.js';
+import {DUAL_METRICS} from './dual-brain-statistics.js';
 import {createWorldEstimator,bootstrapDraws,quantile,MIN_CONFIDENCE_WORLDS} from './statistics-estimates.js';
 export const ANALYSIS_TEMPLATE_VERSION=1;
 export const ANALYSIS_FIELDS=Object.freeze([
+ ...DUAL_METRICS.map(m=>['heritable.'+m.id,m.label]),
+ ...[['restTime','Время покоя, Т'],['attentionCalls','Проверки диспетчера'],['attentionEnergyCost','Энергия диспетчера'],['mainDecisionEnergyCost','Энергия основного выбора'],['learningEnergyCost','Энергия обучения']].map(([key,label])=>['observations.'+key,label]),
  ...[['brainNeurons','Скрытые нейроны'],['brainConnections','Связи контекста'],['brainLayers','Скрытые слои'],['brainActiveNeurons','Действующие нейроны'],['brainActiveConnections','Действующие связи'],['structuralRate','Вероятность структурной мутации, %']].map(([key,label])=>['heritable.'+key,label]),
  ['age','Возраст, Т'],['children','Прямые дети'],['born','Время рождения, Т'],['generation','Поколение'],['firstBirthAge','Возраст первого рождения, Т'],
  ['meanEnergy','Средняя энергия'],['meanHealth','Среднее здоровье'],['meanFeeling','Среднее самочувствие'],['eaten','Съеденные порции'],['moved','Перемещения'],['gathered','Подобранные порции'],['deposited','Выложенные порции'],['emptyEnergySteps','Время с нулевой энергией, Т'],['observedSteps','Длительность наблюдения, Т'],['learningUpdates','Обновления обучения'],['shortPlaces','Места в краткой памяти'],['longPlaces','Места в долгой памяти'],['maxStepsWithoutEating','Максимальный перерыв в еде, Т'],['observations.meanInventory','Средний переносимый запас'],['observations.brainEnergyCost','Стоимость мышления, энергии'],['observations.brainCalls','Вызовы основного мозга']

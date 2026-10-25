@@ -10,5 +10,6 @@ export function describeLifeObservations(o){
  let median=null;
  if(count){const lo=Math.floor((count-1)/2),hi=Math.floor(count/2);let cumulative=0,lower=null;for(let i=0;i<bins.length;i++){cumulative+=bins[i];if(lower===null&&cumulative>lo)lower=i;if(cumulative>hi){median=(lower+i)/2;break;}}}
  return {schema:LIFE_OBSERVATION_SCHEMA,inventorySubsteps:Array.from(bins),inventoryObservedSteps:count/SUBSTEPS,meanInventory:count?total/count:null,medianInventory:median,
+  ...Object.fromEntries(['restTime','attentionCalls','attentionEnergyCost','mainDecisionEnergyCost','learningEnergyCost'].filter(key=>Number.isFinite(o[key])).map(key=>[key,o[key]])),
   ...(Number.isFinite(o.brainEnergyCost)?{brainEnergyCost:o.brainEnergyCost}:{}),brainCalls:o.brainCalls,reviews:o.reviews,interruptions:{...o.interruptions}};
 }

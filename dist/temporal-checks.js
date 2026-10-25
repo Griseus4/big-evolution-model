@@ -1,4 +1,5 @@
 import {STRUCTURAL_TYPE,structuralLayout} from './structural-brain.js';
+import {DUAL_BRAIN_TYPE} from './dual-brain-layout.js';
 /** Проверки текущей модели. Управляемый выбор нужен только фикстурам;
  * обычные основатели используют случайные наследуемые сети. */
 import {Evolution,RULES,validateGenomeFile,mutateGenome} from './evolution.js';
@@ -25,7 +26,7 @@ function age(w,a,n=100){a.bornSubtick=w.subtick-n*10;a.born=-n;a.age=n;}
 function check(id,label,run){return {id:'time-'+id,label:'0.36 · '+label,run};}
 export const TEMPORAL_CHECKS=[
  check('analysis','Анализ v14 показывает структуру, обе сети и регуляторы',()=>{const w=new Evolution({population:1}),r=analyzeGenome(w.genomeFile(w.agents[0]));assert(r.geneCount===w.agents[0].genome.length&&r.genomeVersion===14&&r.brainType===STRUCTURAL_TYPE,'Схема анализа');assert(r.properties.some(p=>p.key==='structuralRate')&&r.mutation&&r.properties.filter(p=>p.group==='Малый мозг').length===GATE_PARAMETERS,'Потеряны параметры анализа');}),
- check('trial-contract','Новые испытания не принимают автоматическое рождение',()=>{const config={seeds:[42],population:1,limit:3,steps:1000,parallel:1};assert(validateExperimentConfig(config).brainType===STRUCTURAL_TYPE,'Старый мозг испытаний');let failed=false;try{validateExperimentConfig({...config,reproduction:'automatic-86-55-v1'});}catch{failed=true;}assert(failed,'Автоматизм доступен');}),
+ check('trial-contract','Новые испытания не принимают автоматическое рождение',()=>{const config={seeds:[42],population:1,limit:3,steps:1000,parallel:1};assert(validateExperimentConfig(config).brainType===DUAL_BRAIN_TYPE,'Старый мозг испытаний');let failed=false;try{validateExperimentConfig({...config,reproduction:'automatic-86-55-v1'});}catch{failed=true;}assert(failed,'Автоматизм доступен');}),
  check('trial-invariants','Инварианты испытаний совпадают с новой моделью и восстановлением',async()=>{const {captureBenchmarkState,restoreBenchmarkState}=await import('./benchmark-state.js');const a=new Evolution({population:12,limit:24});for(let i=0;i<12;i++){a.step();checkInvariants(a);}const b=restoreBenchmarkState(captureBenchmarkState(a));for(let i=0;i<5;i++){a.step();b.step();checkInvariants(b);assert(JSON.stringify(a.snapshot())===JSON.stringify(b.snapshot()),'Восстановление процесса/буферов');}}),
  check('schema','v14: переменный основной мозг, внимание и регуляторы',()=>{const w=new Evolution({population:1}),g=w.agents[0].genome;assert(structuralLayout(g)?.hidden>=4,'Размер генома');assert(genomeMetadata(g).version===14,'Версия');assert(validateGenomeFile(w.genomeFile(w.agents[0])).length===g.length,'Импорт');assert(!('pain'in w.agents[0])&&w.tiles.every(c=>!('risk'in c)),'Удалены боль/риск');}),
  check('old-base','Старый геном не читается под новым смыслом',()=>{let failed=false;try{new Evolution({population:1,baseGenome:Array(990).fill(0)});}catch{failed=true;}assert(failed,'Старая основа принята');}),

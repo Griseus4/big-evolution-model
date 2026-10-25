@@ -1,4 +1,5 @@
 import {STRUCTURAL_TYPE} from './structural-brain.js';
+import {DUAL_BRAIN_TYPE} from './dual-brain-layout.js';
 /** Версионные нагрузки, а не образцы успешной эволюции. Геномы случайные,
  * воспоминания заполненных случаев синтетические. Миры не обязаны выживать.
  * Один случай создаётся/освобождается за раз: не держим три больших мира в RAM.
@@ -41,7 +42,7 @@ function fillMemory(brain){
 }
 export function createBenchmarkFixture(spec,options={}){
  const world=new Evolution({seed:spec.seed,population:spec.population,limit:1000,foodSources:384,foodRegrowInterval:20,
-  temporal:options.temporal??(!options.brainType||[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(options.brainType)),memory:true,learning:true,mutationRate:.02,mutations:true,lifeHistoryLimit:250,heritableMutations:!options.brainType,...options});
+  temporal:options.temporal??(!options.brainType||[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(options.brainType)),brainType:options.brainType??DUAL_BRAIN_TYPE,memory:true,learning:true,mutationRate:.02,mutations:true,lifeHistoryLimit:250,heritableMutations:!options.brainType,...options});
  for(const agent of world.agents){
   agent.brain.memory.clear();agent.brain.longMemory.clear();agent.brain.spatialCache=null;
   if(spec.filled)fillMemory(agent.brain);

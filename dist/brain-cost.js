@@ -3,6 +3,7 @@
  * Эталон — фиксированный v13 на том же числе клеток/кандидатов. Ставки 0.10
  * и 0.03 относятся к полному циклу выбора+обучения эталона, не к каждой фазе. */
 import {SET_BLOCKS,SET_PARAMETER_COUNT,CELL_HIDDEN,CONTEXT_INPUTS,CONTEXT_HIDDEN,CANDIDATE_INPUTS} from './temporal-layout.js';
+import {DECISION_COST} from './action-timing.js';
 const dense=b=>2*b.weights+(b.bias===null?0:b.outputs);
 const [cells,context,target,operation,direct]=SET_BLOCKS;
 export function brainCostProfile(plan){
@@ -19,6 +20,12 @@ export function operationCounts(profile,nCells,nCandidates,nOperations=6){
  const backward=2*contextCost+nCells*(2*dense(cells)+5*CELL_HIDDEN)+4*CONTEXT_HIDDEN*(target.inputs+operation.inputs);
  return {forward,learning:forward+2*single+backward+12*parameters};
 }
+/** Фиксированная калибровка, не текущая популяция/доступность действий.
+ * Та же условная единица используется для сети и подготовки её входов. */
+const gateReference=operationCounts(null,7,11,6);
+export const ATTENTION_REFERENCE_OPERATIONS=gateReference.forward+gateReference.learning;
+export const ATTENTION_OPERATION_PRICE=DECISION_COST/ATTENTION_REFERENCE_OPERATIONS;
+export function attentionCharge(brain,preparationOperations){return brain.dual?ATTENTION_OPERATION_PRICE*(brain.attentionStructure.operations+preparationOperations):0;}
 export function decisionCharge(brain,frame,rate){
  if(!brain.costProfile)return rate;
  if(frame.costFactor!==undefined)return rate*frame.costFactor;

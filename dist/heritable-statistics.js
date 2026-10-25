@@ -1,4 +1,6 @@
 import {structuralLayout,structureCounts} from './structural-brain.js';
+import {dualBrainLayout} from './dual-brain-layout.js';
+import {DUAL_METRICS,dualHeritable} from './dual-brain-statistics.js';
 /** Семь неизменных свойств наблюдателя: один раз на рождение, без RNG.
  * Полная сеть и приобретённые поправки в историю жизней не копируются. */
 import {worldWeights} from './weighted-statistics.js';
@@ -6,6 +8,7 @@ import {mutationProfile} from './mutation-parameters.js';
 export const HERITABLE_SCHEMA='heritable-statistics-v1';
 export const SENSITIVITY_BIN_WIDTH=20;
 export const HERITABLE_METRICS=Object.freeze([
+ ...DUAL_METRICS,
  {id:'senseEnergy',label:'Чувствительность к энергии',unit:'% шкалы чувств',digits:1,signed:true},
  {id:'senseHealth',label:'Чувствительность к здоровью',unit:'% шкалы чувств',digits:1,signed:true},
  {id:'senseStomach',label:'Чувствительность к наполнению желудка',unit:'% шкалы чувств',digits:1,signed:true},
@@ -16,8 +19,8 @@ export const HERITABLE_METRICS=Object.freeze([
  {id:'mutationStrength',label:'Сила мутации',unit:'максимальная прибавка ±',digits:3},
 ].map(m=>Object.freeze({...m,inherited:true})));
 export function captureHeritable(a){
- const t=a.brain.traits,v=t.values,n=Math.abs(v[0])+Math.abs(v[1])+Math.abs(v[3]),mutation=mutationProfile(a.genome);
- return {...(structuralLayout(a.genome)?structureCounts(a.genome,a.brain.structure):{}),schema:HERITABLE_SCHEMA,senseEnergy:n?v[0]/n*100:0,senseHealth:n?v[1]/n*100:0,senseStomach:n?v[3]/n*100:0,
+ const t=a.brain.traits,v=t.values,n=Math.abs(v[0])+Math.abs(v[1])+Math.abs(v[3]),mutation=dualBrainLayout(a.genome)?null:mutationProfile(a.genome);
+ return {...dualHeritable(a.genome),...(structuralLayout(a.genome)?structureCounts(a.genome,a.brain.structure):{}),schema:HERITABLE_SCHEMA,senseEnergy:n?v[0]/n*100:0,senseHealth:n?v[1]/n*100:0,senseStomach:n?v[3]/n*100:0,
   shortCapacity:t.shortCapacity,longCapacity:t.longCapacity,mutationRate:mutation?100*mutation.rate:null,mutationStrength:mutation?.strength??null};
 }
 export function sensitivityDistributions(rows,{start,end,origin='all',weightMode=null}={}){

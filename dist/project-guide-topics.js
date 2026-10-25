@@ -1,4 +1,5 @@
 import {GUIDE_AUDIT_TOPICS} from './guide-audit-topics.js';
+import {GUIDE_DUAL_TOPICS} from './guide-dual-topics.js';
 /** Термины и навигационные указатели. Ссылка на файл не означает,
  * что прежняя краткая статья уже описывает каждое правило этого файла. */
 import {GUIDE_SYSTEM_TOPICS} from './guide-system-topics.js';
@@ -77,7 +78,7 @@ export const GUIDE_TOPICS={
 };
 
 // Дополняем паспорта, сохраняя тематически проверенные источники и термины.
-for(const [id,addition] of Object.entries(GUIDE_AUDIT_TOPICS)){
+for(const [id,addition] of Object.entries({...GUIDE_AUDIT_TOPICS,...GUIDE_DUAL_TOPICS})){
  const previous=GUIDE_TOPICS[id]??{};
  GUIDE_TOPICS[id]={...previous,...addition,sources:[...(previous.sources??[]),...(addition.sources??[])],keywords:[...(previous.keywords??[]),...(addition.keywords??[])],checks:[...(previous.checks??[]),...(addition.checks??[])]};
 }

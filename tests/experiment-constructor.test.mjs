@@ -88,5 +88,5 @@ test('actual experiment Worker protocol completes a short two-variant series',as
  try{series.start(plan({worlds:1,steps:2,budget:1}));const report=await finished;assert.equal(report.status,'completed');assert.equal(report.groups.length,2);for(const g of report.groups){assert.equal(g.attempts[0].tick,2);assert.equal(g.attempts[0].lives.living.length,3);}assert.equal(validateExperimentReport(report),report);}finally{series.stop(true);}
 });
 test('current base genome is retained in normalized and reloaded plans',()=>{
- const genes=new Evolution({population:1}).agents[0].genome,p=plan({common:{baseGenome:genes}});assert.deepEqual(p.common.baseGenome,genes);assert.deepEqual(validatePlan(p),p);assert.notEqual(p.common.baseGenome,genes);
+ const genes=new Evolution({population:1,brainType:'set-duration-dual-dag-v1'}).agents[0].genome,p=plan({common:{baseGenome:genes}});assert.deepEqual(p.common.baseGenome,genes);assert.deepEqual(validatePlan(p),p);assert.notEqual(p.common.baseGenome,genes);
 });

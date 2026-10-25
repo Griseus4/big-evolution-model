@@ -1,4 +1,6 @@
 import {STRUCTURAL_TYPE,structuralLayout,randomStructuralGenome,validateStructure,mutateStructure,structuralProbability,STRUCTURAL_DEFAULTS} from './structural-brain.js';
+import {DUAL_BRAIN_TYPE,dualBrainLayout} from './dual-brain-layout.js';
+import {DUAL_MUTATION_SCHEMA,randomDualGenome,mutateDualGenome,validateDualBrain} from './dual-brain-genome.js';
 /** Генетическая основа нынешнего мозга, независимо от физики мира.
  * Версии фиксируют смысл чисел; личная память и обучение не наследуются.
  * Генераторы передаёт мир: здесь нет собственных бросков или доступа к карте.
@@ -15,12 +17,13 @@ export function genomeMetadata(genes){
  const layout=layoutForGenes(genes),inherited=mutationOffset(genes)!==null;
  const version=layout?.version>=10?layout.version:inherited?9:layout?.version??Number(Object.keys(GENOME_SIZES).find(v=>GENOME_SIZES[v]===genes.length));
  return {version,brainType:layout?.brainType??BRAIN_TYPE,...(layout?{network:{...layout.network}}:{}),
-  ...(inherited?{mutationSchema:MUTATION_SCHEMA}:{})};
+  ...(inherited?{mutationSchema:layout?.version===15?DUAL_MUTATION_SCHEMA:MUTATION_SCHEMA}:{})};
 }
 /** Симметричная Xavier-инициализация без готовых стратегий. Связи случайны,
  * смещения нулевые. Отдельный RNG не расходует случайность физики мира.
  */
 export function randomNeuralGenome(random,brainType=NEURAL_BRAIN_TYPE,options={}){
+ if(brainType===DUAL_BRAIN_TYPE)return randomDualGenome(random,options);
  if(brainType===STRUCTURAL_TYPE)return randomStructuralGenome(random,options);
  const layout=layoutForType(brainType);if(!layout)throw new Error("Неизвестная схема сети.");
  if(brainType===SET_BRAIN_TYPE||brainType===TEMPORAL_BRAIN_TYPE){
@@ -61,6 +64,7 @@ export function randomGenome(random,extraRandom=random,senseRandom=extraRandom){
  * Личный опыт или координаты родителя не наследуются.
  */
 export function mutateGenome(parent,random,rate=.06,scale=.7,extraRandom=random,senseRandom=extraRandom,neuralRandom=senseRandom,structureSettings=STRUCTURAL_DEFAULTS){
+ if(dualBrainLayout(parent))return mutateDualGenome(parent,neuralRandom,structureSettings);
  const layout=layoutForGenes(parent),profile=mutationProfile(parent),offset=mutationOffset(parent);
  // Внешние rate/scale относятся только к старым файлам без регуляторов.
  if(profile){rate=profile.rate;scale=profile.strength;}
@@ -94,6 +98,7 @@ export function mutateGenome(parent,random,rate=.06,scale=.7,extraRandom=random,
  */
 export function validateGenomeFile(data){
  if(!data||data.format!=='big-evolution-genome'||!Number.isInteger(data.version)||!Array.isArray(data.genes))throw new Error(`Нужен JSON генома Big Evolution. Текущая схема — v${TEMPORAL_LAYOUT.version}.`);
+ if(data.version===15){const d=validateDualBrain(data.genes);if(data.brainType!==DUAL_BRAIN_TYPE||data.mutationSchema!==DUAL_MUTATION_SCHEMA||Object.entries(d.layout.network).some(([k,v])=>data.network?.[k]!==v))throw new Error('Неверная схема генома v15.');return data.genes.slice();}
  if(data.version===14){const l=structuralLayout(data.genes);validateStructure(data.genes);if(!l||data.brainType!==STRUCTURAL_TYPE||data.mutationSchema!==MUTATION_SCHEMA||!validMutationGenes(data.genes)||Object.entries(l.network).some(([k,v])=>data.network?.[k]!==v))throw new Error('Неверная схема генома v14.');return data.genes.slice();}
  if(data.version===TEMPORAL_LAYOUT.version){const l=layoutForGenes(data.genes),off=mutationOffset(data.genes);if(l?.version!==TEMPORAL_LAYOUT.version||data.brainType!==TEMPORAL_BRAIN_TYPE||Object.entries(l.network).some(([k,v])=>data.network?.[k]!==v)||!data.genes.every((v,i)=>Number.isFinite(v)&&(off!==null&&i>=off||Math.abs(v)<=8))||off!==null&&(data.mutationSchema!==MUTATION_SCHEMA||!validMutationGenes(data.genes)))throw new Error('Неверный текущий геном или схема сети.');return data.genes.slice();}
  if(data.version===12)throw new Error('Геном v12 не содержит нового восприятия действий. Нужен новый геном v13; преобразование не поддерживается.');

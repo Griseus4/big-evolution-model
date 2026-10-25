@@ -1,4 +1,5 @@
 import {STRUCTURAL_TYPE,STRUCTURAL_TYPE_LAYOUT,structuralLayout} from './structural-brain.js';
+import {DUAL_BRAIN_TYPE,DUAL_TYPE_LAYOUT,dualBrainLayout} from './dual-brain-layout.js';
 /** Схема mlp-local-v1: фиксированный порядок чисел, не готовая стратегия.
  * Один общий оценщик вариантов: 32 входа → 16 tanh → линейный Q.
  * 512 связей + 16 смещений + 16 выходных связей + 1 смещение = 545.
@@ -43,6 +44,6 @@ const byGenes=new Map(NEURAL_LAYOUTS.map(l=>[l.genes,l]));
 // прежние: byType/byParameters не меняем, сеть их не вычисляет и не обучает.
 for(const l of NEURAL_LAYOUTS)byGenes.set(l.genes+2,Object.freeze({...l,version:l.version>=10?l.version:9,genes:l.genes+2,mutationOffset:l.genes}));
 const byParameters=new Map(NEURAL_LAYOUTS.map(l=>[l.parameters,l]));
-export const layoutForType=type=>type===STRUCTURAL_TYPE?STRUCTURAL_TYPE_LAYOUT:byType.get(type)??null;
-export const layoutForGenes=genes=>structuralLayout(genes)??byGenes.get(genes.length)??null;
+export const layoutForType=type=>type===DUAL_BRAIN_TYPE?DUAL_TYPE_LAYOUT:type===STRUCTURAL_TYPE?STRUCTURAL_TYPE_LAYOUT:byType.get(type)??null;
+export const layoutForGenes=genes=>dualBrainLayout(genes)??structuralLayout(genes)??byGenes.get(genes.length)??null;
 export const layoutForParameters=parameters=>byParameters.get(parameters.length)??null;
