@@ -2,16 +2,16 @@
   {
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
-    "lines": 33,
-    "bytes": 3995,
+    "lines": 35,
+    "bytes": 4259,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 147,
-    "bytes": 16521,
+    "lines": 149,
+    "bytes": 16683,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -728,6 +728,14 @@
     "url": "./source-files/docs/updates/v054-guide-readability.md",
     "lines": 30,
     "bytes": 6445,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/updates/v054-guide-series-plan.md",
+    "url": "./source-files/docs/updates/v054-guide-series-plan.md",
+    "lines": 15,
+    "bytes": 3785,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8940,6 +8948,62 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/guide-plan/01-food.md",
+    "url": "./source-files/docs/guide-plan/01-food.md",
+    "lines": 49,
+    "bytes": 8649,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/guide-plan/02-mind.md",
+    "url": "./source-files/docs/guide-plan/02-mind.md",
+    "lines": 61,
+    "bytes": 8804,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/guide-plan/03-evolution.md",
+    "url": "./source-files/docs/guide-plan/03-evolution.md",
+    "lines": 63,
+    "bytes": 9126,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/guide-plan/04-experiments.md",
+    "url": "./source-files/docs/guide-plan/04-experiments.md",
+    "lines": 59,
+    "bytes": 8604,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/guide-plan/05-analysis.md",
+    "url": "./source-files/docs/guide-plan/05-analysis.md",
+    "lines": 49,
+    "bytes": 8407,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/guide-plan/06-system.md",
+    "url": "./source-files/docs/guide-plan/06-system.md",
+    "lines": 57,
+    "bytes": 10654,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/guide-plan/README.md",
+    "url": "./source-files/docs/guide-plan/README.md",
+    "lines": 87,
+    "bytes": 22165,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/interface-layout-options.md",
     "url": "./source-files/docs/interface-layout-options.md",
     "lines": 23,
@@ -9046,8 +9110,8 @@
   {
     "name": "docs/next-game-guide.md",
     "url": "./source-files/docs/next-game-guide.md",
-    "lines": 52,
-    "bytes": 10226,
+    "lines": 50,
+    "bytes": 10024,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -10031,15 +10095,15 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 11,
-    "bytes": 3066,
+    "bytes": 2921,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
   {
     "name": "docs/workflows/context.md",
     "url": "./source-files/docs/workflows/context.md",
-    "lines": 65,
-    "bytes": 13559,
+    "lines": 67,
+    "bytes": 14252,
     "aliases": [],
     "purpose": "Как обсуждать контракты и передавать контекст без повторения всей истории."
   },
@@ -10070,8 +10134,8 @@
   {
     "name": "AGENTS.md",
     "url": "./source-files/AGENTS.md",
-    "lines": 39,
-    "bytes": 10916,
+    "lines": 40,
+    "bytes": 11210,
     "aliases": [],
     "purpose": "Постоянные инструкции агенту: договорённости, ограничения и завершение работы."
   },
@@ -10095,7 +10159,7 @@
     "name": "docs/decisions.md",
     "url": "./source-files/docs/decisions.md",
     "lines": 33,
-    "bytes": 8160,
+    "bytes": 8154,
     "aliases": [],
     "purpose": "Почему выбраны правила и что действительно согласовано."
   },
