@@ -31,7 +31,9 @@ export function installGuideCoverage({root,request=globalThis.fetch}={}){
   try{
    const response=await request('./project-guide-inventory.json');if(!response.ok)throw new Error('Не удалось загрузить список.');const data=await response.json();
    if(data?.format!=='big-evolution-guide-inventory'||data.version!==1||data.modelVersion!==APP_VERSION||!Array.isArray(data.files)||data.files.some(row=>!row||typeof row.path!=='string'||!Object.hasOwn(KIND_LABELS,row.kind))||new Set(data.files.map(row=>row.path)).size!==data.files.length)throw new Error('Неизвестный или устаревший формат списка.');
-   const coverage=guideCoverage(data.files),parts=[make('p',`Статей со сверенным содержанием: ${coverage.reviewedArticles} из ${coverage.articles}. Файлов в учёте: ${coverage.total}; указаны в статьях: ${coverage.referenced}.`),make('p','Ссылка на файл не означает, что все его правила уже описаны. Полнота описания механизмов пока не оценена. Производные копии и снимки версий не входят в этот список.')];
+   const coverage=guideCoverage(data.files),audit=make('a','Итоговый аудит: охват, источники и ограничения');
+   audit.href=guideSourceUrl('docs/guide-plan/audit.md');audit.target='_blank';audit.rel='noopener';
+   const parts=[make('p',`Статей со сверенным содержанием: ${coverage.reviewedArticles} из ${coverage.articles}. Файлов в учёте: ${coverage.total}; указаны в статьях: ${coverage.referenced}.`),make('p','Ссылка на файл не означает, что все его правила уже описаны. Смысловой охват оценён отдельно в итоговом аудите. Производные копии и снимки версий не входят в этот список.'),audit];
    for(const [kind,label]of Object.entries(KIND_LABELS)){
     const rows=coverage.rows.filter(row=>row.kind===kind);if(!rows.length)continue;
     const group=make('details');group.append(make('summary',`${label}: ${rows.length}`));const list=make('ul');

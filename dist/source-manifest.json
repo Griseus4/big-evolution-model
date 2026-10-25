@@ -702,8 +702,8 @@
   {
     "name": "docs/updates/v054-guide-audit.md",
     "url": "./source-files/docs/updates/v054-guide-audit.md",
-    "lines": 12,
-    "bytes": 2707,
+    "lines": 14,
+    "bytes": 3089,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -990,8 +990,8 @@
   {
     "name": "dist/project-guide-sources-ui.js",
     "url": "./project-guide-sources-ui.js",
-    "lines": 48,
-    "bytes": 4865,
+    "lines": 50,
+    "bytes": 5097,
     "aliases": [],
     "purpose": "Блок «Где это в коде» и ленивый список полноты описания."
   },
