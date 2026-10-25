@@ -4,8 +4,8 @@ export const HISTORY_LINES=Object.freeze([
  {id:'min',label:'Минимум',color:'#91b8d0'}, {id:'median',label:'Медиана',color:'#e1c88c'},
  {id:'mean',label:'Среднее',color:'#86bf80'}, {id:'max',label:'Максимум',color:'#cba4e4'},
 ].map(Object.freeze));
-const short=new Intl.NumberFormat('ru-RU',{notation:'compact',maximumFractionDigits:1});
-const label=n=>short.format(n);
+import {formatChartNumber} from './statistics-format.js';
+const label=formatChartNumber;
 const LEFT=58,RIGHT=14,TOP=16,BOTTOM=40,HEIGHT=235;
 const position=(p,width)=>p.x??((p.start??p.id*width)+(p.end??(p.id+1)*width))/2;
 export function historyChartMaximum(points,keys,maximum=null){
@@ -13,7 +13,7 @@ export function historyChartMaximum(points,keys,maximum=null){
  let max=0;for(const p of points)for(const key of keys)if(Number.isFinite(p[key]))max=Math.max(max,p[key]);
  return max?Math.min(Number.MAX_VALUE,max*1.08):1;
 }
-export function drawHistoryChart(canvas,{points,keys,domainStart=0,domainEnd,width=1,selected=null,single=false,maximum=null,minimum=0,age=false,markers=[],xLabel=null,xTicks=null,histogram=false,lines=HISTORY_LINES,bands=[],zeroLine=false}){
+export function drawHistoryChart(canvas,{points,keys,domainStart=0,domainEnd,width=1,selected=null,single=false,maximum=null,minimum=0,age=false,markers=[],xLabel=null,xTicks=null,histogram=false,lines=HISTORY_LINES,bands=[],zeroLine=false,digits=1}){
  const context=canvas.getContext('2d');if(!context)return;
  const cssWidth=Math.max(280,Math.round(canvas.getBoundingClientRect().width||600)),ratio=Math.min(2,globalThis.devicePixelRatio||1);
  const pixelWidth=Math.round(cssWidth*ratio),pixelHeight=Math.round(HEIGHT*ratio);
@@ -25,7 +25,7 @@ export function drawHistoryChart(canvas,{points,keys,domainStart=0,domainEnd,wid
  context.font='11px system-ui';context.lineWidth=1;
  for(let i=0;i<=4;i++){
   const py=TOP+h-i*h/4;context.strokeStyle='#35433a';context.beginPath();context.moveTo(LEFT,py);context.lineTo(cssWidth-RIGHT,py);context.stroke();
-  context.fillStyle='#a6b3a6';context.textAlign='right';context.fillText(label(minimum+(max-minimum)*i/4),LEFT-8,py+4);
+  context.fillStyle='#a6b3a6';context.textAlign='right';context.fillText(label(minimum+(max-minimum)*i/4,digits),LEFT-8,py+4);
  }
  context.textAlign='center';context.font=xTicks?'10px system-ui':'11px system-ui';if(xTicks){for(const tick of xTicks)if(tick>=domainStart&&tick<=domainEnd)context.fillText(label(tick),x(tick),HEIGHT-20);}
  else for(let i=0;i<=4;i++)context.fillText(label(domainStart+(domainEnd-domainStart)*i/4),LEFT+span*i/4,HEIGHT-20);

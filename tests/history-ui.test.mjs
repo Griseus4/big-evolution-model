@@ -7,6 +7,8 @@ import {LIFE_METRICS} from '../dist/life-cohorts.js';
 import {installHistoryUI} from '../dist/history-ui.js';
 import {installHistoryDrawers} from '../dist/history-drawers.js';
 import {createAnalysisEngine} from '../dist/analysis-builder-core.js';
+import {estimateWorlds} from '../dist/statistics-estimates.js';
+import {LIFE_OBSERVATION_SCHEMA} from '../dist/life-observations.js';
 class Element{
  constructor(tag='div'){this.tagName=tag;this.children=[];this.listeners={};this.value='';this.checked=true;this.textContent='';this.hidden=false;this.attributes={};this.style={setProperty:(k,v)=>{this.attributes[k]=v;}};}
  append(...children){this.children.push(...children);for(const child of children)child.parent=this;if(this.tagName==='select'&&!this.value)this.value=this.children[0]?.value??'';}
@@ -17,7 +19,7 @@ class Element{
  focus(){this.focused=true;}
  emit(key,event={}){return this.listeners[key]?.({target:this,preventDefault(){},...event});}
  getBoundingClientRect(){return {width:600,left:0,height:this.height??72};}
- getContext(){return {setTransform(){},clearRect(){},beginPath(){},moveTo(...v){assert.ok(v.every(Number.isFinite));},lineTo(...v){assert.ok(v.every(Number.isFinite));},stroke(){},fill(){},fillRect(...v){assert.ok(v.every(Number.isFinite));},arc(...v){assert.ok(v.every(Number.isFinite));},setLineDash(){},fillText(){}};}
+ getContext(){return {setTransform(){},clearRect:()=>{this.clears=(this.clears??0)+1;},beginPath(){},moveTo(...v){assert.ok(v.every(Number.isFinite));},lineTo(...v){assert.ok(v.every(Number.isFinite));},stroke(){},fill(){},fillRect(...v){assert.ok(v.every(Number.isFinite));},arc(...v){assert.ok(v.every(Number.isFinite));},setLineDash(){},fillText:t=>{(this.labels??=[]).push(String(t));}};}
 }
 function boot({prepareSimulation=()=>null,canPrepare=()=>false,getComparisons=()=>null}={}){
  const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8'),elements=new Map(),created=[];
@@ -46,6 +48,48 @@ test('paused dashboard warms a hidden category and reopening it reuses its numer
  globalThis.Worker=class {postMessage(m){requested.push(m.prepared.metric);setTimeout(()=>{if(!this.closed)this.onmessage?.({data:{request:m.request,owner:m.owner,metric:m.prepared.metric,summary:{mean:1,median:1,worlds:1},points:[]}});},2);}terminate(){this.closed=true;}};
  const b=boot({canPrepare:()=>stable});try{b.ui.refresh();await new Promise(r=>setTimeout(r,220));assert.ok(!requested.includes('movement'));stable=true;b.ui.refresh(true);for(let i=0;i<100&&!requested.includes('movement');i++)await new Promise(r=>setTimeout(r,30));assert.ok(requested.includes('movement'));await new Promise(r=>setTimeout(r,20));const before=requested.filter(m=>m==='movement').length;b.elements.get('history-display').value='behavior';b.elements.get('history-display').emit('change');await new Promise(r=>setTimeout(r,20));assert.equal(requested.filter(m=>m==='movement').length,before);stable=false;b.ui.activity();b.ui.reset();}finally{b.ui.reset();globalThis.Worker=original;}
 });
+
+test('live snapshots finish the displayed batch, retain canvas/numbers while pending and skip intermediate reports',async()=>{
+ const original=globalThis.Worker,workers=[],messages=[];
+ globalThis.Worker=class{constructor(){workers.push(this);}postMessage(m){messages.push({worker:this,message:m});}terminate(){this.closed=true;}};
+ const wait=()=>new Promise(r=>setTimeout(r,2)),reply=entry=>{const {worker:w,message:m}=entry,s={mean:20,median:20,worlds:1,confidence:null};w.onmessage({data:{request:m.request,owner:m.owner,metric:m.prepared.metric,summary:s,points:m.prepared.points.map(p=>({...p,...s}))}});},b=boot();let read=0;
+ const drain=async()=>{for(let turn=0;turn<50;turn++){await wait();if(read>=messages.length)break;reply(messages[read++]);}await wait();};
+ try{
+  b.ui.refresh();await drain();const canvas=b.created.find(e=>e.id==='history-chart-lifetime'),card=canvas.parent,numeric=card.children.find(e=>e.className==='history-numeric-summary'),oldNodes=numeric.children;
+  assert.ok(oldNodes.length);const clears=canvas.clears;b.sim.lives={...b.sim.lives,tick:301};b.ui.refresh();
+  const active=messages[read].worker,count=workers.length,accepted=b.elements.get('history-summary').textContent;
+  assert.equal(canvas.clears,clears);assert.equal(numeric.children,oldNodes);assert.equal(card.attributes['aria-busy'],'true');
+  for(let tick=302;tick<=310;tick++){b.sim.lives={...b.sim.lives,tick};b.ui.refresh();}
+  assert.equal(workers.length,count);assert.equal(active.closed,undefined);assert.equal(canvas.clears,clears);assert.equal(numeric.children,oldNodes);assert.equal(b.elements.get('history-summary').textContent,accepted);
+  // Завершаем ровно текущую партию: новая берёт последний, а не каждый снимок.
+  const beforeNew=workers.length;for(let turn=0;turn<30&&workers.length===beforeNew;turn++){if(read<messages.length)reply(messages[read++]);await wait();}
+  assert.equal(workers.length,beforeNew+1);assert.match(b.elements.get('history-summary').textContent,/шаг 310/);assert.ok(!messages.some(e=>e.worker.closed&&e.worker!==workers[0]&&e.worker!==active));
+  await drain();assert.equal(card.attributes['aria-busy'],'false');assert.notEqual(numeric.children,oldNodes);assert.ok(canvas.clears>clears);
+ }finally{b.ui.reset();globalThis.Worker=original;}
+});
+test('returning to a live dashboard flushes finished hidden results; changing a filter cancels obsolete work immediately',async()=>{
+ const original=globalThis.Worker,workers=[],messages=[],wait=()=>new Promise(r=>setTimeout(r,2));
+ globalThis.Worker=class{constructor(){workers.push(this);}postMessage(m){messages.push({w:this,m});}terminate(){this.closed=true;}};
+ const b=boot();let read=0;try{
+  b.ui.refresh();b.sim.lives={...b.sim.lives,tick:301};b.ui.refresh();b.elements.get('panel-history').hidden=true;
+  for(let turn=0;turn<30;turn++){await wait();if(read>=messages.length)break;const {w,m}=messages[read++];w.onmessage({data:{request:m.request,owner:m.owner,metric:m.prepared.metric,summary:{mean:20,median:20,worlds:1},points:[]}});}
+  assert.equal(workers.length,1);b.elements.get('panel-history').hidden=false;b.ui.refresh();await wait();assert.match(b.elements.get('history-summary').textContent,/шаг 301/);assert.equal(workers.length,2);
+  const previous=workers[1];b.sim.lives={...b.sim.lives,tick:302};b.elements.get('history-width').value='200';b.elements.get('history-width').emit('change');
+  assert.equal(previous.closed,true);assert.equal(workers.length,3);assert.match(b.elements.get('history-summary').textContent,/шаг 302/);assert.equal(b.ui.getSummary().width,200);
+ }finally{b.ui.reset();globalThis.Worker=original;}
+});
+
+test('actual brain-cost card uses three digits in estimates and axes while preserving raw observations',async()=>{
+ const original=globalThis.Worker;globalThis.Worker=class{postMessage(m){setTimeout(()=>{if(this.closed)return;const p=m.prepared,estimate=w=>estimateWorlds(w,m.weightMode);this.onmessage?.({data:{request:m.request,owner:m.owner,metric:p.metric,summary:estimate(p.summary.worlds),points:p.points.map(point=>({...point,...estimate(point.worlds)})),error:p.error}});},0);}terminate(){this.closed=true;}};
+ const b=boot();try{
+  b.sim.lives={...b.sim.lives,dead:b.sim.lives.dead.map(row=>({...row,observations:{schema:LIFE_OBSERVATION_SCHEMA,brainCalls:100,brainEnergyCost:12.3,reviews:0,interruptions:{voluntary:0,physical:0,death:0}}}))};
+  const raw=JSON.stringify(b.sim.lives);b.elements.get('history-display').value='behavior';b.elements.get('history-display').emit('change');b.ui.refresh();
+  const canvas=b.created.find(e=>e.id==='history-chart-brainCost'),card=canvas.parent,walk=e=>[e,...e.children.flatMap(walk)];
+  for(let turn=0;turn<100&&!walk(card).some(e=>e.className==='estimate-value'&&e.textContent==='0,123');turn++)await new Promise(r=>setTimeout(r,4));
+  assert.ok(walk(card).some(e=>e.className==='estimate-value'&&e.textContent==='0,123'),JSON.stringify({hidden:card.hidden,text:walk(card).map(e=>e.textContent).filter(Boolean).slice(-15),state:b.elements.get('history-analysis-state').textContent,error:b.elements.get('history-error').textContent}));assert.ok(canvas.labels.some(t=>/^0,\d{3}$/.test(t)&&t!=='0,000'));assert.equal(JSON.stringify(b.sim.lives),raw);
+ }finally{b.ui.reset();globalThis.Worker=original;}
+});
+
 test('standard copy becomes an editable native card in the same grid, with persistence, new category and restore',async()=>{
  const old=globalThis.localStorage,stored=new Map();globalThis.localStorage={getItem:k=>stored.get(k)??null,setItem:(k,v)=>stored.set(k,v)};
  try{const b=boot();b.ui.refresh();const walk=n=>[n,...n.children.flatMap(walk)],grid=b.elements.get('history-charts'),canvas=b.created.find(n=>n.id==='history-chart-lifetime'),card=grid.children.find(n=>n.children.includes(canvas));

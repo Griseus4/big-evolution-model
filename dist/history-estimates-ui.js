@@ -1,6 +1,6 @@
 import {createStatisticsClient} from './statistics-client.js';
 import {chartUpdateState} from './chart-update-state.js';
-import {formatStatistic as format,estimateCell} from './statistics-format.js';
+import {formatStatistic as format,estimateCell,metricDisplayDigits} from './statistics-format.js';
 /** Числа относятся ко всему выбранному периоду; наведение не выводит подпись.
  * DOM чисел заменяется только при новом результате фонового расчёта. */
 export function installHistoryEstimates({root=document,cards,onChange,createClient=createStatisticsClient,showStatus=true}){
@@ -20,12 +20,12 @@ export function installHistoryEstimates({root=document,cards,onChange,createClie
    const table=make('table'),head=make('tr');head.append(...['Вариант','Среднее [95% ДИ]','Медиана [95% ДИ]','Миров'].map(t=>make('th',t)));table.append(head);
    for(let i=0;i<sources.length;i++){
     const source=sources[i],result=results[i],s=result?.summary,row=make('tr'),name=make('td',source.name);name.style.color=source.color;
-    row.append(name,estimateCell(root,s?.mean,s?.confidence?.mean,{pending:!result}),estimateCell(root,s?.median,s?.confidence?.median,{pending:!result}),make('td',s?String(s.worlds):'—'));table.append(row);
+    row.append(name,estimateCell(root,s?.mean,s?.confidence?.mean,{pending:!result,digits:metricDisplayDigits(c.m)}),estimateCell(root,s?.median,s?.confidence?.median,{pending:!result,digits:metricDisplayDigits(c.m)}),make('td',s?String(s.worlds):'—'));table.append(row);
    }
    const nodes=[make('p',`${['population','food','production'].includes(c.m.id)?'Время мира':'Рождения'} [${input.start}; ${input.end}) Т · ${c.m.unit}`),table];
    for(let i=0;i<sources.length;i++){
     const s=results[i]?.summary;
-    if(s?.individual?.length){const details=make('details'),summary=make('summary',sources[i].name+' · значения отдельных миров');let built=false;details.append(summary);details.addEventListener('toggle',()=>{if(!details.open||built)return;built=true;const table=make('table');for(const w of s.individual){const row=make('tr');row.append(...[w.id,`среднее ${format(w.mean)}`,`медиана ${format(w.median)}`,`наблюдений ${w.count}`].map(t=>make('td',t)));table.append(row);}details.append(table);});nodes.push(details);}
+    if(s?.individual?.length){const details=make('details'),summary=make('summary',sources[i].name+' · значения отдельных миров');let built=false;details.append(summary);details.addEventListener('toggle',()=>{if(!details.open||built)return;built=true;const table=make('table');for(const w of s.individual){const row=make('tr');row.append(...[w.id,`среднее ${format(w.mean,metricDisplayDigits(c.m))}`,`медиана ${format(w.median,metricDisplayDigits(c.m))}`,`наблюдений ${w.count}`].map(t=>make('td',t)));table.append(row);}details.append(table);});nodes.push(details);}
    }c.numeric.replaceChildren(...nodes);
   }
  }

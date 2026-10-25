@@ -1,3 +1,4 @@
+import {metricDisplayDigits} from './statistics-format.js';
 import {chartContext,chartContextKey} from './chart-context.js';
 import {createStatisticsClient} from './statistics-client.js';
 import {createPairStatisticsClient} from './pair-statistics-client.js';
@@ -29,7 +30,7 @@ export function createLocalChartRenderer({root=document,onChange}){
    if(comparison?.sources?.length||histograms.length)drawComparison({sources,options:ctx,start:ctx.start,end:ctx.end,statistic:comparison?.statistic??'mean',chartCards:comparison?.sources?.length?originals:[],histogramCards:histograms,curveVisible:false,getEstimate:entry.estimates.get,bandMode});
    if(!comparison?.sources?.length)for(const c of originals){const r=c.displayEstimates?.get('selected')??entry.estimates.get('selected',c.m.id),single=c.m.single||['survival','food','production'].includes(c.m.id),keys=single?['mean']:[...legend],points=(r?.points??[]).map(p=>({...p})),bands=[];
     if(bandMode!=='none')for(const key of keys)if(['mean','median'].includes(key)){for(const p of points){const s=r.byId?.get(p.id),range=bandMode==='spread'&&s?.worlds<2?null:s?.[bandMode==='spread'?'spread':'confidence']?.[key];p[key+'Low']=range?.low??null;p[key+'High']=range?.high??null;}bands.push({low:key+'Low',high:key+'High',color:HISTORY_LINES.find(l=>l.id===key).color});}
-    drawHistoryChart(c.canvas,{points,keys,bands,domainStart:ctx.start,domainEnd:ctx.end,width:ctx.width,single:['population','food','production'].includes(c.m.id)?'food':single,minimum:0,maximum:c.m.maximum??(['hunger','survival','reproduced'].includes(c.m.id)?100:null)});
+    drawHistoryChart(c.canvas,{points,keys,bands,digits:metricDisplayDigits(c.m),domainStart:ctx.start,domainEnd:ctx.end,width:ctx.width,single:['population','food','production'].includes(c.m.id)?'food':single,minimum:0,maximum:c.m.maximum??(['hunger','survival','reproduced'].includes(c.m.id)?100:null)});
     c.note.textContent=r?.error??estimates.state().error??'';
    }
    for(const c of group.cards.filter(c=>!c.card.hidden&&c.definition.kind==='curve')){const limit=c.curveMaximum??curveMaximum;

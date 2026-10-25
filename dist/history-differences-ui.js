@@ -1,7 +1,7 @@
 import {createPairStatisticsClient} from './pair-statistics-client.js';
 import {chartUpdateState} from './chart-update-state.js';
 import {drawHistoryChart,HISTORY_LINES} from './history-charts.js';
-import {estimateCell} from './statistics-format.js';
+import {estimateCell,metricDisplayDigits} from './statistics-format.js';
 /** Разность считается по полным исходным повторам в каждой корзине.
  * Bootstrap выполняется в Worker; смена линии и размера использует кэш. */
 export function installHistoryDifferences({root=document,cards,onChange,createClient=createPairStatisticsClient}){
@@ -30,10 +30,10 @@ export function installHistoryDifferences({root=document,cards,onChange,createCl
    const points=(answer?.points??[]).map(p=>{const s=p[stat],range=input.bandMode==='spread'?p.spread?.[stat]:s?.confidence?.difference;return {...p,value:s?.difference??null,low:range?.low??null,high:range?.high??null};});
    let low=0,high=0;for(const p of points)for(const k of input.bandMode==='none'?['value']:['value','low','high'])if(Number.isFinite(p[k])){low=Math.min(low,p[k]);high=Math.max(high,p[k]);}
    const bound=Math.max(Math.abs(low),Math.abs(high))*1.08||1;
-   drawHistoryChart(c.canvas,{points,keys:['value'],lines:[{id:'value',color:'#91b8d0'}],bands:input.bandMode==='none'?[]:[{low:'low',high:'high',color:'#91b8d0'}],domainStart:input.start,domainEnd:input.end,width:input.options.width,minimum:-bound,maximum:bound,zeroLine:true,single:['population','food','production'].includes(c.m.id)?'food':false});
+   drawHistoryChart(c.canvas,{points,digits:metricDisplayDigits(c.m),keys:['value'],lines:[{id:'value',color:'#91b8d0'}],bands:input.bandMode==='none'?[]:[{low:'low',high:'high',color:'#91b8d0'}],domainStart:input.start,domainEnd:input.end,width:input.options.width,minimum:-bound,maximum:bound,zeroLine:true,single:['population','food','production'].includes(c.m.id)?'food':false});
    c.note.textContent=!input.pair?'Выберите источник «Сравнение вариантов» и общую пару A/B.':client.state().error??'';
    const signature=[answer,stat,input.pair?.a.id,input.pair?.b.id,input.start,input.end];const prev=rendered.get(c);if(prev?.every((v,i)=>v===signature[i]))continue;rendered.set(c,signature);
-   const row=make('tr');row.append(make('th','B−A'),estimateCell(root,result?.[stat]?.difference,result?.[stat]?.confidence?.difference,{pending:!!input.pair&&!answer}),make('td',`Пар: ${result?.pairs??0}`));const table=make('table');table.append(row);
+   const row=make('tr');row.append(make('th','B−A'),estimateCell(root,result?.[stat]?.difference,result?.[stat]?.confidence?.difference,{pending:!!input.pair&&!answer,digits:metricDisplayDigits(c.m)}),make('td',`Пар: ${result?.pairs??0}`));const table=make('table');table.append(row);
    c.difference.replaceChildren(make('p',`Период [${input.start}; ${input.end}) Т · ${c.m.unit} · ${HISTORY_LINES.find(l=>l.id===stat)?.label??stat} [95% ДИ]`),table,make('p',result?.reason??answer?.error??''));
   }
  }

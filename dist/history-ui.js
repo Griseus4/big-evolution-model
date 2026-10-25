@@ -26,14 +26,19 @@ import {createCatalogueExpressionClient} from './catalogue-expression-client.js'
 import {drawAnalysis} from './analysis-builder-chart.js';
 import {chartPinLabel,pinnedWindows} from './chart-context.js';
 import {createLocalChartRenderer} from './chart-local-renderer.js';
-import {estimateCell} from './statistics-format.js';
-const format=(v,digits=1)=>v===null||v===undefined?'—':Number(v).toLocaleString('ru-RU',{maximumFractionDigits:Math.min(1,digits)});
+import {estimateCell,formatStatistic,metricDisplayDigits} from './statistics-format.js';
+const format=(v,digits=1)=>formatStatistic(v,digits>=3?digits:1).replace(/,0$/,'');
 const SENSITIVITY_TICKS=Object.freeze([-100,-80,-60,-40,-20,0,20,40,60,80,100]);
 export function installHistoryUI({root=document,getSimulation,getComparisons=()=>null,prepareSimulation=()=>null,getExperiment=()=>null,canPrepare=()=>false}){
- const drawComparison=createComparisonCharts(),localCharts=createLocalChartRenderer({root,onChange:()=>drawCharts()});
+ const drawComparison=createComparisonCharts(),localCharts=createLocalChartRenderer({root,onChange:statisticsChanged});
  const byId=id=>root.getElementById(id),make=(tag,text)=>{const e=root.createElement(tag);if(text!==undefined)e.textContent=text;return e;};
  let cachedReport=null,cachedKey='',data=null,food=[],allRows=[],tableRows=[],page=0,selected=null,selectedLife=null,dirtyTable=true;
- let awaiting=null,localRequest=0;
+ let awaiting=null,localRequest=0,cachedComparison=null,liveDeferred=false,liveFlush=false,liveEpoch=0;
+ function pendingCards(){return [...statisticalCards,...curveCards,...formulaCards].some(c=>!c.card.hidden&&c.pending);}
+ function statisticsChanged(){
+  drawCharts();if(!liveDeferred||pendingCards()||liveFlush)return;liveFlush=true;const epoch=liveEpoch;
+  queueMicrotask(()=>{if(epoch!==liveEpoch)return;liveFlush=false;if(liveDeferred&&!pendingCards()){liveDeferred=false;refresh();}});
+ }
  let base=null,fullFood=[],rangeStart=0,rangeEnd=null,rangeMaximum=100,curve=null,curveReport=null,curveKey='',curveIndex=0,curveMarkers=[];
  let curveView=null,curveViewSource=null,curveMaximum=Number(byId('history-curve-age-max').value),curveAgeLimit=curveMaximum;
  let production=[],population=[],distributions=[];const histogramCards=[];
@@ -69,13 +74,13 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
   const ref={m,canvas,note,card,definition};histogramCards.push(ref);statisticalCards.push(ref);
  }
  for(const def of STANDARD_CHARTS){if(def.kind==='metric')addMetric(def);if(def.kind==='histogram')addHistogram(def);}
- const estimates=installHistoryEstimates({root,cards:statisticalCards,onChange:()=>drawCharts()});
- const pairs=installPairComparison({root,onChange:()=>drawCharts()});
- const differences=installHistoryDifferences({root,cards:chartCards,onChange:()=>drawCharts()});
+ const estimates=installHistoryEstimates({root,cards:statisticalCards,onChange:statisticsChanged});
+ const pairs=installPairComparison({root,onChange:statisticsChanged});
+ const differences=installHistoryDifferences({root,cards:chartCards,onChange:statisticsChanged});
  for(const [metric,control,input,key]of [['survival','history-survival-controls','history-survival-age','survivalAge'],['interruptions','history-interruption-controls','history-interruption-kind','interruptionKind']]){const c=chartCards.find(c=>c.m.id===metric);if(c.card.insertBefore)c.card.insertBefore(byId(control),c.canvas);else c.card.append(byId(control));c.control={input:byId(input),key};byId(input).addEventListener('change',()=>changeMetric(c));}
  function changeMetric(c){const {input,key}=c.control,value=key==='survivalAge'?Number(input.value):input.value;if(key==='survivalAge'&&(!Number.isSafeInteger(value)||value<1)){byId('history-error').textContent='Возраст дожития — положительное целое Т.';return;}c.localOptions={[key]:value};byId('history-error').textContent='';drawCharts();}
  const display=byId('history-display'),syncViewTabs=installChoiceTabs(display,byId('history-view-tabs'),root),picked=new Set(),pickers=new Map();
- const formulaClient=createCatalogueExpressionClient({onChange:()=>drawCharts()});
+ const formulaClient=createCatalogueExpressionClient({onChange:statisticsChanged});
  const catalogue=installChartCatalogue({root,getExperiment,getCommon:()=>({...options(),start:rangeStart,end:rangeEnd??rangeMaximum,curveStart:Number(byId('history-curve-start').value)}),onChange:()=>syncCatalogue()});
  for(const c of [...chartCards,...histogramCards])catalogue.actionsFor(c.definition,c.card);
  catalogue.actionsFor(STANDARD_CHARTS.find(d=>d.id==='curve'),byId('history-survival-section'));
@@ -120,7 +125,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  display.addEventListener('change',applyDisplay);
  function drawFormulas(comparison){
   const visible=formulaCards.filter(c=>!c.card.hidden),requested=[...new Set([...visible,...(warm.current()?.definition?.kind==='expression'?[warm.current()]:[])])];
-  try{formulaClient.update({cards:requested,comparison,report:getSimulation()?.lives??cachedReport,options:options(),start:rangeStart,end:rangeEnd,plan:getExperiment()?.plan});}catch(e){for(const c of visible)c.note.textContent=e.message;return;}
+  try{formulaClient.update({cards:requested,comparison,report:cachedReport,options:options(),start:rangeStart,end:rangeEnd,plan:getExperiment()?.plan});}catch(e){for(const c of visible)c.note.textContent=e.message;return;}
   if(byId('panel-history').hidden)return;
   for(const c of visible){const result=formulaClient.get(c.definition.id),pending=!result&&formulaClient.busy();chartUpdateState(root,c,pending);if(pending)continue;c.canvas.hidden=c.definition.recipe.chart==='table'||!result||Boolean(result.error);c.note.textContent=result?.error??(!result?formulaClient.state():'');if(!result||result.error){c.numeric.replaceChildren();continue;}drawAnalysis(c.canvas,result);if(c.result===result)continue;c.result=result;
    const table=make('table'),header=make('tr');header.append(...['Группа','Интервал / значение X','Оценка [95% ДИ]','Повторов','Миров'].map(t=>make('th',t)));table.append(header);
@@ -133,17 +138,17 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  function drawCharts(){
   if(!data||awaiting)return;
   const painting=!byId('panel-history').hidden;
-  const hidden=new Set(catalogue.state().hidden),jobs=[...chartCards,...histogramCards,...curveCards,...formulaCards].filter(c=>!hidden.has(c.definition.id));if(getComparisons()?.variants?.length>1)jobs.push({kind:'pair'});
-  const warmCard=warm.sync([...(getComparisons()?.sources??[{id:'selected',report:cachedReport}]).flatMap(s=>[s.id,...analysisWorlds(s.report).flatMap(w=>[w.id,archiveOrigin(w.report)??w.report])]),cachedReport.weightMode,cachedKey,rangeStart,rangeEnd,catalogue.state(),byId('pair-variant-a').value,byId('pair-variant-b').value],jobs),prefetch=warmCard?.definition?[warmCard]:[];
+  const hidden=new Set(catalogue.state().hidden),jobs=[...chartCards,...histogramCards,...curveCards,...formulaCards].filter(c=>!hidden.has(c.definition.id));if(cachedComparison?.variants?.length>1)jobs.push({kind:'pair'});
+  const warmCard=warm.sync([...(cachedComparison?.sources??[{id:'selected',report:cachedReport}]).flatMap(s=>[s.id,...analysisWorlds(s.report).flatMap(w=>[w.id,archiveOrigin(w.report)??w.report])]),cachedReport.weightMode,cachedKey,rangeStart,rangeEnd,catalogue.state(),byId('pair-variant-a').value,byId('pair-variant-b').value],jobs),prefetch=warmCard?.definition?[warmCard]:[];
   // Очередь не рисует скрытые Canvas; готовность проверяется между заданиями.
   warm.pulse();
-  const comparison=getComparisons(),bandMode=byId('history-band-mode').value||'confidence';
+  const comparison=cachedComparison,bandMode=byId('history-band-mode').value||'confidence';
   const allCards=[...chartCards,...histogramCards,...curveCards];
   for(const c of [...allCards,...formulaCards]){const label=chartPinLabel(c.definition);if(label&&!c.pinNote){c.pinNote=make('p');c.pinNote.className='catalogue-pin-note';c.card.append(c.pinNote);}if(c.pinNote){c.pinNote.textContent=label;c.pinNote.hidden=!label;}}
   const pair=pairs.selection(comparison);
   if(display.value==='pair'&&painting)pairs.update({comparison,options:pairOptions(),start:rangeStart,end:rangeEnd});
   else if(display.value==='pair'||warmCard?.kind==='pair')pairs.prefetch({comparison,options:pairOptions(),start:rangeStart,end:rangeEnd});else pairs.suspend();
-  localCharts.update({cards:allCards,common:{...options(),start:rangeStart,end:rangeEnd,curveStart:Number(byId('history-curve-start').value)},comparison,report:getSimulation()?.lives??cachedReport,pair,bandMode,legend,curveMaximum,prefetch,render:painting});
+  localCharts.update({cards:allCards,common:{...options(),start:rangeStart,end:rangeEnd,curveStart:Number(byId('history-curve-start').value)},comparison,report:cachedReport,pair,bandMode,legend,curveMaximum,prefetch,render:painting});
   drawFormulas(comparison);
   differences.update({render:painting,prefetch:prefetch.filter(c=>c.m&&!localCharts.isLocal(c)),pair,cards:chartCards.filter(c=>!localCharts.isLocal(c)),options:options(),start:rangeStart,end:rangeEnd,weightMode:comparison?.weightMode,statistic:comparison?.statistic??'mean',bandMode});
   estimates.update({render:painting,prefetch:prefetch.filter(c=>c.m&&!localCharts.isLocal(c)),cards:statisticalCards.filter(c=>!localCharts.isLocal(c)),sources:comparison?.sources?.length?comparison.sources:[{id:'selected',name:'Выбранные данные',color:'#86bf80',report:cachedReport}],options:options(),start:rangeStart,end:rangeEnd});
@@ -159,7 +164,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
     bands.push({low:key+'Low',high:key+'High',color:HISTORY_LINES.find(l=>l.id===key).color});
    }
    const maximum=m.maximum??(m.signed||['hunger','survival','reproduced'].includes(m.id)?100:null);
-   drawHistoryChart(canvas,{points,keys,bands,domainStart:data.domainStart,domainEnd:data.domainEnd,width:data.width,selected,single:['population','food','production'].includes(m.id)?'food':single,maximum,minimum:m.minimum??(m.signed?-100:0)});
+   drawHistoryChart(canvas,{points,keys,bands,digits:metricDisplayDigits(m),domainStart:data.domainStart,domainEnd:data.domainEnd,width:data.width,selected,single:['population','food','production'].includes(m.id)?'food':single,maximum,minimum:m.minimum??(m.signed?-100:0)});
   }
   for(const ref of histogramCards){
    const {m,canvas,card,note}=ref;if(card.hidden||localCharts.isLocal(ref))continue;const d=distributions.find(s=>s.id===m.id);if(!d)continue;
@@ -171,7 +176,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  }
  function drawCurve(){
   if(!data||byId('panel-history').hidden||byId('history-survival-section').hidden)return;
-  const comparison=getComparisons();
+  const comparison=cachedComparison;
   if(comparison?.sources?.length)drawComparison({sources:comparison.sources,options:options(),start:rangeStart,end:rangeEnd,chartCards:[],histogramCards:[],curveCanvas,curveMaximum,curveStart:Number(byId('history-curve-start').value),curveVisible:true});
   else if(curveView)drawHistoryChart(curveCanvas,{points:curveView.points,keys:['mean'],domainEnd:curveView.domainEnd,selected:curveView.points.length?curveIndex:null,single:true,maximum:100,age:true,markers:curveMarkers});
  }
@@ -182,7 +187,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  }
  function showLife(row){selectedLife=row.id;const o=row.observations;
   byId('history-detail').textContent=`Житель №${row.id}: рождение ${format(row.born)} Т, ${row.status==='dead'?'возраст смерти':'наблюдаемый возраст'} ${format(row.age)} Т. `+
-   LIFE_METRICS.filter(m=>m.id!=='lifetime').map(m=>`${m.label}: ${format(lifeMetric(row,m.id,data.interruptionKind),m.digits)} ${m.unit}`).join(' · ')+
+   LIFE_METRICS.filter(m=>m.id!=='lifetime').map(m=>`${m.label}: ${format(lifeMetric(row,m.id,data.interruptionKind),metricDisplayDigits(m))} ${m.unit}`).join(' · ')+
    (o?`. Прерывания: добровольно ${o.interruptions.voluntary}, физически ${o.interruptions.physical}, из-за смерти ${o.interruptions.death}. Среднее/медиана запасов ${format(o.meanInventory,2)}/${format(o.medianInventory,2)}.`:' Новые индивидуальные счётчики отсутствуют.')+
    (row.status==='alive'?' Жизнь продолжается; показатели относятся только к уже прожитому времени.':'');
  }
@@ -197,7 +202,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
   const nodes=[];
   for(let i=page*PAGE;i<Math.min(tableRows.length,(page+1)*PAGE);i++){
    const r=tableRows[i],tr=make('tr');tr.tabIndex=0;
-   const values=lives?[r.id,r.generation,'№'+r.founderId,format(r.born),format(r.age),r.status==='alive'?'Жив':CAUSE_LABELS[r.cause]??r.cause,format(lifeMetric(r,'movement'),2),format(lifeMetric(r,'eating'),2)]:[`[${r.start}; ${r.end})`,r.born,r.dead,r.alive,r.metrics[metric].count,...HISTORY_LINES.map(l=>format(r.metrics[metric][l.id],m.digits)),format(r.survival.percent),r.complete?'Завершена':'Предварительно'];
+   const values=lives?[r.id,r.generation,'№'+r.founderId,format(r.born),format(r.age),r.status==='alive'?'Жив':CAUSE_LABELS[r.cause]??r.cause,format(lifeMetric(r,'movement'),2),format(lifeMetric(r,'eating'),2)]:[`[${r.start}; ${r.end})`,r.born,r.dead,r.alive,r.metrics[metric].count,...HISTORY_LINES.map(l=>format(r.metrics[metric][l.id],metricDisplayDigits(m))),format(r.survival.percent),r.complete?'Завершена':'Предварительно'];
    tr.append(...values.map(v=>make('td',v)));if(lives?r.id===selectedLife:r.id===selected)tr.className='selected-row';
    const choose=()=>{if(lives){showLife(r);renderTable();}else selectCohort(r.id);};tr.addEventListener('click',choose);tr.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose();}});nodes.push(tr);
   }
@@ -262,6 +267,10 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
   const sim=getSimulation(),report=sim?.lives;if(!report)return;
   try{
    const o=options(),key=JSON.stringify(o);
+   // Новые шаги того же мира объединяются: текущую видимую партию доводим
+   // до конца. Пользовательский фильтр/источник (force) применяется сразу.
+   if(!force&&report!==cachedReport&&data&&key===cachedKey&&!canPrepare()&&pendingCards()){liveDeferred=true;statisticsChanged();return;}
+   liveDeferred=false;cachedComparison=getComparisons();
    if(report!==cachedReport||key!==cachedKey){
     const next=aggregateLifeCohorts(report,o),nextFood=foodCohorts(report.foodAvailability,report.environmentTick??report.tick,next.width),nextMaximum=historyDomainEnd(report.tick,next.width),follow=rangeEnd===null||rangeEnd===rangeMaximum;
     base=next;fullFood=nextFood;allRows=[];members.clear();
@@ -270,7 +279,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
     cachedReport=report;cachedKey=key;dirtyTable=true;updateWindow();
    }else if(!force)return;else updateWindow();
    updateCurve();const completed=report.completed;
-   byId('history-summary').textContent=`${getComparisons()?.sources?.length?'Сравнение групп: '+getComparisons().sources.length:'Выбранные данные'} · шаг ${format(report.tick)} · период [${rangeStart}; ${rangeEnd}) Т.`;
+   byId('history-summary').textContent=`${cachedComparison?.sources?.length?'Сравнение групп: '+cachedComparison.sources.length:'Выбранные данные'} · шаг ${format(report.tick)} · период [${rangeStart}; ${rangeEnd}) Т.`;
    byId('history-causes').textContent=Object.entries(report.byCause).map(([key,g])=>`${CAUSE_LABELS[key]??key}: ${g.count}`).join(' · ');
    byId('history-warning').textContent=[data.omittedDetails?`Отсутствуют подробности ${data.omittedDetails} жизней: распределения относятся только к сохранённым строкам; точная доля доживших отключена.`:'',data.excludedInvalid?`Пропущены некорректные строки: ${data.excludedInvalid}.`:'',!food.length?'История пищи отсутствует или время мира ещё не продвинулось.':''].filter(Boolean).join(' ');
    byId('history-error').textContent='';drawCharts();renderTable();
@@ -278,7 +287,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  }
  for(const id of ['history-width','history-origin','history-stat-mode'])byId(id).addEventListener('change',()=>{selected=null;page=0;refresh(true);});
  function pairOptions(){return {...options(),survivalAge:Number(byId('pair-survival-age').value),interruptionKind:byId('pair-interruption-kind').value};}
- for(const id of ['pair-survival-age','pair-interruption-kind'])byId(id).addEventListener('change',()=>{if(data)pairs.update({comparison:getComparisons(),options:pairOptions(),start:rangeStart,end:rangeEnd});});
+ for(const id of ['pair-survival-age','pair-interruption-kind'])byId(id).addEventListener('change',()=>{if(data)pairs.update({comparison:cachedComparison,options:pairOptions(),start:rangeStart,end:rangeEnd});});
  for(const id of ['history-period-from','history-period-to'])byId(id).addEventListener('change',()=>setPeriod(Number(byId('history-period-from').value),Number(byId('history-period-to').value)));
  byId('history-period-start').addEventListener('input',()=>setPeriod(Math.min(Number(byId('history-period-start').value),rangeEnd-1),rangeEnd));
  byId('history-period-end').addEventListener('input',()=>setPeriod(rangeStart,Math.max(Number(byId('history-period-end').value),rangeStart+1)));
@@ -300,5 +309,5 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  byId('history-prev').addEventListener('click',()=>{page--;renderTable();});byId('history-next').addEventListener('click',()=>{page++;renderTable();});byId('history-clear-selection').addEventListener('click',clearSelection);
  const resize=typeof ResizeObserver==='undefined'?null:new ResizeObserver(()=>{if(!byId('panel-history').hidden)drawCharts();});resize?.observe(byId('history-charts'));
  installHistoryDrawers(root,drawCharts);syncCatalogue();
- return {refresh,activity(){if(!canPrepare()&&warm.current()){warm.interrupt();estimates.suspend?.();differences.suspend?.();localCharts.suspend();formulaClient.suspend();pairs.suspend();}},reset(){localRequest++;curveRequest++;curveInput.cancel();warm.reset();estimates.suspend?.();differences.suspend?.();pairs.suspend();localCharts.dispose();formulaClient.dispose();awaiting=null;cachedReport=null;cachedKey='';data=null;base=null;curve=null;curveView=null;curveViewSource=null;curveReport=null;curveKey='';allRows=[];tableRows=[];selected=null;selectedLife=null;page=0;rangeStart=0;rangeEnd=null;dirtyTable=true;byId('history-curve-start').value=0;byId('history-detail').textContent='Выбери строку жизни.';},getSummary:()=>data,getCurve:()=>curve};
+ return {refresh,activity(){if(!canPrepare()&&warm.current()){warm.interrupt();estimates.suspend?.();differences.suspend?.();localCharts.suspend();formulaClient.suspend();pairs.suspend();statisticsChanged();}},reset(){liveEpoch++;liveDeferred=false;liveFlush=false;cachedComparison=null;localRequest++;curveRequest++;curveInput.cancel();warm.reset();estimates.suspend?.();differences.suspend?.();pairs.suspend();localCharts.dispose();formulaClient.dispose();awaiting=null;cachedReport=null;cachedKey='';data=null;base=null;curve=null;curveView=null;curveViewSource=null;curveReport=null;curveKey='';allRows=[];tableRows=[];selected=null;selectedLife=null;page=0;rangeStart=0;rangeEnd=null;dirtyTable=true;byId('history-curve-start').value=0;byId('history-detail').textContent='Выбери строку жизни.';},getSummary:()=>data,getCurve:()=>curve};
 }

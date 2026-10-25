@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 33,
-    "bytes": 4068,
+    "bytes": 4062,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 127,
-    "bytes": 15387,
+    "lines": 129,
+    "bytes": 15532,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -668,6 +668,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v053-live-statistics.md",
+    "url": "./source-files/docs/updates/v053-live-statistics.md",
+    "lines": 35,
+    "bytes": 8734,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/updates/v053-structural-brain.md",
     "url": "./source-files/docs/updates/v053-structural-brain.md",
     "lines": 44,
@@ -807,7 +815,7 @@
     "name": "dist/world-save.js",
     "url": "./world-save.js",
     "lines": 60,
-    "bytes": 10731,
+    "bytes": 10740,
     "aliases": [],
     "purpose": "Полный ручной снимок, проверка и восстановление текущей модели."
   },
@@ -855,15 +863,15 @@
     "name": "dist/history-charts.js",
     "url": "./history-charts.js",
     "lines": 84,
-    "bytes": 7868,
+    "bytes": 7852,
     "aliases": [],
     "purpose": "Canvas-графики истории с едиными временными интервалами."
   },
   {
     "name": "dist/history-ui.js",
     "url": "./history-ui.js",
-    "lines": 304,
-    "bytes": 43306,
+    "lines": 313,
+    "bytes": 44323,
     "aliases": [],
     "purpose": "Кешируемые сводки и таблица с ограничением высоты и50 строками."
   },
@@ -918,8 +926,8 @@
   {
     "name": "tests/history-ui.test.mjs",
     "url": "./source-files/tests/history-ui.test.mjs",
-    "lines": 195,
-    "bytes": 27937,
+    "lines": 239,
+    "bytes": 33551,
     "aliases": [],
     "purpose": "Настоящий UI историй в управляемом DOM: выбор, страницы, ошибки и кеш."
   },
@@ -942,8 +950,8 @@
   {
     "name": "dist/ui-text.js",
     "url": "./ui-text.js",
-    "lines": 399,
-    "bytes": 133173,
+    "lines": 400,
+    "bytes": 134109,
     "aliases": [],
     "purpose": "Единый каталог подсказок/статических описаний, версия и числовые пояснения из модели."
   },
@@ -1359,15 +1367,15 @@
     "name": "README.ru.md",
     "url": "./source-files/README.ru.md",
     "lines": 117,
-    "bytes": 16547,
+    "bytes": 16466,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
     "name": "dist/analysis-builder-chart.js",
     "url": "./analysis-builder-chart.js",
-    "lines": 24,
-    "bytes": 3490,
+    "lines": 25,
+    "bytes": 3518,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8182,8 +8190,8 @@
   {
     "name": "dist/chart-local-renderer.js",
     "url": "./chart-local-renderer.js",
-    "lines": 44,
-    "bytes": 6350,
+    "lines": 45,
+    "bytes": 6443,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8199,15 +8207,15 @@
     "name": "dist/chart-update-state.js",
     "url": "./chart-update-state.js",
     "lines": 8,
-    "bytes": 1032,
+    "bytes": 1058,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
     "name": "dist/comparison-charts.js",
     "url": "./comparison-charts.js",
-    "lines": 42,
-    "bytes": 5449,
+    "lines": 43,
+    "bytes": 5582,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8359,7 +8367,7 @@
     "name": "dist/history-differences-ui.js",
     "url": "./history-differences-ui.js",
     "lines": 41,
-    "bytes": 4624,
+    "bytes": 4749,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8367,7 +8375,7 @@
     "name": "dist/history-estimates-ui.js",
     "url": "./history-estimates-ui.js",
     "lines": 33,
-    "bytes": 3517,
+    "bytes": 3684,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8414,8 +8422,8 @@
   {
     "name": "dist/pair-comparison-ui.js",
     "url": "./pair-comparison-ui.js",
-    "lines": 50,
-    "bytes": 7030,
+    "lines": 51,
+    "bytes": 7245,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8542,8 +8550,8 @@
   {
     "name": "dist/statistics-format.js",
     "url": "./statistics-format.js",
-    "lines": 8,
-    "bytes": 1047,
+    "lines": 20,
+    "bytes": 2141,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8615,7 +8623,7 @@
     "name": "dist/workspace.css",
     "url": "./workspace.css",
     "lines": 86,
-    "bytes": 23698,
+    "bytes": 23773,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8838,8 +8846,8 @@
   {
     "name": "docs/navigation/experiments-and-statistics.md",
     "url": "./source-files/docs/navigation/experiments-and-statistics.md",
-    "lines": 49,
-    "bytes": 14734,
+    "lines": 50,
+    "bytes": 15066,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8886,8 +8894,8 @@
   {
     "name": "docs/next-experiment-statistics-ui.md",
     "url": "./source-files/docs/next-experiment-statistics-ui.md",
-    "lines": 148,
-    "bytes": 43205,
+    "lines": 164,
+    "bytes": 49708,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8912,6 +8920,14 @@
     "url": "./source-files/docs/next-food-islands-update.md",
     "lines": 92,
     "bytes": 21046,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/next-game-guide.md",
+    "url": "./source-files/docs/next-game-guide.md",
+    "lines": 48,
+    "bytes": 13178,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8974,8 +8990,8 @@
   {
     "name": "docs/ui-redesign.md",
     "url": "./source-files/docs/ui-redesign.md",
-    "lines": 77,
-    "bytes": 22758,
+    "lines": 79,
+    "bytes": 22983,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9180,6 +9196,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "tests/live-statistics0533.test.mjs",
+    "url": "./source-files/tests/live-statistics0533.test.mjs",
+    "lines": 42,
+    "bytes": 4168,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "tests/memory-genes.test.mjs",
     "url": "./source-files/tests/memory-genes.test.mjs",
     "lines": 22,
@@ -9239,7 +9263,7 @@
     "name": "tests/statistics043.test.mjs",
     "url": "./source-files/tests/statistics043.test.mjs",
     "lines": 52,
-    "bytes": 6451,
+    "bytes": 6453,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9615,7 +9639,7 @@
     "name": "tools/verify-local.py",
     "url": "./source-files/tools/verify-local.py",
     "lines": 121,
-    "bytes": 8231,
+    "bytes": 8269,
     "aliases": [],
     "purpose": "Одна команда коротких локальных проверок, повтор выбранной части и отчёт времени/ошибок."
   },
@@ -9686,16 +9710,16 @@
   {
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
-    "lines": 14,
-    "bytes": 3802,
+    "lines": 13,
+    "bytes": 3810,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
   {
     "name": "docs/workflows/context.md",
     "url": "./source-files/docs/workflows/context.md",
-    "lines": 60,
-    "bytes": 11402,
+    "lines": 61,
+    "bytes": 12198,
     "aliases": [],
     "purpose": "Как обсуждать контракты и передавать контекст без повторения всей истории."
   },
@@ -9735,7 +9759,7 @@
     "name": "docs/architecture.md",
     "url": "./source-files/docs/architecture.md",
     "lines": 66,
-    "bytes": 9175,
+    "bytes": 9158,
     "aliases": [],
     "purpose": "Какие модули отвечают за мир, мозг, интерфейс и проверки."
   },
@@ -9766,8 +9790,8 @@
   {
     "name": "docs/verification.md",
     "url": "./source-files/docs/verification.md",
-    "lines": 39,
-    "bytes": 5845,
+    "lines": 41,
+    "bytes": 6103,
     "aliases": [],
     "purpose": "Выбор проверок, пределы выводов и сохранение проекта."
   },
@@ -9798,8 +9822,8 @@
   {
     "name": "docs/future-ideas.md",
     "url": "./source-files/docs/future-ideas.md",
-    "lines": 52,
-    "bytes": 11329,
+    "lines": 54,
+    "bytes": 11667,
     "aliases": [],
     "purpose": "Обсуждённые идеи: пищевые циклы, износ и долголетие, личное развитие; статусы и границы разрешения."
   },
@@ -9991,7 +10015,7 @@
     "name": "dist/index.html",
     "url": "./index.html",
     "lines": 282,
-    "bytes": 69063,
+    "bytes": 69109,
     "aliases": [],
     "purpose": "Разметка лаборатории и доступные пользователю настройки."
   },
@@ -10015,7 +10039,7 @@
     "name": "README.md",
     "url": "./source-files/README.md",
     "lines": 132,
-    "bytes": 11658,
+    "bytes": 11659,
     "aliases": [],
     "purpose": "Устройство проекта, ограничения, запуск исходников и проверки."
   },

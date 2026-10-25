@@ -1,12 +1,13 @@
 /** Рисуем только готовые ячейки. Изменение размера не запускает статистику. */
 const palette=['#86bf80','#e1c86e','#91b8d0','#cba4e4','#ed9a7a','#73c8bd','#d7a6bc','#c2ca8a'];
 export function analysisColor(group,index){return group.color??(group.label==='learning: вкл'?palette[0]:group.label==='learning: выкл'?palette[1]:palette[index%palette.length]);}
-const number=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:1,notation:'compact'});
+import {formatChartNumber} from './statistics-format.js';
+const number={format:formatChartNumber};
 export function drawAnalysis(canvas,result){
  if(!result||result.config.chart==='table')return;const ctx=canvas.getContext('2d');if(!ctx)return;
  const width=Math.max(340,canvas.getBoundingClientRect().width||700),height=320,ratio=Math.min(2,globalThis.devicePixelRatio||1);canvas.width=Math.round(width*ratio);canvas.height=height*ratio;ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,width,height);
  const left=65,right=20,top=20,bottom=62,w=width-left-right,h=height-top-bottom,finite=result.cells.filter(p=>Number.isFinite(p.value));
- let min=0,max=1;for(const c of finite){min=Math.min(min,c.value,c.interval?.low??c.value);max=Math.max(max,c.value,c.interval?.high??c.value);}const span=max-min;max+=span*.06;min-=min<0?span*.03:0;
+ let min=0,max=0;for(const c of finite){min=Math.min(min,c.value,c.interval?.low??c.value);max=Math.max(max,c.value,c.interval?.high??c.value);}if(max===min)max=1;const span=max-min;max+=span*.06;min-=min<0?span*.03:0;
  const xs=result.xs,lo=xs[0]?.x??0,hi=xs.at(-1)?.x??1,numeric=hi>lo&&xs.every((x,i)=>!i||x.x>xs[i-1].x),xAt=i=>left+(numeric?(xs[i].x-lo)/(hi-lo):i/Math.max(1,xs.length-1))*w;
  const x=i=>xs.length===1?left+w/2:result.config.chart==='bar'?left+(i+.5)*w/xs.length:xAt(i),y=v=>top+h-(v-min)/(max-min)*h;
  ctx.font='12px system-ui';ctx.textAlign='right';for(let i=0;i<=4;i++){const v=min+(max-min)*i/4,py=y(v);ctx.strokeStyle='#35433a';ctx.beginPath();ctx.moveTo(left,py);ctx.lineTo(width-right,py);ctx.stroke();ctx.fillStyle='#b8c5b8';ctx.fillText(number.format(v),left-8,py+4);}

@@ -28,7 +28,7 @@ test('unknown age outcomes block only their own birth bin, never inventing zeros
 });
 test('health/feeling reuse recorded observations and display rounding preserves exact data',()=>{
  const r=row(0,12.345);assert.equal(lifeMetric(r,'health'),22.345);assert.equal(lifeMetric(r,'feeling'),-12.345);assert.equal(Number.isFinite(lifeMetric({},'health')),false);
- assert.equal(formatStatistic(12.345),'12,3');assert.equal(formatStatistic(-.01),'0,0');assert.equal(formatStatistic(0),'0,0');assert.equal(formatStatistic(null),'—');assert.equal(r.meanEnergy,12.345);
+ assert.equal(formatStatistic(12.345),'12,3');assert.equal(formatStatistic(-.01),'-0,01');assert.equal(formatStatistic(0),'0,0');assert.equal(formatStatistic(null),'—');assert.equal(r.meanEnergy,12.345);
 });
 test('real Worker returns paired point intervals, counts and spread without heavy point metadata',async()=>{
  const url=new URL('../dist/pair-statistics-worker.js',import.meta.url).href,worker=new Worker(`const {parentPort}=require('node:worker_threads');global.self={postMessage:m=>parentPort.postMessage(m)};import(${JSON.stringify(url)}).then(()=>{parentPort.on('message',data=>self.onmessage({data}));parentPort.postMessage({ready:true})});`,{eval:true});

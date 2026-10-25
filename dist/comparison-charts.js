@@ -1,3 +1,4 @@
+import {metricDisplayDigits} from './statistics-format.js';
 import {aggregateLifeCohorts} from './life-cohorts.js';
 import {sensitivityDistributions,SENSITIVITY_BIN_WIDTH} from './heritable-statistics.js';
 import {windowFoodCohorts} from './history-window.js';
@@ -27,7 +28,7 @@ export function createComparisonCharts(){
    const lists=prepared.map(s=>{const estimate=c.displayEstimates?.get(s.id)??getEstimate(s.id,m.id);if(estimate?.points)return estimate.points.map(p=>({...p,value:p[effective]}));if(c.statisticsManaged||m.id==='population'||s.report.groupDesign)return [];return (m.id==='food'?food(s):m.id==='production'?production(s):cohorts(s).cohorts).map(p=>({...p,value:m.id==='survival'?p.survival.percent:['food','production'].includes(m.id)?p.mean:p.metrics[m.id][effective]}));});
    const points=join(lists),bands=[];
    if(['mean','median'].includes(effective)&&bandMode!=='none')for(const source of sources){const result=getEstimate(source.id,m.id);for(const p of points){const estimate=result?.byId?.get(p.id),range=estimate?.[bandMode==='spread'?'spread':'confidence']?.[effective];p[source.id+'Low']=range?.low??null;p[source.id+'High']=range?.high??null;}bands.push({low:source.id+'Low',high:source.id+'High',color:source.color});}
-   drawHistoryChart(canvas,{points,keys,lines,bands,domainStart:start,domainEnd:end,width:options.width,single:['population','food','production'].includes(m.id)?'food':false,minimum:m.minimum??0,maximum:m.maximum??(['hunger','survival','reproduced'].includes(m.id)?100:null)});
+   drawHistoryChart(canvas,{points,keys,lines,bands,digits:metricDisplayDigits(m),domainStart:start,domainEnd:end,width:options.width,single:['population','food','production'].includes(m.id)?'food':false,minimum:m.minimum??0,maximum:m.maximum??(['hunger','survival','reproduced'].includes(m.id)?100:null)});
   }
   for(const {m,canvas,card,note}of histogramCards){if(card.hidden)continue;const lists=prepared.map(s=>distributions(s).find(d=>d.id===m.id).points.map(p=>({...p,value:p.mean})));
    drawHistoryChart(canvas,{points:join(lists),keys,lines,width:SENSITIVITY_BIN_WIDTH,histogram:true,domainStart:-100,domainEnd:100,xTicks:Array.from({length:11},(_,i)=>-100+i*20),xLabel:'Доля шкалы чувств, %'});
