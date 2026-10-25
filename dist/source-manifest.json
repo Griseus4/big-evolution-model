@@ -686,8 +686,8 @@
   {
     "name": "docs/updates/v054-project-guide.md",
     "url": "./source-files/docs/updates/v054-project-guide.md",
-    "lines": 30,
-    "bytes": 6843,
+    "lines": 32,
+    "bytes": 7188,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8943,7 +8943,7 @@
     "name": "docs/next-game-guide.md",
     "url": "./source-files/docs/next-game-guide.md",
     "lines": 56,
-    "bytes": 15811,
+    "bytes": 15777,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9743,7 +9743,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 13,
-    "bytes": 3026,
+    "bytes": 3009,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
