@@ -2,7 +2,7 @@
 
 ## Действующая база
 
-Расчётный снимок — **0.39.2**, серия `constructor-world-v1`, протокол `rotating-fixed-work-v1`, набор `fixed-constructor-world-workloads-v1`. Источники: [версии](../dist/benchmark-versions.js), [нагрузки](../dist/benchmark-fixtures.js). Версия интерфейса и расчётный снимок могут различаться; их соответствие проверяет `tools/check-benchmark-snapshots.py`. Рабочая версия указана в [START_HERE](START_HERE.md).
+Расчётный снимок — **0.53.2**, серия `structural-brain-v1`, протокол `rotating-fixed-work-v1`, набор `structural-brain-workloads-v1`. Источники: [версии](../dist/benchmark-versions.js), [нагрузки](../dist/benchmark-fixtures.js). Версия интерфейса и расчётный снимок могут различаться; их соответствие проверяет `tools/check-benchmark-snapshots.py`. Рабочая версия указана в [START_HERE](START_HERE.md).
 
 Разделы прежнего плана, где «текущими» назывались 0.20–0.38, сохранены в [истории](archive/performance-plan-before-2026-10-20.md). Их доли CPU, ограничения и следующие шаги не являются актуальным профилем. Последний блок хранения [0.45.0](updates/v045-compact-experiment-archives.md) измерял размер и подготовку данных статистики, а не ускорение симуляции.
 

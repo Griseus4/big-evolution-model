@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 35,
-    "bytes": 4265,
+    "bytes": 4269,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 165,
-    "bytes": 17646,
+    "lines": 167,
+    "bytes": 17768,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -804,6 +804,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v054-guide-system.md",
+    "url": "./source-files/docs/updates/v054-guide-system.md",
+    "lines": 11,
+    "bytes": 2390,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/updates/v054-guide-time.md",
     "url": "./source-files/docs/updates/v054-guide-time.md",
     "lines": 15,
@@ -958,8 +966,8 @@
   {
     "name": "dist/project-guide-topics.js",
     "url": "./project-guide-topics.js",
-    "lines": 74,
-    "bytes": 20992,
+    "lines": 76,
+    "bytes": 21081,
     "aliases": [],
     "purpose": "Термины поиска и указатели на код/проверки прежних статей."
   },
@@ -982,8 +990,8 @@
   {
     "name": "dist/project-guide-inventory.json",
     "url": "./project-guide-inventory.json",
-    "lines": 1247,
-    "bytes": 25324,
+    "lines": 1259,
+    "bytes": 25575,
     "aliases": [],
     "purpose": "Производный инвентарь канонического кода; не процент полноты пособия."
   },
@@ -998,8 +1006,8 @@
   {
     "name": "dist/project-guide.js",
     "url": "./project-guide.js",
-    "lines": 61,
-    "bytes": 17037,
+    "lines": 64,
+    "bytes": 17906,
     "aliases": [],
     "purpose": "Пособие: выжимки, вводная статья и ссылки сверки с реализацией."
   },
@@ -1015,7 +1023,7 @@
     "name": "tests/project-guide054.test.mjs",
     "url": "./source-files/tests/project-guide054.test.mjs",
     "lines": 124,
-    "bytes": 13291,
+    "bytes": 13272,
     "aliases": [],
     "purpose": "Реестр, навигация, переходы по URL и сохранение состояния статей0.54."
   },
@@ -1151,7 +1159,7 @@
     "name": "dist/world-save.js",
     "url": "./world-save.js",
     "lines": 62,
-    "bytes": 11018,
+    "bytes": 11028,
     "aliases": [],
     "purpose": "Полный ручной снимок, проверка и восстановление текущей модели."
   },
@@ -1286,8 +1294,8 @@
   {
     "name": "dist/ui-text.js",
     "url": "./ui-text.js",
-    "lines": 393,
-    "bytes": 114846,
+    "lines": 394,
+    "bytes": 114926,
     "aliases": [],
     "purpose": "Единый каталог подсказок/статических описаний, версия и числовые пояснения из модели."
   },
@@ -1567,7 +1575,7 @@
     "name": "README.ru.md",
     "url": "./source-files/README.ru.md",
     "lines": 117,
-    "bytes": 16396,
+    "bytes": 16386,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8660,6 +8668,22 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "dist/guide-system-text.js",
+    "url": "./guide-system-text.js",
+    "lines": 77,
+    "bytes": 24300,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "dist/guide-system-topics.js",
+    "url": "./guide-system-topics.js",
+    "lines": 369,
+    "bytes": 8683,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "dist/history-differences-ui.js",
     "url": "./history-differences-ui.js",
     "lines": 41,
@@ -9151,7 +9175,7 @@
     "name": "docs/guide-plan/06-system.md",
     "url": "./source-files/docs/guide-plan/06-system.md",
     "lines": 57,
-    "bytes": 10654,
+    "bytes": 10955,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9159,7 +9183,7 @@
     "name": "docs/guide-plan/README.md",
     "url": "./source-files/docs/guide-plan/README.md",
     "lines": 89,
-    "bytes": 22894,
+    "bytes": 22855,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9190,8 +9214,8 @@
   {
     "name": "docs/guide-plan/coverage.md",
     "url": "./source-files/docs/guide-plan/coverage.md",
-    "lines": 202,
-    "bytes": 34020,
+    "lines": 214,
+    "bytes": 36059,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9303,7 +9327,7 @@
     "name": "docs/next-game-guide.md",
     "url": "./source-files/docs/next-game-guide.md",
     "lines": 50,
-    "bytes": 9844,
+    "bytes": 9847,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9632,6 +9656,14 @@
     "url": "./source-files/tests/guide-sources05410.test.mjs",
     "lines": 29,
     "bytes": 1966,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "tests/guide-system05416.test.mjs",
+    "url": "./source-files/tests/guide-system05416.test.mjs",
+    "lines": 14,
+    "bytes": 1172,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -10223,7 +10255,7 @@
     "name": "docs/performance-plan.md",
     "url": "./source-files/docs/performance-plan.md",
     "lines": 41,
-    "bytes": 7025,
+    "bytes": 7058,
     "aliases": [],
     "purpose": "Предложенный порядок измерений/ускорения 0.17 с сохранением правил и будущим индексом соседей."
   },
@@ -10343,7 +10375,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 12,
-    "bytes": 2172,
+    "bytes": 2375,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -10510,8 +10542,8 @@
   {
     "name": "dist/build-info.json",
     "url": "./build-info.json",
-    "lines": 1058,
-    "bytes": 122317,
+    "lines": 1060,
+    "bytes": 122513,
     "aliases": [],
     "purpose": "Отпечаток этой сборки для точного анализа отчёта."
   },
@@ -10647,7 +10679,7 @@
     "name": "dist/index.html",
     "url": "./index.html",
     "lines": 296,
-    "bytes": 79299,
+    "bytes": 80595,
     "aliases": [],
     "purpose": "Разметка лаборатории и доступные пользователю настройки."
   },
@@ -10671,7 +10703,7 @@
     "name": "README.md",
     "url": "./source-files/README.md",
     "lines": 132,
-    "bytes": 11615,
+    "bytes": 11608,
     "aliases": [],
     "purpose": "Устройство проекта, ограничения, запуск исходников и проверки."
   },

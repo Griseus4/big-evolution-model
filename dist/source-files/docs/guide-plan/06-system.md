@@ -4,7 +4,7 @@
 
 ## P24 — исполнители и границы состояния
 
-**Зависимости:** P08–P10, P17, P23. **Статус:** запланирован.
+**Зависимости:** P08–P10, P17, P23. **Статус:** выполнен в 0.54.16 — [протокол F](../updates/v054-guide-system.md).
 
 Источники: `world-runtime.js`, `world-worker.js`, `world-substeps.js`, `parallel-world.js`, `world-client.js`, `world-view.js`, `cognition-owner.js`, `cognition-worker.js`, `cognition-packet.js`, `worker-timing.js`.
 
@@ -14,7 +14,7 @@
 
 ## P25 — измерения и проверки механизмов
 
-**Зависимости:** P24. **Статус:** запланирован.
+**Зависимости:** P24. **Статус:** выполнен в 0.54.16 — [протокол F](../updates/v054-guide-system.md).
 
 Источники: `world-profiler.js`, `performance-profiler.js`, `performance-probe.js`, `performance-ui.js`, `performance-tabs.js`; действующие `benchmark-*`, `configuration-benchmark-*`, `worker-benchmark-settings.js`, `browser-checks.js`, `temporal-checks.js`, `structural-checks.js`. Сначала распределить семейства по реестру, затем читать нужный путь, не весь архив снимков.
 
@@ -24,7 +24,7 @@
 
 ## P26 — интерфейс и обновление статистики
 
-**Зависимости:** P14, P17, P22, P24. **Статус:** запланирован.
+**Зависимости:** P14, P17, P22, P24. **Статус:** выполнен в 0.54.16 — [протокол F](../updates/v054-guide-system.md).
 
 Источники: `index.html`, `evolution-app.js`, `lab-tabs.js`, `screen-tabs.js`, `workspace-ui.js`, `sidebar.js`, `help.js`, `transient-status.js`, `world-edit.js`, `resident-trail.js`; статистика — `history-ui.js`, `history-drawers.js`, `metric-options.js`, `chart-update-state.js`, `deferred-control.js`, `retained-results.js`, `statistics-preparation.js` и клиенты. Стили группировать по ответственности, не пересказывать селекторы.
 
@@ -34,7 +34,7 @@
 
 ## P27 — архитектура, локальная работа и поддержка справочника
 
-**Зависимости:** P23–P26. **Статус:** запланирован.
+**Зависимости:** P23–P26. **Статус:** выполнен в 0.54.16 — [протокол F](../updates/v054-guide-system.md).
 
 Источники: точки входа `app.js`, `simulation.js`, `evolution-app.js`; `source-viewer.js`, `source.html`, `project-guide-*.js`, `guide-parameters.js`, `ui-text.js`; `tools/verify-local.py`, `tools/export-source.py`, `tools/package-github.py`, `tools/guide_inventory.py`, проверки docs/context/wiring, `package.json` при наличии, `.github/workflows`, README и действующие правила работы.
 

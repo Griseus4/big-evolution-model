@@ -1,5 +1,6 @@
 /** Термины и навигационные указатели. Ссылка на файл не означает,
  * что прежняя краткая статья уже описывает каждое правило этого файла. */
+import {GUIDE_SYSTEM_TOPICS} from './guide-system-topics.js';
 import {GUIDE_ANALYSIS_TOPICS} from './guide-analysis-topics.js';
 import {GUIDE_EXPERIMENT_TOPICS} from './guide-experiment-topics.js';
 import {GUIDE_EVOLUTION_TOPICS} from './guide-evolution-topics.js';
@@ -71,4 +72,5 @@ export const GUIDE_TOPICS={
  ...GUIDE_EVOLUTION_TOPICS,
  ...GUIDE_EXPERIMENT_TOPICS,
  ...GUIDE_ANALYSIS_TOPICS,
+ ...GUIDE_SYSTEM_TOPICS,
 };

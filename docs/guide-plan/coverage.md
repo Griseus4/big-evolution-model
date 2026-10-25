@@ -200,3 +200,15 @@ P00 завершён структурно: рабочие файлы имеют 
 | files | world-save/files-ui, state-codec, experiment-archive/store | Проверка до замены, формат v1 блоков, полные JSON, сохранность исходных блоков |
 
 Новые файлы: guide-analysis-text/topics.js, guide-analysis05415.test.mjs; 35 статей. Подписи observedSteps/emptyEnergySteps теперь указывают Т, как текущая temporal-история. Сами данные и вычисления не менялись. Смысл ошибки объяснён пользователю.
+
+## Проверенные ответственности пакета F (P24–P27)
+
+| Статья | Источники | Существенная граница |
+| --- | --- | --- |
+| runtime | world-runtime/client/worker/view, parallel-world, cognition-owner, world-substeps | Физика у координатора, личный опыт у владельцев; оценка/подтверждение, ACK, ошибки, смена пула |
+| performance | performance-ui/profiler, worker-timing, benchmark versions/fixtures/state, configuration runner, browser-checks | Прошедшее время не CPU; подготовка вне computeMs, барьеры внутри; разные методики |
+| world | evolution-app, sidebar, workspace-ui, world-edit, help, transient-status | Представление не физика, прокрутка разделов, задержка и вмешательство |
+| research | history-ui, retained-results, chart-update-state, deferred-control, statistics-preparation, lab-tabs | Последний готовый кадр, локальный контекст, ограниченный кэш, стабильность фоновой очереди |
+| development | index/evolution-app, source-viewer, guide-parameters, project-guide-ui, инструменты экспорта/проверок/инвентаря, pages.yml | Владельцы, числовые привязки, ручная сверка смысла, каноническая и производная поставка |
+
+Версия 0.54.16: 38 статей. Новые guide-system-text/topics.js и guide-system05416.test.mjs. Старые обзорные brain/saves/checks/limits ещё требуют итогового прохода P28; отметка версии им автоматически не присвоена. В performance-plan обновлена действительно устаревшая база по действующим константам.
