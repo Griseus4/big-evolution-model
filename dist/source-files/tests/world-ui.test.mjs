@@ -28,6 +28,7 @@ import {foodProduction} from '../dist/environment-settings.js';
 import {installWorldFiles} from '../dist/world-files-ui.js';
 import {installScreenTabs} from '../dist/screen-tabs.js';
 import {installLiveFoodControls} from '../dist/food-controls.js';
+import {initialNeuronsInput,wireInitialStructure} from '../dist/brain-initialization-ui.js';
 const html=fs.readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
 const app=fs.readFileSync(new URL('../dist/evolution-app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'');
 const performanceUI=fs.readFileSync(new URL('../dist/performance-ui.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'').replace(/^export /gm,'');
@@ -54,7 +55,7 @@ async function boot(){
  const document=new Element();document.getElementById=id=>{assert.ok(elements.has(id),`missing ${id}`);return elements.get(id);};
  document.createElement=()=>{const e=new Element();e.ownerDocument=document;return e;};document.hidden=false;
  for(const e of elements.values())e.ownerDocument=document;
- for(const [id,value]of [['seed','42'],['founders','12'],['population-limit','20'],['mutation-rate','0.06'],['speed','1'],['brain-max-neurons','64'],['brain-max-layers','4']])elements.get(id).value=value;
+ for(const [id,value]of [['seed','42'],['founders','12'],['population-limit','20'],['mutation-rate','0.06'],['speed','1'],['brain-max-neurons','64'],['brain-max-layers','4'],['brain-initial-connections','100']])elements.get(id).value=value;
  for(const id of ['mutations','learning','memory','structural-mutations'])elements.get(id).checked=true;
  elements.get('chart').width=900;elements.get('chart').height=180;
  let now=0,runtime,frame,sidebarChange;const downloads=[];
@@ -76,7 +77,7 @@ async function boot(){
   installHelp:()=>{},createHelpButton:()=>document.createElement('button'),
   requestAnimationFrame:fn=>frame=fn,performance:{now:()=>now},Blob,
   URL:{createObjectURL:blob=>{downloads.push(blob);return 'blob:mock';},revokeObjectURL:()=>{}},setTimeout:()=>0});
- Object.assign(context,{installEnvironmentUI,installWorldFiles,installScreenTabs,installLiveFoodControls});
+ Object.assign(context,{installEnvironmentUI,installWorldFiles,installScreenTabs,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
  vm.runInContext(performanceUI,context);vm.runInContext(app,context);await settle();assert.equal(elements.get('error').textContent??'','');
  return {elements,document,context,downloads,setBenchmarkActive:value=>benchmarkActive=value,get runtime(){return runtime;},
   pulse:async value=>{now=value;runtime.pulse();await settle();},frame:value=>frame(value),

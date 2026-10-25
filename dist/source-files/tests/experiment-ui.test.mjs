@@ -72,6 +72,25 @@ test('persistence writes immutable completed attempts once and marks interrupted
  await store.delete('test');assert.equal(tables.get('runs').size,0);assert.equal(tables.get('attempts').size,0);
 });
 const descendants=(node,predicate)=>node.children.flatMap(n=>[...(predicate(n)?[n]:[]),...descendants(n,predicate)]);
+test('initial structure table and percentage reach worker settings and enforce the shared cap',async()=>{
+ const b=boot();try{
+  const table=descendants(b.elements.get('constructor-common'),n=>Boolean(n.readSetting))[0],grid=table.parent.parent,percent=grid.children.at(-1).children.at(-1),cap=grid.children[0].children.at(-1);
+  assert.equal(descendants(table,n=>n.type==='number').length,4);table.value=[2,0,3];percent.value='150';percent.emit('input');
+  b.elements.get('constructor-worlds').value='1';b.elements.get('constructor-worlds').emit('change');await b.elements.get('constructor-run').click();
+  assert.equal(b.ui.isActive(),true,b.elements.get('constructor-error').textContent);assert.deepEqual(b.workers[0].sent[0].job.worldOptions.initialNeurons,[2,3]);assert.equal(b.workers[0].sent[0].job.worldOptions.initialConnections,150);
+  b.elements.get('constructor-force-stop').click();await b.flush();cap.value='4';cap.emit('change');await b.elements.get('constructor-run').click();assert.equal(b.ui.isActive(),false);assert.match(b.elements.get('constructor-error').textContent,/предел/);
+ }finally{b.restore();}
+});
+test('architecture factor uses independent horizontal tables and can add a zero-layer value',async()=>{
+ const b=boot();try{
+  const picker=b.elements.get('constructor-factor-add');picker.value='initialNeurons';picker.emit('change');const factor=b.elements.get('constructor-factors');
+  descendants(factor,n=>Boolean(n.readSetting))[0].value=[2,3];descendants(factor,n=>n.tagName==='button'&&n.textContent==='+ Значение')[0].click();
+  const tables=descendants(factor,n=>Boolean(n.readSetting));assert.equal(tables.length,2);assert.deepEqual(tables[1].readSetting(),[]);
+  b.elements.get('constructor-worlds').value='1';b.elements.get('constructor-budget').value='1';b.elements.get('constructor-worlds').emit('change');await b.elements.get('constructor-run').click();assert.equal(b.ui.isActive(),true,b.elements.get('constructor-error').textContent);
+  assert.deepEqual(b.workers[0].sent[0].job.worldOptions.initialNeurons,[2,3]);b.done(b.workers[0]);assert.deepEqual(b.workers[1].sent[0].job.worldOptions.initialNeurons,[]);
+  b.elements.get('constructor-force-stop').click();await b.flush();
+ }finally{b.restore();}
+});
 test('common tabs retain fields; boolean factors default to both states and never duplicate rows',()=>{
  const b=boot();try{
  const common=b.elements.get('constructor-common'),rows=common.children[1].children[0].children;assert.equal(rows.length,7);assert.equal(rows.filter(r=>!r.hidden).length,1);common.children[0].children[2].click();assert.equal(rows[2].hidden,false);assert.equal(rows[0].hidden,true);assert.equal(descendants(common,n=>n.tagName==='details').length,0);

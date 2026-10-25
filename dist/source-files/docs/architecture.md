@@ -12,7 +12,7 @@
 | [parallel-world.js](../dist/parallel-world.js), [world-substeps.js](../dist/world-substeps.js) | Постоянные владельцы личных мозгов; общие границы подшага, синхронизация, смена пула |
 | [world-view.js](../dist/world-view.js), [world-client.js](../dist/world-client.js) | Проекция UI и доставка команд/ACK; UI не владеет физикой |
 
-Быстрый расчёт не ждёт отрисовки. Только медленная видимая карта подтверждает каждый кадр подшага. Скрытие/другие разделы снимают это ожидание; явная пауза действует на границе вычисления. Испытания отдельно приостанавливают основной мир.
+Расчёт не ждёт отрисовки, кроме кадров медленной видимой карты. Скрытие/другие разделы снимают это ожидание; явная пауза действует на границе вычисления. Испытания отдельно приостанавливают основной мир.
 
 ## Мозг и сведения
 
@@ -23,7 +23,7 @@
 | [temporal-brain.js](../dist/temporal-brain.js), [brain-controller.js](../dist/brain-controller.js) | Оценки, выбор, временное обучение; наследуемый малый контроллер пересмотра |
 | [cognition.js](../dist/cognition.js), [navigation.js](../dist/navigation.js) | Личная память, ощущения и локальные координаты; скрытые клетки не обновляются |
 | [activity-perception.js](../dist/activity-perception.js) | Снимок видимой деятельности на границе подшага, без социальной памяти |
-| [genome.js](../dist/genome.js), [mutation-parameters.js](../dist/mutation-parameters.js) | Наследование/мутация; приобретённые знания не переносятся |
+| [genome.js](../dist/genome.js), [brain-initialization.js](../dist/brain-initialization.js) | Наследование и старт DAG; личные знания не наследуются |
 | [action-timing.js](../dist/action-timing.js), [energy-budget.js](../dist/energy-budget.js) | Длительности/цены и общая оплата дефицита здоровьем |
 
 ## Пищевая среда

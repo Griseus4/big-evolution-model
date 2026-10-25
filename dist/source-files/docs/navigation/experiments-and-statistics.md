@@ -10,6 +10,8 @@
 **История:** [0.39.1 — один список факторов](../next-experiment-factors.md), [0.44 — геномы и чувствительности](../next-genome-experiments.md), [0.46 — усвоение порции](../updates/v046-digestion-experiments.md). Старый список произвольных готовых вариантов заменён редактором сочетаний.
 **Дальше:** дополнительные сценарии/диапазоны от–до–шаг — [предложения](../future-ideas.md#исследования-и-обучение). Перед новым фактором найти владельца в [карте](README.md), затем решить, входит ли он в схему плана.
 
+Начальная структура: [brain-initialization-ui.js](../../dist/brain-initialization-ui.js) — общая таблица мира/условий/значений фактора; [инструкция](../updates/v053-initial-structure.md).
+
 ## runs
 **Задача:** общая карта/пища, разные жители, повторные попытки, очередь, бюджет Workers, запуск/пауза основного мира.
 **Сейчас:** `seedMatrix`/`allocateComputations`/`selectAttempt` — [experiment-plan.js](../../dist/experiment-plan.js); `ExperimentSeries` — [experiment-series.js](../../dist/experiment-series.js); `ExperimentExecution` — [experiment-execution.js](../../dist/experiment-execution.js). UI/аренда основного мира — [experiment-ui.js](../../dist/experiment-ui.js); статусы — [experiment-runs-ui.js](../../dist/experiment-runs-ui.js).
