@@ -158,3 +158,18 @@ P00 завершён структурно: рабочие файлы имеют 
 | Как Q становится выбором? choice | set-brain-engine.js: normalizeProbabilities; temporal-world.js: acceptTemporalChoice; attention-gate.js: attentionRequest | Поправка на число целей операции, снимок пересмотра, продолжение/повтор. guideOperationExample / guide-mind05412 | Цена и обучение P09/P10 |
 
 Новые файлы: dist/guide-mind-text.js (текст и учебные примеры), dist/guide-mind-topics.js (паспорта), tests/guide-mind05412.test.mjs (проверки). В реестре приложения теперь 22 статьи. Статус brain оставлен неполным до описания обучения и вычислительной цены; прежние короткие вводные тексты не объявлены полным охватом.
+
+## Проверенные ответственности пакета C (P09–P14)
+
+Версия 0.54.13, **описано** для отдельных тем, не всего кода исходных модулей.
+
+| Вопрос / статья | Источники и символы | Граница / доказательство | Остаток |
+| --- | --- | --- | --- |
+| Как меняются личные веса? learning | temporal-world: prepareTemporalDecision, commitTemporalBrain, accrueTemporalReward; set-brain-engine: learnSetBrain | Живой переход, время, след, ограничения и отсутствие терминального обучения; temporal/structural tests | Архив состояния P23 |
+| Что оплачивается? brain-cost | brain-cost: operationCounts, decisionCharge, learningCharge; life-cohorts: brainCost | Эталон/фазы, запрошенная цена против списанной энергии; структурные тесты и guide-evolution05413 | Все агрегаты P18/P20 |
+| Как заканчиваются роды? selection | temporal-world: temporalBirthAvailability, complete; evolution: addAgent | Не повторять стартовые пороги; мягкий лимит, ресурсы и следующий подшаг ребёнка; temporal tests | Метрики потомства P18 |
+| Что наследуется? genome | genome: mutateGenome, genomeMetadata, validateGenomeFile; mutation-parameters; founder-senses | Родительские регуляторы, логарифмы, основа без личных поправок; structural/genome tests | Форматы P23 |
+| Как меняется схема? structure-evolution | structural-brain: mutateStructure, compileStructure; brain-initialization: initialConnectionBudget | Вход/нулевой выход, бюджет, удаление инцидентных связей; structural/initialization tests | Отображение метрик P18 |
+| Как читать файл/схему? genome-analysis | genome-analysis: parseGenomeText, analyzeGenome; genome-analysis-ui: installGenomeAnalysis; brain-diagram-ui | Геном не восстанавливает текущие вероятности; вывод анализа и функции UI, диаграммные тесты | Настоящий браузер не проверялся |
+
+Новые файлы: guide-learning-text.js, guide-genetics-text.js, guide-evolution-topics.js, guide-evolution05413.test.mjs. В пособии 26 статей; остальные темы анализа/исполнения/форматов ещё требуют D–F. Отсутствие визуальной проверки не записывается как отсутствие текстовых правил.

@@ -4,6 +4,8 @@
 
 Пакет B пособия: [наблюдения, память, ощущения, блоки и выбор](../../dist/guide-mind-text.js); [паспорта и термины](../../dist/guide-mind-topics.js). Границы описанных обязанностей — в [реестре охвата](../guide-plan/coverage.md).
 
+Пакет C: [обучение и вычислительная цена](../../dist/guide-learning-text.js), [рождение, геном, структура и её анализ](../../dist/guide-genetics-text.js); [паспорта](../../dist/guide-evolution-topics.js).
+
 Глава пособия о времени: [guide-time-text.js](../../dist/guide-time-text.js); паспорт/связи — project-guide-topics.js, проверка [guide-time0544.test.mjs](../../tests/guide-time0544.test.mjs).
 
 Глава действий: [guide-actions-text.js](../../dist/guide-actions-text.js), [проверка процессов](../../tests/guide-actions0546.test.mjs).

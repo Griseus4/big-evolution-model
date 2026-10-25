@@ -17,7 +17,7 @@ import {GATE_INPUTS,GATE_HIDDEN} from '../dist/temporal-layout.js';
 
 test('dense numeric rules use titled tables in block hosts and the requested redundant qualifications are absent',()=>{
  const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
- for(const key of ['description66','guide-food-path','guide-food-sources','description68','description69','guide-environment-body','wiki-saves']){
+ for(const key of ['description66','guide-food-path','guide-food-sources','description68','guide-birth-body','guide-environment-body','wiki-saves']){
   assert.match(PAGE_TEXT[key],/<table[^>]*>[\s\S]*?<caption>/);
   assert.match(html,new RegExp(`<div[^>]*data-ui-text="${key}"`));assert.doesNotMatch(html,new RegExp(`<p[^>]*data-ui-text="${key}"`));
  }

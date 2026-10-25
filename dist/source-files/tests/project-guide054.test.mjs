@@ -47,8 +47,8 @@ test('all retained articles and new introduction have stable links and one summa
 test('new introduction records specific implementation sources; legacy articles are not falsely re-reviewed',()=>{
  const intro=GUIDE_ARTICLES.find(a=>a.id==='intro');assert.equal(intro.reviewedVersion,'0.54.2');
  for(const source of intro.sources){const code=readFileSync(new URL('../dist/'+source.file,import.meta.url),'utf8');for(const symbol of source.symbols)assert.match(code,new RegExp(`\\b${symbol}\\s*\\(`));}
- for(const id of ['world','saves','brain','selection','genome','research','checks','limits'])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,null);
- for(const [id,version] of [['memory','0.54.12'],['observation','0.54.12'],['feelings','0.54.12'],['brain-structure','0.54.12'],['choice','0.54.12'],['food','0.54.10'],['deposits','0.54.9'],['environment','0.54.11']])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,version);
+ for(const id of ['world','saves','brain','research','checks','limits'])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,null);
+ for(const [id,version] of [['selection','0.54.13'],['genome','0.54.13'],['memory','0.54.12'],['observation','0.54.12'],['feelings','0.54.12'],['brain-structure','0.54.12'],['choice','0.54.12'],['food','0.54.10'],['deposits','0.54.9'],['environment','0.54.11']])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,version);
 });
 
 test('article links open their branch, keep DOM state, restore reading position and respect modified clicks',()=>{

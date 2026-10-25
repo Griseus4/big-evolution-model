@@ -1,5 +1,6 @@
 /** Термины и навигационные указатели. Ссылка на файл не означает,
  * что прежняя краткая статья уже описывает каждое правило этого файла. */
+import {GUIDE_EVOLUTION_TOPICS} from './guide-evolution-topics.js';
 import {GUIDE_MIND_TOPICS} from './guide-mind-topics.js';
 export const GUIDE_TOPICS={
  numbers:{reviewedVersion:'0.54.8',keywords:['числа','константы','параметры','переменные','правила','настройки','шкала','масштаб','значения','единицы','источник','каталог','инвентарь','порция'],related:['time','actions','energy','brain','genome'],sources:[
@@ -65,4 +66,5 @@ export const GUIDE_TOPICS={
  checks:{keywords:['проверка','тест','ошибка','инвариант','верификация','бенчмарк','производительность'],sources:[{file:'temporal-checks.js',symbols:[],purpose:'Проверки действующих механизмов.'},{file:'browser-checks.js',symbols:[],purpose:'Состав браузерных проверок.'}],checks:[{file:'tests/js-syntax.test.mjs',purpose:'Синтаксис и подключение модулей.'}]},
  limits:{keywords:['ограничение','упрощение','лимит','население','версия','совместимость','отсутствует'],sources:[{file:'evolution.js',symbols:['addAgent'],purpose:'Создание жителей и состояние модели.'},{file:'world-save.js',symbols:['loadWorld'],purpose:'Границы совместимости полных сохранений.'}],checks:[{file:'tests/environment-save.test.mjs',purpose:'Принимаемые версии и отказ для неподдерживаемого формата.'}]},
  ...GUIDE_MIND_TOPICS,
+ ...GUIDE_EVOLUTION_TOPICS,
 };

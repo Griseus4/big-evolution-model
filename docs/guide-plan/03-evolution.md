@@ -4,7 +4,7 @@
 
 ## P09 — личное обучение
 
-**Зависимости:** P06–P08. **Статус:** запланирован.
+**Зависимости:** P06–P08. **Статус:** выполнен в 0.54.13 — [протокол C](../updates/v054-guide-evolution.md).
 
 Источники: `set-brain-engine.js` — `learnSetBrain`, `temporal-brain.js`, `brain-controller.js`; `temporal-world.js` — `temporalReward`, `commitTemporalBrain`; `brain-input-scales.js`, `brain-parameters.js`.
 
@@ -14,7 +14,7 @@
 
 ## P10 — вычисления и энергетическая цена мозга
 
-**Зависимости:** P08–P09. **Статус:** запланирован.
+**Зависимости:** P08–P09. **Статус:** выполнен в 0.54.13 — [протокол C](../updates/v054-guide-evolution.md).
 
 Источники: `brain-cost.js` — `decisionCharge`, `learningCharge`; `action-timing.js`, `structural-brain.js`, `set-brain-engine.js`, оплата в `temporal-world.js`, `energy-budget.js`, запись в `life-history.js`/`life-observations.js`.
 
@@ -24,7 +24,7 @@
 
 ## P11 — размножение и жизненная линия
 
-**Зависимости:** P01, готовые `time`, `actions`, `energy`. **Статус:** запланирован.
+**Зависимости:** P01, готовые `time`, `actions`, `energy`. **Статус:** выполнен в 0.54.13 — [протокол C](../updates/v054-guide-evolution.md).
 
 Источники: `reproduction.js`; `temporal-world.js` — `temporalBirthAvailability`, ветвь родов в `complete`; `evolution.js` — `addAgent`; `life-history.js`, `world-defaults.js`, `guide-parameters.js`.
 
@@ -34,7 +34,7 @@
 
 ## P12 — геном, числовые мутации и основатели
 
-**Зависимости:** P05–P07, P11. **Статус:** запланирован.
+**Зависимости:** P05–P07, P11. **Статус:** выполнен в 0.54.13 — [протокол C](../updates/v054-guide-evolution.md).
 
 Источники: `genome.js` — metadata, создание, `mutateGenome`, валидация; `mutation-parameters.js`, `brain-parameters.js`, `brain-initialization.js`, `founder-senses.js`, `experiment-genomes.js`.
 
@@ -44,7 +44,7 @@
 
 ## P13 — начальная структура и структурная эволюция
 
-**Зависимости:** P07, P12. **Статус:** запланирован.
+**Зависимости:** P07, P12. **Статус:** выполнен в 0.54.13 — [протокол C](../updates/v054-guide-evolution.md).
 
 Источники: `structural-brain.js`, `brain-structure-rules.js`, `brain-initialization.js`, `brain-initialization-ui.js`, схема в `genome.js`.
 
@@ -54,7 +54,7 @@
 
 ## P14 — чтение генома и схемы жителя
 
-**Зависимости:** P06–P13. **Статус:** запланирован.
+**Зависимости:** P06–P13. **Статус:** выполнен в 0.54.13 — [протокол C](../updates/v054-guide-evolution.md).
 
 Источники: `genome-analysis.js`, `genome-analysis-ui.js`, `brain-diagram-ui.js`, `brain-diagram-viewport.js`, `brain-diagram-help.js`, `cognition-summary.js`, `tools/analyze-genomes.mjs`.
 
