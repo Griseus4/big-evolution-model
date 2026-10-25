@@ -341,6 +341,7 @@ Object.assign(HELP,{
 for(const name of ['period','size-mean','capacity-mean','capacity-spread'])ALIASES['world-food-'+name]='food-'+name;
 for(const prefix of ['', 'world-'])for(const name of ['sources','period','period-spread','size-spread','size-mean','capacity-mean','capacity-spread'])ALIASES[prefix+'food-'+name+'-number']=ALIASES[prefix+'food-'+name]??prefix+'food-'+name;
 // Выжимки одни и те же для оглавления и перекрёстных ссылок внутри статей.
+HELP['guide-context']=['Контекст чисел пособия','Выбери базовые правила, принятый основной мир или конкретный вариант запущенного/загруженного опыта. Это меняет только числа в пособии; черновик плана не используется.'];
 HELP['guide-search']=['Поиск в пособии','Ищет по названиям, выжимкам, терминам, именам файлов и функций. Все слова запроса должны встретиться в указателе статьи; ё и е равнозначны. Поиск не меняет настройки мира и графиков. Escape возвращает оглавление; Enter открывает первый результат.'];
 HELP['guide-code-index']=['Исходники проекта','Оглавление файлов проекта с просмотром исходного текста.'];
 HELP['guide-future-index']=['Идеи развития','Предложения развития и отложенные направления.'];

@@ -42,5 +42,5 @@ test('reference numbers follow shared rules instead of retaining duplicated pros
  });
  const plain=html=>html.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ');
  assert.match(plain(changed.description67),/Энергия одной порции 30/);assert.match(plain(changed.description67),/инвентаря, порций 7/);assert.match(plain(changed.description67),/Усвоение одной порции 15 Т/);
- assert.match(plain(changed.description69),/Возраст 150 Т/);assert.match(changed.description67,/значения по умолчанию/);
+ assert.match(plain(changed.description69),/Возраст 150 Т/);assert.match(changed.description67,/выбранное время усвоения/);
 });

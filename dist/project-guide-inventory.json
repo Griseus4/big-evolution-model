@@ -1,7 +1,7 @@
 {
   "format": "big-evolution-guide-inventory",
   "version": 1,
-  "modelVersion": "0.54.2",
+  "modelVersion": "0.54.3",
   "files": [
     {
       "path": ".github/workflows/pages.yml",
@@ -373,6 +373,10 @@
     },
     {
       "path": "dist/geography.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/guide-parameters.js",
       "kind": "app"
     },
     {
@@ -869,6 +873,10 @@
     },
     {
       "path": "tests/genome-experiments044.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/guide-parameters0543.test.mjs",
       "kind": "tests"
     },
     {

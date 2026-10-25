@@ -218,5 +218,5 @@ export function installLabTabs({getSimulation,pauseWorld,onTabChange,getPerforma
  selectTestPage(testPage);
  const initialTab=new URL(location.href).searchParams.get('tab');
  if(tabs.includes(initialTab))selectTab(initialTab);
- renderTests();return {isBenchmarkActive:()=>active||benchmarkUI.isActive()||constructorUI.isActive(),refresh:()=>{historyUI.activity();renderHistory();},onRestart:()=>{historyUI.reset();if(current==='history')renderHistory(true);},currentTab:()=>current,exportWorldObservation};
+ renderTests();return {guideVariants:()=>constructorUI.guideVariants(),isBenchmarkActive:()=>active||benchmarkUI.isActive()||constructorUI.isActive(),refresh:()=>{historyUI.activity();renderHistory();},onRestart:()=>{historyUI.reset();if(current==='history')renderHistory(true);},currentTab:()=>current,exportWorldObservation};
 }

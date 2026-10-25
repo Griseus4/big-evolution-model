@@ -9,7 +9,7 @@ export const WORLD_UI_INTERVAL=200;
 // Полный отчёт жизней нужен лишь видимой истории, не каждому кадру карты.
 export const HISTORY_UI_INTERVAL=1000;
 const META=['initialNeurons','initialConnections','maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
- 'learningEnabled','memoryEnabled','mutationRate','mutations','brainType','mutationProtocol','reproduction'];
+ 'digestionTime','learningEnabled','memoryEnabled','mutationRate','mutations','brainType','mutationProtocol','reproduction'];
 export function worldPresentation(world,{selected,trail,section='birth',history=false,staticMap=false}={}){
  const state={tick:world.tick,environmentRevision:world.environmentRevision,automaticEnvironment:environmentStatus(world),
   agents:world.agents.map(a=>({id:a.id,x:a.x,y:a.y,founderId:a.founderId})),

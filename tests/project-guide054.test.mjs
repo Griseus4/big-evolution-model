@@ -20,10 +20,10 @@ function fixture(hash=''){
   querySelectorAll(){return this.children.flatMap(child=>[...(child.dataset.guideArticle?[child]:[]),...child.querySelectorAll()]);},querySelector(){return this.querySelectorAll()[0]??null;},
   click(){this.listeners.click?.({button:0,preventDefault(){}});},
   addEventListener(name,fn){this.listeners[name]=fn;},closest(){return this.branch;},focus(){this.focused=true;}};nodes.set(id,element);return element;};
- for(const id of ['panel-about','guide-search','guide-search-results','guide-search-status','guide-tree','guide-coverage','guide-coverage-content'])make(id);
+ for(const id of ['panel-about','tab-about','guide-context','guide-context-note','guide-parameter-rows','guide-search','guide-search-results','guide-search-status','guide-tree','guide-coverage','guide-coverage-content'])make(id);
  for(const article of GUIDE_ARTICLES){make(`wiki-tab-${article.id}`);make(`wiki-panel-${article.id}`);}
  const cross=make('cross-link');cross.dataset.guideArticle='genome';
- const root={getElementById:id=>{assert.ok(nodes.has(id),id);return nodes.get(id);},querySelectorAll:()=>[cross],createElement:tag=>{const node=make('dynamic-'+ ++serial);node.tagName=tag;return node;}};
+ const root={getElementById:id=>{assert.ok(nodes.has(id),id);return nodes.get(id);},querySelectorAll:selector=>selector==='[data-guide-param]'?[]:[cross],createElement:tag=>{const node=make('dynamic-'+ ++serial);node.tagName=tag;return node;}};
  const location={hash},pushed=[],view={location,history:{pushState(state,title,url){pushed.push(url);location.hash=url;}},addEventListener(name,fn){events[name]=fn;}};
  const ui=installProjectGuide({root,view,onOpen:()=>opened.push(GUIDE_ARTICLES.find(a=>nodes.get(`wiki-panel-${a.id}`).hidden===false).id)});
  return {ui,root,nodes,events,opened,location,pushed,cross,click(id,extra={}){let prevented=false;const link=id==='cross-link'?cross:nodes.get(`wiki-tab-${id}`);link.listeners.click({button:0,preventDefault(){prevented=true;},...extra});return prevented;}};

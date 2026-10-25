@@ -499,7 +499,7 @@ labTabs=installLabTabs({getSimulation:()=>sim,pauseWorld:pause,getWorldState:()=
  getWorldObservation:()=>command('observation'),onTabChange:()=>{if(client.ready)void sendView().catch(()=>{});}});
 performancePanel=installPerformancePanel({profiler,getSimulation:()=>sim,isRunning:()=>running});
 sidebar=installSidebar(()=>{if(client.ready)void sendView().catch(()=>{});});
-installProjectGuide({root:document,onOpen:()=>element('tab-about').click()});
+installProjectGuide({root:document,getWorld:()=>sim,getVariants:()=>labTabs.guideVariants?.()??[],onOpen:()=>element('tab-about').click()});
 installHelp();
 update();requestAnimationFrame(frame);
 void client.init().then(async()=>{syncWorldFoodEditor();await command('speed',{value:10*Number(element('speed').value),substeps:Number(element('speed').value)<=.1});await sendView();}).catch(error=>{element('error').textContent=error.message;});

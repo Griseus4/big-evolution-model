@@ -2,11 +2,13 @@
  * На переключение — обход небольшого списка статей; на шаг моделирования работы нет. */
 import {GUIDE_ARTICLES,guideArticleFromHash} from './project-guide.js';
 import {normalizeGuideQuery,searchGuideArticles} from './project-guide-search.js';
+import {installGuideParameters} from './guide-parameters.js';
 import {createGuideSources,installGuideCoverage} from './project-guide-sources-ui.js';
 
-export function installProjectGuide({root=document,view=globalThis,onOpen=()=>{}}={}){
+export function installProjectGuide({root=document,view=globalThis,onOpen=()=>{},getWorld,getVariants}={}){
  const byId=id=>root.getElementById(id),container=byId('panel-about');
  const search=byId('guide-search'),results=byId('guide-search-results'),status=byId('guide-search-status'),tree=byId('guide-tree');
+ const parameters=installGuideParameters({root,getWorld,getVariants});
  const scrollPositions=new Map(),passports=new Set();let current=null;
  function markResultLinks(){for(const link of results.querySelectorAll('a[data-guide-article]')){if(link.dataset.guideArticle===current)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}}
  function select(id,{open=false,remember=false,focus=false}={}){
@@ -25,6 +27,7 @@ export function installProjectGuide({root=document,view=globalThis,onOpen=()=>{}
    container.scrollTop=scrollPositions.get(id)??0;
   }
   markResultLinks();
+  parameters.refresh();
   if(open)onOpen();
   if(remember&&view.location?.hash!==`#wiki-panel-${id}`)view.history?.pushState(null,'',`#wiki-panel-${id}`);
   if(focus)byId(`wiki-panel-${id}`).focus({preventScroll:true});
@@ -54,5 +57,6 @@ export function installProjectGuide({root=document,view=globalThis,onOpen=()=>{}
  search.addEventListener('keydown',event=>{if(event.isComposing)return;if(event.key==='Escape'){search.value='';renderSearch();}else if(event.key==='Enter'){const first=results.querySelector('a[data-guide-article]');if(first){event.preventDefault();first.click();}}});
  const followHash=()=>{const hash=view.location?.hash,id=guideArticleFromHash(hash);if(id)select(id,{open:true});else if(!hash)select('intro');};
  select('intro');followHash();renderSearch();installGuideCoverage({root,request:view.fetch?.bind(view)});view.addEventListener?.('hashchange',followHash);
- return {select,currentArticle:()=>current};
+ byId('tab-about')?.addEventListener('click',()=>parameters.refresh());
+ return {select,currentArticle:()=>current,refreshParameters:parameters.refresh};
 }
