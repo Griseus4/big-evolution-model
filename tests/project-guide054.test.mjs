@@ -81,9 +81,9 @@ test('search handles aliases, mixed case, ё/е, multiword queries, filenames an
 test('typing only filters navigation, Enter opens a result, Escape restores the tree and passports are retained',()=>{
  const f=fixture(),input=f.nodes.get('guide-search'),tree=f.nodes.get('guide-tree'),results=f.nodes.get('guide-search-results'),article=f.nodes.get('wiki-panel-intro');
  const initialChildren=article.children.length;input.value='усвоение';input.listeners.input();assert.equal(tree.hidden,true);assert.ok(results.children.length);assert.equal(f.ui.currentArticle(),'intro');
- input.listeners.keydown({key:'Enter',preventDefault(){}});assert.equal(f.ui.currentArticle(),'food');assert.ok(results.querySelectorAll().some(link=>link.attributes['aria-current']==='page'));
+ const first=searchGuideArticles(input.value)[0].id;input.listeners.keydown({key:'Enter',preventDefault(){}});assert.equal(f.ui.currentArticle(),first);assert.ok(results.querySelectorAll().some(link=>link.attributes['aria-current']==='page'));
  input.value='неизвестное';input.listeners.input();assert.equal(results.children.length,0);assert.match(f.nodes.get('guide-search-status').textContent,/Ничего не найдено/);
- input.listeners.keydown({key:'Escape'});assert.equal(tree.hidden,false);assert.equal(results.hidden,true);assert.equal(f.ui.currentArticle(),'food');
+ input.listeners.keydown({key:'Escape'});assert.equal(tree.hidden,false);assert.equal(results.hidden,true);assert.equal(f.ui.currentArticle(),first);
  f.ui.select('intro');assert.equal(article.children.length,initialChildren,'source details are appended once');
 });
 

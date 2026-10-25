@@ -17,7 +17,7 @@ function compare(a,b){assert.deepEqual(a.snapshot(),b.snapshot());assert.deepEqu
 
 test('UI releases retain identical-schema saves and still reject unknown model versions',()=>{
  const w=new Evolution({seed:42,population:2});w.step();const saved=saveWorld(w);
- for(const modelVersion of ['0.54.5','0.54.4','0.54.3','0.54.2','0.53.0','0.53.1','0.53.2','0.53.3','0.54.0','0.54.1']){const reference=loadWorld(saved),loaded=loadWorld({...saved,modelVersion});compare(reference,loaded);reference.step();loaded.step();compare(reference,loaded);}
+ for(const modelVersion of ['0.54.6','0.54.5','0.54.4','0.54.3','0.54.2','0.53.0','0.53.1','0.53.2','0.53.3','0.54.0','0.54.1']){const reference=loadWorld(saved),loaded=loadWorld({...saved,modelVersion});compare(reference,loaded);reference.step();loaded.step();compare(reference,loaded);}
  for(const modelVersion of ['0.38.0','0.39.2','0.52.0','0.52.1','0.52.2','0.99.0'])assert.throws(()=>loadWorld({...saved,modelVersion}),/Неподдерживаемый/);
 });
 

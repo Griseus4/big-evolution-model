@@ -1,6 +1,13 @@
 /** Термины и навигационные указатели. Ссылка на файл не означает,
  * что прежняя краткая статья уже описывает каждое правило этого файла. */
 export const GUIDE_TOPICS={
+ energy:{reviewedVersion:'0.54.7',keywords:['энергия','здоровье','дефицит','ноль','нуль','расход','усвоение','желудок','инвентарь','истощение','гибель','смерть','возраст','цена мозга','лечение'],related:['actions','time','selection','food','brain','deposits','research'],sources:[
+ {file:'energy-budget.js',symbols:['spendEnergy'],purpose:'Оплата доступной энергией и перевод дефицита в потерю здоровья.'},
+ {file:'temporal-world.js',symbols:['advanceTemporalBodies','acceptTemporalChoice','sampleLife'],purpose:'Усвоение, расход, момент гибели и наблюдения тела.'},
+ {file:'evolution.js',symbols:['addAgent','actionEnergyCost','die','validateDigestionTime'],purpose:'Начальные ресурсы, ставки действий, списание при гибели и настройка усвоения.'},
+ {file:'brain-cost.js',symbols:['decisionCharge','learningCharge'],purpose:'Условные операции и цена выбора/обучения.'},
+ {file:'guide-energy-text.js',symbols:['guideDeficitExample'],purpose:'Каноническая глава и пример, рассчитанный общей физикой.'},
+ ],checks:[{file:'tests/environment-save.test.mjs',purpose:'Точный ноль, дефицит, смерть при оплате и совпадение Workers.'},{file:'tests/temporal.test.mjs',purpose:'Порядок усвоения, расходы и гибель до завершения.'},{file:'tests/guide-energy0547.test.mjs',purpose:'Расчёт примера и списание ресурсов без создания еды на гексе.'}]},
  time:{reviewedVersion:'0.54.4',keywords:['время','подшаг','Т','возраст','порядок событий','скорость','завершение','граница','одновременно'],related:['actions','food','selection','world'],sources:[
  {file:'temporal-world.js',symbols:['advanceTemporal','advanceTemporalBodies','prepareTemporalBoundary','acceptTemporalChoice','finishTemporal'],purpose:'Фазы подшага, завершения, решения и запись истории.'},
  {file:'action-timing.js',symbols:[],purpose:'Единица времени и длительности процессов.'},

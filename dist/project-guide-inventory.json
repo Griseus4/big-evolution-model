@@ -1,7 +1,7 @@
 {
   "format": "big-evolution-guide-inventory",
   "version": 1,
-  "modelVersion": "0.54.6",
+  "modelVersion": "0.54.7",
   "files": [
     {
       "path": ".github/workflows/pages.yml",
@@ -377,6 +377,10 @@
     },
     {
       "path": "dist/guide-actions-text.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/guide-energy-text.js",
       "kind": "app"
     },
     {
@@ -893,6 +897,10 @@
     },
     {
       "path": "tests/guide-actions0546.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/guide-energy0547.test.mjs",
       "kind": "tests"
     },
     {

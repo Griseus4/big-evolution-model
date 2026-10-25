@@ -22,6 +22,8 @@
 **История:** [0.32](../updates/v032-action-time.md), [настройки опытов 0.39](../updates/v039-experiment-constructor.md).
 **Дальше:** детство/два родителя — [будущие механики](../future-ideas.md#новые-механики); нынешнее размножение не предполагает их.
 
+Пособие энергетики: [guide-energy-text.js](../../dist/guide-energy-text.js), [проверка примера и гибели](../../tests/guide-energy0547.test.mjs).
+
 ## energy
 **Задача:** нулевая энергия, расход здоровья, усвоение пищи и стоимость действий/мышления.
 **Сейчас:** `spendEnergy`/`ENERGY_DEFICIT_FACTOR` — [energy-budget.js](../../dist/energy-budget.js); физиология — `advanceTemporalBodies`/`acceptTemporalChoice` в [temporal-world.js](../../dist/temporal-world.js); `RULES`/`actionEnergyCost`/`validateDigestionTime` — [evolution.js](../../dist/evolution.js). Время усвоения задаётся отдельно для каждого мира опыта.
