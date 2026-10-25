@@ -1,3 +1,4 @@
+import {chartFamilies,chartApplicable} from './chart-applicability.js';
 import {deferredControl} from './deferred-control.js';
 import {chartUpdateState} from './chart-update-state.js';
 import {archiveOrigin} from './experiment-archive.js';
@@ -85,7 +86,8 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  for(const c of [...chartCards,...histogramCards])catalogue.actionsFor(c.definition,c.card);
  catalogue.actionsFor(STANDARD_CHARTS.find(d=>d.id==='curve'),byId('history-survival-section'));
  byId('history-open-builder').addEventListener('click',()=>catalogue.edit());
- let groups=[],definitions=[],customSignature='';
+ let groups=[],definitions=[],customSignature='',families=new Set();
+ const applicable=def=>chartApplicable(def,families);
  function syncCatalogue(){
   const before=definitions;definitions=catalogue.charts();groups=catalogue.categories().map(g=>({...g,charts:definitions.filter(d=>d.category===g.id).map(d=>d.id)}));
   const signature=JSON.stringify(catalogue.state().charts);
@@ -109,10 +111,10 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
   }syncViewTabs();applyDisplay();
  }
  function applyDisplay(){warm.interrupt();
-  const mode=display.value||'all',hidden=new Set(catalogue.state().hidden);picked.clear();for(const def of definitions)if(!hidden.has(def.id)&&(mode==='all'||mode==='custom'||def.category===mode))picked.add(def.id);
+  const mode=display.value||'all',hidden=new Set(catalogue.state().hidden);picked.clear();for(const def of definitions)if(applicable(def)&&!hidden.has(def.id)&&(mode==='all'||mode==='custom'||def.category===mode))picked.add(def.id);
   byId('history-pair-screen').hidden=mode!=='pair';
   for(const id of ['history-summary','history-causes','history-cohorts','history-selection-controls'])byId(id).hidden=mode==='pair';
-  for(const [id,input]of pickers)input.checked=!hidden.has(id);
+  for(const [id,input]of pickers){input.checked=!hidden.has(id);const enabled=applicable(definitions.find(d=>d.id===id));input.disabled=!enabled;if(input.parentElement)input.parentElement.hidden=!enabled;}
   for(const {definition,card}of [...chartCards,...histogramCards,...formulaCards,...curveCards])card.hidden=!picked.has(definition.id);
   byId('history-survival-section').hidden=!picked.has('curve');byId('history-table-screen').hidden=!['all','table'].includes(mode);
   if(data&&pinnedWindows([...chartCards,...histogramCards,...curveCards,...formulaCards]).length)prepareLocalWindows();else{drawCharts();renderTable();}
@@ -138,7 +140,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  function drawCharts(){
   if(!data||awaiting)return;
   const painting=!byId('panel-history').hidden;
-  const hidden=new Set(catalogue.state().hidden),jobs=[...chartCards,...histogramCards,...curveCards,...formulaCards].filter(c=>!hidden.has(c.definition.id));if(cachedComparison?.variants?.length>1)jobs.push({kind:'pair'});
+  const hidden=new Set(catalogue.state().hidden),jobs=[...chartCards,...histogramCards,...curveCards,...formulaCards].filter(c=>applicable(c.definition)&&!hidden.has(c.definition.id));if(cachedComparison?.variants?.length>1)jobs.push({kind:'pair'});
   const warmCard=warm.sync([...(cachedComparison?.sources??[{id:'selected',report:cachedReport}]).flatMap(s=>[s.id,...analysisWorlds(s.report).flatMap(w=>[w.id,archiveOrigin(w.report)??w.report])]),cachedReport.weightMode,cachedKey,rangeStart,rangeEnd,catalogue.state(),byId('pair-variant-a').value,byId('pair-variant-b').value],jobs),prefetch=warmCard?.definition?[warmCard]:[];
   // Очередь не рисует скрытые Canvas; готовность проверяется между заданиями.
   warm.pulse();
@@ -276,7 +278,7 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
     base=next;fullFood=nextFood;allRows=[];members.clear();
     for(const rows of [report.dead,report.living])for(const r of rows)if(o.origin==='all'||o.origin==='founders'&&r.parentId===null||o.origin==='descendants'&&r.parentId!==null){allRows.push(r);const id=Math.floor(r.born/base.width);let group=members.get(id);if(!group){group=[];members.set(id,group);}group.push(r);}
     rangeMaximum=nextMaximum;rangeEnd=follow?rangeMaximum:Math.min(rangeEnd,rangeMaximum);rangeStart=Math.min(rangeStart,rangeEnd-1);
-    cachedReport=report;cachedKey=key;dirtyTable=true;updateWindow();
+    cachedReport=report;cachedKey=key;families=chartFamilies(report);dirtyTable=true;updateWindow();applyDisplay();
    }else if(!force)return;else updateWindow();
    updateCurve();const completed=report.completed;
    byId('history-summary').textContent=`${cachedComparison?.sources?.length?'Сравнение групп: '+cachedComparison.sources.length:'Выбранные данные'} · шаг ${format(report.tick)} · период [${rangeStart}; ${rangeEnd}) Т.`;
@@ -309,5 +311,5 @@ export function installHistoryUI({root=document,getSimulation,getComparisons=()=
  byId('history-prev').addEventListener('click',()=>{page--;renderTable();});byId('history-next').addEventListener('click',()=>{page++;renderTable();});byId('history-clear-selection').addEventListener('click',clearSelection);
  const resize=typeof ResizeObserver==='undefined'?null:new ResizeObserver(()=>{if(!byId('panel-history').hidden)drawCharts();});resize?.observe(byId('history-charts'));
  installHistoryDrawers(root,drawCharts);syncCatalogue();
- return {refresh,activity(){if(!canPrepare()&&warm.current()){warm.interrupt();estimates.suspend?.();differences.suspend?.();localCharts.suspend();formulaClient.suspend();pairs.suspend();statisticsChanged();}},reset(){liveEpoch++;liveDeferred=false;liveFlush=false;cachedComparison=null;localRequest++;curveRequest++;curveInput.cancel();warm.reset();estimates.suspend?.();differences.suspend?.();pairs.suspend();localCharts.dispose();formulaClient.dispose();awaiting=null;cachedReport=null;cachedKey='';data=null;base=null;curve=null;curveView=null;curveViewSource=null;curveReport=null;curveKey='';allRows=[];tableRows=[];selected=null;selectedLife=null;page=0;rangeStart=0;rangeEnd=null;dirtyTable=true;byId('history-curve-start').value=0;byId('history-detail').textContent='Выбери строку жизни.';},getSummary:()=>data,getCurve:()=>curve};
+ return {refresh,activity(){if(!canPrepare()&&warm.current()){warm.interrupt();estimates.suspend?.();differences.suspend?.();localCharts.suspend();formulaClient.suspend();pairs.suspend();statisticsChanged();}},reset(){liveEpoch++;liveDeferred=false;liveFlush=false;cachedComparison=null;localRequest++;curveRequest++;curveInput.cancel();warm.reset();estimates.suspend?.();differences.suspend?.();pairs.suspend();localCharts.dispose();formulaClient.dispose();awaiting=null;cachedReport=null;cachedKey='';families=new Set();data=null;base=null;curve=null;curveView=null;curveViewSource=null;curveReport=null;curveKey='';allRows=[];tableRows=[];selected=null;selectedLife=null;page=0;rangeStart=0;rangeEnd=null;dirtyTable=true;byId('history-curve-start').value=0;byId('history-detail').textContent='Выбери строку жизни.';},getSummary:()=>data,getCurve:()=>curve};
 }

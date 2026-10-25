@@ -31,6 +31,16 @@ function boot({prepareSimulation=()=>null,canPrepare=()=>false,getComparisons=()
  const ui=installHistoryUI({root,getSimulation:()=>sim,prepareSimulation,canPrepare,getComparisons});return {elements,created,ui,sim,toolbar};
 }
 
+test('standard inherited cards follow source fields and restore for historical reports',()=>{
+ const b=boot();b.sim.lives={...b.sim.lives,dead:b.sim.lives.dead.map(r=>({...r,heritable:{schema:'heritable-statistics-v1',mainNeurons:0,contextMutationRate:2}}))};b.ui.refresh();
+ b.elements.get('history-display').value='all';b.elements.get('history-display').emit('change');
+ const card=id=>b.created.find(n=>n.id==='history-chart-'+id).parent;
+ assert.equal(card('mainMutationRate').hidden,true);assert.equal(card('brainNeurons').hidden,true);assert.equal(card('contextMutationRate').hidden,false);
+ b.elements.get('history-origin').value='descendants';b.elements.get('history-origin').emit('change');assert.equal(card('brainNeurons').hidden,true);
+ b.sim.lives={...b.sim.lives,dead:b.sim.lives.dead.map(r=>({...r,heritable:{schema:'heritable-statistics-v1',brainNeurons:4,mutationRate:2}}))};b.ui.refresh();
+ assert.equal(card('brainNeurons').hidden,false);assert.equal(card('contextMutationRate').hidden,true);
+});
+
 test('comparison hover, point selection and B−A never restore chart captions; numeric tables remain',async()=>{
  const original=globalThis.Worker;
  globalThis.Worker=class{postMessage(m){setTimeout(()=>{if(!this.closed)this.onmessage?.({data:{request:m.request,owner:m.owner,scope:m.scope,metric:m.prepared?.metric??m.metric,points:[],summary:{mean:1,median:1,worlds:1},result:{pairs:1,mean:{difference:1}}}});},0);}terminate(){this.closed=true;}};

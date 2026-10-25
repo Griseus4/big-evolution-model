@@ -1,3 +1,4 @@
+import {validateCognitionCosts} from './cognition-result-validation.js';
 import {SUBSTEPS} from './action-timing.js';
 import {brainCostProfile} from './brain-cost.js';
 /** Общая физика в координаторе, постоянные владельцы личного опыта.
@@ -13,7 +14,7 @@ import {validateComputationWorkers} from './computation-settings.js';
 export {computationWorkers} from './computation-settings.js';
 class Endpoint{
  constructor(worker,fail,timeout){this.worker=worker;this.pending=null;this.id=0;this.timeout=timeout;worker.onmessage=({data:m})=>{
-  if(m.protocol!==COGNITION_PROTOCOL)return;const p=this.pending;if(!p||m.id!==p.id){fail(new Error('Несогласованный ответ вычислителя.'));return;}
+  if(m.protocol!==COGNITION_PROTOCOL){fail(new Error('Несовместимая версия вычислителя. Мир остановлен.'));return;}const p=this.pending;if(!p||m.id!==p.id){fail(new Error('Несогласованный ответ вычислителя.'));return;}
   this.pending=null;clearTimeout(p.timer);m.error?p.reject(new Error(m.error)):p.resolve(m.value);
  };worker.onerror=e=>fail(new Error(e.message??'Вычислитель остановился.'));worker.onmessageerror=()=>fail(new Error('Не удалось прочитать ответ вычислителя.'));}
  call(type,payload,transfer=[]){
@@ -86,6 +87,7 @@ export class ParallelWorld{
    l.added.length=0;l.addedAgents.length=0;l.removed.length=0;return promise;
   }));
   this.metrics.evaluateMs+=performance.now()-start;
+  for(let j=0;j<this.lanes.length;j++)validateCognitionCosts(replies[j].result,this.lanes[j].agents,priming);
   // ID -> строка задаётся координатором, порядок ответа Worker не используется.
   for(let j=0;j<this.lanes.length;j++){
    const l=this.lanes[j],r=replies[j];l.input=r.input;l.result=r.result;this.metrics.ownerWorkMs+=r.workMs;this.metrics.resultBytes+=r.result.byteLength;l.selections.fill(-1,0,l.agents.length);

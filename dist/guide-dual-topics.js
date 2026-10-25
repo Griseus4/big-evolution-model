@@ -8,7 +8,7 @@ const sources=[
  {file:'brain-cost.js',symbols:['ATTENTION_REFERENCE_OPERATIONS','ATTENTION_OPERATION_PRICE'],purpose:'Калибровка условных операций диспетчера.'},
 ];
 export const GUIDE_DUAL_TOPICS=Object.fromEntries(['genome','structure-evolution','choice','brain-cost','time'].map(id=>[id,{
- reviewedVersion:['genome','structure-evolution'].includes(id)?'0.55.1':'0.55.0',sources,keywords:['покой','диспетчер','регуляторы блоков','v16'],checks:[
+ reviewedVersion:id==='brain-cost'?'0.55.2':['genome','structure-evolution'].includes(id)?'0.55.1':'0.55.0',sources,keywords:['покой','диспетчер','регуляторы блоков','v16'],checks:[
   {file:'tests/dual-world.test.mjs',symbols:[],purpose:'Локальное/Worker-исполнение, покой, цена и сохранение.'},
   {file:'tests/modular-mutations.test.mjs',symbols:[],purpose:'Семь пар, отключение блоков, наследование и сохранение.'},
   {file:'tests/dual-brain-genome.test.mjs',symbols:[],purpose:'Мутации двух структур и независимость регуляторов.'},
