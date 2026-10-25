@@ -7,6 +7,7 @@ import {deferredControl} from '../dist/deferred-control.js';
 import {installHistoryEstimates} from '../dist/history-estimates-ui.js';
 const options={width:10,origin:'all',mode:'dead',survivalAge:10,interruptionKind:'all'},report={tick:50,dead:[{id:1,born:0,parentId:null,age:20,status:'dead',meanEnergy:40,observedSteps:20}],living:[],omittedDetails:0};
 const pause=()=>new Promise(r=>setTimeout(r,4));
+const until=async predicate=>{const deadline=performance.now()+1000;while(!predicate()){if(performance.now()>deadline)throw new Error('Ожидаемое событие Worker не наступило.');await pause();}};
 function fixture(paired){
  const workers=[],make=()=>{const w={messages:[],postMessage(m){this.messages.push(m);},terminate(){this.closed=true;}};workers.push(w);return w;};
  const client=(paired?createPairStatisticsClient:createStatisticsClient)({available:()=>true,createWorker:make}),base=paired?{a:{id:'a',worlds:[{id:'a0',pairId:0,report}]},b:{id:'b',worlds:[{id:'b0',pairId:0,report}]},options:{...options,start:0,end:30},weightMode:'worlds'}:{sources:[{id:'s',report}],options,start:0,end:30};
@@ -25,8 +26,8 @@ test('a local change preserves an unrelated in-flight calculation and queues onl
  for(const paired of [false,true]){const f=fixture(paired);try{
   f.client.update({...f.base,metrics:['energy','survival']});const first=f.sent()[0];
   f.client.update({...f.base,options:{...f.base.options,survivalAge:25},metrics:['energy','survival']});assert.equal(f.workers.length,1);assert.ok(!first.w.closed);
-  f.reply(first);await pause();assert.equal(f.sent().length,2);assert.equal(f.sent()[1].m.prepared?.metric??f.sent()[1].m.metric,'survival');
-  f.reply(f.sent()[1]);await pause();assert.equal(f.client.state().completed,2);
+  f.reply(first);await until(()=>f.sent().length===2);assert.equal(f.sent()[1].m.prepared?.metric??f.sent()[1].m.metric,'survival');
+  f.reply(f.sent()[1]);await until(()=>f.client.state().completed===2);
  }finally{f.client.dispose();}}
 });
 test('numeric calculation dependencies distinguish scale, inherited traits and body metrics',()=>{

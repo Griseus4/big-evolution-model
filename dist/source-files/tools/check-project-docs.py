@@ -49,7 +49,7 @@ js = """
 import {GENOME_VERSION,WORLD_WIDTH,WORLD_HEIGHT,GENE_COUNT} from './dist/evolution.js';
 import {BODY_WEIGHT_COUNT} from './dist/policy-layout.js';
 import {NEURAL_GENE_COUNT,PARAMETER_COUNT,NEIGHBOUR_BRAIN_TYPE,layoutForType} from './dist/neural-layout.js';
-import {STRUCTURAL_TYPE_LAYOUT as SET_LAYOUT} from './dist/structural-brain.js';
+import {DUAL_TYPE_LAYOUT as SET_LAYOUT} from './dist/dual-brain-layout.js';
 import {MEMORY_LIMIT,TRACE_LIMIT,EXPERIENCE_SIZE,FEATURE_NAMES} from './dist/cognition.js';
 import {GUIDE_ARTICLES,GUIDE_INTRO_TEXT} from './dist/project-guide.js';
 console.log(JSON.stringify({setVersion:SET_LAYOUT.version,setGenes:null,neighbourGenes:layoutForType(NEIGHBOUR_BRAIN_TYPE).genes,neuralGenes:NEURAL_GENE_COUNT,parameters:PARAMETER_COUNT,width:WORLD_WIDTH,height:WORLD_HEIGHT,genes:GENE_COUNT,
@@ -82,7 +82,8 @@ for article in facts['guideArticles']:
             continue
         code = code_path.read_text(encoding='utf-8') if code_path.is_file() else ''
         for symbol in source.get('symbols', []):
-            if not re.search(r'\b' + re.escape(symbol) + r'\s*\(', code):
+            # Паспорт статьи может ссылаться на функцию или именованное правило.
+            if not re.search(r'\b' + re.escape(symbol) + r'\s*\(|\b(?:const|let|class)\s+' + re.escape(symbol) + r'\b', code):
                 errors.append(f'Пособие {identity}: нет символа {source["file"]}:{symbol}.')
 for key in facts['guideTextKeys']:
     if guide_html.count(f'data-ui-text="{key}"') != 1:

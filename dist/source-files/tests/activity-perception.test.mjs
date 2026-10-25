@@ -16,7 +16,8 @@ import {cloneSetInput} from '../dist/set-brain-inputs.js';
 import {validateGenomeFile} from '../dist/genome.js';
 
 function fixture(population=14){
- const w=new Evolution({population,foodSources:0});
+ // Эта проверка сверяет плотный оценщик v13, не структурный контекст v14/v15.
+ const w=new Evolution({population,foodSources:0,brainType:'set-duration-activity-v1'});
  for(const c of w.tiles){c.terrain='land';c.food=0;}
  for(const a of w.agents){w.moveAgent(a,{x:20,y:16});a.frameRotation=0;a.brain.facing=0;a.process=null;a._cells=null;}
  return w;

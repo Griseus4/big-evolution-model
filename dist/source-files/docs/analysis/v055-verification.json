@@ -1,0 +1,67 @@
+{
+  "format": "big-evolution-verification-summary",
+  "version": 1,
+  "modelVersion": "0.55.0",
+  "scope": "all",
+  "sourceOnly": true,
+  "status": "passed",
+  "finishedAt": "2026-10-25T21:51:32.161013+00:00",
+  "checks": [
+    {
+      "id": "browser-wiring",
+      "status": "passed",
+      "durationMs": 519.4
+    },
+    {
+      "id": "project-docs",
+      "status": "passed",
+      "durationMs": 521.32
+    },
+    {
+      "id": "agent-context",
+      "status": "passed",
+      "durationMs": 37.87
+    },
+    {
+      "id": "benchmark-snapshots",
+      "status": "passed",
+      "durationMs": 105.47
+    },
+    {
+      "id": "startup",
+      "status": "passed",
+      "durationMs": 150.77
+    },
+    {
+      "id": "world-worker",
+      "status": "passed",
+      "durationMs": 8260.66
+    },
+    {
+      "id": "mechanisms",
+      "status": "passed",
+      "durationMs": 1931.71
+    }
+  ],
+  "tests": {
+    "passed": 431,
+    "total": 431,
+    "newTests": 32
+  },
+  "mechanisms": {
+    "passed": 48,
+    "total": 48
+  },
+  "newSnapshot": {
+    "files": 70,
+    "commit": "30bf2ce36fefdcee0a100bc5119c0edc0d54800c",
+    "matchesGit": true,
+    "matchesCurrentComputation": true
+  },
+  "gitDiffCheck": "passed",
+  "notPerformed": [
+    "real browser rendering",
+    "long evolutionary experiments",
+    "all historical snapshots against Git"
+  ]
+}

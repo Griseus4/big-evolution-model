@@ -15,5 +15,5 @@ test('time article example follows the live process clock without advancing a bo
  assert.equal(a.life.actions[8],0);w.substep();assert.equal(a.life.actions[8],1);
  assert.equal(w.tick,ACTION_DURATIONS[8]/SUBSTEPS);
  const text=GUIDE_TIME_TEXT['guide-time-body'];assert.match(text,/1,5/);assert.match(text,/следующего подшага/);
- const meta=GUIDE_ARTICLES.find(a=>a.id==='time');assert.equal(meta.reviewedVersion,'0.54.4');assert.ok(meta.sources.some(s=>s.symbols.includes('advanceTemporalBodies')));
+ const meta=GUIDE_ARTICLES.find(a=>a.id==='time');assert.equal(meta.reviewedVersion,'0.55.0');assert.ok(meta.sources.some(s=>s.symbols.includes('advanceTemporalBodies')));
 });

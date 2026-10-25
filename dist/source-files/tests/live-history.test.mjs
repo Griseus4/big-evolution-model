@@ -14,7 +14,7 @@ test('real laboratory navigation switches every section without pausing; play is
  }
  const elements=new Map([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>[m[1],new Element()]));let pauses=0,refreshes=0,runRefreshes=0;const changes=[];
  const context=vm.createContext({document:{getElementById:id=>{assert.ok(elements.has(id),id);return elements.get(id);}},navigator:{hardwareConcurrency:4},
-  DEFAULT_SEEDS:[42],installGenomeAnalysis(){},installHistoryUI:()=>({refresh(){refreshes++;},reset(){}}),installFoodControls(){},
+  DEFAULT_SEEDS:[42],installGenomeAnalysis(){},installHistoryUI:()=>({refresh(){refreshes++;},reset(){},activity(){}}),installFoodControls(){},
   installBenchmarkUI:()=>({isActive:()=>false,refresh(){}}),fetch:()=>Promise.resolve({ok:true,json:()=>Promise.resolve({})}),window:{addEventListener(){}},
   installExperimentUI:()=>({isActive:()=>false,refresh(){runRefreshes++;},getSimulation:()=>null,comparisons:()=>null,report:()=>null}),
   location:{href:'http://localhost/'},URL,pauser:()=>pauses++,changed:name=>changes.push(name)});

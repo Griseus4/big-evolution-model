@@ -1,4 +1,5 @@
 import {WORLD_LIMITS} from '../dist/world-defaults.js';
+import {DUAL_BRAIN_TYPE} from '../dist/dual-brain-layout.js';
 /** Настоящий UI-код и протокол в минимальном DOM. Это не браузерная проверка:
  * модель настоящая, вспомогательные панели и доставка сообщений контролируются. */
 import test from 'node:test';
@@ -82,7 +83,8 @@ async function boot(){
   installHelp:()=>{},createHelpButton:()=>document.createElement('button'),
   requestAnimationFrame:fn=>frame=fn,performance:{now:()=>now},Blob,
   URL:{createObjectURL:blob=>{downloads.push(blob);return 'blob:mock';},revokeObjectURL:()=>{}},setTimeout:()=>0});
- Object.assign(context,{installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
+ // Панель стартовых генов изолирована, как остальные вспомогательные панели.
+ Object.assign(context,{MAX_GENOME_FILE_BYTES:8*1024*1024,DUAL_BRAIN_TYPE,dualBrainSettingsUI:()=>({read:()=>({}),refresh(){}}),installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
  vm.runInContext(performanceUI,context);vm.runInContext(app,context);await settle();assert.equal(elements.get('error').textContent??'','');
  return {elements,document,context,downloads,setBenchmarkActive:value=>benchmarkActive=value,get runtime(){return runtime;},
   pulse:async value=>{now=value;runtime.pulse();await settle();},frame:value=>frame(value),
@@ -137,6 +139,7 @@ test('genome export/import and memory switches cross the worker boundary',async(
  const b=await boot(),e=b.elements;await e.get('save-genome').emit('click');assert.match(e.get('save-status').textContent,/загрузки/);
  const genome=b.runtime.world.genomeFile(b.runtime.selected);
  await e.get('load-genome').emit('change',{target:{files:[{size:5000,text:async()=>JSON.stringify(genome)}]}});
+ assert.equal(e.get('error').textContent??'','');
  assert.match(e.get('base-status').textContent,/загружена/);
  e.get('mutations').checked=false;e.get('memory').checked=false;e.get('learning').checked=false;
  await e.get('restart').emit('click');assert.deepEqual(b.runtime.world.agents[0].genome,genome.genes);
