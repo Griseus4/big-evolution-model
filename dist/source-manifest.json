@@ -686,8 +686,8 @@
   {
     "name": "docs/updates/v054-guide-navigation.md",
     "url": "./source-files/docs/updates/v054-guide-navigation.md",
-    "lines": 33,
-    "bytes": 6924,
+    "lines": 37,
+    "bytes": 7771,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8950,8 +8950,8 @@
   {
     "name": "docs/next-game-guide.md",
     "url": "./source-files/docs/next-game-guide.md",
-    "lines": 72,
-    "bytes": 22913,
+    "lines": 82,
+    "bytes": 26484,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9016,6 +9016,14 @@
     "url": "./source-files/docs/ui-redesign.md",
     "lines": 79,
     "bytes": 22983,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/workflows/guide-authoring.md",
+    "url": "./source-files/docs/workflows/guide-authoring.md",
+    "lines": 34,
+    "bytes": 6951,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9791,15 +9799,15 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 13,
-    "bytes": 3349,
+    "bytes": 2667,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
   {
     "name": "docs/workflows/context.md",
     "url": "./source-files/docs/workflows/context.md",
-    "lines": 63,
-    "bytes": 13125,
+    "lines": 65,
+    "bytes": 13559,
     "aliases": [],
     "purpose": "Как обсуждать контракты и передавать контекст без повторения всей истории."
   },
@@ -9830,8 +9838,8 @@
   {
     "name": "AGENTS.md",
     "url": "./source-files/AGENTS.md",
-    "lines": 38,
-    "bytes": 10395,
+    "lines": 39,
+    "bytes": 10803,
     "aliases": [],
     "purpose": "Постоянные инструкции агенту: договорённости, ограничения и завершение работы."
   },
