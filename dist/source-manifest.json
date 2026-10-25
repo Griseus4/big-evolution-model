@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 35,
-    "bytes": 4259,
+    "bytes": 4253,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 149,
-    "bytes": 16683,
+    "lines": 151,
+    "bytes": 16831,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -704,6 +704,14 @@
     "url": "./source-files/docs/updates/v054-guide-geography.md",
     "lines": 15,
     "bytes": 2401,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/updates/v054-guide-inventory.md",
+    "url": "./source-files/docs/updates/v054-guide-inventory.md",
+    "lines": 11,
+    "bytes": 2947,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8951,7 +8959,7 @@
     "name": "docs/guide-plan/01-food.md",
     "url": "./source-files/docs/guide-plan/01-food.md",
     "lines": 49,
-    "bytes": 8649,
+    "bytes": 8867,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8999,7 +9007,39 @@
     "name": "docs/guide-plan/README.md",
     "url": "./source-files/docs/guide-plan/README.md",
     "lines": 89,
-    "bytes": 22991,
+    "bytes": 22946,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/guide-plan/coverage-modules.md",
+    "url": "./source-files/docs/guide-plan/coverage-modules.md",
+    "lines": 215,
+    "bytes": 53108,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/guide-plan/coverage-support.md",
+    "url": "./source-files/docs/guide-plan/coverage-support.md",
+    "lines": 195,
+    "bytes": 67284,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/guide-plan/coverage-tests.md",
+    "url": "./source-files/docs/guide-plan/coverage-tests.md",
+    "lines": 77,
+    "bytes": 21092,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/guide-plan/coverage.md",
+    "url": "./source-files/docs/guide-plan/coverage.md",
+    "lines": 109,
+    "bytes": 18753,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9111,7 +9151,7 @@
     "name": "docs/next-game-guide.md",
     "url": "./source-files/docs/next-game-guide.md",
     "lines": 50,
-    "bytes": 10024,
+    "bytes": 10072,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -10095,7 +10135,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 11,
-    "bytes": 2951,
+    "bytes": 2892,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
