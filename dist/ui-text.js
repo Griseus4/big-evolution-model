@@ -372,6 +372,7 @@ Object.assign(HELP,{
 for(const name of ['period','size-mean','capacity-mean','capacity-spread'])ALIASES['world-food-'+name]='food-'+name;
 for(const prefix of ['', 'world-'])for(const name of ['sources','period','period-spread','size-spread','size-mean','capacity-mean','capacity-spread'])ALIASES[prefix+'food-'+name+'-number']=ALIASES[prefix+'food-'+name]??prefix+'food-'+name;
 // Выжимки одни и те же для оглавления и перекрёстных ссылок внутри статей.
+HELP['guide-search']=['Поиск в пособии','Ищет по названиям, выжимкам, терминам, именам файлов и функций. Все слова запроса должны встретиться в указателе статьи; ё и е равнозначны. Поиск не меняет настройки мира и графиков. Escape возвращает оглавление; Enter открывает первый результат.'];
 for(const article of GUIDE_ARTICLES)HELP[`wiki-tab-${article.id}`]=[article.title,article.summary];
 // Каталог нормализуется один раз, вне кадрового цикла. Динамические значения
 // добавляются с явными разделителями в своих модулях представления.

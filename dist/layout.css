@@ -120,3 +120,21 @@ input:disabled,select:disabled{opacity:.65;cursor:not-allowed}.automatic-summary
 #panel-about .guide-rules summary{color:var(--gold);cursor:pointer}
 #panel-about .guide-related{display:flex;flex-wrap:wrap;gap:12px 24px;border-top:1px solid var(--edge);margin-top:24px;padding-top:18px}
 @media(max-width:750px){#panel-about .wiki-layout{grid-template-columns:minmax(0,1fr)}#panel-about .wiki-contents{position:static}#panel-about .wiki-tree{display:flex;gap:10px}}
+#panel-about .guide-search-label{display:block;margin:0 0 8px;color:var(--muted);font-size:13px}
+#guide-search{display:block;width:100%;min-width:0;margin-bottom:16px;padding:9px 12px;border:1px solid var(--edge);border-radius:5px;background:#29372b;color:var(--text)}
+#guide-tree[hidden],#guide-search-results[hidden],#guide-search-status[hidden]{display:none}
+#panel-about .guide-search-results{list-style:none;padding:0;margin:10px 0}
+#panel-about .guide-search-results li{padding:10px 0;border-bottom:1px solid var(--edge)}
+#panel-about .guide-search-results a{display:block;color:var(--gold);padding:4px 0;overflow-wrap:anywhere}
+#panel-about .guide-search-results a[aria-current=page]{font-weight:600}
+#panel-about .guide-search-results small{display:block;font-size:12px;line-height:1.6;color:var(--muted)}
+#panel-about .guide-sources,#panel-about .guide-coverage{margin-top:24px;padding-top:16px;border-top:1px solid var(--edge)}
+#panel-about .guide-sources summary,#panel-about .guide-coverage summary{color:var(--gold);cursor:pointer;padding:5px 0}
+#panel-about .guide-sources li{margin:14px 0;overflow-wrap:anywhere}
+#panel-about .guide-sources code{display:block;margin:5px 0;font-size:13px}
+#panel-about .guide-sources li p{margin:4px 0}
+#panel-about .guide-coverage{font-size:12px;line-height:1.6}
+#panel-about .guide-coverage p{margin:10px 0}
+#panel-about .guide-coverage ul{list-style:none;padding:0}
+#panel-about .guide-coverage li{margin:12px 0;overflow-wrap:anywhere}
+#panel-about .guide-coverage small{display:block;font-size:12px;color:var(--muted)}

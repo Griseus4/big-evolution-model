@@ -7,6 +7,7 @@ from pathlib import Path
 import json
 import re
 import subprocess
+from guide_inventory import build_guide_inventory
 
 ROOT = Path(__file__).resolve().parent.parent
 FILES = [ROOT / 'AGENTS.md', ROOT / 'README.md', ROOT / 'README.ru.md', *sorted((ROOT / 'docs').rglob('*.md'))]
@@ -73,10 +74,14 @@ for article in facts['guideArticles']:
             errors.append(f'Пособие {identity}: неизвестная связанная статья {related}.')
     if article['reviewedVersion'] and not article['sources']:
         errors.append(f'Пособие {identity}: сверка не имеет ссылок на реализацию.')
-    for source in article['sources']:
-        code_path = ROOT / 'dist' / source['file']
+    for source in article['sources'] + article['checks']:
+        relative = source['file'] if '/' in source['file'] else 'dist/' + source['file']
+        code_path = ROOT / relative
+        if not code_path.resolve().is_relative_to(ROOT.resolve()) or not code_path.is_file():
+            errors.append(f'Пособие {identity}: нет локального исходника {relative}.')
+            continue
         code = code_path.read_text(encoding='utf-8') if code_path.is_file() else ''
-        for symbol in source['symbols']:
+        for symbol in source.get('symbols', []):
             if not re.search(r'\b' + re.escape(symbol) + r'\s*\(', code):
                 errors.append(f'Пособие {identity}: нет символа {source["file"]}:{symbol}.')
 for key in facts['guideTextKeys']:
@@ -85,6 +90,13 @@ for key in facts['guideTextKeys']:
 for identity in re.findall(r'href="#wiki-panel-([^"<>]+)"', guide_html):
     if identity not in guide_ids:
         errors.append(f'Пособие: ссылка ведёт к неизвестной статье {identity}.')
+inventory_path = ROOT / 'dist/project-guide-inventory.json'
+if inventory_path.is_file():
+    inventory = json.loads(inventory_path.read_text(encoding='utf-8'))
+    if inventory.get('format') != 'big-evolution-guide-inventory' or inventory.get('version') != 1 or inventory.get('modelVersion') != model_version or inventory.get('files') != build_guide_inventory(ROOT):
+        errors.append('Пособие: инвентарь устарел; обновить через export-source.py.')
+else:
+    errors.append('Пособие: отсутствует инвентарь канонических исходников.')
 current = (ROOT / 'docs' / 'mechanics-reference.md').read_text(encoding='utf-8')
 checks = [
     (current, f"{facts['width']}×{facts['height']}", 'размер карты'),

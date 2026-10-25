@@ -2,7 +2,9 @@
  * Файлы и подписи берутся из созданного при сборке манифеста. Ни геном,
  * ни результаты игры не меняются от открытия страницы исходников.
  */
+import {APP_VERSION} from './app-version.js';
 const element=id=>document.getElementById(id);
+element('source-version').textContent=`Версия ${APP_VERSION}`;
 let requestNumber=0;
 async function showFile(file,buttons){
  const request=++requestNumber;
@@ -19,7 +21,7 @@ async function showFile(file,buttons){
 try{
  const response=await fetch('./source-manifest.json');if(!response.ok)throw new Error('Не удалось получить список исходников.');
  const files=await response.json();
- element('total-size').textContent=`${files.length} файлов · ${files.reduce((n,f)=>n+f.lines,0)} строк. Начни с cognition.js.`;
+ element('total-size').textContent=`${files.length} файлов · ${files.reduce((n,f)=>n+f.lines,0)} строк. Вход в проект: docs/START_HERE.md.`;
  const buttons=files.map(entry=>{
   const button=document.createElement('button');button.textContent=`${entry.name} · ${entry.lines} строк`;
   button.setAttribute('aria-pressed','false');return {button,entry};
@@ -30,5 +32,5 @@ try{
  // aliases создаёт сборщик; произвольный URL из параметра никогда не загружаем.
  // Это позволяет дать прямую ссылку на входной документ или нужный модуль.
  const requested=new URLSearchParams(location.search).get('file');
- await showFile(files.find(f=>f.name===requested||f.aliases?.includes(requested))??files.find(f=>f.name==='dist/cognition.js')??files[0],buttons);
+ await showFile(files.find(f=>f.name===requested||f.aliases?.includes(requested))??files.find(f=>f.name==='docs/START_HERE.md')??files[0],buttons);
 }catch(error){element('source-error').textContent=error.message;element('code').textContent='';}

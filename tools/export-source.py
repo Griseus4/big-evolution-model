@@ -12,6 +12,7 @@ import re
 import shutil
 import zipfile
 import sys
+from guide_inventory import write_guide_inventory
 
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / 'dist'
@@ -20,6 +21,7 @@ OUTPUT = DIST / 'source-files'
 # Отпечаток исходников нужен для разбора присланных испытаний: одна версия модели
 # может иметь несколько исправленных сборок. Метаданные не дублируют правила мира.
 model_version = re.search(r"MODEL_VERSION='([^']+)'", (DIST / 'life-history.js').read_text()).group(1)
+write_guide_inventory(ROOT, model_version)
 fingerprint_files = sorted(p for p in DIST.iterdir() if p.is_file() and p.suffix in {'.js', '.html', '.css'})
 fingerprint_files += sorted(p for p in (DIST / 'benchmark-snapshots').rglob('*') if p.is_file() and p.suffix in {'.js', '.json'})
 hashes = {p.relative_to(DIST).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in fingerprint_files}
@@ -37,6 +39,11 @@ if OUTPUT.exists():
 OUTPUT.mkdir()
 
 PURPOSES = {
+    'dist/project-guide-topics.js': 'Термины поиска и указатели на код/проверки прежних статей.',
+    'dist/project-guide-search.js': 'Поиск без регулярных выражений из ввода и учёт навигационных ссылок.',
+    'dist/project-guide-sources-ui.js': 'Блок «Где это в коде» и ленивый список полноты описания.',
+    'dist/project-guide-inventory.json': 'Производный инвентарь канонического кода; не процент полноты пособия.',
+    'tools/guide_inventory.py': 'Список рабочих исходников без производных копий и снимков.',
     'dist/project-guide.js': 'Пособие: выжимки, вводная статья и ссылки сверки с реализацией.',
     'dist/project-guide-ui.js': 'Дерево ссылок, статьи и глубокие адреса без управления миром.',
     'tests/project-guide054.test.mjs': 'Реестр, навигация, переходы по URL и сохранение состояния статей0.54.',
@@ -280,10 +287,10 @@ def source_order(path):
 files = [ROOT / 'AGENTS.md', ROOT / 'README.md', ROOT / 'README.ru.md', ROOT / '.gitignore', ROOT / '.gitattributes', ROOT / 'package.json']
 files += sorted((ROOT / '.github' / 'workflows').glob('*.yml'))
 files += sorted((ROOT / 'docs').rglob('*.md'))
-files += sorted(p for p in DIST.iterdir() if p.is_file() and (p.suffix in {'.js', '.html', '.css'} or p.name == 'build-info.json'))
+files += sorted(p for p in DIST.iterdir() if p.is_file() and (p.suffix in {'.js', '.html', '.css'} or p.name in {'build-info.json', 'project-guide-inventory.json'}))
 files += sorted(p for p in (DIST / 'benchmark-snapshots').rglob('*') if p.is_file() and p.suffix in {'.js', '.json'})
-files += sorted((ROOT / 'tests').glob('*.mjs'))
-files += sorted(p for p in (ROOT / 'tools').iterdir() if p.is_file() and p.suffix in {'.py', '.mjs'})
+files += sorted((ROOT / 'tests').rglob('*.mjs'))
+files += sorted(p for p in (ROOT / 'tools').rglob('*') if p.is_file() and p.suffix in {'.py', '.mjs'})
 files.sort(key=source_order)
 manifest = []
 for path in files:

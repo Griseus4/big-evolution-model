@@ -1,0 +1,1091 @@
+{
+  "format": "big-evolution-guide-inventory",
+  "version": 1,
+  "modelVersion": "0.54.1",
+  "files": [
+    {
+      "path": ".github/workflows/pages.yml",
+      "kind": "infrastructure"
+    },
+    {
+      "path": "dist/action-catalog.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/action-timing.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/activity-perception.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/analysis-builder-chart.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/analysis-builder-core.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/analysis-builder-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/analysis-builder-worker.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/analysis-expression.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/analysis-projection.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/app-version.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/app.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/attention-gate.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/automatic-environment.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-comparison-runner.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-configurations.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-fixtures.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-report.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-runner.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-snapshot-runtime.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-state.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-version-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-versions.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/benchmark-worker.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/brain-controller.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/brain-cost.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/brain-diagram-help.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/brain-diagram-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/brain-diagram-viewport.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/brain-initialization-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/brain-initialization.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/brain-parameters.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/browser-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/catalogue-expression-client.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/chart-catalogue-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/chart-catalogue.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/chart-context.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/chart-local-renderer.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/chart-pins-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/chart-update-state.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/cognition-owner.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/cognition-packet.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/cognition-summary.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/cognition-worker.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/cognition.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/comparison-charts.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/computation-settings.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/configuration-benchmark-report.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/configuration-benchmark-runner.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/configuration-benchmark-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/continuation-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/controls.css",
+      "kind": "app"
+    },
+    {
+      "path": "dist/deferred-control.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/energy-budget.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/environment-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/environment-plan.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/environment-settings.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/environment-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/evolution-app.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/evolution.css",
+      "kind": "app"
+    },
+    {
+      "path": "dist/evolution.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-archive.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-design-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-execution.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-fields.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-genomes.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-grouping.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-outcomes.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-plan.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-preferences.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-runner.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-runs-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-series.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-statistics.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-store.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/experiment-worker.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/food-controls.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/food-distribution.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/food-exposure.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/food-island-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/food-island-evolution.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/food-islands.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/food-layout.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/food-production-history.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/food-settings.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/founder-senses.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/genome-analysis-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/genome-analysis.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/genome.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/geography.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/help.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/heritable-statistics.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/history-charts.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/history-differences-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/history-drawers.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/history-estimates-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/history-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/history-window.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/index.html",
+      "kind": "app"
+    },
+    {
+      "path": "dist/json-export.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/lab-report-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/lab-reports.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/lab-tabs.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/layout.css",
+      "kind": "app"
+    },
+    {
+      "path": "dist/legacy-browser-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/legacy.html",
+      "kind": "history"
+    },
+    {
+      "path": "dist/life-cohorts.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/life-history.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/life-observations.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/metric-options.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/mutation-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/mutation-parameters.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/navigation.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/neighbour-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/neighbour-perception.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/neural-brain.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/neural-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/neural-layout.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/neural-optimization-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/neural-v018-reference.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/pair-comparison-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/pair-series.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/pair-statistics-client.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/pair-statistics-worker.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/pair-statistics.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/parallel-world.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/performance-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/performance-probe.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/performance-profiler.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/performance-tabs.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/performance-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/policy-layout.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/population-statistics.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/project-guide-search.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/project-guide-sources-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/project-guide-topics.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/project-guide-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/project-guide.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/random-seed.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/reproduction.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/resident-trail-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/resident-trail.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/retained-results.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/screen-tabs.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/set-brain-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/set-brain-engine.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/set-brain-inputs.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/set-brain-layout.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/set-brain.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/sidebar.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/simulation.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/source-viewer.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/source.html",
+      "kind": "app"
+    },
+    {
+      "path": "dist/stable-text-list.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/state-codec.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/statistical-blocks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/statistical-series.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/statistics-client.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/statistics-estimates.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/statistics-format.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/statistics-preparation.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/statistics-worker.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/structural-brain.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/structural-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/style.css",
+      "kind": "app"
+    },
+    {
+      "path": "dist/survival-curve.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/temporal-brain.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/temporal-checks.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/temporal-inputs.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/temporal-layout.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/temporal-world.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/transient-status.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/typography.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/ui-numbers.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/ui-text.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/weighted-statistics.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/worker-benchmark-settings.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/worker-timing.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/workspace-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/workspace.css",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-client.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-defaults.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-edit.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-files-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-profiler.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-runtime.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-save.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-substeps.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-view.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-worker.js",
+      "kind": "app"
+    },
+    {
+      "path": "package.json",
+      "kind": "infrastructure"
+    },
+    {
+      "path": "tests/activity-perception.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/analysis-builder047.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/brain-diagram0531.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/brain-initialization0532.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/chart-catalogue048.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/chart-context049.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/cognition-worker-adapter.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/cognition.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/configuration-benchmark.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/consolidation.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/digestion-experiments046.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/environment-save.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/evolution-interface.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/evolution.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/expanded-world.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/experiment-constructor.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/experiment-factors.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/experiment-statistics.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/experiment-storage045.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/experiment-ui.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/food-layout.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/genome-experiments044.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/help-ui.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/history-ui.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/history-window.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/interface.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/interface0361.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/island-mobility.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/js-syntax.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/life-cohorts.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/live-computations.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/live-history.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/live-statistics0533.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/memory-genes.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/navigation.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/node-cognition-worker.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/pair-statistics042.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/parallel-benchmark.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/parallel-world.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/performance-detail.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/project-guide054.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/routing.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/simulation.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/statistical-ui041.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/statistics043.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/structural-brain053.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/target-environment.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/temporal.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/ui-text-controls.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/ui051.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/ui052.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/update037.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/worker-count-benchmark.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/worker-count-ui.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/worker-timing.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/workspace050.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/world-ui.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/world-worker-adapter.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/world-worker.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tools/analyze-genomes.mjs",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/build-offline.mjs",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/check-agent-context.py",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/check-benchmark-snapshots.py",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/check-browser-wiring.py",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/check-input-performance.mjs",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/check-js-syntax.mjs",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/check-mechanisms.mjs",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/check-profile-overhead.mjs",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/check-project-docs.py",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/check-startup.mjs",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/compare-learning.mjs",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/export-source.py",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/freeze-benchmark.py",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/guide_inventory.py",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/measure-parallel-033.mjs",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/package-github.py",
+      "kind": "tools"
+    },
+    {
+      "path": "tools/verify-local.py",
+      "kind": "tools"
+    }
+  ]
+}
