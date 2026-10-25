@@ -65,6 +65,8 @@
 **Старт 0.53.2:** [brain-initialization.js](../../dist/brain-initialization.js) — таблица уровней и точное число связей; [контракт/инструкция](../updates/v053-initial-structure.md), [проверка](../../tests/brain-initialization0532.test.mjs).
 **Сейчас, 0.55:** [dual-brain-layout.js](../../dist/dual-brain-layout.js) — v15, [dual-brain-genome.js](../../dist/dual-brain-genome.js) — три пары p/s и два графа; [dag-network.js](../../dist/dag-network.js) — общий прямой/обратный проход. [dual-brain-state.js](../../dist/dual-brain-state.js) сохраняет индексы фиксированных блоков. [rest-policy.js](../../dist/rest-policy.js) — покой/допуск; [brain-cost.js](../../dist/brain-cost.js) — цена обеих сетей. [Проверки](../../tests/dual-world.test.mjs), [выпуск](../updates/v055-dual-brain.md). v14 остаётся исторической схемой. Циклы отложены.
 
+**0.55.1:** семь пар и маска mutationEnabled — [каталог групп](../../dist/brain-evolution-rules.js), [мутации](../../dist/dual-brain-genome.js), [настройки](../../dist/dual-brain-settings.js). Схема v15 читается отдельно; [проверка владельцев/выключения/совместимости](../../tests/modular-mutations.test.mjs), [инструкция](../updates/v055-modular-mutations.md).
+
 ## execution
 **Задача:** скорость/пауза/темп, число вычислителей, Worker-ошибка или рассогласование.
 **Сейчас:** `WorldRuntime.substep` и обработка команд — [world-runtime.js](../../dist/world-runtime.js); [parallel-world.js](../../dist/parallel-world.js)/[world-substeps.js](../../dist/world-substeps.js) исполняют параллельные фазы; [world-client.js](../../dist/world-client.js)/[world-view.js](../../dist/world-view.js) доставляют команды/представление.

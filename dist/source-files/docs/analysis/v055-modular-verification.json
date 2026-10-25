@@ -1,0 +1,71 @@
+{
+  "format": "big-evolution-verification-summary",
+  "version": 1,
+  "modelVersion": "0.55.1",
+  "scope": "all",
+  "sourceOnly": true,
+  "status": "passed",
+  "finishedAt": "2026-10-25T22:13:28.961015+00:00",
+  "checks": [
+    {
+      "id": "browser-wiring",
+      "status": "passed",
+      "durationMs": 623.61
+    },
+    {
+      "id": "project-docs",
+      "status": "passed",
+      "durationMs": 615.3
+    },
+    {
+      "id": "agent-context",
+      "status": "passed",
+      "durationMs": 50.5
+    },
+    {
+      "id": "benchmark-snapshots",
+      "status": "passed",
+      "durationMs": 114.73
+    },
+    {
+      "id": "startup",
+      "status": "passed",
+      "durationMs": 185.97
+    },
+    {
+      "id": "world-worker",
+      "status": "passed",
+      "durationMs": 12255.39
+    },
+    {
+      "id": "mechanisms",
+      "status": "passed",
+      "durationMs": 2151.89
+    }
+  ],
+  "tests": {
+    "passed": 440,
+    "total": 440,
+    "newTests": 9
+  },
+  "mechanisms": {
+    "passed": 48,
+    "total": 48
+  },
+  "targetedAfterSuite": {
+    "testsPassed": 9,
+    "reason": "Explicit old-model save fixture without mutationEnabled"
+  },
+  "newSnapshot": {
+    "files": 70,
+    "commit": "36bb5e19eccb0d7ecb91223317cfa00ec69af3a0",
+    "matchesGit": true,
+    "matchesCurrentComputation": true
+  },
+  "gitDiffCheck": "passed",
+  "notPerformed": [
+    "real browser rendering",
+    "long evolutionary experiments",
+    "all historical snapshots against Git"
+  ]
+}

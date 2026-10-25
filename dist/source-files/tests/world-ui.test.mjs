@@ -1,5 +1,5 @@
 import {WORLD_LIMITS} from '../dist/world-defaults.js';
-import {DUAL_BRAIN_TYPE} from '../dist/dual-brain-layout.js';
+import {DUAL_BRAIN_TYPE,DUAL_VERSION} from '../dist/dual-brain-layout.js';
 /** Настоящий UI-код и протокол в минимальном DOM. Это не браузерная проверка:
  * модель настоящая, вспомогательные панели и доставка сообщений контролируются. */
 import test from 'node:test';
@@ -84,7 +84,7 @@ async function boot(){
   requestAnimationFrame:fn=>frame=fn,performance:{now:()=>now},Blob,
   URL:{createObjectURL:blob=>{downloads.push(blob);return 'blob:mock';},revokeObjectURL:()=>{}},setTimeout:()=>0});
  // Панель стартовых генов изолирована, как остальные вспомогательные панели.
- Object.assign(context,{MAX_GENOME_FILE_BYTES:8*1024*1024,DUAL_BRAIN_TYPE,dualBrainSettingsUI:()=>({read:()=>({}),refresh(){}}),installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
+ Object.assign(context,{MAX_GENOME_FILE_BYTES:8*1024*1024,DUAL_BRAIN_TYPE,DUAL_VERSION,dualBrainSettingsUI:()=>({read:()=>({}),refresh(){}}),installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
  vm.runInContext(performanceUI,context);vm.runInContext(app,context);await settle();assert.equal(elements.get('error').textContent??'','');
  return {elements,document,context,downloads,setBenchmarkActive:value=>benchmarkActive=value,get runtime(){return runtime;},
   pulse:async value=>{now=value;runtime.pulse();await settle();},frame:value=>frame(value),

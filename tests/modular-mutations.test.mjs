@@ -15,6 +15,7 @@ import {captureHeritable} from '../dist/heritable-statistics.js';
 import {analyzeGenome} from '../dist/genome-analysis.js';
 import {dualBrainSettingsUI} from '../dist/dual-brain-settings-ui.js';
 import {compileDualState} from '../dist/dual-brain-state.js';
+import {encodeState,decodeState} from '../dist/state-codec.js';
 
 const strong=Object.fromEntries(MUTATION_GROUPS.map(k=>[k,{rate:.99,strength:.2}]));
 const flags=value=>Object.fromEntries(MUTATION_GROUPS.map(k=>[k,value]));
@@ -83,9 +84,14 @@ test('saved masks survive continuation and master mutation switch preserves the 
 });
 test('per-block switches reach reproduction and a v15 world retains its legacy genome',()=>{
  for(const baseGenome of [null,legacyGenome(new Random(50))]){
-  const w=new Evolution({brainType:DUAL_BRAIN_TYPE,population:1,baseGenome,mutationEnabled:flags(false)}),a=w.agents[0];
+  const w=new Evolution({brainType:DUAL_BRAIN_TYPE,population:1,baseGenome,mutationEnabled:baseGenome?undefined:flags(false)}),a=w.agents[0];
   if(!baseGenome){a.age=200;a.energy=100;a.health=100;a.lastBirthAge=-1e6;const child=w.reproduce(a);assert.ok(child);assert.deepEqual(child.genome,a.genome);}
-  else{w.step();const restored=loadWorld(saveWorld(w));w.step();restored.step();assert.deepEqual(restored.snapshot(),w.snapshot());assert.equal(genomeMetadata(restored.agents[0].genome).version,15);}
+  else{
+   w.step();const file=saveWorld(w),state=decodeState(file.state);
+   delete state.mutationEnabled;file.modelVersion='0.55.0';file.state=encodeState(state);
+   const restored=loadWorld(file);w.step();restored.step();assert.deepEqual(restored.snapshot(),w.snapshot());
+   assert.equal(genomeMetadata(restored.agents[0].genome).version,15);
+  }
  }
 });
 test('splitting the regulators adds no evaluator operations or parameters',()=>{
