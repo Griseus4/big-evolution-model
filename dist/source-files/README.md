@@ -6,7 +6,7 @@ An artificial life simulation with evolving neural agents, individual learning, 
 
 Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments. Version 0.52 adds an edge handle for statistics settings, local survival-curve controls and isolated chart updates. Calculations remain cached across tabs; paused worlds and completed experiments support background preparation. [Release notes](docs/updates/v052-local-chart-updates.md).
 
-**Status:** experimental prototype · **Current implementation:** 0.52.2 · **Interface:** Russian.
+**Status:** experimental prototype · **Current implementation:** 0.53.0 · **Interface:** Russian.
 
 Patch 0.52.1 removes chart captions, including text generated on hover or point selection. Numerical tables and field help remain available. [Release notes](docs/updates/v052-no-chart-captions.md).
 
@@ -36,7 +36,7 @@ Version 0.37 adds whole-island movement and expanded behavioral and genetic stat
 
 The default world has 48×32 hexes, 150 founders, a population limit of 1,000, and 384 food sources. These are initial conditions and limits, not a guarantee of a stable population.
 
-The current genome schema is v13: 1,827 main-brain parameters, 12 cognitive traits, 77 attention-network parameters, and 2 inherited mutation regulators — 1,918 values in total.
+The current genome schema is v14 with variable size. The main context starts with 4–6 hidden neurons and evolves a forward-only graph at birth; personal learning changes weights during life. Default growth limits are 64 hidden neurons and 4 layers. New genome/world files do not convert old saves; historical experiment results remain readable. [Release and usage](docs/updates/v053-structural-brain.md).
 
 ## Play in your browser
 
