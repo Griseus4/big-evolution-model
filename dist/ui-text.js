@@ -1,3 +1,4 @@
+import {GUIDE_FOOD_TEXT} from './guide-food-text.js';
 import {GUIDE_GEOGRAPHY_TEXT} from './guide-geography-text.js';
 import {GUIDE_ACTIONS_TEXT} from './guide-actions-text.js';
 import {GUIDE_ENERGY_TEXT} from './guide-energy-text.js';
@@ -276,7 +277,7 @@ ALIASES['history-curve-age-slider']='history-curve-age-max';
 ALIASES['constructor-results-next']='constructor-results-prev';
 export const PAGE_TEXT={
  ...GUIDE_INTRO_TEXT,
- ...GUIDE_REFERENCE_TEXT,...GUIDE_TIME_TEXT,...GUIDE_NUMBERS_TEXT,...GUIDE_ENERGY_TEXT,...GUIDE_ACTIONS_TEXT,...GUIDE_GEOGRAPHY_TEXT,
+ ...GUIDE_REFERENCE_TEXT,...GUIDE_FOOD_TEXT,...GUIDE_TIME_TEXT,...GUIDE_NUMBERS_TEXT,...GUIDE_ENERGY_TEXT,...GUIDE_ACTIONS_TEXT,...GUIDE_GEOGRAPHY_TEXT,
  'factor-genome':'Один файл — одно значение фактора. Все основатели варианта получают выбранный геном. Отдельные коэффициенты заменяют только выбранные гены.',
  'factor-founder-senses':'Коэффициент −8…8, не проценты. Без этого параметра сохраняются исходные значения. Меняется геном основателей; потомки наследуют и мутируют по общим условиям.',
  'constructor-genetics':'Все сочетания выбранных значений; максимум 64 на seed. В группе «Геном основателей» доступны файлы геномов и отдельные коэффициенты чувствительности. По умолчанию геномы случайные; загруженная общая основа сохраняет свои значения. Не добавляйте чувствительность, которую хотите оставить исходной.',

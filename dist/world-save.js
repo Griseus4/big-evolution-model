@@ -17,7 +17,7 @@ import {controllerProblems} from './brain-controller.js';
 export const WORLD_SAVE_FORMAT='big-evolution-world',WORLD_SAVE_VERSION=3,MAX_WORLD_SAVE_BYTES=512*1024*1024;
 // Старые миры продолжают прежнее усвоение: отсутствующий параметр даёт 20 Т.
 // Новые сохраняют выбранное время; номер UI сам по себе не ломает схему.
-const COMPATIBLE_MODELS=new Set([MODEL_VERSION,'0.54.7','0.54.6','0.54.5','0.54.4','0.54.3','0.54.2','0.53.0','0.53.1','0.53.2','0.53.3','0.54.0','0.54.1']);
+const COMPATIBLE_MODELS=new Set([MODEL_VERSION,'0.54.8','0.54.7','0.54.6','0.54.5','0.54.4','0.54.3','0.54.2','0.53.0','0.53.1','0.53.2','0.53.3','0.54.0','0.54.1']);
 const FIELDS=('initialNeurons initialConnections maxNeurons maxLayers structuralMutations temporal digestionTime individualFood geography learningEnabled memoryEnabled reproduction seed foodSeed random cognitiveRandom bodyRandom scenario heritableMutations upgradeMutationGenes mutationRandom brainType neuralRandom initialPopulation limit mutationRate mutations baseGenome tick nextId maxGeneration events history agents foodCycleStart environmentRevision environmentChanges lifeHistory lifeExposure records lineages tiles stats sourceTemplate foodIslands initialFood foodSettings initialFoodSettings initialFoodIslands mutationProtocol geographyInfo foodExposure subtick _primed _viewEpoch automaticEnvironment _activities').split(' ');
 export function saveWorld(w){
  if(!w.temporal)throw new Error('Полное сохранение поддерживает текущую модель.');
