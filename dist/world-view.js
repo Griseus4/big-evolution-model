@@ -8,7 +8,7 @@ export const WORLD_PROTOCOL=1;
 export const WORLD_UI_INTERVAL=200;
 // Полный отчёт жизней нужен лишь видимой истории, не каждому кадру карты.
 export const HISTORY_UI_INTERVAL=1000;
-const META=['seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
+const META=['maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
  'learningEnabled','memoryEnabled','mutationRate','mutations','brainType','mutationProtocol','reproduction'];
 export function worldPresentation(world,{selected,trail,section='birth',history=false,staticMap=false}={}){
  const state={tick:world.tick,environmentRevision:world.environmentRevision,automaticEnvironment:environmentStatus(world),
@@ -28,14 +28,14 @@ export function worldPresentation(world,{selected,trail,section='birth',history=
   // pending-переход не нужны UI, их не копируем даже для выбранного мозга.
   const a=selected,b=a.brain;
   const fields=['traits','controllerType','position','facing','memory','longMemory','updates','feelingTotal',
-   'feelingSamples','lastLearning','temporal','gateBase','scale','weights','bodyGenes','bodyWeights'];
+   'costProfile','feelingSamples','lastLearning','temporal','gateBase','scale','weights','bodyGenes','bodyWeights'];
   const brain=Object.fromEntries(fields.map(k=>[k,b[k]]));
   brain.networkDelta=b.networkDelta;
   const body=['id','x','y','frameRotation','founderId','generation','parentId','age','children','alive','energy','health','pain',
    'inventory','stomach','lastAction','process','lastProcess','life','genome'];
   state.selected={agent:{...Object.fromEntries(body.map(k=>[k,a[k]])),brain},
    birth:world.birthAvailability(a),feeling:world.feeling(a),state:world.state(a),
-   options:a.alive?world.evaluate(a):a.lastDecision?.options??[],
+   options:section==='actions'?(a.alive?world.evaluate(a):a.lastDecision?.options??[]):[],
    neighbours:world.neighbours(a),contacts:world.contacts(a),cells:world.visibleDecisionCells(a)};
   if(world.temporal)delete state.selected.agent.pain;
  }

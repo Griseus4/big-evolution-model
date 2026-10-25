@@ -1,3 +1,4 @@
+import {STRUCTURAL_TYPE,structuralSettings} from './structural-brain.js';
 /** Длинные наблюдательные испытания одной и той же физики Evolution.
  * Миры изолированы, без отрисовки и общего RNG. Параллельность управляется UI;
  * здесь один мир выполняется кусками, чтобы Worker мог обработать остановку.
@@ -34,9 +35,9 @@ export function validateExperimentConfig(input){
  const mutationRate=input.mutationRate??WORLD_DEFAULTS.mutationRate;if(!Number.isFinite(mutationRate)||mutationRate<0||mutationRate>.3)throw new Error('Вероятность мутации вне диапазона 0…0.3.');
  const reproduction=reproductionProfile(input.reproduction).id;
  const baseGenome=input.baseGenome?validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome}):null;
- const brainType=baseGenome?genomeMetadata(baseGenome).brainType:input.brainType??TEMPORAL_BRAIN_TYPE;
+ const brainType=baseGenome?genomeMetadata(baseGenome).brainType:input.brainType??STRUCTURAL_TYPE;
  if(brainType!==BRAIN_TYPE&&!layoutForType(brainType))throw new Error('Неизвестный тип мозга.');
- if(brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('Для новых испытаний нужен геном v13. Старые отчёты доступны только для анализа.');
+ if(brainType!==STRUCTURAL_TYPE)throw new Error('Для новых испытаний нужен геном v14. Старые отчёты доступны только для анализа.');
  if(reproductionProfile(reproduction).automatic)throw new Error('Автоматическое размножение исключено из новых испытаний.');
  return {heritableMutations:input.heritableMutations!==false,upgradeMutationGenes:input.upgradeMutationGenes===true,individualFood:input.individualFood!==false,brainType,seeds:seeds.slice(),population,limit,steps,parallel,modes:[...new Set(modes)],
  mutations:input.mutations!==false,mutationRate,baseGenome,saveGenomes:input.saveGenomes!==false,geography,reproduction,...food};
@@ -87,7 +88,7 @@ export function checkInvariants(s){
 }
 export async function runWorld(job,{onProgress=()=>{},shouldStop=()=>false,getComputations=()=>1,onSnapshot=null,observe=()=>false,createWorker}={}){
  const mode=job.worldOptions??BRAIN_MODES.find(m=>m.id===job.mode);if(!mode)throw new Error('Неизвестный режим мозга');
- const s=new Evolution({temporal:!job.brainType||job.brainType===TEMPORAL_BRAIN_TYPE,heritableMutations:job.heritableMutations!==false,upgradeMutationGenes:job.upgradeMutationGenes===true,seed:job.seed,brainType:job.brainType??TEMPORAL_BRAIN_TYPE,scenario:job.scenario,geography:job.geography,reproduction:job.reproduction,foodSources:job.foodSources,foodRegrowInterval:job.foodRegrowInterval,foodIslandCount:job.foodIslandCount,foodPeriodSpread:job.foodPeriodSpread,foodSizeSpread:job.foodSizeSpread,individualFood:job.individualFood!==false,population:job.population,limit:job.limit,
+ const s=new Evolution({...structuralSettings(job),temporal:!job.brainType||[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(job.brainType),heritableMutations:job.heritableMutations!==false,upgradeMutationGenes:job.upgradeMutationGenes===true,seed:job.seed,brainType:job.brainType??STRUCTURAL_TYPE,scenario:job.scenario,geography:job.geography,reproduction:job.reproduction,foodSources:job.foodSources,foodRegrowInterval:job.foodRegrowInterval,foodIslandCount:job.foodIslandCount,foodPeriodSpread:job.foodPeriodSpread,foodSizeSpread:job.foodSizeSpread,individualFood:job.individualFood!==false,population:job.population,limit:job.limit,
   mutations:job.mutations,mutationRate:job.mutationRate,baseGenome:job.baseGenome,
   learning:mode.learning,memory:mode.memory,...job.worldOptions,lifeHistoryLimit:job.fullHistory?Infinity:250});
  const execution=new ExperimentExecution(s,createWorker);let snapshotAt=-Infinity,sentDead=0;

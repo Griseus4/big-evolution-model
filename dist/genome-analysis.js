@@ -1,3 +1,4 @@
+import {STRUCTURAL_TYPE,structuralLayout,structuralData,STRUCTURAL_BLOCKS,FIXED_PARAMETERS,structureCounts} from './structural-brain.js';
 import {TEMPORAL_BRAIN_TYPE,TEMPORAL_TRAIT_INDICES,temporalParameterLabel,GATE_OFFSET,GATE_NAMES,GATE_INPUTS,GATE_HIDDEN,GATE_PARAMETERS,GATE_HIDDEN_BIAS,GATE_OUTPUT_WEIGHTS,GATE_OUTPUT_BIAS} from './temporal-layout.js';
 import {SET_BRAIN_TYPE,setParameterLabel} from './set-brain-layout.js';
 /** Чистая расшифровка/сравнение экспортов. Не создаёт Evolution, не расходует RNG,
@@ -12,7 +13,7 @@ import {COGNITIVE_GENES,cognitiveTraits,TRAIT_SCALE_VERSION,BODY_GENES,BODY_SENS
 import {NEURAL_BRAIN_TYPE,NEURAL_INPUT_NAMES,INPUT_COUNT,HIDDEN_COUNT,PARAMETER_COUNT,HIDDEN_BIAS,OUTPUT_WEIGHTS,OUTPUT_BIAS,TRAIT_OFFSET,NEURAL_TRAIT_INDICES,NETWORK_SCHEMA,layoutForGenes} from './neural-layout.js';
 import {neuralTraits} from './neural-brain.js';
 import {mutationProfile,mutationOffset,MUTATION_SCHEMA} from './mutation-parameters.js';
-export const GENOME_ANALYSIS_VERSION=3,MAX_GENOME_BYTES=100000;
+export const GENOME_ANALYSIS_VERSION=3,MAX_GENOME_BYTES=2*1024*1024;
 const MOTION=[
  {key:'visibleFood',label:'Видимая пища',description:'Добавка к оценке шага в соседнюю клетку с пищей.'},
  {key:'visibleRisk',label:'Видимый опасный рельеф',description:'Добавка к оценке шага в опасный рельеф; это не сама вероятность урона.'},
@@ -59,14 +60,14 @@ function stateDescription(row){
  */
 export function parseGenomeText(text,metadata={}){
  if(typeof text!=='string')throw new Error('Нужен текст JSON генома.');
- if(new TextEncoder().encode(text).byteLength>MAX_GENOME_BYTES)throw new Error('Геном должен быть не больше 100 КБ.');
+ if(new TextEncoder().encode(text).byteLength>MAX_GENOME_BYTES)throw new Error('Геном должен быть не больше 2 МБ.');
  let data;try{data=JSON.parse(text.replace(/^\uFEFF/,''));}catch{throw new Error('Файл не является корректным JSON.');}
  return analyzeGenome(data,metadata);
 }
 export function analyzeGenome(data,{name='Геном',sha256=null}={}){
  // Валидатор общий с игрой, включая диапазон чисел и точные размеры v1…v6.
  const canonical=validateGenomeFile(data);
- if(data.version===9||(data.version===11||data.version===13)&&mutationOffset(data.genes)!==null){
+ if(data.version===9||(data.version===11||data.version===13||data.version===14)&&mutationOffset(data.genes)!==null){
   const offset=mutationOffset(data.genes),layout=layoutForGenes(data.genes);
   const result=layout?analyzeNeuralGenome(data,{name,sha256}):analyzeGenome({...data,version:6,genes:data.genes.slice(0,offset)},{name,sha256});
   const profile=mutationProfile(data.genes);
@@ -207,16 +208,19 @@ function analyzeNeuralGenome(data,{name,sha256}){
  const {inputs:INPUT_COUNT,hidden:HIDDEN_COUNT,parameters:PARAMETER_COUNT,hiddenBias:HIDDEN_BIAS,outputWeights:OUTPUT_WEIGHTS,outputBias:OUTPUT_BIAS,traitOffset:TRAIT_OFFSET,inputNames:NEURAL_INPUT_NAMES,network:NETWORK_SCHEMA,brainType:NEURAL_BRAIN_TYPE}=layout;
  const traits=neuralTraits(data.genes),context=data.policyContext??{},known=!context.traitScale||context.traitScale===TRAIT_SCALE_VERSION;
  const normalizer=traits.values.reduce((n,v)=>n+Math.abs(v),0);
- const properties=(layout.brainType===TEMPORAL_BRAIN_TYPE?TEMPORAL_TRAIT_INDICES:NEURAL_TRAIT_INDICES).map((old,i)=>{
+ const properties=([TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout.brainType)?TEMPORAL_TRAIT_INDICES:NEURAL_TRAIT_INDICES).map((old,i)=>{
   const gene=COGNITIVE_GENES[old],conversion=DERIVED[gene.key],raw=data.genes[TRAIT_OFFSET+i];
   return {key:gene.key,label:gene.label,group:old<4?'Ощущения':'Память и обучение',description:DESCRIPTIONS[gene.key],present:true,index:TRAIT_OFFSET+i,raw,
    derived:known&&conversion?traits[conversion[0]]:null,unit:conversion?.[1]??'вес',share:known&&old<4?(normalizer?raw/normalizer:0):null};
  });
- if(layout.brainType===TEMPORAL_BRAIN_TYPE)for(let i=0;i<GATE_PARAMETERS;i++)properties.push({key:`gate-${i}`,label:i<GATE_HIDDEN_BIAS?`Малый мозг: ${Math.floor(i/GATE_INPUTS)+1} ← ${GATE_NAMES[i%GATE_INPUTS]}`:i<GATE_OUTPUT_WEIGHTS?`Малый мозг: смещение ${i-GATE_HIDDEN_BIAS+1}`:i<GATE_OUTPUT_BIAS?`Запрос ← скрытый ${i-GATE_OUTPUT_WEIGHTS+1}`:'Смещение запроса',group:'Малый мозг',description:'Наследуемый параметр, без обучения за жизнь',present:true,index:GATE_OFFSET+i,raw:data.genes[GATE_OFFSET+i],derived:null,unit:'вес',share:null});
+ if([TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout.brainType))for(let i=0;i<GATE_PARAMETERS;i++)properties.push({key:`gate-${i}`,label:i<GATE_HIDDEN_BIAS?`Малый мозг: ${Math.floor(i/GATE_INPUTS)+1} ← ${GATE_NAMES[i%GATE_INPUTS]}`:i<GATE_OUTPUT_WEIGHTS?`Малый мозг: смещение ${i-GATE_HIDDEN_BIAS+1}`:i<GATE_OUTPUT_BIAS?`Запрос ← скрытый ${i-GATE_OUTPUT_WEIGHTS+1}`:'Смещение запроса',group:'Малый мозг',description:'Наследуемый параметр, без обучения за жизнь',present:true,index:layout.gateOffset+i,raw:data.genes[layout.gateOffset+i],derived:null,unit:'вес',share:null});
+ if(layout.version===14)for(const [key,value]of Object.entries(structureCounts(data.genes)))properties.push({key,label:key,group:'Структура мозга',description:'Наследуемая структура главного контекста',present:true,index:null,raw:value,derived:value,unit:key==='structuralRate'?'% / рождение':'элементов',share:null});
+ const structureData=layout.version===14?structuralData(data.genes):null;
+ const topologyKey=layout.version===14?data.genes.slice(layout.topologyOffset).reduce((h,v)=>Math.imul(h^v,16777619)>>>0,2166136261).toString(16):layout.network.inputSchema;
  for(let i=0;i<PARAMETER_COUNT;i++){
-  const label=layout.brainType===TEMPORAL_BRAIN_TYPE?temporalParameterLabel(i):layout.brainType===SET_BRAIN_TYPE?setParameterLabel(i):i<HIDDEN_BIAS?`Скрытый ${Math.floor(i/INPUT_COUNT)+1} ← ${NEURAL_INPUT_NAMES[i%INPUT_COUNT]}`:
+  const label=layout.version===14?structuralParameterLabel(structureData,i):layout.brainType===TEMPORAL_BRAIN_TYPE?temporalParameterLabel(i):layout.brainType===SET_BRAIN_TYPE?setParameterLabel(i):i<HIDDEN_BIAS?`Скрытый ${Math.floor(i/INPUT_COUNT)+1} ← ${NEURAL_INPUT_NAMES[i%INPUT_COUNT]}`:
    i<OUTPUT_WEIGHTS?`Смещение скрытого ${i-HIDDEN_BIAS+1}`:i<OUTPUT_BIAS?`Q ← скрытый ${i-OUTPUT_WEIGHTS+1}`:'Смещение Q';
-  properties.push({key:`network-${layout.network.inputSchema}-${i}`,label,group:'Сеть',description:'Параметр совместной нелинейной функции. Его знак не является отдельным предпочтением или вероятностью действия.',present:true,index:i,raw:data.genes[i],derived:null,unit:'вес',share:null});
+  properties.push({key:`network-${topologyKey}-${i}`,label,group:'Сеть',description:'Параметр совместной нелинейной функции. Его знак не является отдельным предпочтением или вероятностью действия.',present:true,index:i,raw:data.genes[i],derived:null,unit:'вес',share:null});
  }
  const source={};for(const key of ['seed','tick','id','generation','children'])source[key]=finite(data.source?.[key])?data.source[key]:null;
  const rules={};for(const [key,value]of Object.entries(data.rules??{}))if(finite(value))rules[key]=value;
@@ -224,8 +228,8 @@ function analyzeNeuralGenome(data,{name,sha256}){
  return {name:String(name).slice(0,200),sha256:typeof sha256==='string'&&/^[a-f0-9]{64}$/i.test(sha256)?sha256:null,genomeVersion:layout.version,geneCount:data.genes.length,columns:11,
   stateEncoding:data.network.inputSchema,stateKnown:false,bodySenseKnown:true,bodySenseEncoding:'network-input-v1',modelVersion:data.modelVersion??null,brainType:layout.brainType,
   traitScale:context.traitScale??TRAIT_SCALE_VERSION,actions:ACTIONS.slice(),source,rules,environment,properties,policy:[],network:{...NETWORK_SCHEMA},inputNames:NEURAL_INPUT_NAMES.slice(),
-  architectureLabel:layout.brainType===TEMPORAL_BRAIN_TYPE?`Клетки, деятельность и процесс → все Q; наследуемое внимание ${GATE_INPUTS} → ${GATE_HIDDEN} → 1`:layout.brainType===SET_BRAIN_TYPE?'Общие клетки → ситуация → все Q; 6 операций, направления внутри движения':`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q`,
-  insights:[layout.brainType===TEMPORAL_BRAIN_TYPE?`${PARAMETER_COUNT} параметров основного мозга, 12 свойств, ${GATE_PARAMETERS} параметра малого мозга. Основной мозг учитывает текущий процесс, его прогресс, причину вызова и цену решения. Малый мозг не обучается за жизнь.`:layout.brainType===SET_BRAIN_TYPE?`Вариант Б: кодировщик клеток ${layout.network.cellInputs} → ${layout.network.cellHidden}, ситуация ${layout.network.contextInputs} → ${layout.network.contextHidden}, цели ${layout.network.targetInputs} → ${layout.network.contextHidden}, критерии 6 операций; ${PARAMETER_COUNT} параметров и 13 общих свойств. Все Q за один прямой вызов; видимость источника независима от порций.`:`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q; ${PARAMETER_COUNT} параметров и 13 свойств ощущений/памяти/обучения.`,
+  architectureLabel:[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout.brainType)?`Клетки, деятельность и процесс → все Q; наследуемое внимание ${GATE_INPUTS} → ${GATE_HIDDEN} → 1`:layout.brainType===SET_BRAIN_TYPE?'Общие клетки → ситуация → все Q; 6 операций, направления внутри движения':`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q`,
+  insights:[[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout.brainType)?`${PARAMETER_COUNT} параметров основного мозга, 12 свойств, ${GATE_PARAMETERS} параметра малого мозга. Основной мозг учитывает текущий процесс, его прогресс, причину вызова и цену решения. Малый мозг не обучается за жизнь.`:layout.brainType===SET_BRAIN_TYPE?`Вариант Б: кодировщик клеток ${layout.network.cellInputs} → ${layout.network.cellHidden}, ситуация ${layout.network.contextInputs} → ${layout.network.contextHidden}, цели ${layout.network.targetInputs} → ${layout.network.contextHidden}, критерии 6 операций; ${PARAMETER_COUNT} параметров и 13 общих свойств. Все Q за один прямой вызов; видимость источника независима от порций.`:`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q; ${PARAMETER_COUNT} параметров и 13 свойств ощущений/памяти/обучения.`,
    `Память: краткая ${known?traits.shortCapacity:'неизвестна'}, долгая ${known?traits.longCapacity:'неизвестна'}. Личный опыт не сохранён.`,
    'Сеть оценивает варианты по локальным признакам. Значения Q и вероятности требуют конкретных наблюдений.'],
   warnings:['Начальные веса и смещения наследуются; личные поправки, память и градиентный след отсутствуют в геноме.',
@@ -255,4 +259,12 @@ function compareNeuralGenomes(a,b){
   meanAbsoluteRawDifference:shared?total/shared:null,policyComparable:false,changedPolicyRows:null,columns:11,policy:[],properties,differences,
   rankedDifferences:differences.filter(p=>p.delta!==null&&p.delta!==0).sort((x,y)=>Math.abs(y.delta)-Math.abs(x.delta)),
   note:'Параметры сетей сравниваются только при совпадении схемы; между v7/v8 — общие свойства; с таблицей — только по общим свойствам. Разности параметров не доказывают улучшения поведения.'};
+}
+
+function structuralParameterLabel(d,index){
+ const l=d.layout;
+ if(index>=FIXED_PARAMETERS+l.hidden){const e=d.edges[index-FIXED_PARAMETERS-l.hidden];return `DAG: ${e.to} ← ${e.from}`;}
+ if(index>=FIXED_PARAMETERS)return `DAG: смещение скрытого ${index-FIXED_PARAMETERS+1}`;
+ const b=STRUCTURAL_BLOCKS.find(b=>index>=b.offset&&index<b.offset+b.weights+(b.bias===null?0:b.outputs));
+ return `${b.label}: ${index<b.offset+b.weights?'связь '+(index-b.offset+1):'смещение '+(index-b.bias+1)}`;
 }

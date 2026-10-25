@@ -1,3 +1,4 @@
+import {structuralLayout} from './structural-brain.js';
 /** Наследуемая изменчивость v9. Два последних числа — логарифмические
  * координаты свойств, НЕ дополнительные входы или веса нейросети.
  * Начальный разброс — условия опыта, не предел дальнейшего развития.
@@ -37,7 +38,7 @@ export function randomMutationGenes(random){
 }
 /** Только явное преобразование. Старый мозг остаётся побайтно тем же;
  * личный опыт сюда не переносится. Готовый v9 не получает второй хвост. */
-export function withMutationGenes(genes,random){return mutationOffset(genes)!==null?genes.slice():[...genes,...randomMutationGenes(random)];}
+export function withMutationGenes(genes,random){if(structuralLayout(genes)){const copy=genes.slice(),offset=mutationOffset(copy);copy.splice(offset,2,...randomMutationGenes(random));return copy;}return mutationOffset(genes)!==null?genes.slice():[...genes,...randomMutationGenes(random)];}
 export function validMutationGenes(genes){
  const offset=mutationOffset(genes);return offset!==null&&Number.isFinite(genes[offset])&&
   Number.isFinite(genes[offset+1])&&genes[offset+1]>=LOG_MIN&&genes[offset+1]<=LOG_MAX;

@@ -1,3 +1,4 @@
+import {decisionCharge,learningCharge} from './brain-cost.js';
 /** Фазы однопоточного мираv13. Время — целые подшаги, внешнееtick — Т.
  * Локальный геометрический след пересчитывается только после перемещения;
  * текущие количества считываются один раз на границу и переиспользуются. */
@@ -80,7 +81,9 @@ export function localTemporalFrame(a,observation,mask){
    if(!(mask&(1<<action)))continue;
    const candidate=temporalCandidate(a,observation,action,neighbours);if(candidate)candidates.push(candidate);
   }
- return {schema:'local-decision-v1',observation,candidates};
+ const request={schema:'local-decision-v1',observation,candidates};
+ if(a.brain.costProfile){const decision={frame:{request}};for(const c of candidates)c.computeCharge=decisionCharge(a.brain,decision,c.decisionCost);}
+ return request;
 }
 function temporalCandidate(a,observation,action,neighbours=temporalNavigation(a).neighbours){
    const cells=observation.cells,place=action<6?neighbours[action]:a.brain.position;
@@ -110,7 +113,7 @@ function complete(w,a){
  else if(action===9){
   // Конечная проверка намеренно не проверяетN/50/40 повторно.
   a.energy-=RULES.birthCost;w.stats.birthSpent+=RULES.birthCost-RULES.newbornEnergy;a.lastBirthAge=a.age;if(a.children===0)a.life.firstBirthAge=a.age;a.children++;w.stats.births++;a.life.reproduction.births++;w.stats.reproduction.births++;
-  const genes=w.mutations?mutateGenome(a.genome,w.random,w.mutationRate,.7,w.cognitiveRandom,w.bodyRandom,w.neuralRandom):a.genome.slice();const child=w.addAgent(a,genes,a);child.bornSubtick=w.subtick;child.readyAt=w.subtick+1;
+  const genes=w.mutations?mutateGenome(a.genome,w.random,w.mutationRate,.7,w.cognitiveRandom,w.bodyRandom,w.neuralRandom,w):a.genome.slice();const child=w.addAgent(a,genes,a);child.bornSubtick=w.subtick;child.readyAt=w.subtick+1;
  }
  w.stats.completed[action]++;a.life.actions[action]++;a.life.moved+=Number(action<6);a.life.gathered+=Number(action===6);a.life.eaten+=Number(action===7);a.life.deposited+=Number(action===10);a.lastProcess=p;a.process=null;a.callReason=CALL_COMPLETE;
 }
@@ -118,11 +121,11 @@ function ageExperience(a,tick){const b=a.brain,d=Math.max(0,tick-b.decayTime);if
 export function prepareTemporalDecision(w,a){
  const learningMark=beginComputeGroup('learning');let decision;
  try{
- const b=a.brain;if(w.learningEnabled)ageExperience(a,w.tick);
+ const b=a.brain;if(b.costProfile)b.learningCharge=0;if(w.learningEnabled)ageExperience(a,w.tick);
  if(b.pending&&w.memoryEnabled)rememberExperience(b,b.pending,w.feeling(a),w.tick);
  decision=w.prepareDecision(a);const pending=b.pending;
  if(pending&&w.learningEnabled){const nextValue=w.expectedContinuation(a,decision),elapsed=(w.subtick-pending.startSubtick)/10,reward=pending.sum+pending.discount*w.feeling(a)/100-pending.beforeFeeling/100;
-  if(elapsed>0)learnSetBrain(b,pending.choice,{beforeFeeling:pending.beforeFeeling,afterFeeling:w.feeling(a),nextValue,terminal:false,tick:w.tick,reward,elapsed,temporal:true});}
+  if(elapsed>0){if(b.costProfile)b.learningCharge=learningCharge(b,pending,decision);learnSetBrain(b,pending.choice,{beforeFeeling:pending.beforeFeeling,afterFeeling:w.feeling(a),nextValue,terminal:false,tick:w.tick,reward,elapsed,temporal:true});}}
  b.pending=null;
  }finally{endComputeGroup(learningMark);}
  return decision;
@@ -131,7 +134,10 @@ export function acceptTemporalChoice(w,a,choice){
  const b=a.brain;w.stats.brainCalls++;if(a.callReason===CALL_REVIEW)w.stats.reviews++;
  if(a.life.observer){a.life.observer.brainCalls++;a.life.observer.reviews+=Number(a.callReason===CALL_REVIEW);}
  // Вычисление уже состоялось, но смертельная оплата не начинает действие.
- spend(w,a,choice.decisionCost,true);
+ const computeCost=(choice.computeCharge??choice.decisionCost)+(b.learningCharge??0);
+ if(!Number.isFinite(computeCost)||computeCost<0)throw new Error('Неверная стоимость вычислений мозга.');
+ if(b.costProfile&&a.life.observer)a.life.observer.brainEnergyCost=(a.life.observer.brainEnergyCost??0)+computeCost;
+ spend(w,a,computeCost,true);if(b.costProfile)b.learningCharge=0;
  if(a.health===0){fail(w,a,'death');w.die(a,'starvation');b.pending=null;return false;}
  if(!choice.continuation){if(a.process)fail(w,a,'voluntary');const direction=choice.action<6?{q:choice.localDestination.q-b.position.q,r:choice.localDestination.r-b.position.r}:null;a.process={action:choice.action,destination:choice.destination,localDestination:choice.localDestination,direction,duration:ACTION_DURATIONS[choice.action],elapsed:0};w.stats.started[choice.action]++;w.stats.actions[choice.action]++;if(choice.action===9){a.life.reproduction.chosen++;w.stats.reproduction.chosen++;}}
  a.lastAction=choice.action;
@@ -141,9 +147,9 @@ export function acceptTemporalChoice(w,a,choice){
 export function commitTemporalBrain(w,a,decision,choice,beforeFeeling){
  const b=a.brain;rememberAttention(a,decision.frame.request.observation.cells);
  if(w.memoryEnabled)rememberDecision(b,b.position,w.tick);
- if(w.learningEnabled||w.memoryEnabled)b.pending={choice:{id:choice.id,action:choice.action,row:0,features:choice.features.slice(),senses:choice.senses.slice(),place:{...b.position},batchInput:cloneSetInput(choice.batchInput)},beforeFeeling,startSubtick:w.subtick,sum:0,discount:1};
+ if(w.learningEnabled||w.memoryEnabled)b.pending={choice:{id:choice.id,action:choice.action,row:0,features:choice.features.slice(),senses:choice.senses.slice(),place:{...b.position},batchInput:cloneSetInput(choice.batchInput)},beforeFeeling,...(b.costProfile?{costRate:choice.decisionCost,costCandidates:decision.frame.request.candidates.length,costOperations:new Set(decision.frame.request.candidates.map(c=>c.action<6?0:c.action-5)).size}:{}),startSubtick:w.subtick,sum:0,discount:1};
 }
-function decide(w,a){const decision=prepareTemporalDecision(w,a);w.recordBirthDecision(a);const beforeFeeling=w.feeling(a),choice=w.choose(a,decision);if(acceptTemporalChoice(w,a,choice))commitTemporalBrain(w,a,decision,choice,beforeFeeling);}
+function decide(w,a){const decision=prepareTemporalDecision(w,a);w.recordBirthDecision(a);const beforeFeeling=w.feeling(a),choice=w.choose(a,decision);choice.computeCharge=decisionCharge(a.brain,decision,choice.decisionCost);if(acceptTemporalChoice(w,a,choice)){delete choice.computeCharge;commitTemporalBrain(w,a,decision,choice,beforeFeeling);}}
 export function sampleLife(w,a){const c=a.life,f=w.feeling(a);c.samples+=DT;c.energyTotal+=a.energy*DT;c.healthTotal+=a.health*DT;c.hungerSteps+=Number(a.energy<30)*DT;c.emptyEnergySteps+=Number(a.energy===0)*DT;a.brain.feelingTotal+=f*DT;a.brain.feelingSamples+=DT;a.brain.wellbeing=f;w.lifeExposure.steps+=DT;w.lifeExposure.feelingTotal+=f*DT;}
 export function compactTemporalAgents(w){let k=0;for(let i=0;i<w.agents.length;i++)if(w.agents[i].alive)w.agents[k++]=w.agents[i];w.agents.length=k;}
 export function observeTime(w,a,cells,elapsed){const mark=beginComputeGroup('memory');try{observe(a.brain,cells,a.brain.position,w.tick,true,elapsed);}finally{endComputeGroup(mark);}}

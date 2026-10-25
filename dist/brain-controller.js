@@ -160,7 +160,7 @@ export function controllerProblems(brain){
  if(brain.memory.size>brain.traits.shortCapacity||brain.longMemory.size>brain.traits.longCapacity)errors.push('Превышена вместимость памяти');
  if(brain.traces.length>TRACE_LIMIT||brain.recentEvents.length>TRACE_LIMIT)errors.push('Превышен событийный след');
  if(Boolean(layoutForType(brain.controllerType))){
-  const {parameters:PARAMETER_COUNT,inputs:INPUT_COUNT}=layoutForType(brain.controllerType);
+  const {parameters:fixedParameters,inputs:INPUT_COUNT}=layoutForType(brain.controllerType),PARAMETER_COUNT=brain.structure?.parameters??fixedParameters;
   for(const key of ['networkBase','networkDelta','eligibility']){
    if(brain[key]?.length!==PARAMETER_COUNT)errors.push('Неверный размер '+key);
    else if(!brain[key].every(Number.isFinite))errors.push('Неконечные параметры '+key);

@@ -1,3 +1,4 @@
+import {brainCostProfile} from './brain-cost.js';
 /** Общая физика в координаторе, постоянные владельцы личного опыта.
  * Два барьера на подшаг: оценки -> мировой RNG/исполнение -> подтверждение.
  * Буферы возвращаются владельцу и переиспользуются; полные мозги передаются
@@ -22,7 +23,7 @@ class Endpoint{
  }
  close(error){if(this.pending){clearTimeout(this.pending.timer);this.pending.reject(error);this.pending=null;}return this.worker.terminate();}
 }
-function mirrorBrain(b){return {traits:b.traits,controllerType:b.controllerType,temporal:b.temporal,position:b.position,facing:b.facing,updates:b.updates,feelingTotal:b.feelingTotal,feelingSamples:b.feelingSamples,wellbeing:b.wellbeing,memory:new Map(),longMemory:new Map()};}
+function mirrorBrain(b){return {costProfile:b.costProfile,traits:b.traits,controllerType:b.controllerType,temporal:b.temporal,position:b.position,facing:b.facing,updates:b.updates,feelingTotal:b.feelingTotal,feelingSamples:b.feelingSamples,wellbeing:b.wellbeing,memory:new Map(),longMemory:new Map()};}
 export class ParallelWorld{
  constructor(world,{workers=4,createWorker=()=>new Worker(new URL('./cognition-worker.js',import.meta.url),{type:'module'}),timeout=30000}={}){
   if(!world.temporal)throw new Error('Параллельный расчёт поддерживает модель v13.');
@@ -97,7 +98,8 @@ export class ParallelWorld{
    w.recordBirthDecision(a);let roll=w.random.next(),action=-1;const mask=r[at+RESULT.mask];
    for(let k=0;k<11;k++)if(mask&(1<<k)){action=k;const p=r[at+RESULT.probabilities+k];if(!Number.isFinite(p)||p<0||p>1)throw new Error('Некорректная вероятность действия.');roll-=p;if(roll<=0)break;}
    if(action<0)throw new Error('Вычислитель не вернул доступных действий.');
-   if(acceptTemporalChoice(w,a,temporalSelectedChoice(w,a,action)))l.selections[i]=action;
+   a.brain.learningCharge=r[at+RESULT.learningCost];const choice=temporalSelectedChoice(w,a,action);choice.computeCharge=r[at+RESULT.costs+action];
+   if(acceptTemporalChoice(w,a,choice))l.selections[i]=action;
    else{l.selections[i]=-2;this.removed(a);}
   }
   const commitStart=performance.now();

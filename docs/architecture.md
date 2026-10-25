@@ -16,6 +16,7 @@
 
 ## Мозг и сведения
 
+
 | Модуль | Ответственность |
 | --- | --- |
 | [temporal-layout.js](../dist/temporal-layout.js), [temporal-inputs.js](../dist/temporal-inputs.js) | Именованная схема текущих генов/входов, сведения о текущем процессе |

@@ -1,3 +1,4 @@
+import {STRUCTURAL_TYPE,structuralSettings,structuralLayout} from './structural-brain.js';
 /**
  * Лаборатория отбора и личного обучения, версия 0.29.
  *
@@ -105,12 +106,13 @@ export class Evolution {
   * При использовании сохранённой основы новые основатели получают один геном.
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
- constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?TEMPORAL_BRAIN_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime}={}){
+ constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?STRUCTURAL_TYPE:SET_BRAIN_TYPE,
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,maxNeurons,maxLayers,structuralMutations}={}){
   this.temporal=Boolean(temporal);
+  Object.assign(this,structuralSettings({maxNeurons,maxLayers,structuralMutations}));
   this.digestionTime=validateDigestionTime(digestionTime);
   this.digestionRate=RULES.foodEnergy/this.digestionTime;
-  if(this.temporal&&brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('В0.32 нужен мозг v13; старые основы не поддерживаются.');
+  if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(brainType))throw new Error('В0.32 нужен мозг v13; старые основы не поддерживаются.');
   if(!['custom','balanced','scarce'].includes(scenario))throw new Error('Неизвестная пищевая среда.');
   const foodOptions=validateFoodSettings({foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax});
   this.individualFood=Boolean(individualFood);
@@ -135,8 +137,8 @@ export class Evolution {
   this.mutationRate=bound(mutationRate,0,.3);this.mutations=mutations;
   this.baseGenome=baseGenome?validateGenomeFile({format:'big-evolution-genome',
    ...genomeMetadata(baseGenome),genes:baseGenome}):null;
-  if(this.baseGenome)this.brainType=genomeMetadata(this.baseGenome).brainType;
-  if(this.temporal&&this.brainType!==TEMPORAL_BRAIN_TYPE)throw new Error('В0.32 нужны новые геномыv13; старые основы не преобразуются.');
+  if(this.baseGenome){this.brainType=genomeMetadata(this.baseGenome).brainType;const l=structuralLayout(this.baseGenome);if(l&&(l.hidden>this.maxNeurons||Math.max(0,...this.baseGenome.slice(l.topologyOffset,l.topologyOffset+l.hidden))>this.maxLayers))throw new Error('Геном превышает выбранные пределы нейронов/слоёв.');}
+  if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(this.brainType))throw new Error('В0.32 нужны новые геномыv13; старые основы не преобразуются.');
   if(this.temporal&&this.reproduction.automatic)throw new Error('Автоматическое рождение удалено из новых испытаний0.32.');
   this.tick=0;this.nextId=1;this.maxGeneration=0;this.events=[];this.history=[];this.agents=[];
   // Нулевое начало цикла сохраняет прежние сроки восстановления до первого
@@ -213,7 +215,8 @@ export class Evolution {
     }else genome=randomGenome(this.random,this.cognitiveRandom,this.bodyRandom);
    }
    if(!this.baseGenome&&this.heritableMutations)genome=withMutationGenes(genome,this.mutationRandom);
-   for(const [index,value]of founderEdits)genome[index]=value;
+   const edits=structuralLayout(genome)?compileFounderSenses(founderSenses,structuralLayout(genome)):founderEdits;
+   for(const [index,value]of edits)genome[index]=value;
    this.addAgent(p,genome,null);
   }
   for(const a of this.agents)regions[this.tile(a.x,a.y).regionId].initialFounders++;

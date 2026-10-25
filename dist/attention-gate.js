@@ -5,7 +5,7 @@ import {ACTIVITY_COUNT} from './activity-perception.js';
 import {densitySignal} from './neighbour-perception.js';
 const work=new WeakMap();
 const ATTENTION_WIDTH=5+ACTIVITY_COUNT;
-export function createGate(genes){return Float64Array.from(genes.slice(GATE_OFFSET,GATE_OFFSET+GATE_PARAMETERS));}
+export function createGate(genes,offset=GATE_OFFSET){return Float64Array.from(genes.slice(offset,offset+GATE_PARAMETERS));}
 export function rememberAttention(a,cells){
  let s=a.brain.attention;if(!s)s=a.brain.attention=new Float64Array(7*ATTENTION_WIDTH);a.brain.attentionCount=cells.length;
  for(let i=0;i<cells.length;i++){const c=cells[i],j=i*ATTENTION_WIDTH;s[j]=c.q;s[j+1]=c.r;s[j+2]=c.food;s[j+3]=Number(c.isFoodSource);s[j+4]=c.neighbours;for(let k=0;k<ACTIVITY_COUNT;k++)s[j+5+k]=c.activities?.[k]??0;}

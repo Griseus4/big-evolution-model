@@ -24,6 +24,7 @@ export const LIFE_METRICS=Object.freeze([
  {id:'children',label:'Число прямых детей',unit:'детей',digits:1},
  {id:'reproduced',label:'Доля оставивших хотя бы одного ребёнка',unit:'%',digits:1,single:true},
  {id:'firstBirth',label:'Возраст рождения первого ребёнка',unit:'Т',digits:1},
+ {id:'brainCost',label:'Средняя стоимость вызова и обучения',unit:'энергии / вызов',digits:3},
  {id:'brainCalls',label:'Вызовы основного мозга',unit:'вызовов / 100 Т',digits:2},
  ...HERITABLE_METRICS,
  {id:'reviews',label:'Частота пересмотров',unit:'пересмотров / 100 Т',digits:2},
@@ -44,6 +45,7 @@ export function lifeMetric(row,id,interruptionKind='all'){
   case 'children':return finite(row.children)?row.children:null;
   case 'reproduced':return finite(row.children)?(row.children>0?100:0):null;
   case 'firstBirth':return finite(row.firstBirthAge)?row.firstBirthAge:null;
+  case 'brainCost':return o?.brainCalls>0&&finite(o.brainEnergyCost)?o.brainEnergyCost/o.brainCalls:null;
   case 'brainCalls':return o?rate(row,o.brainCalls):null;
   case 'reviews':return o?rate(row,o.reviews):null;
   case 'interruptions':return o?rate(row,interruptionKind==='all'?o.interruptions.voluntary+o.interruptions.physical:o.interruptions[interruptionKind]):null;

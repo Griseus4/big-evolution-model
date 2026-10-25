@@ -24,7 +24,7 @@ const EMPTY_REPORT=Object.freeze({tick:0,dead:[],living:[],completed:{count:0,me
 export const downloadExperiment=downloadJson;
 export function validateExperimentReport(report){
  if(report?.format!=='big-evolution-experiment'||report.version!==1||![...EXPERIMENT_PLAN_PROTOCOLS,'world-constructor-v1'].includes(report.plan?.protocolId)||!Array.isArray(report.groups))throw new Error('Нужен отчёт конструктора опытов v1.');
- const plan=validatePlan(report.plan),ids=new Set();if(report.groups.length!==plan.worlds*plan.variants.length)throw new Error('Неполный состав миров отчёта.');
+ const plan=validatePlan(report.plan,{historical:true}),ids=new Set();if(report.groups.length!==plan.worlds*plan.variants.length)throw new Error('Неполный состав миров отчёта.');
  for(const g of report.groups){if(ids.has(g.id)||!plan.variants.some(v=>v.id===g.variantId)||!Number.isSafeInteger(g.index)||g.index<0||g.index>=plan.worlds||g.id!==`${g.variantId}-${g.index}`||!Array.isArray(g.attempts)||g.attempts.length>3)throw new Error('Повреждена группа попыток.');ids.add(g.id);
   for(let i=0;i<g.attempts.length;i++){const a=g.attempts[i];if(a.id!==`${g.id}-${i+1}`||a.number!==i+1||a.seed!==plan.seedMatrix[g.index][i]||!Number.isFinite(a.tick)||a.tick<0)throw new Error('Повреждён seed или номер попытки.');if(a.lives){if(!Array.isArray(a.lives.dead)||!Array.isArray(a.lives.living))throw new Error('Повреждены истории жизней.');for(const r of [...a.lives.dead,...a.lives.living])if(!Number.isFinite(r.age)||!Number.isFinite(r.born)||r.age<0||r.born<0)throw new Error('Повреждена строка жизни.');}}
   if(g.selectedId&&!g.attempts.some(a=>a.id===g.selectedId&&a.lives))throw new Error('Нет выбранной попытки.');

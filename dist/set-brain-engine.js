@@ -13,8 +13,8 @@ const {prepareSetInput,setCandidateInput}=inputs;
 const [CELLS,CONTEXT,TARGET,OPERATION,DIRECT]=SET_BLOCKS,SCALE=1/Math.sqrt(CONTEXT_HIDDEN),TEMPERATURE=.35;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const workspaces=new WeakMap();
-function work(brain){let w=workspaces.get(brain);if(!w){w={parameters:new Float64Array(SET_PARAMETER_COUNT),gradient:new Float64Array(SET_PARAMETER_COUNT),candidateInput:new Float64Array(CANDIDATE_INPUTS),features:Array(FEATURE_NAMES.length)};workspaces.set(brain,w);}return w;}
-function effective(brain,enabled){const mark=beginComputePart('weights');try{const p=work(brain).parameters;for(let i=0;i<p.length;i++)p[i]=brain.networkBase[i]+(enabled?brain.networkDelta[i]:0);return p;}finally{endComputePart(mark);}}
+function work(brain){let w=workspaces.get(brain);if(!w){w={parameters:new Float64Array(brain.networkBase.length),gradient:new Float64Array(brain.networkBase.length),candidateInput:new Float64Array(CANDIDATE_INPUTS),features:Array(FEATURE_NAMES.length)};workspaces.set(brain,w);}return w;}
+function effective(brain,enabled){const mark=beginComputePart('weights');try{const p=work(brain).parameters;for(const i of (brain.structure?.activeParameters??p.keys()))p[i]=brain.networkBase[i]+(enabled?brain.networkDelta[i]:0);p.structure=brain.structure;return p;}finally{endComputePart(mark);}}
 function dense(p,block,input,activate=true,reuse=null){
  const output=reuse??new Float64Array(block.outputs);
  for(let h=0;h<block.outputs;h++){let value=block.bias===null?0:p[block.bias+h];for(let i=0;i<block.inputs;i++)value+=p[block.offset+h*block.inputs+i]*input[i];output[h]=activate?Math.tanh(value):value;}
@@ -26,7 +26,7 @@ function setCommonForward(p,frame){
   input.set(frame.body);
   for(const row of cells)for(let h=0;h<CELL_HIDDEN;h++){input[BODY_INPUTS+h]+=row[h]/n;input[BODY_INPUTS+CELL_HIDDEN+h]+=row[h]*row[h]/n;}
   input[BODY_INPUTS+2*CELL_HIDDEN]=n/(n+1);input.set(frame.memory,BODY_INPUTS+1+2*CELL_HIDDEN);if(frame.process)input.set(frame.process,BODY_INPUTS+1+2*CELL_HIDDEN+frame.memory.length);
-  return {cells,input,z:dense(p,CONTEXT,input)};
+  return {cells,input,...(layout.contextForward?layout.contextForward(p,input,p.structure):{z:dense(p,CONTEXT,input)})};
  }finally{endComputePart(mark);}
 }
 function setCandidateForward(p,common,input){
@@ -135,13 +135,15 @@ function setGradient(p,frame,gradient=new Float64Array(SET_PARAMETER_COUNT)){
  const mark=beginComputePart('gradient');try{
   gradient.fill(0);const common=setCommonForward(p,frame),candidate=setCandidateForward(p,common,frame.candidate),back=new Float64Array(CONTEXT_INPUTS);
   gradient[DIRECT.bias]=1;for(let i=0;i<frame.candidate.length;i++)gradient[DIRECT.offset+i]=frame.candidate[i];
+  const outputGradient=new Float64Array(CONTEXT_HIDDEN);
   for(let h=0;h<CONTEXT_HIDDEN;h++){
-   const dz=candidate.hidden[h]*candidate.operation[h]*SCALE*(1-common.z[h]**2),dr=common.z[h]*candidate.operation[h]*SCALE;
-   gradient[CONTEXT.bias+h]=dz;gradient[TARGET.bias+h]=dr;
-   for(let i=0;i<CONTEXT_INPUTS;i++){gradient[CONTEXT.offset+h*CONTEXT_INPUTS+i]=dz*common.input[i];back[i]+=dz*p[CONTEXT.offset+h*CONTEXT_INPUTS+i];}
+   const dz=candidate.hidden[h]*candidate.operation[h]*SCALE*(layout.contextBackward?1:1-common.z[h]**2),dr=common.z[h]*candidate.operation[h]*SCALE;
+   outputGradient[h]=dz;if(!layout.contextBackward)gradient[CONTEXT.bias+h]=dz;gradient[TARGET.bias+h]=dr;
+   if(!layout.contextBackward)for(let i=0;i<CONTEXT_INPUTS;i++){gradient[CONTEXT.offset+h*CONTEXT_INPUTS+i]=dz*common.input[i];back[i]+=dz*p[CONTEXT.offset+h*CONTEXT_INPUTS+i];}
    for(let i=0;i<TARGET.inputs;i++)gradient[TARGET.offset+h*TARGET.inputs+i]=dr*frame.candidate[i+6];
    for(let i=0;i<OPERATION.inputs;i++)gradient[OPERATION.offset+h*OPERATION.inputs+i]=common.z[h]*candidate.hidden[h]*SCALE*frame.candidate[i];
   }
+  if(layout.contextBackward)layout.contextBackward(p,common,outputGradient,gradient,back,p.structure);
   const n=frame.cells.length;
   for(let c=0;c<n;c++)for(let h=0;h<CELL_HIDDEN;h++){
    const activation=common.cells[c][h],d=(back[BODY_INPUTS+h]+2*activation*back[BODY_INPUTS+CELL_HIDDEN+h])*(1-activation**2)/n;
@@ -157,7 +159,7 @@ function learnSetBrain(brain,choice,{beforeFeeling,afterFeeling,nextValue,termin
   let squared=0;for(const v of gradient)squared+=v*v;const norm=Math.max(1,Math.sqrt(squared));
   reward=timeReward??(.04*afterFeeling/100+(terminal?0:discount*afterFeeling/100)-beforeFeeling/100);delta=clamp(reward+(terminal?0:(temporal?discount**elapsed:discount)*nextValue)-beforeValue,-2,2);
   const fade=temporal?(discount*trace)**elapsed:discount*trace;const retain=temporal?1:1-forgetting;
-  for(let i=0;i<p.length;i++){const e=fade*brain.eligibility[i]+gradient[i]/norm;brain.eligibility[i]=e;brain.networkDelta[i]=clamp(brain.networkDelta[i]*retain+alpha*delta*e,-4,4);}
+  for(const i of (brain.structure?.activeParameters??p.keys())){const e=fade*brain.eligibility[i]+gradient[i]/norm;brain.eligibility[i]=e;brain.networkDelta[i]=clamp(brain.networkDelta[i]*retain+alpha*delta*e,-4,4);}
  }finally{endComputePart(updateMark);}
  const afterMark=beginComputePart('afterUpdate');let afterValue;
  try{const after=effective(brain,true);afterValue=setCandidateForward(after,setCommonForward(after,choice.batchInput),choice.batchInput.candidate).value;}finally{endComputePart(afterMark);}

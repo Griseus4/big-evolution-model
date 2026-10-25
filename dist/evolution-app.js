@@ -1,3 +1,4 @@
+import {renderBrainDiagram} from './brain-diagram-ui.js';
 import {TEMPORAL_BRAIN_TYPE as SET_BRAIN_TYPE,CANDIDATE_NAMES,OPERATION_NAMES} from './temporal-layout.js';
 /**
  * Интерфейс лаборатории читает снимки расчётного Worker. Он не двигает мир
@@ -75,7 +76,7 @@ function settings(){
  if(!Number.isInteger(limit)||limit<population||limit>1000)throw new Error('Лимит должен быть не меньше числа основателей и не больше 1000.');
  if(!Number.isInteger(seed)||seed<1||seed>4294967295)throw new Error('Номер опыта должен быть целым от 1 до 4294967295.');
  const computeWorkers=activeComputationMode;
- return {seed,population,limit,computeWorkers,automaticEnvironment:environmentUI?.settings(),geography:'lakes-rivers-v1',...readFoodControls(),
+ return {seed,population,limit,computeWorkers,maxNeurons:Number(element('brain-max-neurons').value),maxLayers:Number(element('brain-max-layers').value),structuralMutations:element('structural-mutations').checked,automaticEnvironment:environmentUI?.settings(),geography:'lakes-rivers-v1',...readFoodControls(),
   learning:element('learning').checked,memory:element('memory').checked,
   expandLegacy:legacyBase&&element('expand-legacy').checked,mutationRate:Number(element('mutation-rate').value),mutations:element('mutations').checked,upgradeMutationGenes:element('upgrade-mutations').checked,baseGenome};
 }
@@ -181,7 +182,7 @@ element('load-genome').addEventListener('change',async event=>{
  const file=event.target.files?.[0];if(!file)return;pause();
  try{
   if(file.size>100000)throw new Error('Файл слишком велик. Геном должен быть меньше 100 КБ.');
-  const data=JSON.parse(await file.text());if(data.version!==13)throw new Error('Новый мир принимает только геномы v13.');baseGenome=validateGenomeFile(data);legacyBase=false;
+  const data=JSON.parse(await file.text());if(data.version!==14)throw new Error('Новый мир принимает только геномы v14.');baseGenome=validateGenomeFile(data);legacyBase=false;
   element('legacy-options').hidden=!legacyBase;
   const inherited=Boolean(mutationProfile(baseGenome));
   element('upgrade-mutations').checked=false;element('mutation-upgrade-options').hidden=inherited;
@@ -284,7 +285,7 @@ function updateContents(){
   const detailSection=sidebar?.getResidentSection()??'birth';
   // Полная диагностическая оценка нужна только открытым действиям/реакциям.
   // Это уменьшает работу UI, но не частоту решений или обучения организма.
-  if(detailSection==='actions'||detailSection==='features'){
+  if(detailSection==='actions'){
   element('action-title').textContent=a.alive?(Boolean(layoutForType(a.brain.controllerType))?'Оценки нейросети сейчас':`Предпочтения сейчас · строка ${sim.state(a)}`):'Последний выбор перед гибелью';
   const options=residentOptions=sim.evaluate(a);
   if(detailSection==='actions')element('choices').replaceChildren(...options.map(option=>{
@@ -339,7 +340,7 @@ element('body-senses').textContent=`Переносимый запас: ${a.inven
   `Шаг ${change.tick}: ${ACTIONS[change.action]}${neural?'':', состояние '+change.row}. Подкрепление ${change.reward.toFixed(3)}, ошибка ожидания ${change.delta.toFixed(3)}. Оценка ${change.beforeValue.toFixed(3)} → ${change.afterValue.toFixed(3)}. След: ${neural?'накопленный градиент':change.traceLength+' решений'}.`:
   sim.learningEnabled?'Пока нет завершённого перехода для обучения. После решения нужно дождаться следующего ощущения.':'Личное обучение отключено в этом опыте.';
  element('memory-summary').textContent=`Краткая память ${b.memory.size}/${traits.shortCapacity} · долгая ${b.longMemory.size}/${traits.longCapacity} · пищу видел в ${[...memoryEntries(b)].filter(r=>r.maxFoodSeen>0).length} местах · обновлений опыта ${b.updates} · среднее чувство за жизнь ${b.feelingSamples?(b.feelingTotal/b.feelingSamples).toFixed(1):'—'}`;
- if(detailSection==='traits'){element('traits-summary').textContent=`Скорость обучения ${traits.alpha.toFixed(3)} · забывание ${(traits.forgetting*100).toFixed(3)}%/Т · вес будущего ${traits.discount.toFixed(2)} · затухание следа ${traits.trace.toFixed(2)}. Память: краткая ${traits.shortCapacity}, долгая ${traits.longCapacity}; порог закрепления ${traits.consolidationThreshold.toFixed(3)}, затухание значимости ${Math.round(traits.longRetention)} шагов. Чувствительность: энергия ${traits.values[0].toFixed(2)}, здоровье ${traits.values[1].toFixed(2)}, пищеварение ${traits.values[3].toFixed(2)}.`;
+ if(detailSection==='traits'){renderBrainDiagram(element('brain-diagram'),a,sim.learningEnabled);element('traits-summary').textContent=`Скорость обучения ${traits.alpha.toFixed(3)} · забывание ${(traits.forgetting*100).toFixed(3)}%/Т · вес будущего ${traits.discount.toFixed(2)} · затухание следа ${traits.trace.toFixed(2)}. Память: краткая ${traits.shortCapacity}, долгая ${traits.longCapacity}; порог закрепления ${traits.consolidationThreshold.toFixed(3)}, затухание значимости ${Math.round(traits.longRetention)} шагов. Чувствительность: энергия ${traits.values[0].toFixed(2)}, здоровье ${traits.values[1].toFixed(2)}, пищеварение ${traits.values[3].toFixed(2)}.`;
   const mutation=mutationProfile(a.genome);
   element('traits-summary').textContent+=mutation?` Наследуемая изменчивость: ${(mutation.rate*100).toPrecision(4)}% на ген, сила ±${mutation.strength.toPrecision(4)}.`:` Изменчивость старой основы: общий параметр мира ${(sim.mutationRate*100).toFixed(2)}%, сила ±0.7.`;
  }
@@ -357,33 +358,8 @@ element('body-senses').textContent=`Переносимый запас: ${a.inven
  if(detailSection==='long'&&!b.longMemory.size){const empty=document.createElement('p');empty.textContent='Пока ни одно место не закреплено.';element('long-memories').append(empty);}
  // Этот контейнер живёт до закрытия страницы; его нельзя заменять при refresh.
  if(detailSection!=='features')return;
- const host=element('feature-learning');
- let features=host.querySelector('.feature-values');
- if(!features){features=document.createElement('div');features.className='feature-values';features.tabIndex=0;host.append(features);}
- const rows=[];
- if(neural){
-  const norm=Math.sqrt(b.networkDelta.reduce((sum,v)=>sum+v*v,0));
-  rows.push(b.controllerType===SET_BRAIN_TYPE?`Мозг Б: клетки ${layout.network.cellInputs} → ${layout.network.cellHidden}, общая ситуация ${layout.network.contextInputs} → ${layout.network.contextHidden}, цели ${layout.network.targetInputs} → ${layout.network.contextHidden}, критерии 6 операций → все Q. ${layout.parameters} наследуемых параметров; норма личных поправок ${norm.toFixed(3)}. 6 операций; движение выбирает направление.`:`Сеть ${layout.inputs} → ${layout.hidden} tanh → Q. ${layout.parameters} генетических параметров и столько же личных поправок; норма поправок ${norm.toFixed(3)}. Смещения обучаются вместе со связями.`);
-  // В рамках одного синхронного обновления тело/мозг не меняются:
-  // список уже вычислен для вероятностей выше, повторный проход сети не нужен.
-  const option=options?.find(o=>o.action===a.lastAction)??options?.[0];
-  if(option?.input){
-   rows.push(`Входы для варианта «${option.label}»${a.alive?' сейчас':' перед последним действием'}:`);
-   layout.inputNames.forEach((name,i)=>rows.push(`${name}: ${option.input[i].toFixed(3)}`));
-   if(option.candidateInput)CANDIDATE_NAMES.forEach((name,i)=>rows.push(`${name}: ${option.candidateInput[i].toFixed(3)}`));
-  }
-  updateTextRows(features,rows);return;
- }
- FEATURE_NAMES.forEach((name,i)=>{
-  rows.push(`${name}: ${(b.weights[i]*b.scale).toFixed(3)}`);
- });
- ACTIONS.forEach((name,action)=>{
-  rows.push(`${name}: `+BODY_FEATURE_NAMES.map((label,i)=>{
-   const index=action*BODY_FEATURE_NAMES.length+i;
-   return `${label} — ген ${b.bodyGenes[index].toFixed(3)}, опыт ${(b.bodyWeights[index]*b.scale).toFixed(3)}`;
-  }).join(' · '));
- });
- updateTextRows(features,rows);
+ const v=traits.values,total=Math.abs(v[0])+Math.abs(v[1])+Math.abs(v[3]),preferences={senseEnergy:total?100*v[0]/total:0,senseHealth:total?100*v[1]/total:0,senseStomach:total?100*v[3]/total:0};element('feature-learning').textContent=[['Энергия',preferences.senseEnergy],['Здоровье',preferences.senseHealth],['Наполненность желудка',preferences.senseStomach]].map(([name,v])=>`${name}: ${v>0?'+':''}${v.toFixed(1)}%`).join(' · ');return;
+
 }
 
 /** У шестиугольника шесть вершин на окружности через 60 градусов.

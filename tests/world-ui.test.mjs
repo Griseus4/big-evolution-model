@@ -15,6 +15,7 @@ import * as geography from '../dist/geography.js';
 import {foodLabel} from '../dist/food-settings.js';
 import {mutationProfile} from '../dist/mutation-parameters.js';
 import {updateTextRows} from '../dist/stable-text-list.js';
+import {captureHeritable} from '../dist/heritable-statistics.js';
 import {WorldClient} from '../dist/world-client.js';
 import {WorldRuntime} from '../dist/world-runtime.js';
 import * as computation from '../dist/computation-settings.js';
@@ -53,8 +54,8 @@ async function boot(){
  const document=new Element();document.getElementById=id=>{assert.ok(elements.has(id),`missing ${id}`);return elements.get(id);};
  document.createElement=()=>{const e=new Element();e.ownerDocument=document;return e;};document.hidden=false;
  for(const e of elements.values())e.ownerDocument=document;
- for(const [id,value]of [['seed','42'],['founders','12'],['population-limit','20'],['mutation-rate','0.06'],['speed','1']])elements.get(id).value=value;
- for(const id of ['mutations','learning','memory'])elements.get(id).checked=true;
+ for(const [id,value]of [['seed','42'],['founders','12'],['population-limit','20'],['mutation-rate','0.06'],['speed','1'],['brain-max-neurons','64'],['brain-max-layers','4']])elements.get(id).value=value;
+ for(const id of ['mutations','learning','memory','structural-mutations'])elements.get(id).checked=true;
  elements.get('chart').width=900;elements.get('chart').height=180;
  let now=0,runtime,frame,sidebarChange;const downloads=[];
  class TestClient extends WorldClient{
@@ -66,7 +67,7 @@ async function boot(){
  }
  let section='birth',tab='world',benchmarkActive=false;
  const context=vm.createContext({...model,...cognition,...setLayout,...neuralLayout,...body,...navigation,...reproduction,...geography,...computation,
-  WorldClient:TestClient,WorldProfiler,mutationProfile,foodLabel,format:formatNumber,updateTextRows,UI_TEXT,installUIText,installPerformanceTabs,document,navigator:{hardwareConcurrency:2,userAgent:'test-dom'},
+  WorldClient:TestClient,captureHeritable,renderBrainDiagram:host=>{host.textContent="Схема мозга";},WorldProfiler,mutationProfile,foodLabel,format:formatNumber,updateTextRows,UI_TEXT,installUIText,installPerformanceTabs,document,navigator:{hardwareConcurrency:2,userAgent:'test-dom'},
   installLabTabs:options=>({currentTab:()=>tab,refresh:()=>{},onRestart:()=>{},
    select:name=>{tab=name;options.onTabChange(name);},isBenchmarkActive:()=>benchmarkActive}),
   installSidebar:fn=>{sidebarChange=fn;return {getResidentSection:()=>section,select:()=>fn(),selectResident:name=>{section=name;fn();}};},
@@ -122,7 +123,7 @@ test('restart, intervention, selection and all resident sections render',async()
  e.get('founders').value='12';await e.get('restart').emit('click');assert.equal(e.get('population').textContent,12);
  const id=b.runtime.selected.id;e.get('next-agent').emit('click');await settle();assert.notEqual(b.runtime.selected.id,id);
  for(const section of ['senses','learning','traits','short','long','features','birth'])await b.section(section);
- assert.ok(e.get('feature-learning').querySelector('.feature-values'));
+ assert.match(e.get('feature-learning').textContent,/Энергия:.*%/);assert.equal(e.get('brain-diagram').textContent,'Схема мозга');
  await e.get('world-food-apply').emit('click');assert.match(e.get('world-food-status').textContent,/Мир остаётся на паузе/);
  e.get('wiki-tab-actions').emit('click');assert.equal(e.get('wiki-panel-actions').hidden,false);assert.equal(e.get('wiki-panel-world').hidden,true);
 });

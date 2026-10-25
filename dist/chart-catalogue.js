@@ -4,7 +4,7 @@ import {ANALYSIS_DEFAULT,validateAnalysis} from './analysis-builder-core.js';
 import {validateChartPins} from './chart-context.js';
 export const CHART_CATEGORIES=Object.freeze([
  {id:'survival',label:'Выживание',charts:['population','lifetime','survival','curve']},
- {id:'behavior',label:'Поведение',charts:['movement','eating','reviews','interruptions','brainCalls']},
+ {id:'behavior',label:'Поведение',charts:['movement','eating','reviews','interruptions','brainCalls','brainCost']},
  {id:'resources',label:'Ресурсы',charts:['inventory','energy','health','feeling','hunger','food','production']},
  {id:'reproduction',label:'Размножение',charts:['children','reproduced','firstBirth']},
  {id:'genome',label:'Наследуемые свойства',charts:LIFE_METRICS.filter(m=>m.inherited&&!m.signed).map(m=>m.id)},

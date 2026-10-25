@@ -1,7 +1,8 @@
+import {STRUCTURAL_CHECKS} from './structural-checks.js';
 /** Механизмы текущей0.32, исторические проверки сохранены отдельно. */
 import {TEMPORAL_CHECKS} from './temporal-checks.js';
 import {ENVIRONMENT_CHECKS} from './environment-checks.js';
-export const BROWSER_CHECKS=[...TEMPORAL_CHECKS,...ENVIRONMENT_CHECKS];
+export const BROWSER_CHECKS=[...STRUCTURAL_CHECKS,...TEMPORAL_CHECKS,...ENVIRONMENT_CHECKS];
 const assert=(ok,message)=>{if(!ok)throw new Error(message);};
 export async function runBrowserChecks(ids,onResult){
  const selected=ids?.length?BROWSER_CHECKS.filter(c=>ids.includes(c.id)):BROWSER_CHECKS;

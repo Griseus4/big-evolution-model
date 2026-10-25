@@ -1,3 +1,5 @@
+import {brainCostProfile} from './brain-cost.js';
+import {STRUCTURAL_TYPE,compileStructure} from './structural-brain.js';
 /** Маленький нелинейный оценщик, без мира, DOM и случайных бросков.
  * Выход Q — прогноз дисконтированного субъективного подкрепления. Те же Q
  * определяют softmax; отдельного врождённого бонуса поверх критика здесь нет.
@@ -68,7 +70,7 @@ export function neuralValue(parameters,input,hidden=null){
 export function neuralTraits(genes){
  const {traitOffset:TRAIT_OFFSET}=layoutForGenes(genes);
  const legacy=Array(BASE_GENE_COUNT+COGNITIVE_GENES.length).fill(0);
- (layoutForGenes(genes).brainType===TEMPORAL_BRAIN_TYPE?TEMPORAL_TRAIT_INDICES:NEURAL_TRAIT_INDICES).forEach((old,i)=>{legacy[BASE_GENE_COUNT+old]=genes[TRAIT_OFFSET+i];});
+ ([TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layoutForGenes(genes).brainType)?TEMPORAL_TRAIT_INDICES:NEURAL_TRAIT_INDICES).forEach((old,i)=>{legacy[BASE_GENE_COUNT+old]=genes[TRAIT_OFFSET+i];});
  return cognitiveTraits(legacy);
 }
 export function createNeuralBrain(genes){
@@ -79,7 +81,8 @@ export function createNeuralBrain(genes){
  brain.experience=new Float64Array(0);brain.weights=new Float64Array(0);
  brain.bodyGenes=new Float64Array(0);brain.bodyWeights=new Float64Array(0);
  brain.outcomeExpectation=new Float64Array(ACTION_COUNT);
- if(layout.brainType===TEMPORAL_BRAIN_TYPE){brain.temporal=true;brain.gateBase=createGate(genes);const q=brain.traits.discount**.1;brain.timeReward={q,b:.04*(1-q)/(1-brain.traits.discount)};brain.decayTime=0;}
+ if([TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout.brainType)){brain.temporal=true;brain.gateBase=createGate(genes,layout.gateOffset);const q=brain.traits.discount**.1;brain.timeReward={q,b:.04*(1-q)/(1-brain.traits.discount)};brain.decayTime=0;}
+ if(layout.version===14){brain.structure=compileStructure(genes);brain.costProfile=brainCostProfile(brain.structure);}
  brain.networkBase=Float64Array.from(genes.slice(0,PARAMETER_COUNT));
  brain.networkDelta=new Float64Array(PARAMETER_COUNT);brain.eligibility=new Float64Array(PARAMETER_COUNT);
  return brain;

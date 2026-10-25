@@ -1,3 +1,4 @@
+import {STRUCTURAL_TYPE} from './structural-brain.js';
 /** Версионные нагрузки, а не образцы успешной эволюции. Геномы случайные,
  * воспоминания заполненных случаев синтетические. Миры не обязаны выживать.
  * Один случай создаётся/освобождается за раз: не держим три больших мира в RAM.
@@ -7,7 +8,7 @@ import {ACTION_DURATIONS} from './action-timing.js';
 import {Evolution} from './evolution.js';
 import {observe} from './cognition.js';
 import {positionKey,localNeighbours} from './navigation.js';
-export const BENCHMARK_SUITE_ID='fixed-constructor-world-workloads-v1';
+export const BENCHMARK_SUITE_ID='structural-brain-workloads-v1';
 export const BENCHMARK_REPEATS=3;
 export const BENCHMARK_CASES=Object.freeze([
  {id:'evaluator-empty',label:'Оценщик · пустая память',kind:'evaluator',seed:701,population:16,filled:false,work:4096,warmup:256},
@@ -40,7 +41,7 @@ function fillMemory(brain){
 }
 export function createBenchmarkFixture(spec,options={}){
  const world=new Evolution({seed:spec.seed,population:spec.population,limit:1000,foodSources:384,foodRegrowInterval:20,
-  temporal:options.temporal??(!options.brainType||options.brainType===TEMPORAL_BRAIN_TYPE),memory:true,learning:true,mutationRate:.02,mutations:true,lifeHistoryLimit:250,heritableMutations:!options.brainType,...options});
+  temporal:options.temporal??(!options.brainType||[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(options.brainType)),memory:true,learning:true,mutationRate:.02,mutations:true,lifeHistoryLimit:250,heritableMutations:!options.brainType,...options});
  for(const agent of world.agents){
   agent.brain.memory.clear();agent.brain.longMemory.clear();agent.brain.spatialCache=null;
   if(spec.filled)fillMemory(agent.brain);

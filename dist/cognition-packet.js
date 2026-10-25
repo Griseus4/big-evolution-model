@@ -3,8 +3,8 @@
  * Мировые координаты нужны только исполнителю для истории; вход мозга
  * строится отдельно и содержит прежние личные координаты/видимые признаки. */
 import {ACTIVITY_COUNT} from './activity-perception.js';
-export const COGNITION_PROTOCOL=2,HEADER=31,CELL_WIDTH=6+ACTIVITY_COUNT,INPUT_WIDTH=HEADER+7*CELL_WIDTH,RESULT_WIDTH=16;
-export const RESULT={decision:0,updates:1,short:2,long:3,mask:4,probabilities:5};
+export const COGNITION_PROTOCOL=3,HEADER=31,CELL_WIDTH=6+ACTIVITY_COUNT,INPUT_WIDTH=HEADER+7*CELL_WIDTH,RESULT_WIDTH=28;
+export const RESULT={decision:0,updates:1,short:2,long:3,mask:4,probabilities:5,costs:16,learningCost:27};
 export function writeCognitionRow(out,offset,a,cells,mask){
  const b=a.brain,p=a.process,l=a.lastProcess;
  // Прямая запись исключает промежуточный массив из31 элемента на каждую особь.

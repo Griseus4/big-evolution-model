@@ -48,9 +48,9 @@ js = """
 import {GENOME_VERSION,WORLD_WIDTH,WORLD_HEIGHT,GENE_COUNT} from './dist/evolution.js';
 import {BODY_WEIGHT_COUNT} from './dist/policy-layout.js';
 import {NEURAL_GENE_COUNT,PARAMETER_COUNT,NEIGHBOUR_BRAIN_TYPE,layoutForType} from './dist/neural-layout.js';
-import {TEMPORAL_LAYOUT as SET_LAYOUT} from './dist/temporal-layout.js';
+import {STRUCTURAL_TYPE_LAYOUT as SET_LAYOUT} from './dist/structural-brain.js';
 import {MEMORY_LIMIT,TRACE_LIMIT,EXPERIENCE_SIZE,FEATURE_NAMES} from './dist/cognition.js';
-console.log(JSON.stringify({setVersion:SET_LAYOUT.version,setGenes:SET_LAYOUT.genes+2,neighbourGenes:layoutForType(NEIGHBOUR_BRAIN_TYPE).genes,neuralGenes:NEURAL_GENE_COUNT,parameters:PARAMETER_COUNT,width:WORLD_WIDTH,height:WORLD_HEIGHT,genes:GENE_COUNT,
+console.log(JSON.stringify({setVersion:SET_LAYOUT.version,setGenes:null,neighbourGenes:layoutForType(NEIGHBOUR_BRAIN_TYPE).genes,neuralGenes:NEURAL_GENE_COUNT,parameters:PARAMETER_COUNT,width:WORLD_WIDTH,height:WORLD_HEIGHT,genes:GENE_COUNT,
 version:GENOME_VERSION,memory:MEMORY_LIMIT,trace:TRACE_LIMIT,
 experience:EXPERIENCE_SIZE,features:FEATURE_NAMES.length,bodyWeights:BODY_WEIGHT_COUNT}));
 """
@@ -59,7 +59,7 @@ facts = json.loads(result.stdout)
 current = (ROOT / 'docs' / 'mechanics-reference.md').read_text(encoding='utf-8')
 checks = [
     (current, f"{facts['width']}×{facts['height']}", 'размер карты'),
-    (current, f"{facts['setGenes']} наследуемых", 'размер текущего генома'),
+    (current, 'переменное число наследуемых', 'размер текущего генома'),
     (current, f"v{facts['setVersion']}", 'текущая схема'),
 ]
 

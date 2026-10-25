@@ -15,7 +15,7 @@ const original=new Evolution(opts),file=original.genomeFile(original.agents[0]),
 const choices=[{name:'A.json',genes:file.genes},{name:'B.json',genes:other.genes}];
 const science=w=>({agents:w.agents,food:w.foodIslands,tiles:w.tiles,rng:['random','neuralRandom','cognitiveRandom','bodyRandom','mutationRandom','foodRandom','environmentRandom'].map(k=>[k,w[k]?.state])});
 test('optional coefficient omission preserves exact baseline trajectories and independent random founders',()=>{
- const current=new Evolution(opts),baseline=new Baseline(opts),empty=new Evolution({...opts,founderSenses:{}});
+ const legacy={...opts,brainType:'set-duration-activity-v1'},current=new Evolution(legacy),baseline=new Baseline(opts),empty=new Evolution({...legacy,founderSenses:{}});
  for(let i=0;i<3;i++){assert.deepEqual(science(current),science(baseline));assert.deepEqual(science(current),science(empty));current.step();baseline.step();empty.step();}
  assert.notDeepEqual(current.agents[0].genome,current.agents[1].genome);
  assert.equal(validateWorldOptions().founderSenses,undefined);assert.equal(validateFounderSenses({}),undefined);
@@ -23,7 +23,7 @@ test('optional coefficient omission preserves exact baseline trajectories and in
 test('numeric edits replace only chosen genes before brains/history capture, without consuming RNG',()=>{
  const values={energy:-1.25,health:0,stomach:2.5},w=new Evolution({...opts,founderSenses:values}),edits=compileFounderSenses(values,layoutForGenes(w.agents[0].genome)),changed=new Set(edits.map(e=>e[0]));
  assert.deepEqual(w.agents.map(a=>[a.x,a.y]),original.agents.map(a=>[a.x,a.y]));assert.deepEqual(science(w).rng,science(original).rng);
- for(let i=0;i<w.agents.length;i++){const a=w.agents[i],b=original.agents[i];for(let j=0;j<a.genome.length;j++)assert.equal(a.genome[j],changed.has(j)?edits.find(e=>e[0]===j)[1]:b.genome[j]);assert.deepEqual(a.brain.traits.values,[values.energy,values.health,0,values.stomach]);assert.equal(a.life.heritable.senseHealth,0);assert.ok(a.life.heritable.senseEnergy<0);assert.ok(a.life.heritable.senseStomach>0);}
+ for(let i=0;i<w.agents.length;i++){const a=w.agents[i],b=original.agents[i],edits=compileFounderSenses(values,layoutForGenes(a.genome)),changed=new Set(edits.map(e=>e[0]));for(let j=0;j<a.genome.length;j++)assert.equal(a.genome[j],changed.has(j)?edits.find(e=>e[0]===j)[1]:b.genome[j]);assert.deepEqual(a.brain.traits.values,[values.energy,values.health,0,values.stomach]);assert.equal(a.life.heritable.senseHealth,0);assert.ok(a.life.heritable.senseEnergy<0);assert.ok(a.life.heritable.senseStomach>0);}
  assert.equal(FOUNDER_SENSE_FIELDS.length,3);for(const bad of [null,[],{pain:1},{energy:NaN},{energy:'1'},{health:Infinity},{stomach:8.01}])assert.throws(()=>new Evolution({...opts,founderSenses:bad}),/коэффициент|Коэффициент|Чувствительности/);
  assert.throws(()=>validatePlan({variants:[{settings:{founderSenses:null}}]}),/Чувствительности/);
 });
@@ -43,8 +43,8 @@ test('genome and numeric factors form a stable product, keep independent setting
 });
 test('multiple-file validation is atomic; cancellation, corruption and duplicate genes preserve existing values',async()=>{
  const valid={name:'new.json',size:100,text:async()=>JSON.stringify(other)},bad={name:'bad.json',size:2,text:async()=>'{}'},existing=[choices[0]],copy=structuredClone(existing);
- assert.equal(await readGenomeChoices([],existing),existing);await assert.rejects(readGenomeChoices([valid,bad],existing));assert.deepEqual(existing,copy);assert.equal((await readGenomeChoices([valid],existing)).length,2);await assert.rejects(readGenomeChoices([{...valid,size:100001}],existing),/большой/);await assert.rejects(readGenomeChoices([{...valid,text:async()=>JSON.stringify(file)}],existing),/повторяется/);
- assert.throws(()=>uniqueGenomeChoices([{name:'old.json',genes:randomNeuralGenome({next:()=>.5})}]),/v13/);
+ assert.equal(await readGenomeChoices([],existing),existing);await assert.rejects(readGenomeChoices([valid,bad],existing));assert.deepEqual(existing,copy);assert.equal((await readGenomeChoices([valid],existing)).length,2);await assert.rejects(readGenomeChoices([{...valid,size:2*1024*1024+1}],existing),/большой/);await assert.rejects(readGenomeChoices([{...valid,text:async()=>JSON.stringify(file)}],existing),/повторяется/);
+ assert.throws(()=>uniqueGenomeChoices([{name:'old.json',genes:randomNeuralGenome({next:()=>.5})}]),/v14/);
 });
 test('real world executor records the exact requested founder coefficients',async()=>{
  const p=validatePlan({worlds:1,steps:1,common:{population:2,limit:10},factors:[{key:'founderSenses.energy',values:[-1,1]}]});

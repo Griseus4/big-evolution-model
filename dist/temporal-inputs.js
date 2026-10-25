@@ -28,7 +28,7 @@ export function prepareSetInput(brain,request){
 }
 export function setCandidateInput(brain,o,c,prepared,reuseInput=null,reuseFeatures=null){
  const input=reuseInput??new Float64Array(CANDIDATE_INPUTS),features=reuseFeatures??Array(FEATURE_NAMES.length).fill(0),operation=operationForAction(c.action);
- input.fill(0);input[operation]=1;target(brain,o,c.localDestination,c.cell,prepared.memory,input,6,c.repeat);const tail=6+TARGET_NAMES.length;input[tail]=Number(c.continuation);input[tail+1]=c.duration/20;input[tail+2]=c.decisionCost/.10;
+ input.fill(0);input[operation]=1;target(brain,o,c.localDestination,c.cell,prepared.memory,input,6,c.repeat);const tail=6+TARGET_NAMES.length;input[tail]=Number(c.continuation);input[tail+1]=c.duration/20;input[tail+2]=(c.computeCharge??c.decisionCost)/.10;
  features.fill(0);features[0]=Number(c.action<6&&c.cell.food>0);features[2]=Number(c.repeat);features[3]=input[15];features[5]=input[17];features[6]=input[16];features[7]=(1-o.body.energy/100)*features[3];
  return {input,features,operation};
 }
