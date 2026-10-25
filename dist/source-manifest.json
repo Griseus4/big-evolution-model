@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 33,
-    "bytes": 4062,
+    "bytes": 4032,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 129,
-    "bytes": 15532,
+    "lines": 131,
+    "bytes": 15670,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -684,6 +684,38 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v054-project-guide.md",
+    "url": "./source-files/docs/updates/v054-project-guide.md",
+    "lines": 30,
+    "bytes": 6843,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "dist/project-guide.js",
+    "url": "./project-guide.js",
+    "lines": 40,
+    "bytes": 9639,
+    "aliases": [],
+    "purpose": "Пособие: выжимки, вводная статья и ссылки сверки с реализацией."
+  },
+  {
+    "name": "dist/project-guide-ui.js",
+    "url": "./project-guide-ui.js",
+    "lines": 41,
+    "bytes": 2615,
+    "aliases": [],
+    "purpose": "Дерево ссылок, статьи и глубокие адреса без управления миром."
+  },
+  {
+    "name": "tests/project-guide054.test.mjs",
+    "url": "./source-files/tests/project-guide054.test.mjs",
+    "lines": 68,
+    "bytes": 6184,
+    "aliases": [],
+    "purpose": "Реестр, навигация, переходы по URL и сохранение состояния статей0.54."
+  },
+  {
     "name": "dist/food-island-evolution.js",
     "url": "./food-island-evolution.js",
     "lines": 120,
@@ -718,8 +750,8 @@
   {
     "name": "dist/layout.css",
     "url": "./layout.css",
-    "lines": 105,
-    "bytes": 20707,
+    "lines": 122,
+    "bytes": 22328,
     "aliases": [],
     "purpose": "Адаптивная широкая панель, экраны настроек и оглавление справочника."
   },
@@ -815,7 +847,7 @@
     "name": "dist/world-save.js",
     "url": "./world-save.js",
     "lines": 60,
-    "bytes": 10740,
+    "bytes": 10749,
     "aliases": [],
     "purpose": "Полный ручной снимок, проверка и восстановление текущей модели."
   },
@@ -831,7 +863,7 @@
     "name": "tests/environment-save.test.mjs",
     "url": "./source-files/tests/environment-save.test.mjs",
     "lines": 92,
-    "bytes": 10045,
+    "bytes": 10063,
     "aliases": [],
     "purpose": "Энергетика, среда, точное продолжение и атомарный отказ загрузки."
   },
@@ -950,8 +982,8 @@
   {
     "name": "dist/ui-text.js",
     "url": "./ui-text.js",
-    "lines": 400,
-    "bytes": 134109,
+    "lines": 404,
+    "bytes": 134439,
     "aliases": [],
     "purpose": "Единый каталог подсказок/статических описаний, версия и числовые пояснения из модели."
   },
@@ -1294,8 +1326,8 @@
   {
     "name": "tests/world-ui.test.mjs",
     "url": "./source-files/tests/world-ui.test.mjs",
-    "lines": 173,
-    "bytes": 14997,
+    "lines": 177,
+    "bytes": 15209,
     "aliases": [],
     "purpose": "Исполнение UI со снимками Worker в минимальном DOM."
   },
@@ -1322,22 +1354,6 @@
     "bytes": 6668,
     "aliases": [],
     "purpose": "Адаптер видимых клеток и существующей личной памяти; снимок входа обучения."
-  },
-  {
-    "name": "dist/set-brain.js",
-    "url": "./set-brain.js",
-    "lines": 5,
-    "bytes": 439,
-    "aliases": [],
-    "purpose": "Общая ситуация, пакет Q, иерархические вероятности и градиент Expected SARSA."
-  },
-  {
-    "name": "dist/set-brain-checks.js",
-    "url": "./set-brain-checks.js",
-    "lines": 176,
-    "bytes": 20609,
-    "aliases": [],
-    "purpose": "18 исполняемых пользователем проверок нового мозга."
   },
   {
     "name": ".gitattributes",
@@ -1367,7 +1383,7 @@
     "name": "README.ru.md",
     "url": "./source-files/README.ru.md",
     "lines": 117,
-    "bytes": 16466,
+    "bytes": 16528,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8412,14 +8428,6 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
-    "name": "dist/mutation-checks.js",
-    "url": "./mutation-checks.js",
-    "lines": 102,
-    "bytes": 10381,
-    "aliases": [],
-    "purpose": "12 пользовательских проверок v9, родительского профиля и адаптеров."
-  },
-  {
     "name": "dist/pair-comparison-ui.js",
     "url": "./pair-comparison-ui.js",
     "lines": 51,
@@ -8498,6 +8506,14 @@
     "bytes": 971,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "dist/set-brain.js",
+    "url": "./set-brain.js",
+    "lines": 5,
+    "bytes": 439,
+    "aliases": [],
+    "purpose": "Общая ситуация, пакет Q, иерархические вероятности и градиент Expected SARSA."
   },
   {
     "name": "dist/source-viewer.js",
@@ -8862,8 +8878,8 @@
   {
     "name": "docs/navigation/interface-and-files.md",
     "url": "./source-files/docs/navigation/interface-and-files.md",
-    "lines": 38,
-    "bytes": 10090,
+    "lines": 39,
+    "bytes": 10567,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8926,8 +8942,8 @@
   {
     "name": "docs/next-game-guide.md",
     "url": "./source-files/docs/next-game-guide.md",
-    "lines": 48,
-    "bytes": 13178,
+    "lines": 56,
+    "bytes": 15811,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9158,8 +9174,8 @@
   {
     "name": "tests/help-ui.test.mjs",
     "url": "./source-files/tests/help-ui.test.mjs",
-    "lines": 52,
-    "bytes": 6186,
+    "lines": 56,
+    "bytes": 6732,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9358,8 +9374,8 @@
   {
     "name": "tools/export-source.py",
     "url": "./source-files/tools/export-source.py",
-    "lines": 309,
-    "bytes": 42774,
+    "lines": 312,
+    "bytes": 43236,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9370,6 +9386,22 @@
     "bytes": 4326,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "dist/set-brain-checks.js",
+    "url": "./set-brain-checks.js",
+    "lines": 176,
+    "bytes": 20609,
+    "aliases": [],
+    "purpose": "18 исполняемых пользователем проверок нового мозга."
+  },
+  {
+    "name": "dist/mutation-checks.js",
+    "url": "./mutation-checks.js",
+    "lines": 102,
+    "bytes": 10381,
+    "aliases": [],
+    "purpose": "12 пользовательских проверок v9, родительского профиля и адаптеров."
   },
   {
     "name": "dist/neighbour-perception.js",
@@ -9639,7 +9671,7 @@
     "name": "tools/verify-local.py",
     "url": "./source-files/tools/verify-local.py",
     "lines": 121,
-    "bytes": 8269,
+    "bytes": 8304,
     "aliases": [],
     "purpose": "Одна команда коротких локальных проверок, повтор выбранной части и отчёт времени/ошибок."
   },
@@ -9711,7 +9743,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 13,
-    "bytes": 3810,
+    "bytes": 3026,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -9719,7 +9751,7 @@
     "name": "docs/workflows/context.md",
     "url": "./source-files/docs/workflows/context.md",
     "lines": 61,
-    "bytes": 12198,
+    "bytes": 12522,
     "aliases": [],
     "purpose": "Как обсуждать контракты и передавать контекст без повторения всей истории."
   },
@@ -9759,7 +9791,7 @@
     "name": "docs/architecture.md",
     "url": "./source-files/docs/architecture.md",
     "lines": 66,
-    "bytes": 9158,
+    "bytes": 9127,
     "aliases": [],
     "purpose": "Какие модули отвечают за мир, мозг, интерфейс и проверки."
   },
@@ -9775,7 +9807,7 @@
     "name": "docs/decisions.md",
     "url": "./source-files/docs/decisions.md",
     "lines": 33,
-    "bytes": 8151,
+    "bytes": 8083,
     "aliases": [],
     "purpose": "Почему выбраны правила и что действительно согласовано."
   },
@@ -9790,8 +9822,8 @@
   {
     "name": "docs/verification.md",
     "url": "./source-files/docs/verification.md",
-    "lines": 41,
-    "bytes": 6103,
+    "lines": 43,
+    "bytes": 6410,
     "aliases": [],
     "purpose": "Выбор проверок, пределы выводов и сохранение проекта."
   },
@@ -9823,7 +9855,7 @@
     "name": "docs/future-ideas.md",
     "url": "./source-files/docs/future-ideas.md",
     "lines": 54,
-    "bytes": 11667,
+    "bytes": 11640,
     "aliases": [],
     "purpose": "Обсуждённые идеи: пищевые циклы, износ и долголетие, личное развитие; статусы и границы разрешения."
   },
@@ -9878,8 +9910,8 @@
   {
     "name": "dist/build-info.json",
     "url": "./build-info.json",
-    "lines": 1028,
-    "bytes": 119372,
+    "lines": 1030,
+    "bytes": 119561,
     "aliases": [],
     "purpose": "Отпечаток этой сборки для точного анализа отчёта."
   },
@@ -9902,8 +9934,8 @@
   {
     "name": "tools/check-project-docs.py",
     "url": "./source-files/tools/check-project-docs.py",
-    "lines": 71,
-    "bytes": 4894,
+    "lines": 100,
+    "bytes": 6970,
     "aliases": [],
     "purpose": "Проверка ссылок документов и согласованности с экспортами модели."
   },
@@ -9935,7 +9967,7 @@
     "name": "dist/help.js",
     "url": "./help.js",
     "lines": 31,
-    "bytes": 4195,
+    "bytes": 4225,
     "aliases": [],
     "purpose": "Подсказки и доступный диалог наблюдателя без изменения мира."
   },
@@ -10006,16 +10038,16 @@
   {
     "name": "dist/evolution-app.js",
     "url": "./evolution-app.js",
-    "lines": 504,
-    "bytes": 48815,
+    "lines": 505,
+    "bytes": 48765,
     "aliases": [],
     "purpose": "Управление игрой, панель жителя, отображение воспоминаний, карта, график и импорт/экспорт."
   },
   {
     "name": "dist/index.html",
     "url": "./index.html",
-    "lines": 282,
-    "bytes": 69109,
+    "lines": 288,
+    "bytes": 69967,
     "aliases": [],
     "purpose": "Разметка лаборатории и доступные пользователю настройки."
   },
@@ -10039,7 +10071,7 @@
     "name": "README.md",
     "url": "./source-files/README.md",
     "lines": 132,
-    "bytes": 11659,
+    "bytes": 11699,
     "aliases": [],
     "purpose": "Устройство проекта, ограничения, запуск исходников и проверки."
   },

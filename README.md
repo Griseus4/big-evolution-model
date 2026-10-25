@@ -6,9 +6,9 @@ An artificial life simulation with evolving neural agents, individual learning, 
 
 Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments. Version 0.52 adds an edge handle for statistics settings, local survival-curve controls and isolated chart updates. Calculations remain cached across tabs; paused worlds and completed experiments support background preparation. [Release notes](docs/updates/v052-local-chart-updates.md).
 
-**Status:** experimental prototype · **Current implementation:** 0.53.3 · **Interface:** Russian.
+**Status:** experimental prototype · **Current implementation:** 0.54.0 · **Interface:** Russian.
 
-0.53.3 retains completed charts while live statistics update in the background and preserves small nonzero brain costs in numbers and axes. [Details](docs/updates/v053-live-statistics.md).
+0.54.0 starts the “About the project” handbook: an expandable contents tree, a verified introduction and article previews on links. Existing reference articles remain available. [Details](docs/updates/v054-project-guide.md).
 
 Patch 0.52.1 removes chart captions, including text generated on hover or point selection. Numerical tables and field help remain available. [Release notes](docs/updates/v052-no-chart-captions.md).
 

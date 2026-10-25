@@ -42,7 +42,7 @@
 | Модуль | Ответственность |
 | --- | --- |
 | [evolution-app.js](../dist/evolution-app.js), [index.html](../dist/index.html), [layout.css](../dist/layout.css), [workspace.css](../dist/workspace.css) | Карта и управление; физика остаётся в модели |
-| [ui-text.js](../dist/ui-text.js), [help.js](../dist/help.js) | Общие тексты/подсказки; числа по возможности из кода, справка без автопаузы |
+| [ui-text.js](../dist/ui-text.js), [help.js](../dist/help.js) | Тексты/подсказки и [пособие](../dist/project-guide-ui.js); без автопаузы |
 | [sidebar.js](../dist/sidebar.js), [screen-tabs.js](../dist/screen-tabs.js), [lab-tabs.js](../dist/lab-tabs.js) | Навигация без пересоздания мира/полей |
 | [history-ui.js](../dist/history-ui.js), [history-drawers.js](../dist/history-drawers.js) | Статистика/принятый живой кадр, панели; сводки в [life-cohorts.js](../dist/life-cohorts.js) |
 | [environment-ui.js](../dist/environment-ui.js), [food-controls.js](../dist/food-controls.js) | Черновик целевых настроек отдельно от фактических условий |

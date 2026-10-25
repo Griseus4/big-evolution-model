@@ -28,6 +28,7 @@ test('label help works by focus, touch and keyboard, deduplicates ranges and nev
  const saved=Object.fromEntries(['document','innerWidth','innerHeight','addEventListener','setTimeout','clearTimeout'].map(k=>[k,globalThis[k]])),root=new Element(),ids=new Map();
  const add=(id,tag='div',parent=root)=>{const e=new Element(tag);e.id=id;ids.set(id,e);parent.append(e);return e;};
  const hidden=add('world-load-file','input');hidden.hidden=true;add('world-load','button');
+ const guide=add('wiki-tab-intro','a');guide.dataset.guideArticle='intro';
  const label=new Element('label');label.textContent='Номер опыта';root.append(label);const seed=add('seed','input',label);seed.type='number';
  const checkLabel=new Element('label');checkLabel.textContent='Память';root.append(checkLabel);const check=add('show-memory','input',checkLabel);check.type='checkbox';
  for(const prefix of ['','world-']){const range=new Element('div','range-setting'),heading=new Element('div','range-heading'),caption=new Element('label');caption.textContent='Разброс';root.append(range);range.append(heading);heading.append(caption);for(const suffix of ['','-number']){const input=add(prefix+'food-period-spread'+suffix,'input',suffix?heading:range);input.type=suffix?'number':'range';}}
@@ -42,6 +43,9 @@ test('label help works by focus, touch and keyboard, deduplicates ranges and nev
   root.listeners.keydown({target:help,key:'Escape'});assert.equal(tooltip.open,false);root.listeners.pointerover({target:help});advance(300);root.listeners.pointerout({target:help});advance(700);assert.equal(tooltip.open,false,'leaving cancels pending tooltip');
   root.listeners.keydown({target:help,key:'Enter',preventDefault(){}});assert.equal(tooltip.open,true);
   root.listeners.click({target:root});assert.equal(tooltip.open,false);assert.equal(check.checked,undefined);
+  root.listeners.pointerover({target:guide});advance(699);assert.equal(tooltip.open,false);advance(1);assert.equal(tooltip.open,true);assert.match(tooltip.textContent,/наследование|личного обучения/);
+  root.listeners.click({target:guide});assert.equal(tooltip.open,false,'article navigation closes its summary');
+  root.listeners.focusin({target:guide});advance(700);assert.equal(tooltip.open,true,'keyboard focus also previews the article');
  }finally{for(const [key,value]of Object.entries(saved))globalThis[key]=value;}
 });
 test('world rules live in thematic reference articles and visible numbers have no float tails',async()=>{

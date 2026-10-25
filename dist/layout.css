@@ -103,3 +103,20 @@ input:disabled,select:disabled{opacity:.65;cursor:not-allowed}.automatic-summary
 #history-builder-screen tbody tr{cursor:pointer}
 #history-builder-screen tbody tr:hover{background:#344436}
 .analysis-table{max-height:28rem;overflow:auto}
+/* Пособие: дерево ссылок остаётся рядом со статьёй в прокручиваемой вкладке. */
+#panel-about .wiki-layout{grid-template-columns:270px minmax(0,1fr);gap:24px}
+#panel-about .wiki-contents{top:0;min-width:0}
+#panel-about .wiki-tree{display:flex;flex-direction:column;gap:14px}
+#panel-about .wiki-branch{margin:0;min-width:0}
+#panel-about .wiki-branch summary{color:var(--gold);font-size:14px;line-height:1.5;padding:6px 0;cursor:pointer}
+#panel-about .wiki-branch a{display:block;padding:9px 12px;margin:4px 0;border-radius:5px;color:var(--text);text-decoration:none;line-height:1.5;overflow-wrap:break-word}
+#panel-about .wiki-branch a:hover{background:var(--panel)}
+#panel-about .wiki-branch a[aria-current=page]{background:var(--panel);color:var(--gold);box-shadow:inset 3px 0 var(--gold)}
+#panel-about .wiki-article{min-width:0}
+#panel-about .wiki-article .panel{max-width:100%}
+#panel-about .wiki-article h4{margin:24px 0 8px;font-size:17px;color:var(--text)}
+#panel-about .wiki-article .guide-path{font-size:12px;color:var(--muted);margin:0 0 8px}
+#panel-about .guide-rules{padding:14px 16px;margin:22px 0;border:1px solid var(--edge);border-radius:8px}
+#panel-about .guide-rules summary{color:var(--gold);cursor:pointer}
+#panel-about .guide-related{display:flex;flex-wrap:wrap;gap:12px 24px;border-top:1px solid var(--edge);margin-top:24px;padding-top:18px}
+@media(max-width:750px){#panel-about .wiki-layout{grid-template-columns:minmax(0,1fr)}#panel-about .wiki-contents{position:static}#panel-about .wiki-tree{display:flex;gap:10px}}

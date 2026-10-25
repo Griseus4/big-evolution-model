@@ -50,12 +50,41 @@ import {BODY_WEIGHT_COUNT} from './dist/policy-layout.js';
 import {NEURAL_GENE_COUNT,PARAMETER_COUNT,NEIGHBOUR_BRAIN_TYPE,layoutForType} from './dist/neural-layout.js';
 import {STRUCTURAL_TYPE_LAYOUT as SET_LAYOUT} from './dist/structural-brain.js';
 import {MEMORY_LIMIT,TRACE_LIMIT,EXPERIENCE_SIZE,FEATURE_NAMES} from './dist/cognition.js';
+import {GUIDE_ARTICLES,GUIDE_INTRO_TEXT} from './dist/project-guide.js';
 console.log(JSON.stringify({setVersion:SET_LAYOUT.version,setGenes:null,neighbourGenes:layoutForType(NEIGHBOUR_BRAIN_TYPE).genes,neuralGenes:NEURAL_GENE_COUNT,parameters:PARAMETER_COUNT,width:WORLD_WIDTH,height:WORLD_HEIGHT,genes:GENE_COUNT,
 version:GENOME_VERSION,memory:MEMORY_LIMIT,trace:TRACE_LIMIT,
-experience:EXPERIENCE_SIZE,features:FEATURE_NAMES.length,bodyWeights:BODY_WEIGHT_COUNT}));
+experience:EXPERIENCE_SIZE,features:FEATURE_NAMES.length,bodyWeights:BODY_WEIGHT_COUNT,guideArticles:GUIDE_ARTICLES,guideTextKeys:Object.keys(GUIDE_INTRO_TEXT)}));
 """
 result = subprocess.run(['node', '--input-type=module', '-e', js], cwd=ROOT, text=True, capture_output=True, check=True)
 facts = json.loads(result.stdout)
+guide_html = (ROOT / 'dist/index.html').read_text(encoding='utf-8')
+guide_ids = [article['id'] for article in facts['guideArticles']]
+if len(guide_ids) != len(set(guide_ids)):
+    errors.append('Пособие: повтор ID статьи.')
+for article in facts['guideArticles']:
+    identity = article['id']
+    if not article.get('summary', '').strip():
+        errors.append(f'Пособие {identity}: отсутствует краткая выжимка.')
+    for prefix in ['wiki-tab-', 'wiki-panel-']:
+        if guide_html.count(f'id="{prefix}{identity}"') != 1:
+            errors.append(f'Пособие {identity}: нужен единственный {prefix}{identity}.')
+    for related in article['related']:
+        if related not in guide_ids:
+            errors.append(f'Пособие {identity}: неизвестная связанная статья {related}.')
+    if article['reviewedVersion'] and not article['sources']:
+        errors.append(f'Пособие {identity}: сверка не имеет ссылок на реализацию.')
+    for source in article['sources']:
+        code_path = ROOT / 'dist' / source['file']
+        code = code_path.read_text(encoding='utf-8') if code_path.is_file() else ''
+        for symbol in source['symbols']:
+            if not re.search(r'\b' + re.escape(symbol) + r'\s*\(', code):
+                errors.append(f'Пособие {identity}: нет символа {source["file"]}:{symbol}.')
+for key in facts['guideTextKeys']:
+    if guide_html.count(f'data-ui-text="{key}"') != 1:
+        errors.append(f'Пособие: текст {key} должен использоваться один раз.')
+for identity in re.findall(r'href="#wiki-panel-([^"<>]+)"', guide_html):
+    if identity not in guide_ids:
+        errors.append(f'Пособие: ссылка ведёт к неизвестной статье {identity}.')
 current = (ROOT / 'docs' / 'mechanics-reference.md').read_text(encoding='utf-8')
 checks = [
     (current, f"{facts['width']}×{facts['height']}", 'размер карты'),

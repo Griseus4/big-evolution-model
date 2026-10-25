@@ -7,7 +7,7 @@ import {ACTION_COUNT,DEPOSIT_ACTION} from './policy-layout.js';
 import {reproductionCounters} from './reproduction.js';
 import {cognitionPlaces} from './cognition-summary.js';
 import {describeLifeObservations} from './life-observations.js';
-export const MODEL_VERSION='0.53.3';
+export const MODEL_VERSION='0.54.0';
 export const CAUSE_LABELS={starvation:'Истощение',injury:'Повреждения',age:'Предел возраста'};
 export function createLifeCounters(){return {samples:0,energyTotal:0,healthTotal:0,painTotal:0,
  hungerSteps:0,emptyEnergySteps:0,painSteps:0,gathered:0,eaten:0,deposited:0,moved:0,injuries:0,damage:0,

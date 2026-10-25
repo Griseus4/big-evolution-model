@@ -1,4 +1,5 @@
 import {ACTIONS} from './action-catalog.js';
+import {GUIDE_ARTICLES,GUIDE_INTRO_TEXT} from './project-guide.js';
 import {HISTORY_PAGE_SIZE} from './life-cohorts.js';
 import {TEMPORAL_LAYOUT,SET_PARAMETER_COUNT,GATE_PARAMETERS,GATE_INPUTS} from './temporal-layout.js';
 /** Единый каталог подсказок и пояснений интерфейса. Числовые правила
@@ -267,6 +268,7 @@ Object.assign(ALIASES,{'environment-rate-start':'environment-minimum-rate','envi
 ALIASES['history-curve-age-slider']='history-curve-age-max';
 ALIASES['constructor-results-next']='constructor-results-prev';
 export const PAGE_TEXT={
+ ...GUIDE_INTRO_TEXT,
  'wiki-statistics-refresh':'Пока мир моделируется, статистика сохраняет последний готовый график и его численную сводку. Новые данные считаются в фоне; промежуточные снимки могут пропускаться. Шаг показанного отчёта указан над графиками. Обычные значения округлены до одного знака, малые ненулевые величины показываются точнее; для стоимости мышления используется повышенная точность. Округление подписей не меняет исходные данные. Отсутствующие сведения обозначаются прочерком.',
  'factor-genome':'Один файл — одно значение фактора. Все основатели варианта получают выбранный геном. Отдельные коэффициенты заменяют только выбранные гены.',
  'factor-founder-senses':'Коэффициент −8…8, не проценты. Без этого параметра сохраняются исходные значения. Меняется геном основателей; потомки наследуют и мутируют по общим условиям.',
@@ -369,6 +371,8 @@ Object.assign(HELP,{
 });
 for(const name of ['period','size-mean','capacity-mean','capacity-spread'])ALIASES['world-food-'+name]='food-'+name;
 for(const prefix of ['', 'world-'])for(const name of ['sources','period','period-spread','size-spread','size-mean','capacity-mean','capacity-spread'])ALIASES[prefix+'food-'+name+'-number']=ALIASES[prefix+'food-'+name]??prefix+'food-'+name;
+// Выжимки одни и те же для оглавления и перекрёстных ссылок внутри статей.
+for(const article of GUIDE_ARTICLES)HELP[`wiki-tab-${article.id}`]=[article.title,article.summary];
 // Каталог нормализуется один раз, вне кадрового цикла. Динамические значения
 // добавляются с явными разделителями в своих модулях представления.
 for(const entry of Object.values(HELP)){entry[0]=typography(entry[0]);entry[1]=typography(entry[1]);}

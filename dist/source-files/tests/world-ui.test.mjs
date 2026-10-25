@@ -27,6 +27,7 @@ import {formatNumber} from '../dist/ui-numbers.js';
 import {foodProduction} from '../dist/environment-settings.js';
 import {installWorldFiles} from '../dist/world-files-ui.js';
 import {installScreenTabs} from '../dist/screen-tabs.js';
+import {installProjectGuide} from '../dist/project-guide-ui.js';
 import {installLiveFoodControls} from '../dist/food-controls.js';
 import {initialNeuronsInput,wireInitialStructure} from '../dist/brain-initialization-ui.js';
 const html=fs.readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
@@ -42,16 +43,19 @@ class Element{
  querySelectorAll(selector){return this.children.flatMap(c=>[...(c.className===selector.slice(1)?[c]:[]),...c.querySelectorAll(selector)]);}
  querySelector(selector){return this.querySelectorAll(selector)[0]??null;}
  setAttribute(){}
+ removeAttribute(){}
+ closest(){return null;}
+ focus(){this.focused=true;}
  getContext(){return new Proxy({},{get:()=>()=>{},set:()=>true});}
  getBoundingClientRect(){return {left:0,top:0,width:this.width,height:this.height};}
  showModal(){this.open=true;}
  close(){this.open=false;}
  click(){this.clicked=true;}
- emit(name,event={}){return this.listeners[name]?.(event);}
+ emit(name,event={preventDefault(){}}){return this.listeners[name]?.(event);}
 }
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 async function boot(){
- const elements=new Map([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>[m[1],new Element()]));
+ const elements=new Map([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>{const e=new Element();e.id=m[1];return [m[1],e];}));
  const document=new Element();document.getElementById=id=>{assert.ok(elements.has(id),`missing ${id}`);return elements.get(id);};
  document.createElement=()=>{const e=new Element();e.ownerDocument=document;return e;};document.hidden=false;
  for(const e of elements.values())e.ownerDocument=document;
@@ -77,7 +81,7 @@ async function boot(){
   installHelp:()=>{},createHelpButton:()=>document.createElement('button'),
   requestAnimationFrame:fn=>frame=fn,performance:{now:()=>now},Blob,
   URL:{createObjectURL:blob=>{downloads.push(blob);return 'blob:mock';},revokeObjectURL:()=>{}},setTimeout:()=>0});
- Object.assign(context,{installEnvironmentUI,installWorldFiles,installScreenTabs,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
+ Object.assign(context,{installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
  vm.runInContext(performanceUI,context);vm.runInContext(app,context);await settle();assert.equal(elements.get('error').textContent??'','');
  return {elements,document,context,downloads,setBenchmarkActive:value=>benchmarkActive=value,get runtime(){return runtime;},
   pulse:async value=>{now=value;runtime.pulse();await settle();},frame:value=>frame(value),

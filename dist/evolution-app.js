@@ -33,11 +33,11 @@ import {COMPUTATION_WORKER_COUNTS,computationHardwareLabel} from './computation-
 import {installUIText,UI_TEXT} from './ui-text.js';
 import {installPerformanceTabs} from './performance-tabs.js';
 import {installScreenTabs} from './screen-tabs.js';
+import {installProjectGuide} from './project-guide-ui.js';
 const element=id=>document.getElementById(id);
 installUIText(document);installPerformanceTabs(document);
 installScreenTabs('start',['population','food','other'],document);
 installScreenTabs('food',['conditions','automatic','journal'],document);
-installScreenTabs('wiki',['world', 'saves', 'actions', 'brain', 'memory', 'selection', 'genome', 'geography', 'food', 'deposits', 'environment', 'research', 'checks', 'limits'],document);
 // Один список допустимых режимов используется интерфейсом и расчётом.
 for(const count of COMPUTATION_WORKER_COUNTS){const option=document.createElement('option');option.value=count;option.textContent=count===1?'1 · последовательно':`${count} · параллельно`;element('compute-workers').append(option);}
 element('compute-hardware').textContent=computationHardwareLabel();
@@ -499,6 +499,7 @@ labTabs=installLabTabs({getSimulation:()=>sim,pauseWorld:pause,getWorldState:()=
  getWorldObservation:()=>command('observation'),onTabChange:()=>{if(client.ready)void sendView().catch(()=>{});}});
 performancePanel=installPerformancePanel({profiler,getSimulation:()=>sim,isRunning:()=>running});
 sidebar=installSidebar(()=>{if(client.ready)void sendView().catch(()=>{});});
+installProjectGuide({root:document,onOpen:()=>element('tab-about').click()});
 installHelp();
 update();requestAnimationFrame(frame);
 void client.init().then(async()=>{syncWorldFoodEditor();await command('speed',{value:10*Number(element('speed').value),substeps:Number(element('speed').value)<=.1});await sendView();}).catch(error=>{element('error').textContent=error.message;});

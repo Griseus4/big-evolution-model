@@ -25,7 +25,7 @@ export function installHelp(){
  document.addEventListener('pointerout',e=>{if(e.pointerType==='touch')return;if(e.target.closest?.('[data-help]')||tooltip.contains(e.target)){clearTimeout(timer);timer=setTimeout(hide,150);}});
  document.addEventListener('focusin',e=>{const target=e.target.closest?.('[data-help]');if(target)delayed(target);else hide();});
  document.addEventListener('focusout',()=>{clearTimeout(timer);timer=setTimeout(hide,100);});
- document.addEventListener('click',e=>{const target=e.target.closest?.('[data-help]');if(target?.dataset.helpLabel){e.preventDefault();e.stopPropagation();show(target);}else if(!target&&!tooltip.contains(e.target))hide();});
+ document.addEventListener('click',e=>{const target=e.target.closest?.('[data-help]');if(target?.dataset.helpLabel){e.preventDefault();e.stopPropagation();show(target);}else if(target?.dataset.guideArticle||!target&&!tooltip.contains(e.target))hide();});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'){hide();return;}const target=e.target.closest?.('[data-help]');if(target?.dataset.helpLabel&&['Enter',' '].includes(e.key)){e.preventDefault();show(target);}});
  document.addEventListener('scroll',e=>{if(!tooltip.contains(e.target))hide();},true);globalThis.addEventListener('resize',hide);
 }
