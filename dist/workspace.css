@@ -60,4 +60,26 @@ dialog{opacity:0;transform:translateY(6px);transition:opacity .18s ease,transfor
 @media(max-width:850px){.history-layout,.history-layout[data-open=true]{display:grid;grid-template-columns:24px 0px minmax(0,1fr);overflow:hidden}.history-layout[data-open=true]{grid-template-columns:24px minmax(180px,38%) minmax(0,1fr)}.history-layout>.history-drawer-left>.history-drawer-body{min-width:180px;height:100%;max-height:none}.history-curve-controls{grid-template-columns:1fr}.history-curve-controls>.history-age-scale{grid-column:1;grid-row:auto}.history-curve-controls>#history-curve-slider{grid-row:auto}}
 @media(max-width:520px){body.workspace>.global-toolbar{grid-template-columns:1fr}.global-toolbar .global-play-controls,.global-toolbar .world-file-actions{justify-self:start;grid-column:1}.history-layout[data-open=true]{grid-template-columns:24px minmax(0,1fr) 0px}.history-layout[data-open=true]>.history-main{visibility:hidden;padding:0}}
 
-.brain-diagram-scroll{max-height:420px;overflow:auto;margin:1rem 0;border:1px solid var(--border,#435348);border-radius:8px}.brain-diagram-scroll canvas{display:block;max-width:none}.brain-diagram-scroll+select{max-width:100%}
+/* Панель источников/жителя остаётся в доступной высоте рабочего окна. */
+body.workspace>#panel-world{overflow:hidden;grid-template-rows:minmax(0,1fr);align-items:stretch}
+#panel-world>.workspace{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+#panel-world>.compact-sidebar{position:relative;top:0;align-self:stretch;display:flex;flex-direction:column;height:100%;max-height:100%;min-height:0}
+.compact-sidebar>.side-tablist{flex:none;max-height:35%;overflow:auto}
+.compact-sidebar>.side-content{flex:1;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain}
+#brain-diagram>select{max-width:100%;width:100%}
+.brain-diagram-preview{display:block;width:100%;min-width:0;padding:0;margin:12px 0;overflow:hidden;position:relative;border:1px solid var(--edge);background:#19251e}
+.brain-diagram-preview canvas{display:block;width:100%;height:180px;pointer-events:none}
+.brain-diagram-preview>span{display:block;padding:7px;font-size:12px;background:#26352c;color:var(--gold)}
+dialog.brain-diagram-dialog{position:fixed;inset:0;margin:0;width:100vw;height:100dvh;max-width:none;max-height:none;padding:14px;border-radius:0;overflow:hidden}
+.brain-diagram-dialog[open]{display:flex;flex-direction:column;gap:10px}
+.brain-diagram-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:none}
+.brain-diagram-toolbar h2{font-size:18px;margin-right:auto}.brain-diagram-toolbar select{max-width:min(400px,100%);min-width:0}.brain-diagram-toolbar button{margin:0;padding:8px 12px}
+.brain-diagram-toolbar output{float:none;min-width:4ch;font-variant-numeric:tabular-nums}
+.brain-diagram-content{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,330px);gap:14px;min-height:0;flex:1}
+.brain-diagram-stage{position:relative;min-width:0;min-height:0;overflow:hidden;border:1px solid var(--edge);border-radius:8px;background:#19251e}
+.brain-diagram-stage canvas{display:block;max-width:none;touch-action:none;cursor:grab}.brain-diagram-stage canvas.dragging{cursor:grabbing}
+.brain-diagram-notes{overflow:auto;min-height:0;padding:0 8px;font-size:13px;line-height:1.55;overscroll-behavior:contain}
+.brain-diagram-notes>p,.brain-diagram-info{margin:0 0 14px}.brain-diagram-notes p{font-size:13px;line-height:1.55;margin:8px 0}
+.brain-diagram-notes select{max-width:100%;width:100%;font-size:12px}.brain-diagram-info{border-left:2px solid var(--gold);padding-left:10px;margin-top:14px}
+.brain-diagram-notes details{padding:10px 0;border-top:1px solid var(--edge)}.brain-diagram-notes dt{color:var(--gold);margin-top:12px;font-weight:600}.brain-diagram-notes dd{margin:5px 0 12px}
+@media(max-width:850px){body.workspace>#panel-world{overflow:visible;grid-template-rows:auto auto}#panel-world>.workspace{overflow:visible}#panel-world>.compact-sidebar{height:75dvh;max-height:calc(100dvh - 24px);min-height:240px}.brain-diagram-content{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) minmax(0,32%)}.brain-diagram-toolbar h2{width:100%;margin:0}.brain-diagram-instructions{font-size:11px}.brain-diagram-dialog{padding:8px}}

@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 33,
-    "bytes": 4051,
+    "bytes": 4046,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 123,
-    "bytes": 15077,
+    "lines": 125,
+    "bytes": 15225,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -652,10 +652,18 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v053-brain-viewer.md",
+    "url": "./source-files/docs/updates/v053-brain-viewer.md",
+    "lines": 33,
+    "bytes": 6941,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/updates/v053-structural-brain.md",
     "url": "./source-files/docs/updates/v053-structural-brain.md",
     "lines": 44,
-    "bytes": 13722,
+    "bytes": 13830,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -791,7 +799,7 @@
     "name": "dist/world-save.js",
     "url": "./world-save.js",
     "lines": 60,
-    "bytes": 10679,
+    "bytes": 10688,
     "aliases": [],
     "purpose": "Полный ручной снимок, проверка и восстановление текущей модели."
   },
@@ -1342,8 +1350,8 @@
   {
     "name": "README.ru.md",
     "url": "./source-files/README.ru.md",
-    "lines": 115,
-    "bytes": 16201,
+    "lines": 117,
+    "bytes": 16512,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -7620,10 +7628,26 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "dist/brain-diagram-help.js",
+    "url": "./brain-diagram-help.js",
+    "lines": 54,
+    "bytes": 16177,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "dist/brain-diagram-ui.js",
     "url": "./brain-diagram-ui.js",
-    "lines": 66,
-    "bytes": 7388,
+    "lines": 94,
+    "bytes": 16102,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "dist/brain-diagram-viewport.js",
+    "url": "./brain-diagram-viewport.js",
+    "lines": 38,
+    "bytes": 3160,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8094,8 +8118,8 @@
   {
     "name": "dist/workspace.css",
     "url": "./workspace.css",
-    "lines": 63,
-    "bytes": 20159,
+    "lines": 85,
+    "bytes": 23104,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8334,8 +8358,8 @@
   {
     "name": "docs/navigation/interface-and-files.md",
     "url": "./source-files/docs/navigation/interface-and-files.md",
-    "lines": 37,
-    "bytes": 9746,
+    "lines": 38,
+    "bytes": 10117,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8454,8 +8478,8 @@
   {
     "name": "docs/ui-redesign.md",
     "url": "./source-files/docs/ui-redesign.md",
-    "lines": 73,
-    "bytes": 22446,
+    "lines": 75,
+    "bytes": 22636,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8480,6 +8504,14 @@
     "url": "./source-files/tests/analysis-builder047.test.mjs",
     "lines": 79,
     "bytes": 10275,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "tests/brain-diagram0531.test.mjs",
+    "url": "./source-files/tests/brain-diagram0531.test.mjs",
+    "lines": 68,
+    "bytes": 6713,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9079,7 +9111,7 @@
     "name": "tools/verify-local.py",
     "url": "./source-files/tools/verify-local.py",
     "lines": 121,
-    "bytes": 8152,
+    "bytes": 8188,
     "aliases": [],
     "purpose": "Одна команда коротких локальных проверок, повтор выбранной части и отчёт времени/ошибок."
   },
@@ -9151,7 +9183,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 10,
-    "bytes": 2897,
+    "bytes": 2647,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -9230,8 +9262,8 @@
   {
     "name": "docs/verification.md",
     "url": "./source-files/docs/verification.md",
-    "lines": 35,
-    "bytes": 5321,
+    "lines": 37,
+    "bytes": 5588,
     "aliases": [],
     "purpose": "Выбор проверок, пределы выводов и сохранение проекта."
   },
@@ -9318,8 +9350,8 @@
   {
     "name": "dist/build-info.json",
     "url": "./build-info.json",
-    "lines": 965,
-    "bytes": 111780,
+    "lines": 967,
+    "bytes": 111980,
     "aliases": [],
     "purpose": "Отпечаток этой сборки для точного анализа отчёта."
   },
@@ -9478,8 +9510,8 @@
   {
     "name": "README.md",
     "url": "./source-files/README.md",
-    "lines": 130,
-    "bytes": 11467,
+    "lines": 132,
+    "bytes": 11669,
     "aliases": [],
     "purpose": "Устройство проекта, ограничения, запуск исходников и проверки."
   },
