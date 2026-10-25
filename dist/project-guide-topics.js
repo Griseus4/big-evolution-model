@@ -18,10 +18,13 @@ export const GUIDE_TOPICS={
   {file:'evolution-app.js',symbols:['toggle','singleStep'],purpose:'Кнопки наблюдателя и отправка команд.'},
  ],checks:[{file:'tests/world-ui.test.mjs',purpose:'Кнопки, подшаги и переходы между разделами.'}]},
  saves:{keywords:['сохранить','загрузить','импорт','экспорт','JSON','формат','продолжить'],sources:[{file:'world-save.js',symbols:['saveWorld','loadWorld'],purpose:'Формат полного мира, валидация и восстановление состояния.'}],checks:[{file:'tests/environment-save.test.mjs',purpose:'Продолжение сохранённого мира и отказ при повреждении файла.'}]},
- actions:{keywords:['действие','процесс','прерывание','отмена','ожидание','движение','ходьба','длительность'],sources:[
-  {file:'temporal-world.js',symbols:['temporalAvailableMask','acceptTemporalChoice'],purpose:'Допустимость и принятие действия; исполнение процесса.'},
-  {file:'action-timing.js',symbols:[],purpose:'Длительности и базовые ставки решений.'},
- ],checks:[{file:'tests/temporal.test.mjs',purpose:'Порядок процессов и расходы на действия.'}]},
+ actions:{reviewedVersion:'0.54.6',keywords:['действие','процесс','прерывание','физический срыв','отмена','ожидание','движение','ходьба','длительность','продолжение','повтор','подобрать','съесть','положить','пересмотр'],related:['time','geography','selection','food','brain','research'],sources:[
+ {file:'temporal-world.js',symbols:['temporalAvailableMask','temporalSelectedChoice','acceptTemporalChoice','prepareTemporalBoundary','complete'],purpose:'Условия начала, принятие, продолжение, прекращение и завершение действия.'},
+ {file:'attention-gate.js',symbols:['attentionRequest','rememberAttention'],purpose:'Малая сеть пересмотра и сохранение снимка для сравнения.'},
+ {file:'action-timing.js',symbols:[],purpose:'Длительности и базовые ставки решений.'},
+ {file:'evolution.js',symbols:['canDeposit','depositFood'],purpose:'Условия и перенос выкладываемой порции.'},
+ {file:'guide-actions-text.js',symbols:[],purpose:'Каноническая глава действий и прерываний.'},
+ ],checks:[{file:'tests/temporal.test.mjs',purpose:'Длительности, скидка повтора, прерывания и ограничения родов.'},{file:'tests/guide-actions0546.test.mjs',purpose:'Продолжение сохраняет прогресс, смена процесса и физический срыв различаются.'}]},
  brain:{keywords:['мозг','нейрон','связь','слой','нейросеть','Q','решение','вероятность','SARSA','TD','обучение','отрицательная чувствительность','энергия','здоровье','стоимость','цена мышления','нулевая энергия','голодание'],sources:[
   {file:'temporal-inputs.js',symbols:['prepareSetInput'],purpose:'Числовые входы из доступных жителю сведений.'},
   {file:'set-brain-engine.js',symbols:['learnSetBrain'],purpose:'Оценки действий и изменение личных поправок.'},

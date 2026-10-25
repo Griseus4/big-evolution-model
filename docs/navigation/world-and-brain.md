@@ -4,6 +4,8 @@
 
 Глава пособия о времени: [guide-time-text.js](../../dist/guide-time-text.js); паспорт/связи — project-guide-topics.js, проверка [guide-time0544.test.mjs](../../tests/guide-time0544.test.mjs).
 
+Глава действий: [guide-actions-text.js](../../dist/guide-actions-text.js), [проверка процессов](../../tests/guide-actions0546.test.mjs).
+
 ## world-time
 **Задача:** подшаг, длительность, начало/продолжение/срыв действия.
 **Сейчас:** [temporal-world.js](../../dist/temporal-world.js): `advanceTemporal`, `advanceTemporalBodies`, `prepareTemporalBoundary`, `acceptTemporalChoice`. Длительности/цены решения — [action-timing.js](../../dist/action-timing.js); малый контроллер — [attention-gate.js](../../dist/attention-gate.js).
