@@ -6,6 +6,22 @@ body.workspace>.global-toolbar{flex:none;width:100%;max-width:none;position:rela
 body.workspace>.global-status{flex:none;width:100%;padding:0 24px;margin:0}body.workspace>.global-status p:empty{display:none}
 body.workspace>#panel-world,body.workspace>.lab-panel{flex:1;min-height:0;width:100%;max-width:none;margin:0;overflow:auto;overscroll-behavior:contain;padding:18px 24px;scrollbar-gutter:stable}
 body.workspace>footer{flex:none;margin:0;max-width:none;width:100%;padding:6px 24px;border-top:1px solid var(--edge);font-size:12px}
+/* Высота пособия ограничена рабочим окном; меню и текст прокручиваются отдельно. */
+body.workspace>#panel-about{overflow:hidden;scrollbar-gutter:auto}
+body.workspace>#panel-about:not([hidden]){display:flex;flex-direction:column}
+#panel-about>h2,#panel-about>.eyebrow{flex:none}
+#panel-about .wiki-layout{flex:1;min-height:0;min-width:0;margin-top:10px;grid-template-columns:minmax(170px,240px) minmax(0,1fr);grid-template-rows:minmax(0,1fr);align-items:stretch;gap:18px;overflow:hidden}
+#panel-about .wiki-contents,#panel-about .wiki-article{position:static;min-height:0;min-width:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+#panel-about .wiki-contents{padding-right:6px}
+#panel-about .wiki-tree{gap:3px}
+#panel-about .wiki-branch{padding-left:8px}
+#panel-about .wiki-branch summary{font-size:13px;line-height:1.35;padding:5px 0}
+#panel-about .wiki-branch a{font-size:13px;line-height:1.4;padding:5px 8px;margin:1px 0}
+#panel-about .guide-search-label{font-size:12px;margin-bottom:5px}
+#panel-about #guide-search{font-size:13px;margin-bottom:8px;padding:7px 9px}
+#panel-about .guide-coverage{margin-top:12px;padding-top:8px}
+#panel-about .wiki-article>.guide-context-box{margin:0 0 12px}
+@media(max-width:750px){body.workspace>#panel-about{padding:10px}#panel-about .wiki-layout{grid-template-columns:minmax(105px,32%) minmax(0,1fr);gap:10px}#panel-about .wiki-article .panel{padding:14px}#panel-about .wiki-article h3{font-size:19px}}
 body.workspace>#panel-world{grid-template-columns:minmax(0,1fr) minmax(400px,36%);align-items:start;gap:20px}
 #panel-world .workspace{min-width:0}.compact-sidebar{position:sticky;top:0}.side-content{max-height:none;overflow:visible}.side-tablist{position:sticky;top:0;background:var(--panel);z-index:2}#resident-details{max-height:none}
 .section-title{margin-bottom:12px}.section-title .eyebrow{display:none}.lab-controls{gap:10px;margin:12px 0}.note{line-height:1.55}.lab-panel .section-title h2{font-size:20px}

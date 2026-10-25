@@ -6,9 +6,18 @@ import {installGuideParameters} from './guide-parameters.js';
 import {createGuideSources,installGuideCoverage} from './project-guide-sources-ui.js';
 
 export function installProjectGuide({root=document,view=globalThis,onOpen=()=>{},getWorld,getVariants}={}){
- const byId=id=>root.getElementById(id),container=byId('panel-about');
+ const byId=id=>root.getElementById(id),container=byId('guide-article-scroll');
  const search=byId('guide-search'),results=byId('guide-search-results'),status=byId('guide-search-status'),tree=byId('guide-tree');
  const parameters=installGuideParameters({root,getWorld,getVariants});
+ const branches=[...tree.querySelectorAll('details.wiki-branch')];
+ function expandBranch(branch){
+  for(const sibling of branches)if(sibling!==branch&&sibling.parentElement===branch.parentElement){
+   sibling.open=false;
+   for(const child of sibling.querySelectorAll?.('details.wiki-branch')??[])child.open=false;
+  }
+  branch.open=true;
+ }
+ for(const branch of branches)branch.addEventListener('toggle',()=>{if(branch.open)expandBranch(branch);});
  const scrollPositions=new Map(),passports=new Set();let current=null;
  function markResultLinks(){for(const link of results.querySelectorAll('a[data-guide-article]')){if(link.dataset.guideArticle===current)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');}}
  function select(id,{open=false,remember=false,focus=false}={}){
@@ -22,11 +31,11 @@ export function installProjectGuide({root=document,view=globalThis,onOpen=()=>{}
    }
    current=id;
    if(!passports.has(id)){byId(`wiki-panel-${id}`).append(createGuideSources(GUIDE_ARTICLES.find(a=>a.id===id),root));passports.add(id);}
-   // Ветка раскрывается и при переходе по ссылке из другой статьи или URL.
-   let branch=byId(`wiki-tab-${id}`).closest('details');
-   while(branch){branch.open=true;branch=branch.parentElement?.closest('details');}
    container.scrollTop=scrollPositions.get(id)??0;
   }
+  // Оставляем раскрытым один путь, включая переход по ссылке/URL.
+  let branch=byId(`wiki-tab-${id}`).closest('details');
+  while(branch){expandBranch(branch);branch=branch.parentElement?.closest('details');}
   markResultLinks();
   parameters.refresh();
   if(open)onOpen();

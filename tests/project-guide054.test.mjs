@@ -20,8 +20,11 @@ function fixture(hash=''){
   querySelectorAll(){return this.children.flatMap(child=>[...(child.dataset.guideArticle?[child]:[]),...child.querySelectorAll()]);},querySelector(){return this.querySelectorAll()[0]??null;},
   click(){this.listeners.click?.({button:0,preventDefault(){}});},
   addEventListener(name,fn){this.listeners[name]=fn;},closest(){return this.branch;},focus(){this.focused=true;}};nodes.set(id,element);return element;};
- for(const id of ['panel-about','tab-about','guide-context','guide-context-note','guide-parameter-rows','guide-search','guide-search-results','guide-search-status','guide-tree','guide-coverage','guide-coverage-content'])make(id);
+ for(const id of ['panel-about','guide-article-scroll','tab-about','guide-context','guide-context-note','guide-parameter-rows','guide-search','guide-search-results','guide-search-status','guide-tree','guide-coverage','guide-coverage-content'])make(id);
  for(const article of GUIDE_ARTICLES){make(`wiki-tab-${article.id}`);make(`wiki-panel-${article.id}`);}
+ const branchParent={closest:()=>null};
+ const branches=GUIDE_ARTICLES.map(article=>{const branch={open:false,parentElement:branchParent,listeners:{},closest(){return this;},querySelectorAll:()=>[],addEventListener(name,fn){this.listeners[name]=fn;}};nodes.get(`wiki-tab-${article.id}`).branch=branch;return branch;});
+ nodes.get('guide-tree').querySelectorAll=()=>branches;
  const cross=make('cross-link');cross.dataset.guideArticle='genome';
  const root={getElementById:id=>{assert.ok(nodes.has(id),id);return nodes.get(id);},querySelectorAll:selector=>selector==='[data-guide-param]'?[]:[cross],createElement:tag=>{const node=make('dynamic-'+ ++serial);node.tagName=tag;return node;}};
  const location={hash},pushed=[],view={location,history:{pushState(state,title,url){pushed.push(url);location.hash=url;}},addEventListener(name,fn){events[name]=fn;}};
@@ -53,17 +56,32 @@ test('new introduction records specific implementation sources; legacy articles 
 
 test('article links open their branch, keep DOM state, restore reading position and respect modified clicks',()=>{
  const f=fixture();assert.equal(f.ui.currentArticle(),'intro');assert.equal(f.nodes.get('wiki-panel-intro').hidden,false);
- f.nodes.get('panel-about').scrollTop=123;f.nodes.get('wiki-panel-intro').preciseRulesOpen=true;
+ f.nodes.get('guide-article-scroll').scrollTop=123;f.nodes.get('wiki-panel-intro').preciseRulesOpen=true;
  assert.equal(f.click('brain'),true);assert.equal(f.ui.currentArticle(),'brain');assert.equal(f.nodes.get('wiki-tab-brain').branch.open,true);
  assert.equal(f.nodes.get('wiki-panel-intro').hidden,true);assert.equal(f.nodes.get('wiki-panel-brain').focused,true);
  assert.equal(f.location.hash,'#wiki-panel-brain');assert.deepEqual(f.opened,['brain']);
- f.nodes.get('panel-about').scrollTop=42;f.click('intro');assert.equal(f.nodes.get('panel-about').scrollTop,123);assert.equal(f.nodes.get('wiki-panel-intro').preciseRulesOpen,true);
+ f.nodes.get('guide-article-scroll').scrollTop=42;f.click('intro');assert.equal(f.nodes.get('guide-article-scroll').scrollTop,123);assert.equal(f.nodes.get('wiki-panel-intro').preciseRulesOpen,true);
  assert.equal(f.nodes.get('wiki-tab-intro').attributes['aria-current'],'page');assert.equal(f.nodes.get('wiki-tab-brain').attributes['aria-current'],undefined);
  assert.equal(f.click('world',{ctrlKey:true}),false);assert.equal(f.click('world',{button:1}),false);assert.equal(f.ui.currentArticle(),'intro');
  assert.equal(f.click('cross-link'),true);assert.equal(f.ui.currentArticle(),'genome');assert.equal(f.cross.dataset.help,'wiki-tab-genome');
  assert.equal(f.ui.select('unknown'),false);assert.equal(f.ui.currentArticle(),'genome');
- f.location.hash='#wiki-panel-brain';f.events.hashchange();assert.equal(f.ui.currentArticle(),'brain');assert.equal(f.nodes.get('panel-about').scrollTop,42);
- f.location.hash='';f.events.hashchange();assert.equal(f.ui.currentArticle(),'intro');assert.equal(f.nodes.get('panel-about').scrollTop,123);
+ f.location.hash='#wiki-panel-brain';f.events.hashchange();assert.equal(f.ui.currentArticle(),'brain');assert.equal(f.nodes.get('guide-article-scroll').scrollTop,42);
+ f.location.hash='';f.events.hashchange();assert.equal(f.ui.currentArticle(),'intro');assert.equal(f.nodes.get('guide-article-scroll').scrollTop,123);
+});
+
+test('opening a branch closes siblings and their descendants while preserving its ancestors',()=>{
+ const f=fixture(),first=f.nodes.get('wiki-tab-world').branch,second=f.nodes.get('wiki-tab-brain').branch,child=f.nodes.get('wiki-tab-memory').branch;
+ child.parentElement=first;first.querySelectorAll=()=>[child];first.open=true;child.open=true;
+ second.open=true;second.listeners.toggle();assert.equal(first.open,false);assert.equal(child.open,false);assert.equal(second.open,true);
+ child.open=true;first.open=true;child.listeners.toggle();assert.equal(first.open,true);assert.equal(second.open,true,'opening a child closes only its siblings');
+ f.ui.select('world');assert.equal(first.open,true);assert.equal(second.open,false);
+});
+
+test('article scrolling is independent from the whole tab and reopening its link reveals the branch',()=>{
+ const f=fixture(),panel=f.nodes.get('panel-about'),scroll=f.nodes.get('guide-article-scroll');panel.scrollTop=19;scroll.scrollTop=120;
+ f.click('brain');assert.equal(panel.scrollTop,19);assert.equal(scroll.scrollTop,0);
+ f.click('intro');assert.equal(scroll.scrollTop,120);assert.equal(panel.scrollTop,19);
+ const branch=f.nodes.get('wiki-tab-intro').branch;branch.open=false;f.click('intro');assert.equal(branch.open,true);assert.equal(scroll.scrollTop,120);
 });
 
 test('cross-links open every ancestor of a nested article branch',()=>{
