@@ -2,7 +2,7 @@ import {GUIDE_ARTICLES} from './project-guide.js';
 
 // Без морфологии и регулярных выражений из ввода: ё/е равнозначны,
 // все слова запроса должны встречаться в названии, выжимке или указателе.
-export function normalizeGuideQuery(value){return String(value??'').normalize('NFKC').toLocaleLowerCase('ru').replaceAll('ё','е').replace(/\s+/g,' ').trim();}
+export function normalizeGuideQuery(value){return String(value??'').normalize('NFKC').toLocaleLowerCase('ru').replaceAll('ё','е').replace(/\s+/g,' ').trim().replace(/[?？]+$/,'');}
 const index=GUIDE_ARTICLES.map(article=>({article,title:normalizeGuideQuery(article.title),text:normalizeGuideQuery([article.title,article.summary,...article.keywords,...article.sources.flatMap(s=>[s.file,...s.symbols])].join(' '))}));
 export function searchGuideArticles(query){
  const words=normalizeGuideQuery(query).split(' ').filter(Boolean);

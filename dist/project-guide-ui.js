@@ -23,7 +23,8 @@ export function installProjectGuide({root=document,view=globalThis,onOpen=()=>{}
    current=id;
    if(!passports.has(id)){byId(`wiki-panel-${id}`).append(createGuideSources(GUIDE_ARTICLES.find(a=>a.id===id),root));passports.add(id);}
    // Ветка раскрывается и при переходе по ссылке из другой статьи или URL.
-   const branch=byId(`wiki-tab-${id}`).closest('details');if(branch)branch.open=true;
+   let branch=byId(`wiki-tab-${id}`).closest('details');
+   while(branch){branch.open=true;branch=branch.parentElement?.closest('details');}
    container.scrollTop=scrollPositions.get(id)??0;
   }
   markResultLinks();

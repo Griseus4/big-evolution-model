@@ -47,7 +47,7 @@ test('all retained articles and new introduction have stable links and one summa
 test('new introduction records specific implementation sources; legacy articles are not falsely re-reviewed',()=>{
  const intro=GUIDE_ARTICLES.find(a=>a.id==='intro');assert.equal(intro.reviewedVersion,'0.54.2');
  for(const source of intro.sources){const code=readFileSync(new URL('../dist/'+source.file,import.meta.url),'utf8');for(const symbol of source.symbols)assert.match(code,new RegExp(`\\b${symbol}\\s*\\(`));}
- for(const id of ['saves','brain','checks','limits'])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,null);
+ for(const id of ['saves','brain','checks','limits'])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,'0.54.17');
  for(const [id,version] of [['selection','0.54.13'],['genome','0.54.13'],['memory','0.54.12'],['observation','0.54.12'],['feelings','0.54.12'],['brain-structure','0.54.12'],['choice','0.54.12'],['food','0.54.10'],['deposits','0.54.9'],['environment','0.54.11']])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,version);
 });
 
@@ -64,6 +64,12 @@ test('article links open their branch, keep DOM state, restore reading position 
  assert.equal(f.ui.select('unknown'),false);assert.equal(f.ui.currentArticle(),'genome');
  f.location.hash='#wiki-panel-brain';f.events.hashchange();assert.equal(f.ui.currentArticle(),'brain');assert.equal(f.nodes.get('panel-about').scrollTop,42);
  f.location.hash='';f.events.hashchange();assert.equal(f.ui.currentArticle(),'intro');assert.equal(f.nodes.get('panel-about').scrollTop,123);
+});
+
+test('cross-links open every ancestor of a nested article branch',()=>{
+ const f=fixture(),link=f.nodes.get('wiki-tab-learning'),outer={open:false};
+ link.branch.parentElement={closest:()=>outer};f.ui.select('learning');
+ assert.equal(link.branch.open,true);assert.equal(outer.open,true);
 });
 
 test('recognized initial deep link opens the guide; unrelated hashes do not switch sections',()=>{
@@ -93,7 +99,7 @@ test('source pointers link only through the local source viewer and do not mark 
  assert.equal(guideSourceUrl('world-save.js'),'./source.html?file=dist%2Fworld-save.js');
  const data=guideCoverage([{path:'dist/evolution.js',kind:'app'},{path:'tools/not-yet-described.py',kind:'tools'}]);
  assert.equal(data.total,2);assert.equal(data.referenced,1);assert.equal(data.reviewedArticles,GUIDE_ARTICLES.filter(a=>a.reviewedVersion!==null).length);assert.equal(data.rows[1].articles.length,0);assert.equal(data.covered,undefined);
- const f=fixture(),legacy=createGuideSources(GUIDE_ARTICLES.find(a=>a.id==='brain'),f.root);
+ const f=fixture(),legacy=createGuideSources({...GUIDE_ARTICLES.find(a=>a.id==='brain'),reviewedVersion:null},f.root);
  assert.match(legacy.children[1].textContent,/подробная сверка.*впереди/);
  const reviewed=createGuideSources(GUIDE_ARTICLES.find(a=>a.id==='food'),f.root);
  assert.match(reviewed.children[1].textContent,/не отметка полного описания/);

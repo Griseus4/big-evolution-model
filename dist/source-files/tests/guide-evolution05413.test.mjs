@@ -21,8 +21,8 @@ test('current genome analysis reads inherited base without a world step or RNG d
  assert.equal(result.genomeVersion,14);assert.equal(result.geneCount,a.genome.length);assert.ok(result.properties.some(p=>p.group==='Структура мозга'));
  assert.equal(w.tick,tick);assert.equal(w.random.state,rng);assert.deepEqual(file.genes,a.genome);
 });
-test('new passports leave unrelated articles unreviewed and tiny rule values nonzero',()=>{
+test('evolution passports retain their review version and tiny rule values remain nonzero',()=>{
  for(const id of ['learning','brain-cost','selection','genome','structure-evolution','genome-analysis'])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,'0.54.13');
- assert.equal(GUIDE_ARTICLES.find(a=>a.id==='research').reviewedVersion,null);
+ assert.equal(GUIDE_ARTICLES.find(a=>a.id==='research').reviewedVersion,'0.54.16');
  assert.match(PAGE_TEXT['guide-genome-body'],/1e-6/);assert.match(PAGE_TEXT['guide-birth-body'],/data-guide-param="birthEnergy"/);
 });
