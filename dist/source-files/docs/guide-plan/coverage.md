@@ -187,3 +187,16 @@ P00 завершён структурно: рабочие файлы имеют 
 | Известен ли исход? periods | life-cohorts: aggregateLifeCohorts; survival-curve; population-statistics; history-window | Неизвестный исход не смерть; после подтверждённого вымирания нули; guide-experiments05414 | ДИ P20 |
 
 Новые файлы: guide-experiments-text.js, guide-experiment-topics.js, guide-experiments05414.test.mjs. В пособии 31 статья. Конкретный вопрос пользователю: исправить ли старые подписи «Подшаги» у observedSteps/emptyEnergySteps в конструкторе; текущий temporal-формат хранит Т. До ответа подписи не менялись, справочник указывает реальные единицы.
+
+## Проверенные ответственности пакета E (P20–P23)
+
+Версия 0.54.15; описано для перечисленных смыслов, без заявления полного покрытия каждого файла.
+
+| Статья | Проверенные источники | Доказательство / граница |
+| --- | --- | --- |
+| estimates | weighted-statistics, statistics-estimates, statistical-series/blocks, statistics-format | Учебный пример через рабочий оцениватель, поточечные ДИ, единицы resampling |
+| groups | experiment-grouping, pair-statistics/series | Полные блоки/пары, общая перевыборка, отношение, выбранные попытки |
+| charts | chart-catalogue/ui, chart-context, analysis-expression, analysis-builder-core | Фактический монтаж, birthAge, агрегаторы, закрепления; не старый экран |
+| files | world-save/files-ui, state-codec, experiment-archive/store | Проверка до замены, формат v1 блоков, полные JSON, сохранность исходных блоков |
+
+Новые файлы: guide-analysis-text/topics.js, guide-analysis05415.test.mjs; 35 статей. Подписи observedSteps/emptyEnergySteps теперь указывают Т, как текущая temporal-история. Сами данные и вычисления не менялись. Смысл ошибки объяснён пользователю.

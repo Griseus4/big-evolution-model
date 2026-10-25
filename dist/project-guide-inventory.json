@@ -1,7 +1,7 @@
 {
   "format": "big-evolution-guide-inventory",
   "version": 1,
-  "modelVersion": "0.54.14",
+  "modelVersion": "0.54.15",
   "files": [
     {
       "path": ".github/workflows/pages.yml",
@@ -389,6 +389,14 @@
     },
     {
       "path": "dist/guide-actions-text.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/guide-analysis-text.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/guide-analysis-topics.js",
       "kind": "app"
     },
     {
@@ -961,6 +969,10 @@
     },
     {
       "path": "tests/guide-actions0546.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/guide-analysis05415.test.mjs",
       "kind": "tests"
     },
     {

@@ -4,7 +4,7 @@
 
 ## P20 — средние, медианы, веса и интервалы
 
-**Зависимости:** P18–P19. **Статус:** запланирован.
+**Зависимости:** P18–P19. **Статус:** выполнен в 0.54.15 — [протокол E](../updates/v054-guide-analysis.md).
 
 Источники: `weighted-statistics.js`, `statistics-estimates.js`, `statistical-series.js`, `statistical-blocks.js`, `statistics-format.js`, клиенты/Worker статистики.
 
@@ -16,7 +16,7 @@
 
 ## P21 — группы и сравнение выбранной пары
 
-**Зависимости:** P16, P20. **Статус:** запланирован.
+**Зависимости:** P16, P20. **Статус:** выполнен в 0.54.15 — [протокол E](../updates/v054-guide-analysis.md).
 
 Источники: `experiment-grouping.js`, `statistical-blocks.js`, `experiment-statistics.js`, `pair-statistics.js` — `preparePairSide`, `estimatePair`; `pair-series.js`, `pair-comparison-ui.js`, `history-differences-ui.js`.
 
@@ -28,7 +28,7 @@
 
 ## P22 — шаблоны, формулы и локальные настройки графика
 
-**Зависимости:** P18–P21. **Статус:** запланирован.
+**Зависимости:** P18–P21. **Статус:** выполнен в 0.54.15 — [протокол E](../updates/v054-guide-analysis.md).
 
 Источники: `chart-catalogue.js`, `chart-catalogue-ui.js`, `chart-context.js`, `chart-pins-ui.js`, `chart-local-renderer.js`, `analysis-expression.js`, `analysis-builder-core.js`, `analysis-projection.js`, `catalogue-expression-client.js`. Проверить фактическую точку монтажа; прежний `analysis-builder-ui.js` не описывать как текущий экран без подтверждения.
 
@@ -40,7 +40,7 @@
 
 ## P23 — сохранения, архивы и загрузка частями
 
-**Зависимости:** P12, P15–P22. **Статус:** запланирован.
+**Зависимости:** P12, P15–P22. **Статус:** выполнен в 0.54.15 — [протокол E](../updates/v054-guide-analysis.md).
 
 Источники: `world-save.js`, `state-codec.js`, `world-files-ui.js`, `genome.js`, `experiment-plan.js`, `experiment-archive.js`, `experiment-store.js`, `json-export.js`, `analysis-projection.js`, `experiment-ui.js` — подготовка статистики.
 
