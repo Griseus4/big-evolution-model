@@ -1,6 +1,11 @@
 /** Термины и навигационные указатели. Ссылка на файл не означает,
  * что прежняя краткая статья уже описывает каждое правило этого файла. */
 export const GUIDE_TOPICS={
+ time:{reviewedVersion:'0.54.4',keywords:['время','подшаг','Т','возраст','порядок событий','скорость','завершение','граница','одновременно'],related:['actions','food','selection','world'],sources:[
+ {file:'temporal-world.js',symbols:['advanceTemporal','advanceTemporalBodies','prepareTemporalBoundary','acceptTemporalChoice','finishTemporal'],purpose:'Фазы подшага, завершения, решения и запись истории.'},
+ {file:'action-timing.js',symbols:[],purpose:'Единица времени и длительности процессов.'},
+ {file:'guide-time-text.js',symbols:[],purpose:'Каноническая глава времени и пример.'},
+ ],checks:[{file:'tests/temporal.test.mjs',purpose:'Длительности, рождение и физиология.'},{file:'tests/parallel-world.test.mjs',purpose:'Согласованность фаз последовательного и параллельного исполнения.'},{file:'tests/guide-time0544.test.mjs',purpose:'Числа примера и навигация главы.'}]},
  intro:{keywords:['цель проекта','эволюция','обучение','наследственность','стая','вожак','поиск','пособие','оглавление','ссылки','исходники','описание'],sources:[
   {file:'project-guide-ui.js',symbols:['installProjectGuide'],purpose:'Переходы между статьями и поиск в интерфейсе.'},
   {file:'project-guide-search.js',symbols:['searchGuideArticles','guideCoverage'],purpose:'Сопоставление терминов и учёт указателей на файлы.'},

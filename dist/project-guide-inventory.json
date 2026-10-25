@@ -1,7 +1,7 @@
 {
   "format": "big-evolution-guide-inventory",
   "version": 1,
-  "modelVersion": "0.54.3",
+  "modelVersion": "0.54.4",
   "files": [
     {
       "path": ".github/workflows/pages.yml",
@@ -376,11 +376,19 @@
       "kind": "app"
     },
     {
+      "path": "dist/guide-markup.js",
+      "kind": "app"
+    },
+    {
       "path": "dist/guide-parameters.js",
       "kind": "app"
     },
     {
       "path": "dist/guide-reference-text.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/guide-time-text.js",
       "kind": "app"
     },
     {
@@ -881,6 +889,10 @@
     },
     {
       "path": "tests/guide-reader0542.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/guide-time0544.test.mjs",
       "kind": "tests"
     },
     {

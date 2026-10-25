@@ -2,6 +2,8 @@
 
 [Выбор темы](README.md). Открывать нужную карточку; ссылки на историю и планы — по необходимости.
 
+Глава пособия о времени: [guide-time-text.js](../../dist/guide-time-text.js); паспорт/связи — project-guide-topics.js, проверка [guide-time0544.test.mjs](../../tests/guide-time0544.test.mjs).
+
 ## world-time
 **Задача:** подшаг, длительность, начало/продолжение/срыв действия.
 **Сейчас:** [temporal-world.js](../../dist/temporal-world.js): `advanceTemporal`, `advanceTemporalBodies`, `prepareTemporalBoundary`, `acceptTemporalChoice`. Длительности/цены решения — [action-timing.js](../../dist/action-timing.js); малый контроллер — [attention-gate.js](../../dist/attention-gate.js).

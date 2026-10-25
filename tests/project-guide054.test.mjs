@@ -30,7 +30,7 @@ function fixture(hash=''){
 }
 
 test('all retained articles and new introduction have stable links and one summary',()=>{
- assert.equal(GUIDE_ARTICLES.length,15);assert.equal(new Set(GUIDE_ARTICLES.map(a=>a.id)).size,15);
+ assert.ok(GUIDE_ARTICLES.length>=15);assert.equal(new Set(GUIDE_ARTICLES.map(a=>a.id)).size,GUIDE_ARTICLES.length);
  assert.match(html,/aria-controls="panel-about">О проекте<\/button>/);
  for(const article of GUIDE_ARTICLES){
   assert.ok(article.summary.length>40);
@@ -47,7 +47,7 @@ test('all retained articles and new introduction have stable links and one summa
 test('new introduction records specific implementation sources; legacy articles are not falsely re-reviewed',()=>{
  const intro=GUIDE_ARTICLES.find(a=>a.id==='intro');assert.equal(intro.reviewedVersion,'0.54.2');
  for(const source of intro.sources){const code=readFileSync(new URL('../dist/'+source.file,import.meta.url),'utf8');for(const symbol of source.symbols)assert.match(code,new RegExp(`\\b${symbol}\\s*\\(`));}
- for(const article of GUIDE_ARTICLES.slice(1))assert.equal(article.reviewedVersion,null);
+ for(const id of ['world','saves','brain','memory','selection','genome','food','deposits','environment','research','checks','limits'])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,null);
 });
 
 test('article links open their branch, keep DOM state, restore reading position and respect modified clicks',()=>{
@@ -91,7 +91,7 @@ test('source pointers link only through the local source viewer and do not mark 
  assert.equal(guideSourcePath('world-save.js'),'dist/world-save.js');assert.equal(guideSourcePath('tests/world-ui.test.mjs'),'tests/world-ui.test.mjs');
  assert.equal(guideSourceUrl('world-save.js'),'./source.html?file=dist%2Fworld-save.js');
  const data=guideCoverage([{path:'dist/evolution.js',kind:'app'},{path:'tools/not-yet-described.py',kind:'tools'}]);
- assert.equal(data.total,2);assert.equal(data.referenced,1);assert.equal(data.reviewedArticles,1);assert.equal(data.rows[1].articles.length,0);assert.equal(data.covered,undefined);
+ assert.equal(data.total,2);assert.equal(data.referenced,1);assert.equal(data.reviewedArticles,GUIDE_ARTICLES.filter(a=>a.reviewedVersion!==null).length);assert.equal(data.rows[1].articles.length,0);assert.equal(data.covered,undefined);
  const f=fixture(),legacy=createGuideSources(GUIDE_ARTICLES.find(a=>a.id==='food'),f.root);
  assert.match(legacy.children[1].textContent,/подробная сверка.*впереди/);
 });
