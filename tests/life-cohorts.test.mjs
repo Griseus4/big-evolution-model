@@ -4,6 +4,8 @@ import {aggregateLifeCohorts,lifeMetric} from '../dist/life-cohorts.js';
 import {createLifeObservations,describeLifeObservations,LIFE_OBSERVATION_SCHEMA} from '../dist/life-observations.js';
 import {Evolution} from '../dist/evolution.js';
 import {Evolution as PreviousEvolution} from '../dist/benchmark-snapshots/0.34.0/evolution.js';
+import {Evolution as ObserverEvolution} from '../dist/benchmark-snapshots/0.35.0/evolution.js';
+import {benchmarkDigest} from '../dist/benchmark-state.js';
 import {foodCohorts,foodExposureReport,createFoodExposure,sampleFoodExposure} from '../dist/food-exposure.js';
 import {GATE_OUTPUT_BIAS} from '../dist/temporal-layout.js';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
@@ -59,9 +61,14 @@ test('food integral equals direct map totals without inspecting inventory or sto
  sum+=total;w.substep();const next=foodCohorts(foodExposureReport(w.foodExposure),w.tick,10);near(next[1].mean,total);assert.equal(next[1].complete,false);
  assert.deepEqual(foodCohorts(null,10,10),[]);
 });
-test('observer counters preserve complete frozen physical/cognitive trajectories and every RNG',()=>{
- for(const seed of [42,77]){const settings={seed,population:8,limit:16},a=new Evolution(settings),b=new PreviousEvolution(settings);
-  for(let i=0;i<12;i++){a.step();b.step();const current=structuredClone(a.snapshot());delete current.reproduction.maturity;delete current.reproduction.birthInterval;for(const resident of current.agents){delete resident.life.observer;delete resident.life.heritable;delete resident.life.firstBirthAge;}assert.deepEqual(current,b.snapshot());}
+test('frozen observer introduction preserves its preceding physical/cognitive trajectories and every RNG',async()=>{
+ // Это регрессия введения наблюдателя в 0.35, а не требование совпадения
+ // нынешней модели со старым мозгом 0.34. Живые счётчики проверены выше.
+ for(const seed of [42,77]){const settings={seed,population:8,limit:16},a=new ObserverEvolution(settings),b=new PreviousEvolution(settings);
+  for(let i=0;i<12;i++){a.step();b.step();const current=structuredClone(a.snapshot());delete current.reproduction.maturity;delete current.reproduction.birthInterval;for(const resident of current.agents){delete resident.life.observer;delete resident.life.heritable;delete resident.life.firstBirthAge;}
+   // Ошибка остаётся короткой даже при различии больших массивов мозга.
+   assert.equal(await benchmarkDigest(current),await benchmarkDigest(b.snapshot()),`observer regression: seed ${seed}, step ${i+1}`);
+  }
  }
 });
 

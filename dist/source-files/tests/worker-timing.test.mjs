@@ -6,30 +6,36 @@ import {WORLD_PROTOCOL} from '../dist/world-view.js';
 import {Evolution} from '../dist/evolution.js';
 import {readFile} from 'node:fs/promises';
 import {BENCHMARK_CURRENT_KERNEL} from '../dist/benchmark-versions.js';
+import {createHash} from 'node:crypto';
+import {benchmarkDigest} from '../dist/benchmark-state.js';
 
-test('baseline modules retain byte identity except release, display bins and explicit founder-only initialization',async()=>{
+test('active frozen kernel files retain their manifest identities',async()=>{
  const base=new URL(`../dist/benchmark-snapshots/${BENCHMARK_CURRENT_KERNEL}/`,import.meta.url);
  const manifest=JSON.parse(await readFile(new URL('manifest.json',base),'utf8'));
- for(const name of Object.keys(manifest.files)){
-  let current=await readFile(new URL(`../dist/${name}`,import.meta.url),'utf8'),frozen=await readFile(new URL(name,base),'utf8');
-  if(name==='life-history.js'){
-   const version=/export const MODEL_VERSION='[^']+';/;
-   current=current.replace(version,'MODEL_VERSION');frozen=frozen.replace(version,'MODEL_VERSION');
+ assert.equal(manifest.id,BENCHMARK_CURRENT_KERNEL);
+ for(const [name,expected] of Object.entries(manifest.files)){
+  const bytes=await readFile(new URL(name,base));
+  assert.equal(createHash('sha256').update(bytes).digest('hex'),expected,name);
+ }
+});
+
+test('current physical/cognitive state and RNG match the active kernel on fixed short trajectories',async()=>{
+ const {Evolution:ReferenceEvolution}=await import(`../dist/benchmark-snapshots/${BENCHMARK_CURRENT_KERNEL}/evolution.js`);
+ // Централизация именованных чисел может менять текст исходника без смены
+ // физики. Сравниваем состояния, отдельно сохраняя контроль снимка выше.
+ for(const seed of [42,77]){
+  const settings={seed,population:8,limit:16},current=new Evolution(settings),reference=new ReferenceEvolution(settings);
+  for(let step=0;step<=12;step++){
+   assert.equal(await benchmarkDigest(current.snapshot()),await benchmarkDigest(reference.snapshot()),`kernel ${BENCHMARK_CURRENT_KERNEL}: seed ${seed}, step ${step}`);
+   if(step<12){current.step();reference.step();}
   }
-  // Только ширина корзины отображения меняется в 0.43; наследуемые
-  // значения и захват наблюдений должны остаться побайтно прежними.
-  if(name==='heritable-statistics.js'){
-   current=current.replace('SENSITIVITY_BIN_WIDTH=20','SENSITIVITY_BIN_WIDTH=5');
-  }
-  // 0.44 добавляет только необязательное вмешательство в начальные гены.
-  // Удаляем точные четыре добавки; остальная физика сравнивается побайтно.
-  // Отдельный genome-experiments044 проверяет траекторию прежнего режима.
-  if(name==='evolution.js')current=current
-   .replace(/import \{compileFounderSenses\} from '.\/founder-senses.js';\r?\n/,'')
-   .replace(',automaticEnvironment,founderSenses}',',automaticEnvironment}')
-   .replace(/  const founderEdits=compileFounderSenses\(founderSenses,layoutForType\(this.brainType\)\);\r?\n/,'')
-   .replace(/   for\(const \[index,value\]of founderEdits\)genome\[index\]=value;\r?\n/,'');
-  assert.equal(current.replaceAll('\r\n','\n'),frozen.replaceAll('\r\n','\n'),name);
+ }
+});
+
+test('trajectory fingerprints detect a changed RNG, learned weight and observer sample',async()=>{
+ const snapshot=new Evolution({population:1}).snapshot(),expected=await benchmarkDigest(snapshot);
+ for(const change of [s=>s.rng^=1,s=>s.agents[0].brain.networkDelta[0]+=.01,s=>s.agents[0].life.observer.inventorySubsteps[0]++]){
+  const changed=structuredClone(snapshot);change(changed);assert.notEqual(await benchmarkDigest(changed),expected);
  }
 });
 

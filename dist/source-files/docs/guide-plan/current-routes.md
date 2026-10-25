@@ -496,3 +496,4 @@
 | [tools/measure-parallel-033.mjs](../../tools/measure-parallel-033.mjs) | служебное | локальная проверка/анализ/сборка; `development`, для измерений также `performance` |
 | [tools/package-github.py](../../tools/package-github.py) | служебное | локальная проверка/анализ/сборка; `development`, для измерений также `performance` |
 | [tools/verify-local.py](../../tools/verify-local.py) | служебное | локальная проверка/анализ/сборка; `development`, для измерений также `performance` |
+| [docs/updates/v054-test-baselines.md](../../docs/updates/v054-test-baselines.md) | историческое | Технический протокол эталонов проверок; `performance`, `development` |

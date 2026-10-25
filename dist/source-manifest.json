@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 35,
-    "bytes": 4248,
+    "bytes": 4403,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 169,
-    "bytes": 17866,
+    "lines": 171,
+    "bytes": 18006,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -844,6 +844,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v054-test-baselines.md",
+    "url": "./source-files/docs/updates/v054-test-baselines.md",
+    "lines": 28,
+    "bytes": 5514,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "dist/model-rules.js",
     "url": "./model-rules.js",
     "lines": 24,
@@ -1270,8 +1278,8 @@
   {
     "name": "tests/life-cohorts.test.mjs",
     "url": "./source-files/tests/life-cohorts.test.mjs",
-    "lines": 73,
-    "bytes": 7239,
+    "lines": 80,
+    "bytes": 7903,
     "aliases": [],
     "purpose": "Статистика, дожитие, запасы, прерывания, интеграл пищи и эквивалентность."
   },
@@ -9206,8 +9214,8 @@
   {
     "name": "docs/guide-plan/audit.md",
     "url": "./source-files/docs/guide-plan/audit.md",
-    "lines": 54,
-    "bytes": 10183,
+    "lines": 59,
+    "bytes": 11090,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9246,8 +9254,8 @@
   {
     "name": "docs/guide-plan/current-routes.md",
     "url": "./source-files/docs/guide-plan/current-routes.md",
-    "lines": 498,
-    "bytes": 89429,
+    "lines": 499,
+    "bytes": 89648,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9295,7 +9303,7 @@
     "name": "docs/navigation/interface-and-files.md",
     "url": "./source-files/docs/navigation/interface-and-files.md",
     "lines": 50,
-    "bytes": 13027,
+    "bytes": 13139,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9878,8 +9886,8 @@
   {
     "name": "tests/worker-timing.test.mjs",
     "url": "./source-files/tests/worker-timing.test.mjs",
-    "lines": 124,
-    "bytes": 8589,
+    "lines": 130,
+    "bytes": 8641,
     "aliases": [],
     "purpose": "Границы/пауза/отмена/срок записи и точное совпадение модели/RNG в обоих режимах."
   },
@@ -10415,7 +10423,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 12,
-    "bytes": 2433,
+    "bytes": 2443,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -10494,8 +10502,8 @@
   {
     "name": "docs/verification.md",
     "url": "./source-files/docs/verification.md",
-    "lines": 61,
-    "bytes": 8456,
+    "lines": 63,
+    "bytes": 9033,
     "aliases": [],
     "purpose": "Выбор проверок, пределы выводов и сохранение проекта."
   },
