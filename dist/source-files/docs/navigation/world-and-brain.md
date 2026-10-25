@@ -28,6 +28,8 @@
 **История:** [0.36 — дефицит вместо бесплатных действий](../updates/v036-environment-energy-save.md), [0.46 — время усвоения в опытах](../updates/v046-digestion-experiments.md), [правила](../mechanics-reference.md#энергетика).
 **Дальше:** разделение базального/добавочного расхода, износ/восстановление — [предложения физиологии](../future-ideas.md#новые-механики).
 
+Пособие о карте и координатах: [guide-geography-text.js](../../dist/guide-geography-text.js), [проверка примера](../../tests/guide-geography0545.test.mjs).
+
 ## perception
 **Задача:** доступные мозгу сведения, видимость деятельности, краткая/долгая память.
 **Сейчас:** `sampleCells`/`localTemporalObservation` — [temporal-world.js](../../dist/temporal-world.js); `rebuildActivities`/`sampleActivities` — [activity-perception.js](../../dist/activity-perception.js); `observe`/`memoryBelief` — [cognition.js](../../dist/cognition.js). Входы — [temporal-inputs.js](../../dist/temporal-inputs.js) и [temporal-layout.js](../../dist/temporal-layout.js).
