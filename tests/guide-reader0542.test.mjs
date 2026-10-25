@@ -17,8 +17,8 @@ import {GATE_INPUTS,GATE_HIDDEN} from '../dist/temporal-layout.js';
 
 test('dense numeric rules use titled tables in block hosts and the requested redundant qualifications are absent',()=>{
  const html=readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
- for(const key of ['description66','description67','description68','description69','wiki-environment','wiki-saves']){
-  assert.match(GUIDE_REFERENCE_TEXT[key],/<table[^>]*>[\s\S]*?<caption>/);
+ for(const key of ['description66','guide-food-path','guide-food-sources','description68','description69','guide-environment-body','wiki-saves']){
+  assert.match(PAGE_TEXT[key],/<table[^>]*>[\s\S]*?<caption>/);
   assert.match(html,new RegExp(`<div[^>]*data-ui-text="${key}"`));assert.doesNotMatch(html,new RegExp(`<p[^>]*data-ui-text="${key}"`));
  }
  assert.doesNotMatch(Object.values(PAGE_TEXT).join(' '),/Рождение ещё не означает успешного взрослого потомка|Это модель эволюции с условностями/);

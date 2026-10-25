@@ -1,6 +1,6 @@
 # Пакет A: охват, пища и среда
 
-[Правила серии](README.md). P00–P02 выполнены; P03 разрешён и ожидает выполнения. Источники ниже относительно `dist/`, тесты — `tests/`; открывать только текущий этап. Общий маршрут — [пища](../navigation/food.md).
+[Правила серии](README.md). Пакет A (P00–P03) выполнен; [итоговый выпуск](../updates/v054-guide-environment.md). Источники ниже относительно `dist/`, тесты — `tests/`; открывать только текущий этап. Общий маршрут — [пища](../navigation/food.md).
 
 ## P00 — инвентаризация и фиксация границ
 
@@ -38,7 +38,7 @@
 
 ## P03 — автоматическое изменение среды
 
-**Зависимости:** P02. **Статус:** запланирован.
+**Зависимости:** P02. **Статус:** выполнен в 0.54.11 — [протокол](../updates/v054-guide-environment.md).
 
 Источники: `automatic-environment.js` (`configureEnvironment`, `advanceEnvironment`), `environment-plan.js`, `environment-settings.js`, `food-island-evolution.js` (`evolveFoodGroups`), `environment-ui.js`, `food-production-history.js`.
 

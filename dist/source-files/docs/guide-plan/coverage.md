@@ -131,3 +131,16 @@ P00 завершён структурно: рабочие файлы имеют 
 | Что применяют поля? | food-controls.js: readFoodControls; world-edit.js: planWorldFoodChange; evolution.js: changeFoodEnvironment | Запасы и места при изменении только периода сохраняются. guide-sources05410 | Исполнение команды P24/P26 |
 
 Новые файлы: dist/guide-food-sources-text.js и tests/guide-sources05410.test.mjs. Текст food теперь охватывает P01 и P02; перечисленные модули могут содержать другие обязанности, которые не закрыты этой статьёй.
+
+## Проверенная ответственность P03
+
+Статус: **описано** для статьи environment, версия 0.54.11.
+
+| Вопрос / раздел | Источник / символы | Граница / проверка | Остаток |
+| --- | --- | --- | --- |
+| Когда меняется среда? | automatic-environment.js: initializeEnvironment, configureEnvironment, advanceEnvironment, manualEnvironmentChange | Фазы/календарь/ручная отмена; guide-environment05411 и guide-sources05410 | Команды UI P26 |
+| Почему итог не совпадает с целью? | environment-plan.js: prepareEnvironmentPlan, proposedEnvironmentValue; environment-settings.js: validateEnvironmentSettings, foodProduction | Коридор важнее точного совпадения целей, первые шаги без верхнего предела; чтение функций и island-mobility | Методика измерений P25 |
+| Что переносится и что сохраняется? | food-island-evolution.js: translateFoodGroup, evolveFoodGroups, constrainFoodSources; automatic-environment.js: applyPlan | Запасы остаются на клетках, RNG решений не сдвигается; guide-environment05411 и island-mobility | Полные снимки P23 |
+| Что означает линия выработки? | food-production-history.js: foodProductionHistory, productionCohorts | Потенциальная скорость между событиями; временное усреднение, не фактический урожай | Все метрики P18–P20 |
+
+Новые файлы: dist/guide-environment-text.js и tests/guide-environment05411.test.mjs. Новая версия статьи не закрывает будущие проверки UI/архивов этих же модулей. Пакет A завершён; P04–P28 остаются разрешёнными.

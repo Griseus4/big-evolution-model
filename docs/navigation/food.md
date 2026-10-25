@@ -2,6 +2,8 @@
 
 [Выбор темы](README.md). Фактические условия мира и цели следующего события — разные данные.
 
+Главы пособия пакета A: [путь порции и выложенные запасы](../../dist/guide-food-text.js), [источники и расписания](../../dist/guide-food-sources-text.js), [автоматика среды](../../dist/guide-environment-text.js). Сверенные обязанности и оставшиеся связи — в [реестре охвата](../guide-plan/coverage.md).
+
 ## food-layout
 **Задача:** начальные источники, ёмкость, число/размер островков, периоды/разбросы, ручная правка.
 **Сейчас:** `validateFoodSettings`/`createFoodTemplate` — [food-settings.js](../../dist/food-settings.js); `placeFoodIslands` — [food-layout.js](../../dist/food-layout.js); расписания — [food-islands.js](../../dist/food-islands.js). Ручной план: `validateWorldFoodChange`/`planWorldFoodChange` — [world-edit.js](../../dist/world-edit.js).
