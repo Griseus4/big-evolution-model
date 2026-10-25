@@ -144,3 +144,17 @@ P00 завершён структурно: рабочие файлы имеют 
 | Что означает линия выработки? | food-production-history.js: foodProductionHistory, productionCohorts | Потенциальная скорость между событиями; временное усреднение, не фактический урожай | Все метрики P18–P20 |
 
 Новые файлы: dist/guide-environment-text.js и tests/guide-environment05411.test.mjs. Новая версия статьи не закрывает будущие проверки UI/архивов этих же модулей. Пакет A завершён; P04–P28 остаются разрешёнными.
+
+## Проверенные ответственности пакета B (P04–P08)
+
+Версия содержательной сверки 0.54.12. Статус **описано** относится к указанным разделам, не ко всему содержимому крупных файлов.
+
+| Вопрос / статья | Источник / символы | Проверенная граница / доказательство | Остаток |
+| --- | --- | --- | --- |
+| Что доступно сейчас? observation | temporal-world.js: sampleCells, localTemporalObservation, prepareTemporalBoundary; activity-perception.js: rebuildActivities, sampleActivities | Общий снимок, отсутствие мировых координат, исключение себя. guide-mind05412 | Протоколы Workers P24 |
+| Что остаётся от увиденного? memory | cognition.js: observe, memoryBelief, memoryStrength, rememberExperience, spatialContext; brain-parameters.js: cognitiveTraits | Значимость не равна актуальности пищи; невидимое изменение не меняет запись. guide-mind05412 | Формат личного состояния P23 |
+| Что означает знак? feelings | brain-controller.js: controllerFeeling; evolution-app.js: проценты текущего жителя | Три чувствительности temporal, боль только в историческом пути. guideFeelingExample / guide-mind05412 | Полный механизм обучения P09 |
+| Что означают блоки и номера? brain-structure | temporal-inputs.js: prepareSetInput, setCandidateInput; set-brain-engine.js: прямой проход; structural-brain.js: contextForward | Нормировка входов, DAG, линейные выходы контекста; чтение функций и числового layout | Эволюция и полный анализ P13/P14 |
+| Как Q становится выбором? choice | set-brain-engine.js: normalizeProbabilities; temporal-world.js: acceptTemporalChoice; attention-gate.js: attentionRequest | Поправка на число целей операции, снимок пересмотра, продолжение/повтор. guideOperationExample / guide-mind05412 | Цена и обучение P09/P10 |
+
+Новые файлы: dist/guide-mind-text.js (текст и учебные примеры), dist/guide-mind-topics.js (паспорта), tests/guide-mind05412.test.mjs (проверки). В реестре приложения теперь 22 статьи. Статус brain оставлен неполным до описания обучения и вычислительной цены; прежние короткие вводные тексты не объявлены полным охватом.

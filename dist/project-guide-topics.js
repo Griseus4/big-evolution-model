@@ -1,5 +1,6 @@
 /** Термины и навигационные указатели. Ссылка на файл не означает,
  * что прежняя краткая статья уже описывает каждое правило этого файла. */
+import {GUIDE_MIND_TOPICS} from './guide-mind-topics.js';
 export const GUIDE_TOPICS={
  numbers:{reviewedVersion:'0.54.8',keywords:['числа','константы','параметры','переменные','правила','настройки','шкала','масштаб','значения','единицы','источник','каталог','инвентарь','порция'],related:['time','actions','energy','brain','genome'],sources:[
  {file:'model-rules.js',symbols:['actionEnergyCost','validateDigestionTime'],purpose:'Рабочие правила тела, ставок и допустимого усвоения.'},
@@ -42,7 +43,7 @@ export const GUIDE_TOPICS={
  {file:'evolution.js',symbols:['canDeposit','depositFood'],purpose:'Условия и перенос выкладываемой порции.'},
  {file:'guide-actions-text.js',symbols:[],purpose:'Каноническая глава действий и прерываний.'},
  ],checks:[{file:'tests/temporal.test.mjs',purpose:'Длительности, скидка повтора, прерывания и ограничения родов.'},{file:'tests/guide-actions0546.test.mjs',purpose:'Продолжение сохраняет прогресс, смена процесса и физический срыв различаются.'}]},
- brain:{keywords:['мозг','нейрон','связь','слой','нейросеть','Q','решение','вероятность','SARSA','TD','обучение','отрицательная чувствительность','энергия','здоровье','стоимость','цена мышления','нулевая энергия','голодание'],sources:[
+ brain:{related:['observation','memory','feelings','brain-structure','choice','genome'],keywords:['мозг','нейрон','связь','слой','нейросеть','Q','решение','вероятность','SARSA','TD','обучение','отрицательная чувствительность','энергия','здоровье','стоимость','цена мышления','нулевая энергия','голодание'],sources:[
   {file:'temporal-inputs.js',symbols:['prepareSetInput'],purpose:'Числовые входы из доступных жителю сведений.'},
   {file:'set-brain-engine.js',symbols:['learnSetBrain'],purpose:'Оценки действий и изменение личных поправок.'},
   {file:'brain-cost.js',symbols:['decisionCharge','learningCharge'],purpose:'Масштабирование цены решения и обучения.'},
@@ -63,4 +64,5 @@ export const GUIDE_TOPICS={
  research:{keywords:['опыт','эксперимент','вариант','seed','сид','повтор','попытка','вымирание','статистика','график','сравнение','медиана','среднее','веса','доверительный интервал','ДИ','незавершенная жизнь'],sources:[{file:'experiment-runner.js',symbols:['validateExperimentConfig'],purpose:'Конфигурация и выполнение опытов.'},{file:'life-cohorts.js',symbols:['aggregateLifeCohorts'],purpose:'Показатели групп жизней и периоды рождения.'},{file:'statistics-estimates.js',symbols:['estimateWorlds'],purpose:'Взвешенные оценки по мирам и неопределённость.'}],checks:[{file:'tests/statistics043.test.mjs',purpose:'Средние, медианы, интервалы и оформление оценок.'}]},
  checks:{keywords:['проверка','тест','ошибка','инвариант','верификация','бенчмарк','производительность'],sources:[{file:'temporal-checks.js',symbols:[],purpose:'Проверки действующих механизмов.'},{file:'browser-checks.js',symbols:[],purpose:'Состав браузерных проверок.'}],checks:[{file:'tests/js-syntax.test.mjs',purpose:'Синтаксис и подключение модулей.'}]},
  limits:{keywords:['ограничение','упрощение','лимит','население','версия','совместимость','отсутствует'],sources:[{file:'evolution.js',symbols:['addAgent'],purpose:'Создание жителей и состояние модели.'},{file:'world-save.js',symbols:['loadWorld'],purpose:'Границы совместимости полных сохранений.'}],checks:[{file:'tests/environment-save.test.mjs',purpose:'Принимаемые версии и отказ для неподдерживаемого формата.'}]},
+ ...GUIDE_MIND_TOPICS,
 };

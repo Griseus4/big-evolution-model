@@ -4,7 +4,7 @@
 
 ## P04 — наблюдения и доступные сведения
 
-**Зависимости:** P00; ссылки на P01–P03 по мере готовности. **Статус:** запланирован.
+**Зависимости:** P00; ссылки на P01–P03 по мере готовности. **Статус:** выполнен в 0.54.12 — [протокол пакета B](../updates/v054-guide-mind.md).
 
 Источники: `temporal-world.js` — `sampleCells`, `localTemporalObservation`, `temporalNavigation`; `activity-perception.js`, `neighbour-perception.js`, `temporal-inputs.js`; готовая статья `geography`.
 
@@ -14,7 +14,7 @@
 
 ## P05 — память мест и её изменение
 
-**Зависимости:** P04. **Статус:** запланирован.
+**Зависимости:** P04. **Статус:** выполнен в 0.54.12 — [протокол пакета B](../updates/v054-guide-mind.md).
 
 Источники: `cognition.js` — `createBrain`, `observe`, `memoryBelief` и действующие помощники; `cognition-rules.js`, `brain-parameters.js`, `navigation.js`, `cognition-summary.js`, сохранение личного состояния в `world-save.js`.
 
@@ -26,7 +26,7 @@
 
 ## P06 — ощущения и знаки предпочтений
 
-**Зависимости:** P04. **Статус:** запланирован.
+**Зависимости:** P04. **Статус:** выполнен в 0.54.12 — [протокол пакета B](../updates/v054-guide-mind.md).
 
 Источники: `cognition.js` — `wellbeing`; `brain-parameters.js`, `brain-input-scales.js`, `founder-senses.js`, текущая награда в `temporal-world.js`; показы процентов в `evolution-app.js`/`genome-analysis.js`.
 
@@ -38,7 +38,7 @@
 
 ## P07 — устройство мозга и числовые входы
 
-**Зависимости:** P04–P06. **Статус:** запланирован.
+**Зависимости:** P04–P06. **Статус:** выполнен в 0.54.12 — [протокол пакета B](../updates/v054-guide-mind.md).
 
 Источники: `temporal-layout.js`, `temporal-inputs.js`, `set-brain-layout.js`, `set-brain-engine.js`, `structural-brain.js`, `brain-input-scales.js`, `brain-diagram-help.js`. Действующие и совместимые исторические раскладки различать через metadata генома.
 
@@ -50,7 +50,7 @@
 
 ## P08 — оценка, выбор и пересмотр действия
 
-**Зависимости:** P07, готовая статья `actions`. **Статус:** запланирован.
+**Зависимости:** P07, готовая статья `actions`. **Статус:** выполнен в 0.54.12 — [протокол пакета B](../updates/v054-guide-mind.md).
 
 Источники: `brain-controller.js`, `temporal-brain.js`, `set-brain-engine.js`, `attention-gate.js`; `temporal-world.js` — доступность, выбор, `acceptTemporalChoice`. Сверить фактическую цепочку вызовов и маски.
 

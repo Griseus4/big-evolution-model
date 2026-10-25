@@ -2,6 +2,8 @@
 
 [Выбор темы](README.md). Открывать нужную карточку; ссылки на историю и планы — по необходимости.
 
+Пакет B пособия: [наблюдения, память, ощущения, блоки и выбор](../../dist/guide-mind-text.js); [паспорта и термины](../../dist/guide-mind-topics.js). Границы описанных обязанностей — в [реестре охвата](../guide-plan/coverage.md).
+
 Глава пособия о времени: [guide-time-text.js](../../dist/guide-time-text.js); паспорт/связи — project-guide-topics.js, проверка [guide-time0544.test.mjs](../../tests/guide-time0544.test.mjs).
 
 Глава действий: [guide-actions-text.js](../../dist/guide-actions-text.js), [проверка процессов](../../tests/guide-actions0546.test.mjs).
