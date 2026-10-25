@@ -1,7 +1,7 @@
 /** Технические детали находятся внутри статьи и строятся один раз по запросу.
  * Ссылки только на собственную страницу исходников, без исполнения файлов. */
 import {GUIDE_ARTICLES} from './project-guide.js';
-import {guideSourcePath,guideSourceUrl,guideCoverage} from './project-guide-search.js';
+import {guideSourcePath,guideSourceUrl,guideSourceHelpKey,guideCoverage} from './project-guide-search.js';
 import {APP_VERSION} from './app-version.js';
 
 const KIND_LABELS={app:'Рабочие исходники',tests:'Проверки',tools:'Инструменты',infrastructure:'Сборка и публикация',history:'Исторический экран'};
@@ -14,7 +14,7 @@ export function createGuideSources(article,root){
   if(!sources.length)continue;
   details.append(make('h4',caption));const list=make('ul');
   for(const source of sources){
-   const row=make('li'),link=make('a',guideSourcePath(source.file));link.href=guideSourceUrl(source.file);link.target='_blank';link.rel='noopener';row.append(link);
+   const row=make('li'),link=make('a',guideSourcePath(source.file));link.href=guideSourceUrl(source.file);link.target='_blank';link.rel='noopener';link.dataset.help=guideSourceHelpKey(article.id,source.file);row.append(link);
    if(source.symbols?.length)row.append(make('code',source.symbols.join(', ')));
    if(source.purpose)row.append(make('p',source.purpose));list.append(row);
   }

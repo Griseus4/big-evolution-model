@@ -6,7 +6,8 @@ export const GUIDE_TOPICS={
   {file:'project-guide-search.js',symbols:['searchGuideArticles','guideCoverage'],purpose:'Сопоставление терминов и учёт указателей на файлы.'},
   {file:'project-guide-sources-ui.js',symbols:['createGuideSources','installGuideCoverage'],purpose:'Технические блоки статей и загрузка инвентаря.'},
   {file:'project-guide-topics.js',symbols:[],purpose:'Термины, файлы и функции для поиска.'},
- ],checks:[{file:'tests/structural-brain053.test.mjs',purpose:'Механизмы наследуемой структуры и личного состояния.'},{file:'tests/project-guide054.test.mjs',purpose:'Поиск, ссылки, технические блоки и учёт полноты.'}]},
+  {file:'guide-reference-text.js',symbols:[],purpose:'Читательское оформление справки и таблицы базовых значений.'},
+ ],checks:[{file:'tests/structural-brain053.test.mjs',purpose:'Механизмы наследуемой структуры и личного состояния.'},{file:'tests/project-guide054.test.mjs',purpose:'Поиск, ссылки, технические блоки и учёт полноты.'},{file:'tests/guide-reader0542.test.mjs',purpose:'Структура числовой справки, ссылки и подстановка общих правил.'}]},
  world:{keywords:['запуск','пауза','темп','шаг','подшаг','время','наблюдение'],sources:[
   {file:'world-runtime.js',symbols:['setRunning'],purpose:'Выполнение команд, запуск и пауза мира.'},
   {file:'evolution-app.js',symbols:['toggle','singleStep'],purpose:'Кнопки наблюдателя и отправка команд.'},

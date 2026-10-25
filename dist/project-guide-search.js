@@ -12,6 +12,7 @@ export function searchGuideArticles(query){
 
 export function guideSourcePath(file){return file.includes('/')?file:`dist/${file}`;}
 export function guideSourceUrl(file){return './source.html?file='+encodeURIComponent(guideSourcePath(file));}
+export function guideSourceHelpKey(articleId,file){return `guide-source:${articleId}:${guideSourcePath(file)}`;}
 
 /** Только наличие указателя, не процент документированности файла.
  * Вводная статья может ссылаться на файл, не объясняя все его механизмы. */

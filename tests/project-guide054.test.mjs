@@ -45,7 +45,7 @@ test('all retained articles and new introduction have stable links and one summa
 });
 
 test('new introduction records specific implementation sources; legacy articles are not falsely re-reviewed',()=>{
- const intro=GUIDE_ARTICLES.find(a=>a.id==='intro');assert.equal(intro.reviewedVersion,'0.54.1');
+ const intro=GUIDE_ARTICLES.find(a=>a.id==='intro');assert.equal(intro.reviewedVersion,'0.54.2');
  for(const source of intro.sources){const code=readFileSync(new URL('../dist/'+source.file,import.meta.url),'utf8');for(const symbol of source.symbols)assert.match(code,new RegExp(`\\b${symbol}\\s*\\(`));}
  for(const article of GUIDE_ARTICLES.slice(1))assert.equal(article.reviewedVersion,null);
 });
