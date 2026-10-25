@@ -173,3 +173,17 @@ P00 завершён структурно: рабочие файлы имеют 
 | Как читать файл/схему? genome-analysis | genome-analysis: parseGenomeText, analyzeGenome; genome-analysis-ui: installGenomeAnalysis; brain-diagram-ui | Геном не восстанавливает текущие вероятности; вывод анализа и функции UI, диаграммные тесты | Настоящий браузер не проверялся |
 
 Новые файлы: guide-learning-text.js, guide-genetics-text.js, guide-evolution-topics.js, guide-evolution05413.test.mjs. В пособии 26 статей; остальные темы анализа/исполнения/форматов ещё требуют D–F. Отсутствие визуальной проверки не записывается как отсутствие текстовых правил.
+
+## Проверенные ответственности пакета D (P15–P19)
+
+Версия 0.54.14; **описано** для этих глав, остальные обязанности исходников остаются в планах.
+
+| Вопрос / статья | Источник / символы | Граница / доказательство | Остаток |
+| --- | --- | --- | --- |
+| Как составляется вариант? experiment-design | experiment-plan: validatePlan, validateWorldOptions; experiment-fields: factorDesign; experiment-preferences | Декартово произведение, общие/особые настройки, черновик/стандарт; guide-experiments05414 | Форматы P23 |
+| Что независимо и что выбрано? experiment-attempts | experiment-plan: seedMatrix, selectAttempt; experiment-series; experiment-outcomes | Один исходный номер и несколько попыток; знаменатели; guide-experiments05414 | Сопряжённые оценки P20/P21 |
+| Что сохранит остановка? experiment-runs | experiment-series: stop, message, finish; experiment-execution: resize; experiment-ui: release | Статусы и остановленные группы не нормальные итоги; чтение рабочего пути, tests experiment-ui/constructor | Протокол P24 |
+| Что значит показатель? life-data | life-history: lifeRow; life-observations; life-cohorts: lifeMetric; heritable-statistics | Все LIFE_METRICS покрыты словарём/семейством; guide-experiments05414 | Вес/сводки P20 |
+| Известен ли исход? periods | life-cohorts: aggregateLifeCohorts; survival-curve; population-statistics; history-window | Неизвестный исход не смерть; после подтверждённого вымирания нули; guide-experiments05414 | ДИ P20 |
+
+Новые файлы: guide-experiments-text.js, guide-experiment-topics.js, guide-experiments05414.test.mjs. В пособии 31 статья. Конкретный вопрос пользователю: исправить ли старые подписи «Подшаги» у observedSteps/emptyEnergySteps в конструкторе; текущий temporal-формат хранит Т. До ответа подписи не менялись, справочник указывает реальные единицы.

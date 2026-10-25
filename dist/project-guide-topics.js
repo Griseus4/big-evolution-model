@@ -1,5 +1,6 @@
 /** Термины и навигационные указатели. Ссылка на файл не означает,
  * что прежняя краткая статья уже описывает каждое правило этого файла. */
+import {GUIDE_EXPERIMENT_TOPICS} from './guide-experiment-topics.js';
 import {GUIDE_EVOLUTION_TOPICS} from './guide-evolution-topics.js';
 import {GUIDE_MIND_TOPICS} from './guide-mind-topics.js';
 export const GUIDE_TOPICS={
@@ -67,4 +68,5 @@ export const GUIDE_TOPICS={
  limits:{keywords:['ограничение','упрощение','лимит','население','версия','совместимость','отсутствует'],sources:[{file:'evolution.js',symbols:['addAgent'],purpose:'Создание жителей и состояние модели.'},{file:'world-save.js',symbols:['loadWorld'],purpose:'Границы совместимости полных сохранений.'}],checks:[{file:'tests/environment-save.test.mjs',purpose:'Принимаемые версии и отказ для неподдерживаемого формата.'}]},
  ...GUIDE_MIND_TOPICS,
  ...GUIDE_EVOLUTION_TOPICS,
+ ...GUIDE_EXPERIMENT_TOPICS,
 };

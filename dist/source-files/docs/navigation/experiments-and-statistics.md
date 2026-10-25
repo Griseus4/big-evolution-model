@@ -2,6 +2,8 @@
 
 [Выбор темы](README.md). План опыта, результат попытки, полный мир и геном имеют разные назначения/форматы.
 
+Пакет D пособия: [план, попытки, исполнение, поля жизни и периоды](../../dist/guide-experiments-text.js); [паспорта](../../dist/guide-experiment-topics.js). Границы сверки — в [реестре](../guide-plan/coverage.md).
+
 ## design
 **Задача:** общие условия, значения отличий, все сочетания, основы геномов/чувствительности, шаблоны. Черновик/личный стандартный набор — [experiment-preferences.js](../../dist/experiment-preferences.js), [контракт](../ui-redesign.md).
 **Сейчас:** поля — [experiment-fields.js](../../dist/experiment-fields.js), редактор — [experiment-design-ui.js](../../dist/experiment-design-ui.js); `validateWorldOptions`/`validatePlan` — [experiment-plan.js](../../dist/experiment-plan.js). Геномы — [experiment-genomes.js](../../dist/experiment-genomes.js), подмена коэффициентов — [founder-senses.js](../../dist/founder-senses.js).

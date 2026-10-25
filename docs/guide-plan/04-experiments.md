@@ -4,7 +4,7 @@
 
 ## P15 — план и сочетания параметров
 
-**Зависимости:** P01–P03, P11–P13 для ссылок на механику. **Статус:** запланирован.
+**Зависимости:** P01–P03, P11–P13 для ссылок на механику. **Статус:** выполнен в 0.54.14 — [протокол D](../updates/v054-guide-experiments.md).
 
 Источники: `experiment-fields.js`, `experiment-plan.js` — `validateWorldOptions`, `validatePlan`; `experiment-design-ui.js`, `experiment-preferences.js`, `experiment-genomes.js`, `founder-senses.js`.
 
@@ -16,7 +16,7 @@
 
 ## P16 — случайность, повторы, попытки и вымирания
 
-**Зависимости:** P15. **Статус:** запланирован.
+**Зависимости:** P15. **Статус:** выполнен в 0.54.14 — [протокол D](../updates/v054-guide-experiments.md).
 
 Источники: `experiment-plan.js` — `seedMatrix`, `selectAttempt`; `experiment-series.js`, `experiment-outcomes.js`, `random-seed.js`, создание мира в `experiment-runner.js`/`evolution.js`.
 
@@ -28,7 +28,7 @@
 
 ## P17 — запуск, остановка и распределение вычислителей
 
-**Зависимости:** P15–P16. **Статус:** запланирован.
+**Зависимости:** P15–P16. **Статус:** выполнен в 0.54.14 — [протокол D](../updates/v054-guide-experiments.md).
 
 Источники: `experiment-execution.js`, `experiment-series.js`, `experiment-worker.js`, `experiment-runner.js`, `experiment-plan.js` — `allocateComputations`; `experiment-ui.js`, `experiment-runs-ui.js`, `computation-settings.js`.
 
@@ -38,7 +38,7 @@
 
 ## P18 — история жизни, поля и происхождение показателей
 
-**Зависимости:** P10–P11, P16. **Статус:** запланирован.
+**Зависимости:** P10–P11, P16. **Статус:** выполнен в 0.54.14 — [протокол D](../updates/v054-guide-experiments.md).
 
 Источники: `life-history.js`, `life-observations.js`, `food-exposure.js`, `food-production-history.js`, `heritable-statistics.js`, `population-statistics.js`, запись `sampleLife` в `temporal-world.js`.
 
@@ -48,7 +48,7 @@
 
 ## P19 — периоды, когорты и дожитие
 
-**Зависимости:** P18. **Статус:** запланирован.
+**Зависимости:** P18. **Статус:** выполнен в 0.54.14 — [протокол D](../updates/v054-guide-experiments.md).
 
 Источники: `history-window.js`, `life-cohorts.js` — `LIFE_METRICS`, `aggregateLifeCohorts`; `survival-curve.js`, `population-statistics.js`, `statistical-series.js`, соответствующие локальные параметры `metric-options.js`.
 
