@@ -28,9 +28,10 @@ const planViews=new WeakMap();
 /** Тысячи генов заменяются именем категории один раз перед передачей плана. */
 export function analysisPlan(plan){
  if(plan.analysisView)return plan;if(planViews.has(plan))return planViews.get(plan);
- const factors=(plan.factors??[]).map(f=>({key:f.key,values:f.key==='baseGenome'?f.values.map((v,i)=>`${i+1} · ${v.name}`):f.values.slice()}));
+ const factors=(plan.factors??[]).map(f=>({key:f.key,values:f.key==='baseGenome'?f.values.map((v,i)=>`${i+1} · ${v.name}`):f.key==='initialNeurons'?f.values.map(v=>v.filter(Boolean).join(' → ')||'Без скрытых слоёв'):f.values.slice()}));
  const variants=plan.variants.map(v=>{const settings={};for(const f of factors){let value=analysisSetting(v.settings,f.key);
    if(f.key==='baseGenome'){const choices=plan.factors.find(p=>p.key===f.key).values,index=choices.findIndex(g=>g.genes?.length===value?.length&&g.genes.every((gene,i)=>gene===value[i]));if(index<0)throw new Error('Геном варианта отсутствует в описании факторов.');value=f.values[index];}
+   if(f.key==='initialNeurons')value=value?.filter(Boolean).join(' → ')||'Без скрытых слоёв';
    const keys=f.key.split('.');let at=settings;for(const key of keys.slice(0,-1))at=at[key]??={};at[keys.at(-1)]=value;
   }settings.variant=v.id;return {id:v.id,name:v.name,settings};});
  factors.push({key:'variant',values:variants.map(v=>v.id)});const view={analysisView:true,worlds:plan.worlds,factors,variants};planViews.set(plan,view);return view;

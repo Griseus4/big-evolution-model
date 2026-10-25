@@ -107,9 +107,9 @@ export class Evolution {
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?STRUCTURAL_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,maxNeurons,maxLayers,structuralMutations}={}){
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections}={}){
   this.temporal=Boolean(temporal);
-  Object.assign(this,structuralSettings({maxNeurons,maxLayers,structuralMutations}));
+  Object.assign(this,structuralSettings({maxNeurons,maxLayers,structuralMutations,initialNeurons:baseGenome?null:initialNeurons,initialConnections:baseGenome?100:initialConnections}));
   this.digestionTime=validateDigestionTime(digestionTime);
   this.digestionRate=RULES.foodEnergy/this.digestionTime;
   if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(brainType))throw new Error('В0.32 нужен мозг v13; старые основы не поддерживаются.');
@@ -211,7 +211,7 @@ export class Evolution {
      // Резервируем прежние 450 бросков основателя, чтобы смена мозга сама
      // по себе не сдвигала RNG размещения/физики следующего основателя.
      for(let draw=0;draw<450;draw++)this.random.next();
-     genome=randomNeuralGenome(this.neuralRandom,this.brainType);
+     genome=randomNeuralGenome(this.neuralRandom,this.brainType,this);
     }else genome=randomGenome(this.random,this.cognitiveRandom,this.bodyRandom);
    }
    if(!this.baseGenome&&this.heritableMutations)genome=withMutationGenes(genome,this.mutationRandom);

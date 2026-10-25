@@ -3,6 +3,8 @@
  * Геном: обучаемые веса, свойства, gate, регуляторы, слои/рёбра, footer.
  * План строится при рождении, нулевой вес НЕ исключает обучаемую связь. */
 import {SET_BLOCKS as OLD_BLOCKS,CONTEXT_INPUTS,CONTEXT_NAMES,CONTEXT_HIDDEN,TEMPORAL_LAYOUT,GATE_PARAMETERS} from './temporal-layout.js';
+import {initialLayerCounts,initialConnectionBudget,initialEdges} from './brain-initialization.js';
+import {Random} from './simulation.js';
 export const STRUCTURAL_TYPE='set-duration-dag-v1',STRUCTURAL_MAGIC=14053014;
 export const STRUCTURAL_DEFAULTS=Object.freeze({maxNeurons:64,maxLayers:4,structuralMutations:true});
 export const STRUCTURAL_LIMITS=Object.freeze({maxNeurons:256,maxLayers:16});
@@ -15,8 +17,12 @@ export const STRUCTURAL_BLOCKS=Object.freeze(OLD_BLOCKS.map(b=>{
 export const FIXED_PARAMETERS=offset;
 const I=CONTEXT_INPUTS,O=CONTEXT_HIDDEN;
 export function structuralSettings(options={}){
- const result={};for(const key of ['maxNeurons','maxLayers']){const v=options[key]??STRUCTURAL_DEFAULTS[key];if(!Number.isSafeInteger(v)||v<(key==='maxNeurons'?6:1)||v>STRUCTURAL_LIMITS[key])throw new Error(`Предел ${key}: целое от 1 до ${STRUCTURAL_LIMITS[key]}.`);result[key]=v;}
- const enabled=options.structuralMutations??true;if(typeof enabled!=='boolean')throw new Error('Неверный переключатель структурных мутаций.');return {...result,structuralMutations:enabled};
+ const result={};for(const key of ['maxNeurons','maxLayers']){const v=options[key]??STRUCTURAL_DEFAULTS[key];if(!Number.isSafeInteger(v)||v<0||v>STRUCTURAL_LIMITS[key])throw new Error(`Предел ${key}: целое от 0 до ${STRUCTURAL_LIMITS[key]}.`);result[key]=v;}
+ const enabled=options.structuralMutations??true;if(typeof enabled!=='boolean')throw new Error('Неверный переключатель структурных мутаций.');
+ const initialNeurons=options.initialNeurons==null?null:initialLayerCounts(options.initialNeurons,result.maxNeurons,result.maxLayers),initialConnections=options.initialConnections??100;
+ if(!Number.isFinite(initialConnections)||initialConnections<0||initialConnections>1e6)throw new Error('Неверная начальная связность.');
+ if(initialNeurons)initialConnectionBudget(initialNeurons,initialConnections);
+ return {...result,structuralMutations:enabled,initialNeurons,initialConnections};
 }
 export function structuralLayout(genes){
  if(genes?.at(-1)!==STRUCTURAL_MAGIC)return null;
@@ -46,12 +52,16 @@ export function validateStructure(genes){
 export function packStructure(fixed,layers,biases,edges,tail){
  return [...fixed,...biases,...edges.map(e=>e.weight),...tail,...layers,...edges.flatMap(e=>[e.from,e.to]),layers.length,edges.length,STRUCTURAL_MAGIC];
 }
-export function randomStructuralGenome(random){
- const n=4+Math.floor(random.next()*3),fixed=Array(FIXED_PARAMETERS).fill(0);
+export function randomStructuralGenome(random,options={}){
+ const settings=structuralSettings(options),custom=settings.initialNeurons!==null||settings.initialConnections!==100||settings.maxNeurons<6||settings.maxLayers===0;
+ const counts=settings.initialNeurons??[settings.maxLayers?Math.min(settings.maxNeurons,4+Math.floor(random.next()*3)):0].filter(Boolean),n=counts.reduce((a,b)=>a+b,0),fixed=Array(FIXED_PARAMETERS).fill(0);
  for(const b of STRUCTURAL_BLOCKS)for(let j=0;j<b.weights;j++)fixed[b.offset+j]=(random.next()*2-1)*Math.sqrt(6/(b.inputs+b.outputs));
- const layers=Array(n).fill(1),edges=[];
- for(let h=0;h<n;h++)for(let i=0;i<I;i++)edges.push({from:i,to:I+h,weight:(random.next()*2-1)*Math.sqrt(6/(I+n))});
- for(let o=0;o<O;o++)for(let h=0;h<n;h++)edges.push({from:I+h,to:I+n+o,weight:(random.next()*2-1)*Math.sqrt(6/(n+O))});
+ // Отдельный поток стартовых рёбер расходует один seed основного потока:
+ // выбор размера/плотности не меняет прочие гены и следующих основателей.
+ const layers=counts.flatMap((size,j)=>Array(size).fill(j+1)),edges=custom?initialEdges(counts,settings.initialConnections,new Random(Math.floor(random.next()*4294967296))):[];
+ // Отсутствие новых настроек сохраняет прежний старт и порядок его RNG.
+ if(!custom){for(let h=0;h<n;h++)for(let i=0;i<I;i++)edges.push({from:i,to:I+h,weight:(random.next()*2-1)*Math.sqrt(6/(I+n))});
+ for(let o=0;o<O;o++)for(let h=0;h<n;h++)edges.push({from:I+h,to:I+n+o,weight:(random.next()*2-1)*Math.sqrt(6/(n+O))});}
  const traits=Array.from({length:12},()=>(random.next()-.5)*5),gate=Array(GATE_PARAMETERS).fill(0);
  for(let j=0;j<68;j++)gate[j]=(random.next()*2-1)*Math.sqrt(6/21);
  for(let j=72;j<76;j++)gate[j]=(random.next()*2-1)*Math.sqrt(6/5);
@@ -70,7 +80,7 @@ export function mutateStructure(genes,random,settings){
  if(op===2&&layers.length){
   const id=I+Math.floor(chance()*layers.length);layers.splice(id-I,1);biases.splice(id-I,1);
   edges=edges.filter(e=>e.from!==id&&e.to!==id).map(e=>({...e,from:e.from>id?e.from-1:e.from,to:e.to>id?e.to-1:e.to}));
- }else if(op===1&&layers.length<settings.maxNeurons){
+ }else if(op===1&&settings.maxLayers>0&&layers.length<settings.maxNeurons){
   const depth=Math.max(0,...layers),newLayer=depth<settings.maxLayers&&(depth===0||chance()<.5);
   let level=newLayer?1+Math.floor(chance()*(depth+1)):pick([...new Set(layers)]);
   if(newLayer)layers=layers.map(v=>v>=level?v+1:v);

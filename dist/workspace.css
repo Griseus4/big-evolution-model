@@ -67,6 +67,7 @@ body.workspace>#panel-world{overflow:hidden;grid-template-rows:minmax(0,1fr);ali
 .compact-sidebar>.side-tablist{flex:none;max-height:35%;overflow:auto}
 .compact-sidebar>.side-content{flex:1;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain}
 #brain-diagram>select{max-width:100%;width:100%}
+.initial-brain-field{grid-column:1/-1;min-width:0}.initial-brain-scroll{overflow-x:auto;max-width:100%}.initial-brain-control{min-width:0;width:100%}.initial-brain-table{width:100%;table-layout:auto;margin:8px 0}.initial-brain-table th,.initial-brain-table td{white-space:nowrap;padding:6px}.initial-brain-table input{width:6ch;min-width:6ch;margin:0;font-variant-numeric:tabular-nums}.initial-brain-factor{display:flex;align-items:flex-start;flex-basis:100%;min-width:0;max-width:100%}.initial-brain-factor>.initial-brain-control{flex:1}.initial-brain-control p{font-size:12px;line-height:1.5}
 .brain-diagram-preview{display:block;width:100%;min-width:0;padding:0;margin:12px 0;overflow:hidden;position:relative;border:1px solid var(--edge);background:#19251e}
 .brain-diagram-preview canvas{display:block;width:100%;height:180px;pointer-events:none}
 .brain-diagram-preview>span{display:block;padding:7px;font-size:12px;background:#26352c;color:var(--gold)}
@@ -75,7 +76,7 @@ dialog.brain-diagram-dialog{position:fixed;inset:0;margin:0;width:100vw;height:1
 .brain-diagram-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:none}
 .brain-diagram-toolbar h2{font-size:18px;margin-right:auto}.brain-diagram-toolbar select{max-width:min(400px,100%);min-width:0}.brain-diagram-toolbar button{margin:0;padding:8px 12px}
 .brain-diagram-toolbar output{float:none;min-width:4ch;font-variant-numeric:tabular-nums}
-.brain-diagram-content{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,330px);gap:14px;min-height:0;flex:1}
+.brain-diagram-content{display:grid;grid-template-columns:minmax(0,3fr) minmax(240px,1fr);gap:14px;min-height:0;flex:1}
 .brain-diagram-stage{position:relative;min-width:0;min-height:0;overflow:hidden;border:1px solid var(--edge);border-radius:8px;background:#19251e}
 .brain-diagram-stage canvas{display:block;max-width:none;touch-action:none;cursor:grab}.brain-diagram-stage canvas.dragging{cursor:grabbing}
 .brain-diagram-notes{overflow:auto;min-height:0;padding:0 8px;font-size:13px;line-height:1.55;overscroll-behavior:contain}

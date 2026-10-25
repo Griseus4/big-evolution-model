@@ -1,6 +1,6 @@
 # Действующие решения и принятые направления
 
-Контракты: [UI](ui-redesign.md), [структура мозга 0.53](updates/v053-structural-brain.md).
+Контракты: [UI](ui-redesign.md), [начальная структура](updates/v053-initial-structure.md).
 
 Механики — [модель](mechanics-reference.md); работа — [AGENTS](../AGENTS.md). [История](archive/context-2026-10-18/decisions.md): отменённые условия не действуют.
 

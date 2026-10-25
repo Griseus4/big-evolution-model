@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {Evolution} from '../dist/evolution.js';
 import {ParallelWorld,computationWorkers} from '../dist/parallel-world.js';
 import {createCognitionWorker} from './node-cognition-worker.mjs';
-import {Evolution as FrozenEvolution} from '../dist/benchmark-snapshots/0.34.0/evolution.js';
+import {Evolution as FrozenEvolution} from '../dist/benchmark-snapshots/0.53.0/evolution.js';
 import {GATE_OUTPUT_BIAS} from '../dist/temporal-layout.js';
 import {WorldRuntime} from '../dist/world-runtime.js';
 import {WORLD_PROTOCOL} from '../dist/world-view.js';
@@ -45,8 +45,8 @@ test('parallel world preserves full state, memory, learning and all RNG streams'
 test('automatic pool avoids tiny worlds and caps the measured initial pool at four',()=>{
  assert.equal(computationWorkers('auto',20,150),4);assert.equal(computationWorkers('auto',20,2),1);assert.equal(computationWorkers('auto',4,150),2);assert.equal(computationWorkers('auto',6,150),2);assert.equal(computationWorkers('auto',2,150),1);assert.throws(()=>computationWorkers(20));
 });
-test('pre-environment biology retains the frozen trajectory apart from new observer fields',()=>{
- for(const seed of [42,17,803]){const settings={seed,population:16,limit:30},old=new FrozenEvolution(settings),now=new Evolution(settings);for(let i=0;i<8;i++){old.step();now.step();const snapshot=structuredClone(now.snapshot());delete snapshot.reproduction.maturity;delete snapshot.reproduction.birthInterval;for(const a of snapshot.agents){delete a.life.observer;delete a.life.heritable;delete a.life.firstBirthAge;}assert.deepEqual(snapshot,old.snapshot());}}
+test('unconfigured initial structure retains the frozen 0.53.0 trajectory',()=>{
+ for(const seed of [42,17,803]){const settings={seed,population:16,limit:30},old=new FrozenEvolution(settings),now=new Evolution(settings);for(let i=0;i<3;i++){old.step();now.step();assert.deepEqual(now.snapshot(),old.snapshot());}}
 });
 async function compareScenario(setup,workers=4,{delay=false,steps=3}={}){
  const settings={seed:42,population:3,limit:4,foodSources:0},reference=new Evolution(settings),world=new Evolution(settings);

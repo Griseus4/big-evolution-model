@@ -1,3 +1,4 @@
+import {initialNeuronsInput,wireInitialStructure} from './brain-initialization-ui.js';
 import {renderBrainDiagram} from './brain-diagram-ui.js';
 import {TEMPORAL_BRAIN_TYPE as SET_BRAIN_TYPE,CANDIDATE_NAMES,OPERATION_NAMES} from './temporal-layout.js';
 /**
@@ -69,6 +70,9 @@ let displayedEnvironmentRevision=-1;
 /** Проверяем настройки на границе интерфейса. Исправления модели от пользователя не требуются.
  * Изменение поля не меняет начатый опыт; параметры читаются только при перезапуске.
  */
+const initialNeuronsControl=initialNeuronsInput(document,undefined,()=>({maxNeurons:Number(element('brain-max-neurons').value),maxLayers:Number(element('brain-max-layers').value)}));
+element('brain-initial-neurons').append(initialNeuronsControl);
+const initialStructureControls=wireInitialStructure(initialNeuronsControl,element('brain-initial-connections'),element('brain-max-neurons'),element('brain-max-layers'),{isGenome:()=>Boolean(baseGenome)});
 function settings(){
  const population=Number(element('founders').value),limit=Number(element('population-limit').value);
  const seed=Number(element('seed').value);
@@ -76,7 +80,7 @@ function settings(){
  if(!Number.isInteger(limit)||limit<population||limit>1000)throw new Error('Лимит должен быть не меньше числа основателей и не больше 1000.');
  if(!Number.isInteger(seed)||seed<1||seed>4294967295)throw new Error('Номер опыта должен быть целым от 1 до 4294967295.');
  const computeWorkers=activeComputationMode;
- return {seed,population,limit,computeWorkers,maxNeurons:Number(element('brain-max-neurons').value),maxLayers:Number(element('brain-max-layers').value),structuralMutations:element('structural-mutations').checked,automaticEnvironment:environmentUI?.settings(),geography:'lakes-rivers-v1',...readFoodControls(),
+ return {seed,population,limit,computeWorkers,...(baseGenome?{}:{initialNeurons:initialNeuronsControl.readSetting(),initialConnections:Number(element('brain-initial-connections').value)}),maxNeurons:Number(element('brain-max-neurons').value),maxLayers:Number(element('brain-max-layers').value),structuralMutations:element('structural-mutations').checked,automaticEnvironment:environmentUI?.settings(),geography:'lakes-rivers-v1',...readFoodControls(),
   learning:element('learning').checked,memory:element('memory').checked,
   expandLegacy:legacyBase&&element('expand-legacy').checked,mutationRate:Number(element('mutation-rate').value),mutations:element('mutations').checked,upgradeMutationGenes:element('upgrade-mutations').checked,baseGenome};
 }
@@ -188,14 +192,14 @@ element('load-genome').addEventListener('change',async event=>{
   element('upgrade-mutations').checked=false;element('mutation-upgrade-options').hidden=inherited;
   element('legacy-mutation-settings').hidden=inherited;
   element('base-status').textContent=legacyBase?'Основа версии 1 загружена: 435 прежних значений перенесены с сохранением смысла, новые оценки рождения и выкладывания нейтральны. Выбери дополнение новых свойств и начни опыт.':`Основа версии ${data.version} загружена. Нажми «Начать новый опыт», чтобы применить её.`;
-  element('clear-base').disabled=false;element('error').textContent='';
+  element('clear-base').disabled=false;initialStructureControls.refresh();element('error').textContent='';
  }catch(error){element('error').textContent='Геном не загружен: '+error.message;}
 });
 element('upgrade-mutations').addEventListener('change',()=>{element('legacy-mutation-settings').hidden=element('upgrade-mutations').checked||!baseGenome||Boolean(mutationProfile(baseGenome));});
 element('clear-base').addEventListener('click',()=>{
  baseGenome=null;legacyBase=false;element('legacy-options').hidden=true;
  element('mutation-upgrade-options').hidden=true;element('upgrade-mutations').checked=false;element('legacy-mutation-settings').hidden=true;element('load-genome').value='';element('clear-base').disabled=true;
- element('base-status').textContent='Новая популяция: случайные геномы';
+ element('base-status').textContent='Новая популяция: случайные геномы';initialStructureControls.refresh();
 });
 
 /** Все пользовательские значения выводятся через textContent, не через HTML.

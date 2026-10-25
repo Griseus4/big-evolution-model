@@ -20,8 +20,8 @@ export function genomeMetadata(genes){
 /** Симметричная Xavier-инициализация без готовых стратегий. Связи случайны,
  * смещения нулевые. Отдельный RNG не расходует случайность физики мира.
  */
-export function randomNeuralGenome(random,brainType=NEURAL_BRAIN_TYPE){
- if(brainType===STRUCTURAL_TYPE)return randomStructuralGenome(random);
+export function randomNeuralGenome(random,brainType=NEURAL_BRAIN_TYPE,options={}){
+ if(brainType===STRUCTURAL_TYPE)return randomStructuralGenome(random,options);
  const layout=layoutForType(brainType);if(!layout)throw new Error("Неизвестная схема сети.");
  if(brainType===SET_BRAIN_TYPE||brainType===TEMPORAL_BRAIN_TYPE){
   const genes=Array(layout.genes).fill(0);

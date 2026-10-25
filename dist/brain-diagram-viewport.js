@@ -1,11 +1,15 @@
 /** Геометрия камеры в CSS-пикселях, без DOM/мозга/RNG. */
 export const NODE_PITCH=28,EDGE_WIDTH=1.1;
-export function diagramLayout(model){
+export function diagramLayout(model,aspect=null){
  const groups=new Map();for(const node of model.nodes){if(!groups.has(node.layer))groups.set(node.layer,[]);groups.get(node.layer).push(node);}
  const levels=[...groups.keys()].sort((a,b)=>a-b),rows=Math.max(1,...[...groups.values()].map(g=>g.length));
- const width=440+Math.max(1,levels.length-1)*280,height=Math.max(140,(rows-1)*NODE_PITCH+80),nodes=[];
- levels.forEach((level,column)=>groups.get(level).forEach((node,row)=>nodes.push({...node,x:220+column*280,y:40+(row-(groups.get(level).length-1)/2)*NODE_PITCH+(height-80)/2})));
- return {nodes,lookup:new Map(nodes.map(n=>[n.id,n])),width,height,pitch:NODE_PITCH};
+ let width=440+Math.max(1,levels.length-1)*280,height=Math.max(140,(rows-1)*NODE_PITCH+80);const nodes=[];
+ // Меняем расстояния между узлами под форму окна, а не растягиваем Canvas:
+ // миниатюра заполняется по обеим осям, круги остаются кругами.
+ const adaptive=Number.isFinite(aspect)&&aspect>0;if(adaptive){width=Math.max(width,height*aspect);height=width/aspect;}
+ const marginX=adaptive?width*.04:220,marginY=adaptive?height*.04:40,pitch=rows>1?(height-2*marginY)/(rows-1):NODE_PITCH,gap=levels.length>1?(width-2*marginX)/(levels.length-1):0;
+ levels.forEach((level,column)=>groups.get(level).forEach((node,row)=>nodes.push({...node,x:marginX+column*gap,y:height/2+(row-(groups.get(level).length-1)/2)*pitch})));
+ return {nodes,lookup:new Map(nodes.map(n=>[n.id,n])),width,height,pitch};
 }
 const bound=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 export function fitViewport(layout,width,height){
