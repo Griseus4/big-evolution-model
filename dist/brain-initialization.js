@@ -1,14 +1,15 @@
+import {STRUCTURAL_LIMITS,STRUCTURE_RULES} from './brain-structure-rules.js';
 import {CONTEXT_INPUTS,CONTEXT_HIDDEN} from './temporal-layout.js';
 /** Только начальная структура главного контекста. Процент относительно
  * соседних непустых уровней, а не вероятность независимого броска на ребро. */
 export const INITIAL_NEURONS=Object.freeze([5]);
-export function initialLayerCounts(value,maxNeurons=256,maxLayers=16){
- if(!Array.isArray(value)||value.length>16||value.some(v=>!Number.isSafeInteger(v)||v<0||v>maxNeurons))throw new Error('Начальные нейроны: нужны целые неотрицательные количества по слоям.');
+export function initialLayerCounts(value,maxNeurons=STRUCTURAL_LIMITS.maxNeurons,maxLayers=STRUCTURAL_LIMITS.maxLayers){
+ if(!Array.isArray(value)||value.length>STRUCTURAL_LIMITS.maxLayers||value.some(v=>!Number.isSafeInteger(v)||v<0||v>maxNeurons))throw new Error('Начальные нейроны: нужны целые неотрицательные количества по слоям.');
  const counts=value.filter(v=>v>0);
  if(counts.length>maxLayers||counts.reduce((a,b)=>a+b,0)>maxNeurons)throw new Error('Начальная структура превышает предел нейронов или слоёв.');
  return counts;
 }
-export function initialConnectionBudget(counts,percent=100){
+export function initialConnectionBudget(counts,percent=STRUCTURE_RULES.initialConnections){
  const sizes=[CONTEXT_INPUTS,...counts.filter(n=>n>0),CONTEXT_HIDDEN];let base=0,maximum=0,preceding=0;
  for(let j=0;j<sizes.length;j++){maximum+=preceding*sizes[j];preceding+=sizes[j];if(j)base+=sizes[j-1]*sizes[j];}
  const maxPercent=100*maximum/base;

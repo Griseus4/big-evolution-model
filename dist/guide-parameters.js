@@ -5,7 +5,7 @@ import {REPRODUCTION_DEFAULTS,reproductionProfile} from './reproduction.js';
 import {guideSourceUrl} from './project-guide-search.js';
 
 export const GUIDE_PARAMETERS=Object.freeze({
- digestionTime:{label:'Усвоение одной порции',unit:'Т',file:'evolution.js',symbol:'validateDigestionTime',default:()=>RULES.foodEnergy/RULES.digestionRate,read:s=>s.digestionTime},
+ digestionTime:{label:'Усвоение одной порции',unit:'Т',file:'model-rules.js',symbol:'validateDigestionTime',default:()=>RULES.foodEnergy/RULES.digestionRate,read:s=>s.digestionTime},
  maturity:{label:'Возраст начала родов',unit:'Т',file:'reproduction.js',symbol:'reproductionProfile',default:()=>REPRODUCTION_DEFAULTS.maturity,read:s=>s.reproduction?.maturity},
  birthEnergy:{label:'Энергия для начала родов',unit:'',file:'reproduction.js',symbol:'reproductionProfile',default:()=>REPRODUCTION_DEFAULTS.energy,read:s=>s.reproduction?.energy},
  birthHealth:{label:'Здоровье для начала родов',unit:'',file:'reproduction.js',symbol:'reproductionProfile',default:()=>REPRODUCTION_DEFAULTS.health,read:s=>s.reproduction?.health},

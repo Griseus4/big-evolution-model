@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 33,
-    "bytes": 4011,
+    "bytes": 3995,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 145,
-    "bytes": 16408,
+    "lines": 147,
+    "bytes": 16521,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -740,12 +740,84 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v054-numeric-rules.md",
+    "url": "./source-files/docs/updates/v054-numeric-rules.md",
+    "lines": 21,
+    "bytes": 4538,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/updates/v054-project-guide.md",
     "url": "./source-files/docs/updates/v054-project-guide.md",
     "lines": 32,
     "bytes": 7188,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "dist/model-rules.js",
+    "url": "./model-rules.js",
+    "lines": 24,
+    "bytes": 2610,
+    "aliases": [],
+    "purpose": "Единый источник числовых правил тела, деятельности и допустимого усвоения."
+  },
+  {
+    "name": "dist/brain-input-scales.js",
+    "url": "./brain-input-scales.js",
+    "lines": 10,
+    "bytes": 1142,
+    "aliases": [],
+    "purpose": "Именованные масштабы протокола мозга, ощущений и обучения."
+  },
+  {
+    "name": "dist/cognition-rules.js",
+    "url": "./cognition-rules.js",
+    "lines": 12,
+    "bytes": 836,
+    "aliases": [],
+    "purpose": "Шкалы наследуемых свойств и параметры памяти."
+  },
+  {
+    "name": "dist/brain-structure-rules.js",
+    "url": "./brain-structure-rules.js",
+    "lines": 9,
+    "bytes": 825,
+    "aliases": [],
+    "purpose": "Пределы, начальные условия и параметры структурной мутации."
+  },
+  {
+    "name": "dist/numeric-rules.js",
+    "url": "./numeric-rules.js",
+    "lines": 56,
+    "bytes": 20551,
+    "aliases": [],
+    "purpose": "Каталог числовых источников с единицами и пояснениями."
+  },
+  {
+    "name": "dist/guide-numbers-text.js",
+    "url": "./guide-numbers-text.js",
+    "lines": 16,
+    "bytes": 3256,
+    "aliases": [],
+    "purpose": "Читательский каталог числовых правил без копий значений."
+  },
+  {
+    "name": "tests/numeric-rules0548.test.mjs",
+    "url": "./source-files/tests/numeric-rules0548.test.mjs",
+    "lines": 39,
+    "bytes": 3036,
+    "aliases": [],
+    "purpose": "Полная эквивалентность сохранений до/после переноса чисел и описание параметров."
+  },
+  {
+    "name": "tests/fixtures/numeric-rules0548.json",
+    "url": "./source-files/tests/fixtures/numeric-rules0548.json",
+    "lines": 131,
+    "bytes": 3661,
+    "aliases": [],
+    "purpose": "Контрольные состояния 0.54.7 до переноса числовых правил."
   },
   {
     "name": "dist/guide-reference-text.js",
@@ -799,7 +871,7 @@
     "name": "dist/guide-parameters.js",
     "url": "./guide-parameters.js",
     "lines": 45,
-    "bytes": 4449,
+    "bytes": 4496,
     "aliases": [],
     "purpose": "Контекст чисел пособия: базовые правила, принятый мир или вариант опыта."
   },
@@ -814,8 +886,8 @@
   {
     "name": "dist/project-guide-topics.js",
     "url": "./project-guide-topics.js",
-    "lines": 56,
-    "bytes": 16033,
+    "lines": 66,
+    "bytes": 17844,
     "aliases": [],
     "purpose": "Термины поиска и указатели на код/проверки прежних статей."
   },
@@ -838,8 +910,8 @@
   {
     "name": "dist/project-guide-inventory.json",
     "url": "./project-guide-inventory.json",
-    "lines": 1143,
-    "bytes": 23133,
+    "lines": 1171,
+    "bytes": 23696,
     "aliases": [],
     "purpose": "Производный инвентарь канонического кода; не процент полноты пособия."
   },
@@ -854,8 +926,8 @@
   {
     "name": "dist/project-guide.js",
     "url": "./project-guide.js",
-    "lines": 43,
-    "bytes": 11404,
+    "lines": 44,
+    "bytes": 11786,
     "aliases": [],
     "purpose": "Пособие: выжимки, вводная статья и ссылки сверки с реализацией."
   },
@@ -966,8 +1038,8 @@
   {
     "name": "dist/environment-settings.js",
     "url": "./environment-settings.js",
-    "lines": 18,
-    "bytes": 2597,
+    "lines": 19,
+    "bytes": 2802,
     "aliases": [],
     "purpose": "Общие интервалы, пищевой минимум и правила автоматической среды."
   },
@@ -1006,8 +1078,8 @@
   {
     "name": "dist/world-save.js",
     "url": "./world-save.js",
-    "lines": 60,
-    "bytes": 10812,
+    "lines": 62,
+    "bytes": 10950,
     "aliases": [],
     "purpose": "Полный ручной снимок, проверка и восстановление текущей модели."
   },
@@ -1023,7 +1095,7 @@
     "name": "tests/environment-save.test.mjs",
     "url": "./source-files/tests/environment-save.test.mjs",
     "lines": 92,
-    "bytes": 10126,
+    "bytes": 10135,
     "aliases": [],
     "purpose": "Энергетика, среда, точное продолжение и атомарный отказ загрузки."
   },
@@ -1142,8 +1214,8 @@
   {
     "name": "dist/ui-text.js",
     "url": "./ui-text.js",
-    "lines": 384,
-    "bytes": 114069,
+    "lines": 385,
+    "bytes": 114152,
     "aliases": [],
     "purpose": "Единый каталог подсказок/статических описаний, версия и числовые пояснения из модели."
   },
@@ -1254,8 +1326,8 @@
   {
     "name": "dist/parallel-world.js",
     "url": "./parallel-world.js",
-    "lines": 127,
-    "bytes": 11975,
+    "lines": 128,
+    "bytes": 12027,
     "aliases": [],
     "purpose": "Координатор постоянных владельцев личного опыта, барьеры, порядок RNG и возврат буферов."
   },
@@ -1318,40 +1390,40 @@
   {
     "name": "dist/temporal-world.js",
     "url": "./temporal-world.js",
-    "lines": 206,
-    "bytes": 19143,
+    "lines": 209,
+    "bytes": 19469,
     "aliases": [],
     "purpose": "Фазы подшагов, процессы, расходы, конкуренция, роды и обучение по времени."
   },
   {
     "name": "dist/action-timing.js",
     "url": "./action-timing.js",
-    "lines": 6,
-    "bytes": 483,
+    "lines": 10,
+    "bytes": 1098,
     "aliases": [],
     "purpose": "Единые длительности действий и стоимость основного выбора."
   },
   {
     "name": "dist/temporal-layout.js",
     "url": "./temporal-layout.js",
-    "lines": 23,
-    "bytes": 5437,
+    "lines": 24,
+    "bytes": 5783,
     "aliases": [],
     "purpose": "Схема v12, основной мозг1376, внимание73, подписанные входы."
   },
   {
     "name": "dist/temporal-inputs.js",
     "url": "./temporal-inputs.js",
-    "lines": 35,
-    "bytes": 4195,
+    "lines": 36,
+    "bytes": 4469,
     "aliases": [],
     "purpose": "Только локальные сведения, текущий процесс, прогресс, причина и кандидаты."
   },
   {
     "name": "dist/attention-gate.js",
     "url": "./attention-gate.js",
-    "lines": 24,
-    "bytes": 2435,
+    "lines": 25,
+    "bytes": 2552,
     "aliases": [],
     "purpose": "Наследуемая сеть16→4→1 и переиспользуемый буфер наблюдений."
   },
@@ -1366,8 +1438,8 @@
   {
     "name": "dist/set-brain-engine.js",
     "url": "./set-brain-engine.js",
-    "lines": 171,
-    "bytes": 14465,
+    "lines": 172,
+    "bytes": 14788,
     "aliases": [],
     "purpose": "Общие числовые проходы, скалярное ожидание и градиент текущей и прежней схем."
   },
@@ -1394,38 +1466,6 @@
     "bytes": 5222,
     "aliases": [],
     "purpose": "Границы задач Worker, задержки запуска, невложенные фазы и ограниченные гистограммы профиляv3."
-  },
-  {
-    "name": "tests/worker-timing.test.mjs",
-    "url": "./source-files/tests/worker-timing.test.mjs",
-    "lines": 124,
-    "bytes": 8589,
-    "aliases": [],
-    "purpose": "Границы/пауза/отмена/срок записи и точное совпадение модели/RNG в обоих режимах."
-  },
-  {
-    "name": "tools/check-profile-overhead.mjs",
-    "url": "./source-files/tools/check-profile-overhead.mjs",
-    "lines": 39,
-    "bytes": 3110,
-    "aliases": [],
-    "purpose": "Короткая оценка цены режимов записи на одинаковой работе с контролем SHA."
-  },
-  {
-    "name": "tools/check-input-performance.mjs",
-    "url": "./source-files/tools/check-input-performance.mjs",
-    "lines": 52,
-    "bytes": 3875,
-    "aliases": [],
-    "purpose": "Короткое парное сравнение входов/мира без профиля, с контролем полного результата."
-  },
-  {
-    "name": "dist/performance-probe.js",
-    "url": "./performance-probe.js",
-    "lines": 10,
-    "bytes": 993,
-    "aliases": [],
-    "purpose": "Необязательные метки только выбранного синхронного шага, без таймеров при выключенной записи."
   },
   {
     "name": ".gitattributes",
@@ -1455,7 +1495,7 @@
     "name": "README.ru.md",
     "url": "./source-files/README.ru.md",
     "lines": 117,
-    "bytes": 16320,
+    "bytes": 16473,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8238,8 +8278,8 @@
   {
     "name": "dist/brain-initialization.js",
     "url": "./brain-initialization.js",
-    "lines": 38,
-    "bytes": 2975,
+    "lines": 39,
+    "bytes": 3198,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8382,8 +8422,8 @@
   {
     "name": "dist/experiment-plan.js",
     "url": "./experiment-plan.js",
-    "lines": 80,
-    "bytes": 10098,
+    "lines": 81,
+    "bytes": 10218,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8558,8 +8598,8 @@
   {
     "name": "dist/reproduction.js",
     "url": "./reproduction.js",
-    "lines": 28,
-    "bytes": 2927,
+    "lines": 29,
+    "bytes": 3310,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8654,8 +8694,8 @@
   {
     "name": "dist/structural-brain.js",
     "url": "./structural-brain.js",
-    "lines": 129,
-    "bytes": 13031,
+    "lines": 130,
+    "bytes": 13741,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -8942,16 +8982,16 @@
   {
     "name": "docs/navigation/interface-and-files.md",
     "url": "./source-files/docs/navigation/interface-and-files.md",
-    "lines": 43,
-    "bytes": 11948,
+    "lines": 45,
+    "bytes": 12241,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
     "name": "docs/navigation/world-and-brain.md",
     "url": "./source-files/docs/navigation/world-and-brain.md",
-    "lines": 68,
-    "bytes": 14385,
+    "lines": 70,
+    "bytes": 14708,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9006,8 +9046,8 @@
   {
     "name": "docs/next-game-guide.md",
     "url": "./source-files/docs/next-game-guide.md",
-    "lines": 50,
-    "bytes": 9920,
+    "lines": 52,
+    "bytes": 10226,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9052,6 +9092,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/numeric-rules.md",
+    "url": "./source-files/docs/numeric-rules.md",
+    "lines": 41,
+    "bytes": 8381,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/parallelism-options.md",
     "url": "./source-files/docs/parallelism-options.md",
     "lines": 166,
@@ -9078,8 +9126,8 @@
   {
     "name": "docs/workflows/guide-authoring.md",
     "url": "./source-files/docs/workflows/guide-authoring.md",
-    "lines": 42,
-    "bytes": 9737,
+    "lines": 44,
+    "bytes": 10045,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9364,14 +9412,6 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
-    "name": "tests/performance-detail.test.mjs",
-    "url": "./source-files/tests/performance-detail.test.mjs",
-    "lines": 86,
-    "bytes": 5401,
-    "aliases": [],
-    "purpose": "Вложенное время, выборка, исключения, эквивалентность числовой модели и профильv2."
-  },
-  {
     "name": "tests/routing.test.mjs",
     "url": "./source-files/tests/routing.test.mjs",
     "lines": 62,
@@ -9452,6 +9492,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "tests/worker-timing.test.mjs",
+    "url": "./source-files/tests/worker-timing.test.mjs",
+    "lines": 124,
+    "bytes": 8589,
+    "aliases": [],
+    "purpose": "Границы/пауза/отмена/срок записи и точное совпадение модели/RNG в обоих режимах."
+  },
+  {
     "name": "tests/workspace050.test.mjs",
     "url": "./source-files/tests/workspace050.test.mjs",
     "lines": 18,
@@ -9494,8 +9542,8 @@
   {
     "name": "tools/export-source.py",
     "url": "./source-files/tools/export-source.py",
-    "lines": 327,
-    "bytes": 45298,
+    "lines": 336,
+    "bytes": 46576,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -9506,6 +9554,38 @@
     "bytes": 4326,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "tools/check-profile-overhead.mjs",
+    "url": "./source-files/tools/check-profile-overhead.mjs",
+    "lines": 39,
+    "bytes": 3110,
+    "aliases": [],
+    "purpose": "Короткая оценка цены режимов записи на одинаковой работе с контролем SHA."
+  },
+  {
+    "name": "tools/check-input-performance.mjs",
+    "url": "./source-files/tools/check-input-performance.mjs",
+    "lines": 52,
+    "bytes": 3875,
+    "aliases": [],
+    "purpose": "Короткое парное сравнение входов/мира без профиля, с контролем полного результата."
+  },
+  {
+    "name": "dist/performance-probe.js",
+    "url": "./performance-probe.js",
+    "lines": 10,
+    "bytes": 993,
+    "aliases": [],
+    "purpose": "Необязательные метки только выбранного синхронного шага, без таймеров при выключенной записи."
+  },
+  {
+    "name": "tests/performance-detail.test.mjs",
+    "url": "./source-files/tests/performance-detail.test.mjs",
+    "lines": 86,
+    "bytes": 5401,
+    "aliases": [],
+    "purpose": "Вложенное время, выборка, исключения, эквивалентность числовой модели и профильv2."
   },
   {
     "name": "dist/world-worker.js",
@@ -9558,8 +9638,8 @@
   {
     "name": "tests/world-ui.test.mjs",
     "url": "./source-files/tests/world-ui.test.mjs",
-    "lines": 177,
-    "bytes": 15209,
+    "lines": 178,
+    "bytes": 15279,
     "aliases": [],
     "purpose": "Исполнение UI со снимками Worker в минимальном DOM."
   },
@@ -9846,8 +9926,8 @@
   {
     "name": "dist/neural-brain.js",
     "url": "./neural-brain.js",
-    "lines": 223,
-    "bytes": 17230,
+    "lines": 225,
+    "bytes": 17745,
     "aliases": [],
     "purpose": "Локальные входы, прямой проход/градиент и личное Expected SARSA с одним следом."
   },
@@ -9862,8 +9942,8 @@
   {
     "name": "dist/world-defaults.js",
     "url": "./world-defaults.js",
-    "lines": 4,
-    "bytes": 362,
+    "lines": 5,
+    "bytes": 468,
     "aliases": [],
     "purpose": "Начальные условия нового мира без редактирования уже живущего."
   },
@@ -9879,15 +9959,15 @@
     "name": "tools/verify-local.py",
     "url": "./source-files/tools/verify-local.py",
     "lines": 121,
-    "bytes": 8520,
+    "bytes": 8556,
     "aliases": [],
     "purpose": "Одна команда коротких локальных проверок, повтор выбранной части и отчёт времени/ошибок."
   },
   {
     "name": "dist/brain-controller.js",
     "url": "./brain-controller.js",
-    "lines": 175,
-    "bytes": 13988,
+    "lines": 177,
+    "bytes": 14247,
     "aliases": [],
     "purpose": "Контракт локальных наблюдений/вариантов, сеть и старый табличный адаптер, обучение и диагностика."
   },
@@ -9910,8 +9990,8 @@
   {
     "name": "dist/brain-parameters.js",
     "url": "./brain-parameters.js",
-    "lines": 72,
-    "bytes": 5449,
+    "lines": 73,
+    "bytes": 5858,
     "aliases": [],
     "purpose": "Общая именованная шкала cognition-v1, одинаковая для мозга и расшифровки."
   },
@@ -9951,7 +10031,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 11,
-    "bytes": 3051,
+    "bytes": 3066,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -9991,7 +10071,7 @@
     "name": "AGENTS.md",
     "url": "./source-files/AGENTS.md",
     "lines": 39,
-    "bytes": 10803,
+    "bytes": 10916,
     "aliases": [],
     "purpose": "Постоянные инструкции агенту: договорённости, ограничения и завершение работы."
   },
@@ -10015,7 +10095,7 @@
     "name": "docs/decisions.md",
     "url": "./source-files/docs/decisions.md",
     "lines": 33,
-    "bytes": 8083,
+    "bytes": 8160,
     "aliases": [],
     "purpose": "Почему выбраны правила и что действительно согласовано."
   },
@@ -10030,8 +10110,8 @@
   {
     "name": "docs/verification.md",
     "url": "./source-files/docs/verification.md",
-    "lines": 57,
-    "bytes": 7566,
+    "lines": 59,
+    "bytes": 7707,
     "aliases": [],
     "purpose": "Выбор проверок, пределы выводов и сохранение проекта."
   },
@@ -10102,8 +10182,8 @@
   {
     "name": "dist/experiment-runner.js",
     "url": "./experiment-runner.js",
-    "lines": 177,
-    "bytes": 20583,
+    "lines": 178,
+    "bytes": 20703,
     "aliases": [],
     "purpose": "Длинный опыт одного мира: контрольные точки, инварианты и образцы геномов."
   },
@@ -10118,8 +10198,8 @@
   {
     "name": "dist/build-info.json",
     "url": "./build-info.json",
-    "lines": 1040,
-    "bytes": 120543,
+    "lines": 1046,
+    "bytes": 121119,
     "aliases": [],
     "purpose": "Отпечаток этой сборки для точного анализа отчёта."
   },
@@ -10166,8 +10246,8 @@
   {
     "name": "dist/food-settings.js",
     "url": "./food-settings.js",
-    "lines": 48,
-    "bytes": 5287,
+    "lines": 50,
+    "bytes": 5666,
     "aliases": [],
     "purpose": "Пищевой бюджет, число островков, центральный период и разбросы; границы и независимые ёмкости."
   },
@@ -10230,24 +10310,24 @@
   {
     "name": "dist/cognition.js",
     "url": "./cognition.js",
-    "lines": 284,
-    "bytes": 21182,
+    "lines": 287,
+    "bytes": 22426,
     "aliases": [],
     "purpose": "Общая память наблюдений/самочувствие и старый табличный TD; сеть — neural-brain.js."
   },
   {
     "name": "dist/evolution.js",
     "url": "./evolution.js",
-    "lines": 616,
-    "bytes": 53566,
+    "lines": 604,
+    "bytes": 52388,
     "aliases": [],
     "purpose": "Физика мира, пакет доступных вариантов и исполнение; вызывает отдельный brain-controller.js."
   },
   {
     "name": "dist/evolution-app.js",
     "url": "./evolution-app.js",
-    "lines": 505,
-    "bytes": 48828,
+    "lines": 507,
+    "bytes": 49180,
     "aliases": [],
     "purpose": "Управление игрой, панель жителя, отображение воспоминаний, карта, график и импорт/экспорт."
   },
@@ -10255,7 +10335,7 @@
     "name": "dist/index.html",
     "url": "./index.html",
     "lines": 296,
-    "bytes": 71971,
+    "bytes": 72354,
     "aliases": [],
     "purpose": "Разметка лаборатории и доступные пользователю настройки."
   },
@@ -10279,7 +10359,7 @@
     "name": "README.md",
     "url": "./source-files/README.md",
     "lines": 132,
-    "bytes": 11549,
+    "bytes": 11627,
     "aliases": [],
     "purpose": "Устройство проекта, ограничения, запуск исходников и проверки."
   },

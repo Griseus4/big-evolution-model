@@ -1,3 +1,4 @@
+import {WORLD_LIMITS} from './world-defaults.js';
 import {initialNeuronsInput,wireInitialStructure} from './brain-initialization-ui.js';
 import {renderBrainDiagram} from './brain-diagram-ui.js';
 import {TEMPORAL_BRAIN_TYPE as SET_BRAIN_TYPE,CANDIDATE_NAMES,OPERATION_NAMES} from './temporal-layout.js';
@@ -35,7 +36,8 @@ import {installPerformanceTabs} from './performance-tabs.js';
 import {installScreenTabs} from './screen-tabs.js';
 import {installProjectGuide} from './project-guide-ui.js';
 const element=id=>document.getElementById(id);
-installUIText(document);installPerformanceTabs(document);
+installUIText(document);
+for(const id of ['founders','population-limit']){element(id).min=String(WORLD_LIMITS.populationMin);element(id).max=String(WORLD_LIMITS.populationMax);}installPerformanceTabs(document);
 installScreenTabs('start',['population','food','other'],document);
 installScreenTabs('food',['conditions','automatic','journal'],document);
 // Один список допустимых режимов используется интерфейсом и расчётом.
@@ -76,8 +78,8 @@ const initialStructureControls=wireInitialStructure(initialNeuronsControl,elemen
 function settings(){
  const population=Number(element('founders').value),limit=Number(element('population-limit').value);
  const seed=Number(element('seed').value);
- if(!Number.isInteger(population)||population<1||population>1000)throw new Error('Основателей должно быть от 1 до 1000.');
- if(!Number.isInteger(limit)||limit<population||limit>1000)throw new Error('Лимит должен быть не меньше числа основателей и не больше 1000.');
+ if(!Number.isInteger(population)||population<WORLD_LIMITS.populationMin||population>WORLD_LIMITS.populationMax)throw new Error(`Основателей должно быть от ${WORLD_LIMITS.populationMin} до ${WORLD_LIMITS.populationMax}.`);
+ if(!Number.isInteger(limit)||limit<population||limit>WORLD_LIMITS.populationMax)throw new Error(`Лимит должен быть не меньше числа основателей и не больше ${WORLD_LIMITS.populationMax}.`);
  if(!Number.isInteger(seed)||seed<1||seed>4294967295)throw new Error('Номер опыта должен быть целым от 1 до 4294967295.');
  const computeWorkers=activeComputationMode;
  return {seed,population,limit,computeWorkers,...(baseGenome?{}:{initialNeurons:initialNeuronsControl.readSetting(),initialConnections:Number(element('brain-initial-connections').value)}),maxNeurons:Number(element('brain-max-neurons').value),maxLayers:Number(element('brain-max-layers').value),structuralMutations:element('structural-mutations').checked,automaticEnvironment:environmentUI?.settings(),geography:'lakes-rivers-v1',...readFoodControls(),

@@ -6,6 +6,8 @@
 
 Глава действий: [guide-actions-text.js](../../dist/guide-actions-text.js), [проверка процессов](../../tests/guide-actions0546.test.mjs).
 
+Числовые правила и владельцы: [контракт](../numeric-rules.md), [model-rules.js](../../dist/model-rules.js), [каталог](../../dist/numeric-rules.js), [эквивалентность](../../tests/numeric-rules0548.test.mjs).
+
 ## world-time
 **Задача:** подшаг, длительность, начало/продолжение/срыв действия.
 **Сейчас:** [temporal-world.js](../../dist/temporal-world.js): `advanceTemporal`, `advanceTemporalBodies`, `prepareTemporalBoundary`, `acceptTemporalChoice`. Длительности/цены решения — [action-timing.js](../../dist/action-timing.js); малый контроллер — [attention-gate.js](../../dist/attention-gate.js).
@@ -26,7 +28,7 @@
 
 ## energy
 **Задача:** нулевая энергия, расход здоровья, усвоение пищи и стоимость действий/мышления.
-**Сейчас:** `spendEnergy`/`ENERGY_DEFICIT_FACTOR` — [energy-budget.js](../../dist/energy-budget.js); физиология — `advanceTemporalBodies`/`acceptTemporalChoice` в [temporal-world.js](../../dist/temporal-world.js); `RULES`/`actionEnergyCost`/`validateDigestionTime` — [evolution.js](../../dist/evolution.js). Время усвоения задаётся отдельно для каждого мира опыта.
+**Сейчас:** `spendEnergy`/`ENERGY_DEFICIT_FACTOR` — [energy-budget.js](../../dist/energy-budget.js); физиология — `advanceTemporalBodies`/`acceptTemporalChoice` в [temporal-world.js](../../dist/temporal-world.js); `RULES`/`actionEnergyCost`/`validateDigestionTime` — [model-rules.js](../../dist/model-rules.js), evolution.js сохраняет реэкспорты. Время усвоения задаётся отдельно для каждого мира опыта.
 **Граница:** неоплаченный дефицит снижает здоровье; учёт фактически списанной энергии отдельный. При смертельной оплате решения действие не начинается. Роды имеют отдельный расчёт; не добавлять второй голодный штраф.
 **Проверка:** [environment-save.test.mjs](../../tests/environment-save.test.mjs): дефицит/точный ноль/смерть при решении; [temporal.test.mjs](../../tests/temporal.test.mjs): физиология и цены. Ряды нулевой энергии относятся к [статистике](experiments-and-statistics.md#statistics).
 **История:** [0.36 — дефицит вместо бесплатных действий](../updates/v036-environment-energy-save.md), [0.46 — время усвоения в опытах](../updates/v046-digestion-experiments.md), [правила](../mechanics-reference.md#энергетика).

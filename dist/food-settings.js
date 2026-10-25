@@ -4,6 +4,8 @@
  * Ёмкости 3…6, старт заполнен. Миграция/выживание не гарантируются. */
 import {Random} from './simulation.js';
 export const SOURCE_CAPACITY_LIMITS=Object.freeze({min:1,max:24,default:6});
+/** Расширенный непрерывный режим; пределы не совпадают с центральным ползунком. */
+export const GENERAL_FOOD_LIMITS=Object.freeze({intervalMin:.1,intervalMax:1e9,spreadMax:40000});
 export const FOOD_LIMITS=Object.freeze({sourcesMin:0,sourcesMax:384,sourcesDefault:384,
  intervalMin:10,intervalMax:300,individualIntervalMax:1600,intervalDefault:20,islandsMin:1,islandsMax:384,islandsDefault:8,
  spreadMin:0,spreadMax:90,periodSpreadDefault:30,sizeSpreadDefault:30,scatteredFraction:.2});
@@ -13,12 +15,12 @@ export function validateFoodSettings({foodSources=FOOD_LIMITS.sourcesDefault,foo
  if(typeof foodGeneralSettings!=='boolean')throw new Error('Некорректный режим общих пищевых настроек.');
  if(!Number.isInteger(foodSources)||foodSources<FOOD_LIMITS.sourcesMin||foodSources>FOOD_LIMITS.sourcesMax)
   throw new Error(`Количество источников: целое число ${FOOD_LIMITS.sourcesMin}…${FOOD_LIMITS.sourcesMax}.`);
- if(foodGeneralSettings?(!Number.isFinite(foodRegrowInterval)||foodRegrowInterval<.1||foodRegrowInterval>1e9):(!Number.isInteger(foodRegrowInterval)||foodRegrowInterval<FOOD_LIMITS.intervalMin||foodRegrowInterval>FOOD_LIMITS.intervalMax))
+ if(foodGeneralSettings?(!Number.isFinite(foodRegrowInterval)||foodRegrowInterval<GENERAL_FOOD_LIMITS.intervalMin||foodRegrowInterval>GENERAL_FOOD_LIMITS.intervalMax):(!Number.isInteger(foodRegrowInterval)||foodRegrowInterval<FOOD_LIMITS.intervalMin||foodRegrowInterval>FOOD_LIMITS.intervalMax))
   throw new Error(foodGeneralSettings?'Средний период: конечное число от 0,1 до 1 000 000 000 Т.':`Период восстановления: целое число ${FOOD_LIMITS.intervalMin}…${FOOD_LIMITS.intervalMax} шагов.`);
  if(!Number.isInteger(foodIslandCount)||foodIslandCount<(foodGeneralSettings?0:FOOD_LIMITS.islandsMin)||foodIslandCount>FOOD_LIMITS.islandsMax)
   throw new Error(`Количество островков: целое число ${FOOD_LIMITS.islandsMin}…${FOOD_LIMITS.islandsMax}.`);
  for(const [value,label] of [[foodPeriodSpread,'Разброс периодов'],[foodSizeSpread,'Разброс размеров']])
-  if(foodGeneralSettings?(!Number.isFinite(value)||value<0||value>40000):(!Number.isInteger(value)||value<FOOD_LIMITS.spreadMin||value>FOOD_LIMITS.spreadMax))throw new Error(`${label}: недопустимое значение.`);
+  if(foodGeneralSettings?(!Number.isFinite(value)||value<0||value>GENERAL_FOOD_LIMITS.spreadMax):(!Number.isInteger(value)||value<FOOD_LIMITS.spreadMin||value>FOOD_LIMITS.spreadMax))throw new Error(`${label}: недопустимое значение.`);
  const capacity={};if(foodCapacityMin!==undefined||foodCapacityMax!==undefined){
   if(!Number.isInteger(foodCapacityMin)||!Number.isInteger(foodCapacityMax)||foodCapacityMin<SOURCE_CAPACITY_LIMITS.min||foodCapacityMax>SOURCE_CAPACITY_LIMITS.max||foodCapacityMin>foodCapacityMax)throw new Error(`Вместимость: целые границы от ${SOURCE_CAPACITY_LIMITS.min} до ${SOURCE_CAPACITY_LIMITS.max}, минимум не больше максимума.`);
   Object.assign(capacity,{foodCapacityMin,foodCapacityMax});

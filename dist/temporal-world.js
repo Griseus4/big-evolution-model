@@ -1,3 +1,6 @@
+import {BODY_LIMITS,BODY_THRESHOLDS} from './model-rules.js';
+import {FEELING_SCALES} from './brain-input-scales.js';
+import {SUBSTEPS,HISTORY_SAMPLE_SUBSTEPS} from './action-timing.js';
 import {decisionCharge,learningCharge} from './brain-cost.js';
 /** Фазы однопоточного мираv13. Время — целые подшаги, внешнееtick — Т.
  * Локальный геометрический след пересчитывается только после перемещения;
@@ -124,7 +127,7 @@ export function prepareTemporalDecision(w,a){
  const b=a.brain;if(b.costProfile)b.learningCharge=0;if(w.learningEnabled)ageExperience(a,w.tick);
  if(b.pending&&w.memoryEnabled)rememberExperience(b,b.pending,w.feeling(a),w.tick);
  decision=w.prepareDecision(a);const pending=b.pending;
- if(pending&&w.learningEnabled){const nextValue=w.expectedContinuation(a,decision),elapsed=(w.subtick-pending.startSubtick)/10,reward=pending.sum+pending.discount*w.feeling(a)/100-pending.beforeFeeling/100;
+ if(pending&&w.learningEnabled){const nextValue=w.expectedContinuation(a,decision),elapsed=(w.subtick-pending.startSubtick)/SUBSTEPS,reward=pending.sum+pending.discount*w.feeling(a)/FEELING_SCALES.maximum-pending.beforeFeeling/FEELING_SCALES.maximum;
   if(elapsed>0){if(b.costProfile)b.learningCharge=learningCharge(b,pending,decision);learnSetBrain(b,pending.choice,{beforeFeeling:pending.beforeFeeling,afterFeeling:w.feeling(a),nextValue,terminal:false,tick:w.tick,reward,elapsed,temporal:true});}}
  b.pending=null;
  }finally{endComputeGroup(learningMark);}
@@ -150,10 +153,10 @@ export function commitTemporalBrain(w,a,decision,choice,beforeFeeling){
  if(w.learningEnabled||w.memoryEnabled)b.pending={choice:{id:choice.id,action:choice.action,row:0,features:choice.features.slice(),senses:choice.senses.slice(),place:{...b.position},batchInput:cloneSetInput(choice.batchInput)},beforeFeeling,...(b.costProfile?{costRate:choice.decisionCost,costCandidates:decision.frame.request.candidates.length,costOperations:new Set(decision.frame.request.candidates.map(c=>c.action<6?0:c.action-5)).size}:{}),startSubtick:w.subtick,sum:0,discount:1};
 }
 function decide(w,a){const decision=prepareTemporalDecision(w,a);w.recordBirthDecision(a);const beforeFeeling=w.feeling(a),choice=w.choose(a,decision);choice.computeCharge=decisionCharge(a.brain,decision,choice.decisionCost);if(acceptTemporalChoice(w,a,choice)){delete choice.computeCharge;commitTemporalBrain(w,a,decision,choice,beforeFeeling);}}
-export function sampleLife(w,a){const c=a.life,f=w.feeling(a);c.samples+=DT;c.energyTotal+=a.energy*DT;c.healthTotal+=a.health*DT;c.hungerSteps+=Number(a.energy<30)*DT;c.emptyEnergySteps+=Number(a.energy===0)*DT;a.brain.feelingTotal+=f*DT;a.brain.feelingSamples+=DT;a.brain.wellbeing=f;w.lifeExposure.steps+=DT;w.lifeExposure.feelingTotal+=f*DT;}
+export function sampleLife(w,a){const c=a.life,f=w.feeling(a);c.samples+=DT;c.energyTotal+=a.energy*DT;c.healthTotal+=a.health*DT;c.hungerSteps+=Number(a.energy<BODY_THRESHOLDS.hungry)*DT;c.emptyEnergySteps+=Number(a.energy===0)*DT;a.brain.feelingTotal+=f*DT;a.brain.feelingSamples+=DT;a.brain.wellbeing=f;w.lifeExposure.steps+=DT;w.lifeExposure.feelingTotal+=f*DT;}
 export function compactTemporalAgents(w){let k=0;for(let i=0;i<w.agents.length;i++)if(w.agents[i].alive)w.agents[k++]=w.agents[i];w.agents.length=k;}
 export function observeTime(w,a,cells,elapsed){const mark=beginComputeGroup('memory');try{observe(a.brain,cells,a.brain.position,w.tick,true,elapsed);}finally{endComputeGroup(mark);}}
-export function accrueTemporalReward(w,a){const b=a.brain;if(b.pending){b.pending.sum+=b.pending.discount*b.timeReward.b*w.feeling(a)/100;b.pending.discount*=b.timeReward.q;}}
+export function accrueTemporalReward(w,a){const b=a.brain;if(b.pending){b.pending.sum+=b.pending.discount*b.timeReward.b*w.feeling(a)/FEELING_SCALES.maximum;b.pending.discount*=b.timeReward.q;}}
 export function prepareTemporalAgent(w,a){if(a.readyAt>w.subtick)return null;if(a.process&&a.process.action!==9&&!physical(w,a,a.process.action,a.process.destination))fail(w,a);return sampleCells(w,a);}
 /** Сначала все физические срывы, затем общий снимок деятельности. Никаких
  * решений между этими фазами: последовательный и параллельный пути видят одно. */
@@ -179,15 +182,15 @@ export function advanceTemporal(w){
 }
 export function advanceTemporalBodies(w,onDeath=null){
  sampleFoodExposure(w);
- w.subtick++;w.tick=w.subtick/10;
+ w.subtick++;w.tick=w.subtick/SUBSTEPS;
  advanceEnvironment(w);
  if(w._foodRevision!==w.environmentRevision)resetFoodCalendar(w);
  if(w.tick+1e-9>=w._nextGrowth){if(w.individualFood)regrowFoodIslands(w);else for(const c of w.tiles)if(c.food<c.maxFood){c.food++;w.stats.regrown++;}resetFoodCalendar(w);}
  const due=w._due;due.length=0;
  for(const a of w.agents){
-  a.age=(w.subtick-(a.bornSubtick??Math.round(a.born*10)))/10;
+  a.age=(w.subtick-(a.bornSubtick??Math.round(a.born*SUBSTEPS)))/SUBSTEPS;
   if(a.life.observer)a.life.observer.inventorySubsteps[a.inventory]++;
-  const amount=Math.min(a.stomach,w.digestionRate*DT),gain=Math.min(amount,100-a.energy);a.stomach-=amount;a.energy+=gain;w.stats.digested+=amount;w.stats.overflow+=amount-gain;
+  const amount=Math.min(a.stomach,w.digestionRate*DT),gain=Math.min(amount,BODY_LIMITS.energy-a.energy);a.stomach-=amount;a.energy+=gain;w.stats.digested+=amount;w.stats.overflow+=amount-gain;
   if(a.process){if(a.process.action!==9)spend(w,a,actionEnergyCost(a.process.action)*DT);a.process.elapsed++;}
   if(a.health===0||a.age>=RULES.maxAge){fail(w,a,'death');sampleLife(w,a);w.die(a,a.health===0?'starvation':'age');a.brain.pending=null;onDeath?.(a);continue;}
   if(a.process&&a.process.elapsed>=a.process.duration)due.push(a);
@@ -200,7 +203,7 @@ export function advanceTemporalBodies(w,onDeath=null){
  w._viewEpoch++;
 }
 export function finishTemporal(w){
- if(w.subtick%100===0||!w.agents.length)w.record();
+ if(w.subtick%HISTORY_SAMPLE_SUBSTEPS===0||!w.agents.length)w.record();
  if(w.records.size>6000){const keep=new Set();for(const a of w.agents){keep.add(a.id);keep.add(a.parentId);}for(const [id,r]of w.records){if(w.records.size<=5000)break;if(r.death!==null&&!keep.has(id))w.records.delete(id);}}
  if(!w.agents.length)w.log('Опыт завершён','Популяция вымерла. Автоматического возрождения нет.');
 }

@@ -1,0 +1,131 @@
+{
+  "sourceVersion": "0.54.7",
+  "description": "Полное saveWorld без метки версии; состояние, память, обучение и RNG. Короткая контрольная траектория до централизации.",
+  "cases": [
+    {
+      "options": {
+        "seed": 42,
+        "population": 6
+      },
+      "samples": [
+        {
+          "subtick": 0,
+          "hash": "e23a4e4e9effe5cac18d87fc8c7719b605cdb0d5e19939c15f92d2f24cfd7655"
+        },
+        {
+          "subtick": 30,
+          "hash": "5f4b662aca9141514f5c0cb2fd4e7fe5e2990b386fff7537f87bea88b91ac9a2"
+        },
+        {
+          "subtick": 60,
+          "hash": "3b10caba4249f10987e7d283317d6202a821e977e27310ac602c7f9c49a7de62"
+        },
+        {
+          "subtick": 90,
+          "hash": "db7bbe8e8cf057d6b3d3dffe8e3e3ac88ee91a4cbf87b5cb3582cdd74c3d593e"
+        },
+        {
+          "subtick": 120,
+          "hash": "e30326aa1206b42c22f3adbcf578a89b91a27c26ccb74f9257a32e6cf3e8116f"
+        }
+      ]
+    },
+    {
+      "options": {
+        "seed": 23,
+        "population": 6,
+        "learning": false,
+        "memory": false
+      },
+      "samples": [
+        {
+          "subtick": 0,
+          "hash": "c03f4f385cef9064ff25e0f8c9798f1824c888acfd6481a835b259867b3119a5"
+        },
+        {
+          "subtick": 30,
+          "hash": "b141f41cb5fe03859c339ee86c10da1474410dec6220ebaa8d9eb771974dc115"
+        },
+        {
+          "subtick": 60,
+          "hash": "c6199bc3651333871c39ec548d1fc1c7881fb425f0a95f751584597042a18688"
+        },
+        {
+          "subtick": 90,
+          "hash": "375ecdd042d0af0b334570f4aafe31a3dfba7f2ea734ca9e302dece54d3b377a"
+        },
+        {
+          "subtick": 120,
+          "hash": "a19a1511e6f78bf860f38bd93868ac00ae8f3be3e48fe4a859ed95469dd324ca"
+        }
+      ]
+    },
+    {
+      "options": {
+        "seed": 81,
+        "population": 6,
+        "digestionTime": 5,
+        "initialNeurons": [
+          3,
+          2
+        ],
+        "initialConnections": 120
+      },
+      "samples": [
+        {
+          "subtick": 0,
+          "hash": "681e3bf60bb6da6e816eda5a6951c3b3216013f451741b8f9c15b2ede8086110"
+        },
+        {
+          "subtick": 30,
+          "hash": "b175f046813ea8ab130930e6c2baf526ce9e8952119f73705f6bcd8a7a9ddab4"
+        },
+        {
+          "subtick": 60,
+          "hash": "a03b8491740f08ae06728c308b047a291b8370686778716d669fcce94804c515"
+        },
+        {
+          "subtick": 90,
+          "hash": "cf0ff5bbf07b48ead3a04f11b64490c6bfff97e58599fa12ea6f9ef214b37d07"
+        },
+        {
+          "subtick": 120,
+          "hash": "38c95c09c7ce5d3f98f8e489e3fc618b37285cf5a4cf6972509f70d830e05391"
+        }
+      ]
+    },
+    {
+      "options": {
+        "seed": 7,
+        "population": 6,
+        "digestionTime": 2,
+        "maxNeurons": 0,
+        "maxLayers": 0,
+        "initialNeurons": [],
+        "initialConnections": 100
+      },
+      "samples": [
+        {
+          "subtick": 0,
+          "hash": "1810567ffaefd3160df86346011ca8e8f053074267683ba455c50e5b5423bb8c"
+        },
+        {
+          "subtick": 30,
+          "hash": "4743b4cb45a5183d88fa311c339d3ba9410183f455a8fb1876a6e2f9427dea55"
+        },
+        {
+          "subtick": 60,
+          "hash": "e25153b364785fa1d494f598f62b1889d709de185ff6b0e1250e6e66844c0320"
+        },
+        {
+          "subtick": 90,
+          "hash": "7b64f163045eb4c7723a38073d0250ee2cbc169f76edd8de1028f156ac7e69ee"
+        },
+        {
+          "subtick": 120,
+          "hash": "0582af1eda560f332023395662f56f244cedc0d03f94fb1896e573d275e39c95"
+        }
+      ]
+    }
+  ]
+}

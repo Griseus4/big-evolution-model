@@ -1,3 +1,4 @@
+import {WORLD_LIMITS} from './world-defaults.js';
 import {structuralSettings,structuralLayout} from './structural-brain.js';
 /** Неизменяемый план серии. Seed назначаются до запуска и не зависят от
  * очередности Workers. Настройки каждого мира отделены от глобальных правил. */
@@ -21,7 +22,7 @@ export function standardSeeds(count){const seeds=DEFAULT_SEEDS.slice(0,count);le
 export function seedMatrix(seeds){const used=new Set(seeds);return seeds.map(seed=>{let x=seed;const row=[seed];while(row.length<3){x=(Math.imul(x,1664525)+1013904223)>>>0;if(x&&!used.has(x)){used.add(x);row.push(x);}}return row;});}
 const integer=(v,min,max,label)=>{if(!Number.isSafeInteger(v)||v<min||v>max)throw new Error(`${label}: целое от ${min} до ${max}.`);return v;};
 export function validateWorldOptions(input={}, {historical=false}={}){
- const population=integer(input.population??WORLD_DEFAULTS.population,1,1000,'Основатели'),limit=integer(input.limit??WORLD_DEFAULTS.limit,population,1000,'Лимит');
+ const population=integer(input.population??WORLD_DEFAULTS.population,WORLD_LIMITS.populationMin,WORLD_LIMITS.populationMax,'Основатели'),limit=integer(input.limit??WORLD_DEFAULTS.limit,population,WORLD_LIMITS.populationMax,'Лимит');
  for(const name of ['memory','learning','mutations'])if(input[name]!==undefined&&typeof input[name]!=='boolean')throw new Error(`Некорректный переключатель ${name}.`);
  const founderSenses=validateFounderSenses(input.founderSenses);
  const digestionTime=validateDigestionTime(input.digestionTime);

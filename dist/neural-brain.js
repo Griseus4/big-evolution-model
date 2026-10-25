@@ -1,3 +1,5 @@
+import {FEELING_SCALES,LEARNING_RULES} from './brain-input-scales.js';
+import {INPUT_SCALES} from './brain-input-scales.js';
 import {brainCostProfile} from './brain-cost.js';
 import {STRUCTURAL_TYPE,compileStructure} from './structural-brain.js';
 /** Маленький нелинейный оценщик, без мира, DOM и случайных бросков.
@@ -15,7 +17,7 @@ import {HIDDEN_COUNT,NEURAL_TRAIT_INDICES,layoutForGenes,layoutForType,layoutFor
 import {densitySignal} from './neighbour-perception.js';
 const clamp=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
 const ZERO_POTENTIALS=Object.freeze(Array(7).fill(0));
-export const NEURAL_TEMPERATURE=.35;
+export const NEURAL_TEMPERATURE=LEARNING_RULES.choiceTemperature;
 /** Буферы реализации, а не память жителя: не наследуются/экспортируются.
  * WeakMap не удерживает умершего владельца. На мозг v7: (545+16+545)*8 =
  * 8848 байт; v8: (593+16+593)*8 = 9616 байт. Продолжение лениво добавляет 22 Float64 (176 байт) и
@@ -140,11 +142,11 @@ export function fillNeuralInputs(brain,observation,candidate,potentials,input,fe
  fillActionFeatures(brain,{action,destination:localDestination,cell,previousAction:o.previousAction,energy:o.body.energy,tick:o.tick,potentials},features,record,belief);
  if(!o.memoryEnabled)features.fill(0,3);
  input.fill(0,0,ACTION_COUNT);input[action]=1;
- input[11]=body?.energy??o.body.energy/100;input[12]=body?.health??o.body.health/100;input[13]=body?.pain??o.body.pain/100;
+ input[11]=body?.energy??o.body.energy/INPUT_SCALES.energy;input[12]=body?.health??o.body.health/INPUT_SCALES.health;input[13]=body?.pain??o.body.pain/INPUT_SCALES.pain;
  input[14]=senses[0];input[15]=senses[1];
  for(let i=0;i<features.length;i++)input[16+i]=features[i];
- input[25]=Number(o.currentFood);input[26]=cell.food/10;input[27]=Number(cell.hazard);input[28]=Number(o.previousAction===action);
- input[29]=belief?.confidence??0;input[30]=(belief?.food??0)/10;input[31]=record?Math.max(0,o.tick-record.lastSeen)/brain.traits.memoryAge:0;
+ input[25]=Number(o.currentFood);input[26]=cell.food/INPUT_SCALES.food;input[27]=Number(cell.hazard);input[28]=Number(o.previousAction===action);
+ input[29]=belief?.confidence??0;input[30]=(belief?.food??0)/INPUT_SCALES.food;input[31]=record?Math.max(0,o.tick-record.lastSeen)/brain.traits.memoryAge:0;
  if(INPUT_COUNT>32){
   // Только текущие анонимные количества. ID и мировых координат среди входов нет.
   // Насыщение плавное: 1/2 и 100/101 различаются, жёсткого потолка счётчика нет.
@@ -160,7 +162,7 @@ export function evaluateNeural(brain,request){
  const o=request.observation;
  const potentials=o.memoryEnabled?spatialContext(brain,[o.position,...localNeighbours(brain)],o.tick):ZERO_POTENTIALS;
  const parameters=effectiveParameters(brain,o.learningEnabled,workspace(brain).parameters);
- const body={senses:bodySenses(o.body,o.capacities.inventory,o.capacities.stomach),energy:o.body.energy/100,health:o.body.health/100,pain:o.body.pain/100};
+ const body={senses:bodySenses(o.body,o.capacities.inventory,o.capacities.stomach),energy:o.body.energy/INPUT_SCALES.energy,health:o.body.health/INPUT_SCALES.health,pain:o.body.pain/INPUT_SCALES.pain};
  return request.candidates.map(candidate=>{
   if(!Number.isInteger(candidate.action)||candidate.action<0||candidate.action>=ACTION_COUNT)throw new Error('Неизвестное действие сети.');
   const {input,features,senses}=neuralInputs(brain,o,candidate,potentials,body);
@@ -181,7 +183,7 @@ export function expectedNeuralValue(brain,request){
  const parameters=effectiveParameters(brain,o.learningEnabled,work.parameters);
  const potentials=o.memoryEnabled?spatialContext(brain,[o.position,...localNeighbours(brain)],o.tick):ZERO_POTENTIALS;
  const body=buffers.body;bodySenses(o.body,o.capacities.inventory,o.capacities.stomach,buffers.senses);
- body.energy=o.body.energy/100;body.health=o.body.health/100;body.pain=o.body.pain/100;
+ body.energy=o.body.energy/INPUT_SCALES.energy;body.health=o.body.health/INPUT_SCALES.health;body.pain=o.body.pain/INPUT_SCALES.pain;
  let peak=-Infinity;
  for(let i=0;i<count;i++){
   const candidate=request.candidates[i];if(!Number.isInteger(candidate.action)||candidate.action<0||candidate.action>=ACTION_COUNT)throw new Error('Неизвестное действие сети.');
@@ -208,12 +210,12 @@ export function learnNeural(brain,choice,{beforeFeeling,afterFeeling,nextValue,t
  const gradient=neuralGradient(brain.networkBase,brain.networkDelta,choice.input,work.hidden,work.gradient);
  let squaredNorm=0;for(let i=0;i<PARAMETER_COUNT;i++)squaredNorm+=gradient[i]*gradient[i];
  const norm=Math.max(1,Math.sqrt(squaredNorm));
- const reward=.04*afterFeeling/100+(terminal?0:discount*afterFeeling/100)-beforeFeeling/100;
- const delta=clamp(reward+(terminal?0:discount*nextValue)-beforeValue,-2,2);
+ const reward=LEARNING_RULES.timeReward*afterFeeling/FEELING_SCALES.maximum+(terminal?0:discount*afterFeeling/FEELING_SCALES.maximum)-beforeFeeling/FEELING_SCALES.maximum;
+ const delta=clamp(reward+(terminal?0:discount*nextValue)-beforeValue,-LEARNING_RULES.tdErrorLimit,LEARNING_RULES.tdErrorLimit);
  for(let i=0;i<PARAMETER_COUNT;i++){
   const e=discount*trace*brain.eligibility[i]+gradient[i]/norm;
   brain.eligibility[i]=e;
-  brain.networkDelta[i]=clamp(brain.networkDelta[i]*(1-forgetting)+alpha*delta*e,-4,4);
+  brain.networkDelta[i]=clamp(brain.networkDelta[i]*(1-forgetting)+alpha*delta*e,-LEARNING_RULES.weightDeltaLimit,LEARNING_RULES.weightDeltaLimit);
  }
  // После обновления delta прежние эффективные веса уже недействительны.
  effectiveParameters(brain,true,parameters);

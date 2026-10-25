@@ -1,3 +1,6 @@
+import {MEMORY_RULES} from './cognition-rules.js';
+import {RULES} from './model-rules.js';
+import {INPUT_SCALES,FEELING_SCALES,LEARNING_RULES} from './brain-input-scales.js';
 /**
  * Общая пространственная память и историческое табличное обучение.
  * Новая сеть находится в neural-brain.js и использует эту же память.
@@ -33,11 +36,11 @@ const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
  * Деление на сумму модулей ограничивает шкалу, но НЕ делает ощущения разных
  * геномов сопоставимой оценкой приспособленности. Полнота инвентаря не награждается.
  */
-export function wellbeing(body,traits,stomachCapacity=66){
- const signals=[body.energy/50-1,body.health/50-1,body.pain/100,body.stomach/stomachCapacity];
+export function wellbeing(body,traits,stomachCapacity=RULES.stomachCapacity){
+ const signals=[body.energy/FEELING_SCALES.energyCenter-1,body.health/FEELING_SCALES.healthCenter-1,body.pain/INPUT_SCALES.pain,body.stomach/stomachCapacity];
  const normalizer=traits.values.reduce((sum,v)=>sum+Math.abs(v),0);
  if(normalizer<1e-12)return 0;
- return clamp(100*signals.reduce((sum,v,i)=>sum+v*traits.values[i],0)/normalizer,-100,100);
+ return clamp(FEELING_SCALES.maximum*signals.reduce((sum,v,i)=>sum+v*traits.values[i],0)/normalizer,-FEELING_SCALES.maximum,FEELING_SCALES.maximum);
 }
 
 export function createBrain(genes){
@@ -88,7 +91,7 @@ export function observe(brain,cells,position,tick,visit=true,elapsed=1){
  // Закреплённое место тоже может забыться. Уверенность в содержимом клетки
  // стареет независимо: долго помнить координаты не означает знать нынешнюю пищу.
  for(const [key,record]of brain.longMemory){
-  if(tick-record.lastSeen>brain.traits.memoryAge*3&&memoryStrength(record,tick,brain.traits)<brain.traits.consolidationThreshold*.15)brain.longMemory.delete(key);
+  if(tick-record.lastSeen>brain.traits.memoryAge*MEMORY_RULES.forgetAgeFactor&&memoryStrength(record,tick,brain.traits)<brain.traits.consolidationThreshold*MEMORY_RULES.forgetStrengthFraction)brain.longMemory.delete(key);
  }
  brain.lastObservation=tick;
 }
@@ -100,7 +103,7 @@ export function* memoryEntries(brain){yield* brain.longMemory.values();yield* br
 export const getMemory=(brain,key)=>brain.longMemory.get(key)??brain.memory.get(key);
 function trimShort(brain){while(brain.memory.size>brain.traits.shortCapacity)brain.memory.delete(brain.memory.keys().next().value);}
 export function memoryStrength(record,tick,traits){
- const evidence=(record.importance??0)+Math.max(0,(record.encounters??0)-1)*.012;
+ const evidence=(record.importance??0)+Math.max(0,(record.encounters??0)-1)*MEMORY_RULES.encounterImportance;
  return evidence*Math.exp(-Math.max(0,tick-(record.lastReinforced??record.lastSeen))/traits.longRetention);
 }
 function maybeConsolidate(brain,record,tick,reason){
@@ -130,7 +133,7 @@ export function rememberDecision(brain,place,tick){
 }
 export function rememberExperience(brain,pending,afterFeeling,tick){
  const index=pending.choice.row*ACTION_COUNT+pending.choice.action;
- const change=(afterFeeling-pending.beforeFeeling)/100;
+ const change=(afterFeeling-pending.beforeFeeling)/FEELING_SCALES.maximum;
  const expected=brain.outcomeExpectation[index];
  const intensity=Math.abs(change),surprise=Math.abs(change-expected);
  brain.outcomeExpectation[index]+=brain.traits.alpha*(change-expected);
@@ -143,7 +146,7 @@ export function rememberExperience(brain,pending,afterFeeling,tick){
  for(const [key,strength]of places){
   const record=getMemory(brain,key);if(!record)continue;
   const faded=(record.importance??0)*Math.exp(-Math.max(0,tick-record.lastReinforced)/brain.traits.longRetention);
-  record.importance=Math.min(10,faded+signal*strength);record.lastReinforced=tick;
+  record.importance=Math.min(MEMORY_RULES.importanceLimit,faded+signal*strength);record.lastReinforced=tick;
   record.lastExperience={tick,intensity,surprise};
   maybeConsolidate(brain,record,tick,surprise>intensity?'неожиданный результат':signal*strength>=brain.traits.consolidationThreshold?'сильное переживание':'накопленные переживания');
  }
@@ -171,14 +174,14 @@ export function memoryBelief(record,tick,traits){
  let predicted=record.food;
  if(record.food===0&&record.recoveries>0){
   const interval=record.recoveryTotal/record.recoveries;
-  predicted=record.maxFoodSeen*Math.min(1,age/Math.max(1,interval));
+  predicted=record.maxFoodSeen*Math.min(1,age/Math.max(MEMORY_RULES.recoveryTimeFloor,interval));
  }
  return {
-  food:clamp(predicted*confidence+average*(1-confidence),0,6),confidence,
-  risk:(record.injuries??0)/((record.exposures??0)+2)*confidence,
-  // Склад до 10 и источники до 24 не расширяют прежнюю шкалу признака.
-  // Истинное количество в записи сохраняется; оценка пищи уже насыщалась на 6.
-  uncertainty:(1-confidence)*Math.min(record.maxFoodSeen,6)/6,
+  food:clamp(predicted*confidence+average*(1-confidence),0,MEMORY_RULES.foodPredictionScale),confidence,
+  risk:(record.injuries??0)/((record.exposures??0)+MEMORY_RULES.riskPrior)*confidence,
+  // Физическая вместимость склада/источника не расширяет шкалу прогноза.
+  // Истинный запас сохраняется в записи; насыщается только числовая оценка.
+  uncertainty:(1-confidence)*Math.min(record.maxFoodSeen,MEMORY_RULES.foodPredictionScale)/MEMORY_RULES.foodPredictionScale,
  };
 }
 
@@ -195,7 +198,7 @@ export function spatialContext(brain,positions,tick){
  for(const record of memoryEntries(brain)){
   if(record.terrain==='water'||record.maxFoodSeen===0)continue;
   const belief=memoryBelief(record,tick,brain.traits);sources++;
-  for(let i=0;i<positions.length;i++)potentials[i]+=belief.food/6/(1+localDistance(positions[i],record));
+  for(let i=0;i<positions.length;i++)potentials[i]+=belief.food/MEMORY_RULES.foodPredictionScale/(1+localDistance(positions[i],record));
  }
  if(sources)for(let i=0;i<potentials.length;i++)potentials[i]/=sources;
  brain.spatialCache={tick,q:origin.q,r:origin.r,potentials};
@@ -216,7 +219,7 @@ export function fillActionFeatures(brain,{action,destination,cell,previousAction
  record=getMemory(brain,positionKey(destination))??null,belief=record?memoryBelief(record,tick,brain.traits):null){
  const moving=action<6;
  const foodGradient=moving?potentials[action+1]-potentials[0]:0;
- const rememberedRisk=belief?.risk??0,hunger=1-energy/100;
+ const rememberedRisk=belief?.risk??0,hunger=1-energy/INPUT_SCALES.energy;
  output[0]=Number(moving&&cell.food>0);output[1]=Number(moving&&cell.hazard);output[2]=Number(moving&&action===previousAction);
  output[3]=foodGradient;output[4]=rememberedRisk;output[5]=Number(moving&&(!record||record.visits===0));
  output[6]=moving?(belief?.uncertainty??0):0;output[7]=hunger*foodGradient;output[8]=hunger*rememberedRisk;return output;
@@ -252,9 +255,9 @@ export function learn(brain,choice,{beforeFeeling,afterFeeling,nextValue,termina
  }
  const senses=choice.senses??[0,0];
  const beforeValue=learnedValue(brain,choice.row,choice.action,choice.features,senses);
- const nextFeeling=terminal?0:afterFeeling/100;
- const reward=.04*afterFeeling/100+discount*nextFeeling-beforeFeeling/100;
- const delta=clamp(reward+(terminal?0:discount*nextValue)-beforeValue,-2,2);
+ const nextFeeling=terminal?0:afterFeeling/FEELING_SCALES.maximum;
+ const reward=LEARNING_RULES.timeReward*afterFeeling/FEELING_SCALES.maximum+discount*nextFeeling-beforeFeeling/FEELING_SCALES.maximum;
+ const delta=clamp(reward+(terminal?0:discount*nextValue)-beforeValue,-LEARNING_RULES.tdErrorLimit,LEARNING_RULES.tdErrorLimit);
  for(const entry of brain.traces)entry.strength*=discount*trace;
  // Копируем ощущения В МОМЕНТ выбора: после рождения/еды/сбора тело изменится.
  brain.traces.push({index:choice.row*ACTION_COUNT+choice.action,features:choice.features.slice(),senses:senses.slice(),strength:1});
@@ -269,14 +272,14 @@ export function learn(brain,choice,{beforeFeeling,afterFeeling,nextValue,termina
   entry.senses.forEach((f,i)=>bodyChanges[offset+i]+=f*entry.strength);
  }
  for(const [index,strength]of changes){
-  brain.experience[index]=clamp(brain.experience[index]*brain.scale+alpha*delta*strength,-4,4)/brain.scale;
+  brain.experience[index]=clamp(brain.experience[index]*brain.scale+alpha*delta*strength,-LEARNING_RULES.weightDeltaLimit,LEARNING_RULES.weightDeltaLimit)/brain.scale;
  }
  featureChanges.forEach((strength,i)=>{
-  brain.weights[i]=clamp(brain.weights[i]*brain.scale+alpha*delta*strength,-4,4)/brain.scale;
+  brain.weights[i]=clamp(brain.weights[i]*brain.scale+alpha*delta*strength,-LEARNING_RULES.weightDeltaLimit,LEARNING_RULES.weightDeltaLimit)/brain.scale;
  });
  // Те же скорость, забывание, след и предел ±4; награда за запасы не добавлена.
  bodyChanges.forEach((strength,i)=>{
-  brain.bodyWeights[i]=clamp(brain.bodyWeights[i]*brain.scale+alpha*delta*strength,-4,4)/brain.scale;
+  brain.bodyWeights[i]=clamp(brain.bodyWeights[i]*brain.scale+alpha*delta*strength,-LEARNING_RULES.weightDeltaLimit,LEARNING_RULES.weightDeltaLimit)/brain.scale;
  });
  const afterValue=learnedValue(brain,choice.row,choice.action,choice.features,senses);
  brain.updates++;brain.lastLearning={tick,action:choice.action,row:choice.row,

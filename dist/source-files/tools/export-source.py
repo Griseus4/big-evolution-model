@@ -39,6 +39,14 @@ if OUTPUT.exists():
 OUTPUT.mkdir()
 
 PURPOSES = {
+    'dist/model-rules.js': 'Единый источник числовых правил тела, деятельности и допустимого усвоения.',
+    'dist/brain-input-scales.js': 'Именованные масштабы протокола мозга, ощущений и обучения.',
+    'dist/cognition-rules.js': 'Шкалы наследуемых свойств и параметры памяти.',
+    'dist/brain-structure-rules.js': 'Пределы, начальные условия и параметры структурной мутации.',
+    'dist/numeric-rules.js': 'Каталог числовых источников с единицами и пояснениями.',
+    'dist/guide-numbers-text.js': 'Читательский каталог числовых правил без копий значений.',
+    'tests/numeric-rules0548.test.mjs': 'Полная эквивалентность сохранений до/после переноса чисел и описание параметров.',
+    'tests/fixtures/numeric-rules0548.json': 'Контрольные состояния 0.54.7 до переноса числовых правил.',
     'dist/guide-reference-text.js': 'Связный текст справки и таблицы базовых параметров из правил модели.',
     'dist/guide-geography-text.js': 'Глава карты, личных координат и границ наблюдения.',
     'dist/guide-actions-text.js': 'Глава действий, продолжения, повторов и прерываний.',
@@ -298,6 +306,7 @@ files += sorted((ROOT / 'docs').rglob('*.md'))
 files += sorted(p for p in DIST.iterdir() if p.is_file() and (p.suffix in {'.js', '.html', '.css'} or p.name in {'build-info.json', 'project-guide-inventory.json'}))
 files += sorted(p for p in (DIST / 'benchmark-snapshots').rglob('*') if p.is_file() and p.suffix in {'.js', '.json'})
 files += sorted((ROOT / 'tests').rglob('*.mjs'))
+files += sorted((ROOT / 'tests' / 'fixtures').rglob('*.json'))
 files += sorted(p for p in (ROOT / 'tools').rglob('*') if p.is_file() and p.suffix in {'.py', '.mjs'})
 files.sort(key=source_order)
 manifest = []

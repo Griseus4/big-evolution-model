@@ -1,3 +1,4 @@
+import {WORLD_LIMITS} from '../dist/world-defaults.js';
 /** Настоящий UI-код и протокол в минимальном DOM. Это не браузерная проверка:
  * модель настоящая, вспомогательные панели и доставка сообщений контролируются. */
 import test from 'node:test';
@@ -72,7 +73,7 @@ async function boot(){
  }
  let section='birth',tab='world',benchmarkActive=false;
  const context=vm.createContext({...model,...cognition,...setLayout,...neuralLayout,...body,...navigation,...reproduction,...geography,...computation,
-  WorldClient:TestClient,captureHeritable,renderBrainDiagram:host=>{host.textContent="Схема мозга";},WorldProfiler,mutationProfile,foodLabel,format:formatNumber,updateTextRows,UI_TEXT,installUIText,installPerformanceTabs,document,navigator:{hardwareConcurrency:2,userAgent:'test-dom'},
+  WORLD_LIMITS,WorldClient:TestClient,captureHeritable,renderBrainDiagram:host=>{host.textContent="Схема мозга";},WorldProfiler,mutationProfile,foodLabel,format:formatNumber,updateTextRows,UI_TEXT,installUIText,installPerformanceTabs,document,navigator:{hardwareConcurrency:2,userAgent:'test-dom'},
   installLabTabs:options=>({currentTab:()=>tab,refresh:()=>{},onRestart:()=>{},
    select:name=>{tab=name;options.onTabChange(name);},isBenchmarkActive:()=>benchmarkActive}),
   installSidebar:fn=>{sidebarChange=fn;return {getResidentSection:()=>section,select:()=>fn(),selectResident:name=>{section=name;fn();}};},

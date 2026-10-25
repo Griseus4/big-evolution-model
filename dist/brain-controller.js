@@ -1,3 +1,5 @@
+import {FEELING_SCALES} from './brain-input-scales.js';
+import {BODY_THRESHOLDS} from './model-rules.js';
 /** Контракт между миром и контроллером, первый этап перехода к сети.
  * Модуль не импортирует Evolution, DOM или генератор случайных чисел.
  * На входе только собственное тело, личная позиция и видимые признаки вариантов.
@@ -21,14 +23,14 @@ import {beginComputePart,endComputePart} from './performance-probe.js';
 
 export const BRAIN_TYPE='table-linear-v6',DECISION_SCHEMA='local-decision-v1';
 export function createControllerState(genes){return layoutForGenes(genes)?createNeuralBrain(genes):{...createBrain(genes),controllerType:BRAIN_TYPE};}
-export function controllerFeeling(brain,body,stomachCapacity){if(!brain.temporal)return wellbeing(body,brain.traits,stomachCapacity);const v=brain.traits.values,n=Math.abs(v[0])+Math.abs(v[1])+Math.abs(v[3]);return n<1e-12?0:Math.max(-100,Math.min(100,100*(v[0]*(body.energy/50-1)+v[1]*(body.health/50-1)+v[3]*body.stomach/stomachCapacity)/n));}
+export function controllerFeeling(brain,body,stomachCapacity){if(!brain.temporal)return wellbeing(body,brain.traits,stomachCapacity);const v=brain.traits.values,n=Math.abs(v[0])+Math.abs(v[1])+Math.abs(v[3]);return n<1e-12?0:Math.max(-FEELING_SCALES.maximum,Math.min(FEELING_SCALES.maximum,FEELING_SCALES.maximum*(v[0]*(body.energy/FEELING_SCALES.energyCenter-1)+v[1]*(body.health/FEELING_SCALES.healthCenter-1)+v[3]*body.stomach/stomachCapacity)/n));}
 export function observeController(brain,cells,position,tick,visit){observe(brain,cells,position,tick,visit);}
 
 /** Строка — особенность нынешнего контроллера, не правило физики мира.
  * Сохраняем прежние пороги/порядок пяти признаков для геномов v1…v6.
  */
 export function controllerState(observation){
- const {body}=observation,energy=body.energy<30?0:body.energy<70?1:2;
+ const {body}=observation,energy=body.energy<BODY_THRESHOLDS.hungry?0:body.energy<BODY_THRESHOLDS.highEnergy?1:2;
  return ((((energy*2+Number(body.inventory>0))*2+Number(observation.currentFood))*2+
   Number(body.pain>1))*2+Number(body.stomach>0));
 }

@@ -11,13 +11,14 @@ export const REPRODUCTION_PROFILES=Object.freeze([
 export function reproductionLabel(id){return REPRODUCTION_PROFILES.find(p=>p.id===id)?.label??'Прежнее автоматическое размножение';}
 export function reproductionSummary(c){return `Мог родить ${c.eligible} из ${c.decisions} решений; выбрал ${c.chosen}, рождений ${c.births}. Недоступность: ${Object.entries(c.blocked).map(([k,v])=>`${BIRTH_BLOCK_LABELS[k]} ${v}`).join(' · ')}. Причины могут совпадать.`;}
 export const DEFAULT_REPRODUCTION=REPRODUCTION_PROFILES[0].id;
+export const REPRODUCTION_LIMITS=Object.freeze({minimum:0,thresholdMaximum:100,timeMaximum:1000000});
 export const REPRODUCTION_DEFAULTS=Object.freeze({energy:50,health:40,maturity:90,birthInterval:100});
 export function reproductionProfile(id=DEFAULT_REPRODUCTION){
  if(id&&typeof id==='object'){
   const value={...REPRODUCTION_DEFAULTS,...id};
   if(value.automatic)throw new Error('Автоматическое размножение недоступно.');
-  for(const key of ['energy','health'])if(!Number.isFinite(value[key])||value[key]<0||value[key]>100)throw new Error('Пороги размножения: от 0 до 100.');
-  for(const key of ['maturity','birthInterval'])if(!Number.isFinite(value[key])||value[key]<0||value[key]>1000000)throw new Error('Сроки размножения: от 0 до 1 000 000 Т.');
+  for(const key of ['energy','health'])if(!Number.isFinite(value[key])||value[key]<REPRODUCTION_LIMITS.minimum||value[key]>REPRODUCTION_LIMITS.thresholdMaximum)throw new Error(`Пороги размножения: от ${REPRODUCTION_LIMITS.minimum} до ${REPRODUCTION_LIMITS.thresholdMaximum}.`);
+  for(const key of ['maturity','birthInterval'])if(!Number.isFinite(value[key])||value[key]<REPRODUCTION_LIMITS.minimum||value[key]>REPRODUCTION_LIMITS.timeMaximum)throw new Error(`Сроки размножения: от ${REPRODUCTION_LIMITS.minimum} до ${REPRODUCTION_LIMITS.timeMaximum.toLocaleString('ru-RU')} Т.`);
   return value;
  }
  const profile=REPRODUCTION_PROFILES.find(p=>p.id===id);

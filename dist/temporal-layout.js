@@ -1,3 +1,4 @@
+import {INPUT_SCALES} from './brain-input-scales.js';
 /** v13: длительные действия и наследуемый контроллер внимания.
  * Порядок генов: основной мозг, 12 свойств, малая сеть, два регулятора.
  * Личный опыт и координаты в геном не входят. */
@@ -5,11 +6,11 @@ import {ACTIVITY_NAMES} from './activity-perception.js';
 export const TEMPORAL_BRAIN_TYPE='set-duration-activity-v1';
 export const OPERATION_NAMES=Object.freeze(['Переместиться','Подобрать','Съесть','Ждать','Родить','Положить']);
 export const operationForAction=a=>a<6?0:a-5;
-export const BODY_NAMES=Object.freeze(['Энергия / 100','Здоровье / 100','Запас / вместимость','Желудок / вместимость']);
-export const CELL_NAMES=Object.freeze(['Относительное q','Относительное r','Пища / 10','Вода','Плотность других','Своя клетка','Есть запись','Прогноз пищи / 10','Уверенность','Есть источник',...ACTIVITY_NAMES]);
-export const TARGET_NAMES=Object.freeze(['Направление q','Направление r','Пища цели / 10','Другие в цели','Повтор деятельности','Есть запись цели','Уверенность цели','Прогноз пищи цели / 10','Давность записи','Градиент пищи','Неопределённость','Непосещённое место','Цель — своя клетка','Источник в цели',...ACTIVITY_NAMES]);
-export const PROCESS_NAMES=Object.freeze([...OPERATION_NAMES.map(s=>'Процесс: '+s),'Процесс продолжается','Прогресс','Осталось / 20','Вызов: завершение','Вызов: пересмотр','Вызов: срыв',...TARGET_NAMES.map(s=>'Процесс: '+s)]);
-export const CANDIDATE_NAMES=Object.freeze([...OPERATION_NAMES.map(s=>'Операция: '+s),...TARGET_NAMES,'Продолжение попытки','Время / 20','Цена решения / 0,10']);
+export const BODY_NAMES=Object.freeze([`Энергия / ${INPUT_SCALES.energy}`,`Здоровье / ${INPUT_SCALES.health}`,'Запас / вместимость','Желудок / вместимость']);
+export const CELL_NAMES=Object.freeze(['Относительное q','Относительное r',`Пища / ${INPUT_SCALES.food}`,'Вода','Плотность других','Своя клетка','Есть запись',`Прогноз пищи / ${INPUT_SCALES.food}`,'Уверенность','Есть источник',...ACTIVITY_NAMES]);
+export const TARGET_NAMES=Object.freeze(['Направление q','Направление r',`Пища цели / ${INPUT_SCALES.food}`,'Другие в цели','Повтор деятельности','Есть запись цели','Уверенность цели',`Прогноз пищи цели / ${INPUT_SCALES.food}`,'Давность записи','Градиент пищи','Неопределённость','Непосещённое место','Цель — своя клетка','Источник в цели',...ACTIVITY_NAMES]);
+export const PROCESS_NAMES=Object.freeze([...OPERATION_NAMES.map(s=>'Процесс: '+s),'Процесс продолжается','Прогресс',`Осталось / ${INPUT_SCALES.processSubsteps}`,'Вызов: завершение','Вызов: пересмотр','Вызов: срыв',...TARGET_NAMES.map(s=>'Процесс: '+s)]);
+export const CANDIDATE_NAMES=Object.freeze([...OPERATION_NAMES.map(s=>'Операция: '+s),...TARGET_NAMES,'Продолжение попытки',`Время / ${INPUT_SCALES.processSubsteps}`,`Цена решения / ${INPUT_SCALES.decisionEnergy.toLocaleString('ru-RU',{minimumFractionDigits:2,maximumFractionDigits:2})}`]);
 export const CELL_INPUTS=CELL_NAMES.length,CELL_HIDDEN=8,CONTEXT_HIDDEN=16,CANDIDATE_INPUTS=CANDIDATE_NAMES.length;
 export const CONTEXT_NAMES=Object.freeze([...BODY_NAMES,...Array.from({length:8},(_,i)=>`Средняя активация ${i+1}`),...Array.from({length:8},(_,i)=>`Средний квадрат ${i+1}`),'Число клеток',...Array.from({length:7},(_,i)=>`Потенциал пищи ${i}`),...PROCESS_NAMES]);
 export const CONTEXT_INPUTS=CONTEXT_NAMES.length;

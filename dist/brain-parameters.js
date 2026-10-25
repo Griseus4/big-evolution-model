@@ -1,3 +1,4 @@
+import {COGNITIVE_SCALE_RULES as C} from './cognition-rules.js';
 /** Общие шкалы наследуемых свойств мозга, cognition-v1.
  * Игра и расшифровщик используют одну функцию: два независимых набора формул
  * могли бы незаметно разойтись. При будущей смене шкал добавляй другую именованную
@@ -56,16 +57,16 @@ export function cognitiveTraits(genes){
  const get=key=>genes[geneIndex[key]]??0;
  return {
   values:[get('energy'),get('health'),get('pain'),get('stomach')],
-  alpha:.002+.078*sigmoid(get('learningRate')),
-  forgetting:.002*sigmoid(get('forgetting')),
-  trace:.15+.8*sigmoid(get('trace')),
-  discount:.7+.28*sigmoid(get('discount')),
-  memoryAge:20+980*sigmoid(get('memoryAge')),
+  alpha:C.alpha.offset+C.alpha.span*sigmoid(get('learningRate')),
+  forgetting:C.forgetting.span*sigmoid(get('forgetting')),
+  trace:C.trace.offset+C.trace.span*sigmoid(get('trace')),
+  discount:C.discount.offset+C.discount.span*sigmoid(get('discount')),
+  memoryAge:C.memoryAge.offset+C.memoryAge.span*sigmoid(get('memoryAge')),
   // Вместимость — число мест, длительность — шаги мира; цены энергии пока нет.
-  shortCapacity:Math.round(8+112*sigmoid(get('shortCapacity'))),
-  longCapacity:Math.round(2+60*sigmoid(get('longCapacity'))),
-  consolidationThreshold:.005+.05*sigmoid(get('consolidation')),
-  longRetention:200+5800*sigmoid(get('longPersistence')),
+  shortCapacity:Math.round(C.shortCapacity.offset+C.shortCapacity.span*sigmoid(get('shortCapacity'))),
+  longCapacity:Math.round(C.longCapacity.offset+C.longCapacity.span*sigmoid(get('longCapacity'))),
+  consolidationThreshold:C.consolidationThreshold.offset+C.consolidationThreshold.span*sigmoid(get('consolidation')),
+  longRetention:C.longRetention.offset+C.longRetention.span*sigmoid(get('longPersistence')),
   spatial:['foodMemory','riskMemory','unknown','revisit','hungryFood','hungryRisk'].map(get),
  };
 }

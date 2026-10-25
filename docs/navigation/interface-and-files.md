@@ -4,6 +4,8 @@
 
 Параметры пособия: [guide-parameters.js](../../dist/guide-parameters.js), проверки [guide-parameters0543.test.mjs](../../tests/guide-parameters0543.test.mjs). Принятые варианты читаются из отчёта через experiment-ui/lab-tabs, основной мир — из протокола наблюдателя world-view; черновик редактора не используется.
 
+Числовой каталог пособия: [numeric-rules.js](../../dist/numeric-rules.js) → [guide-numbers-text.js](../../dist/guide-numbers-text.js); источник и единицы проверяются в [numeric-rules0548.test.mjs](../../tests/numeric-rules0548.test.mjs).
+
 ## interface
 **Задача:** кнопка/панель/подсказка, выбранный житель, карта, медленный показ, подпись версии.
 **Сейчас:** разметка — [index.html](../../dist/index.html), связка мира/Canvas — [evolution-app.js](../../dist/evolution-app.js); тексты/справка — [ui-text.js](../../dist/ui-text.js)/[help.js](../../dist/help.js); вкладки — [lab-tabs.js](../../dist/lab-tabs.js)/[screen-tabs.js](../../dist/screen-tabs.js). Статистика — [history-ui.js](../../dist/history-ui.js)/[history-drawers.js](../../dist/history-drawers.js), уведомления опытов — [experiment-ui.js](../../dist/experiment-ui.js). Версия — [app-version.js](../../dist/app-version.js).

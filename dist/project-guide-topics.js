@@ -1,10 +1,20 @@
 /** Термины и навигационные указатели. Ссылка на файл не означает,
  * что прежняя краткая статья уже описывает каждое правило этого файла. */
 export const GUIDE_TOPICS={
+ numbers:{reviewedVersion:'0.54.8',keywords:['числа','константы','параметры','переменные','правила','настройки','шкала','масштаб','значения','единицы','источник','каталог','инвентарь','порция'],related:['time','actions','energy','brain','genome'],sources:[
+ {file:'model-rules.js',symbols:['actionEnergyCost','validateDigestionTime'],purpose:'Рабочие правила тела, ставок и допустимого усвоения.'},
+ {file:'action-timing.js',symbols:[],purpose:'Длительности, единица времени, период истории и базовые ставки.'},
+ {file:'brain-input-scales.js',symbols:[],purpose:'Отдельные масштабы входного протокола и субъективного ощущения.'},
+ {file:'cognition-rules.js',symbols:[],purpose:'Именованные шкалы наследуемых свойств и памяти.'},
+ {file:'brain-structure-rules.js',symbols:[],purpose:'Начальные условия, пределы и параметры структурной мутации.'},
+ {file:'numeric-rules.js',symbols:['numericRuleRows'],purpose:'Каталог ссылок на рабочие числовые источники с единицами и смыслом.'},
+ {file:'guide-numbers-text.js',symbols:[],purpose:'Читательское представление каталога, без копий чисел.'},
+ ],checks:[{file:'tests/numeric-rules0548.test.mjs',purpose:'Совпадение полного состояния с 0.54.7 и связи числовых источников.'}]},
  energy:{reviewedVersion:'0.54.7',keywords:['энергия','здоровье','дефицит','ноль','нуль','расход','усвоение','желудок','инвентарь','истощение','гибель','смерть','возраст','цена мозга','лечение'],related:['actions','time','selection','food','brain','deposits','research'],sources:[
  {file:'energy-budget.js',symbols:['spendEnergy'],purpose:'Оплата доступной энергией и перевод дефицита в потерю здоровья.'},
  {file:'temporal-world.js',symbols:['advanceTemporalBodies','acceptTemporalChoice','sampleLife'],purpose:'Усвоение, расход, момент гибели и наблюдения тела.'},
- {file:'evolution.js',symbols:['addAgent','actionEnergyCost','die','validateDigestionTime'],purpose:'Начальные ресурсы, ставки действий, списание при гибели и настройка усвоения.'},
+ {file:'evolution.js',symbols:['addAgent','die'],purpose:'Начальные ресурсы и списание при гибели.'},
+ {file:'model-rules.js',symbols:['actionEnergyCost','validateDigestionTime'],purpose:'Единый источник ставок, пределов и времени усвоения.'},
  {file:'brain-cost.js',symbols:['decisionCharge','learningCharge'],purpose:'Условные операции и цена выбора/обучения.'},
  {file:'guide-energy-text.js',symbols:['guideDeficitExample'],purpose:'Каноническая глава и пример, рассчитанный общей физикой.'},
  ],checks:[{file:'tests/environment-save.test.mjs',purpose:'Точный ноль, дефицит, смерть при оплате и совпадение Workers.'},{file:'tests/temporal.test.mjs',purpose:'Порядок усвоения, расходы и гибель до завершения.'},{file:'tests/guide-energy0547.test.mjs',purpose:'Расчёт примера и списание ресурсов без создания еды на гексе.'}]},

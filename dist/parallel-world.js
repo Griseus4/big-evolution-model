@@ -1,3 +1,4 @@
+import {SUBSTEPS} from './action-timing.js';
 import {brainCostProfile} from './brain-cost.js';
 /** Общая физика в координаторе, постоянные владельцы личного опыта.
  * Два барьера на подшаг: оценки -> мировой RNG/исполнение -> подтверждение.
@@ -114,7 +115,7 @@ export class ParallelWorld{
    const w=this.world;if(!w.agents.length)return;
    if(!w._primed){await this.cognition(true);w._primed=true;}
    if(!w.agents.length){finishTemporal(w);return;}
-   for(let i=0;i<10&&w.agents.length;i++){advanceTemporalBodies(w,a=>this.removed(a));await this.cognition(false);finishTemporal(w);}
+   for(let i=0;i<SUBSTEPS&&w.agents.length;i++){advanceTemporalBodies(w,a=>this.removed(a));await this.cognition(false);finishTemporal(w);}
   }catch(e){this.fail(e);throw e;}finally{this.busy=false;}
  }
  async sync(agents){

@@ -1,3 +1,7 @@
+import {WORLD_LIMITS} from './world-defaults.js';
+import {STRUCTURE_RULES} from './brain-structure-rules.js';
+import {RULES,validateDigestionTime,actionEnergyCost,BODY_LIMITS} from './model-rules.js';
+import {SUBSTEPS,HISTORY_SAMPLE_T,ACTION_DURATIONS} from './action-timing.js';
 import {STRUCTURAL_TYPE,structuralSettings,structuralLayout} from './structural-brain.js';
 /**
  * Лаборатория отбора и личного обучения, версия 0.29.
@@ -53,23 +57,7 @@ export const CANVAS_WIDTH=Math.ceil((WORLD_WIDTH+.5)*HEX_WIDTH+12);
 export const CANVAS_HEIGHT=Math.ceil((WORLD_HEIGHT-1)*HEX_RADIUS*1.5+2*HEX_RADIUS+12);
 
 // Все величины условные: шаг пока не переводится в часы или годы.
-export const RULES=Object.freeze({foodEnergy:22,digestionRate:1.1,stomachCapacity:66,
- inventoryCapacity:3,initialEnergy:68,newbornEnergy:28,birthCost:32,birthThreshold:reproductionProfile().energy,birthHealth:reproductionProfile().health,
- maturity:REPRODUCTION_DEFAULTS.maturity,birthInterval:REPRODUCTION_DEFAULTS.birthInterval,maxAge:10000,regrowInterval:80,
- waitCost:.30,depositCost:.36,groundFoodCapacity:10,actionCost:.48,moveExtra:.30,gatherExtra:.18});
-export const DIGESTION_TIME_LIMITS=Object.freeze({min:.1,max:1e9});
-/** Время усвоения одной порции, Т. Прежняя скорость задаёт значение по
- * умолчанию; энергоценность пищи не меняется. Нижний предел — один подшаг. */
-export function validateDigestionTime(value=RULES.foodEnergy/RULES.digestionRate){
- if(!Number.isFinite(value)||value<DIGESTION_TIME_LIMITS.min||value>DIGESTION_TIME_LIMITS.max)throw new Error('Усвоение одной порции: время от 0,1 до 1 000 000 000 Т.');
- return value;
-}
-/** Расходы действий в три раза выше 0.8. Рождение отдельно: его стоимость 32
- * и передача 28 ребёнку не масштабированы, как и сроки начала размножения.
- * Эти величины заданы физикой, не обученными предпочтениями/целями организма.
- */
-export function actionEnergyCost(action){return action===BIRTH_ACTION?RULES.birthCost:action===DEPOSIT_ACTION?RULES.depositCost:action===8?RULES.waitCost:
- RULES.actionCost+(action<6?RULES.moveExtra:action===6?RULES.gatherExtra:0);}
+export {RULES,DIGESTION_TIME_LIMITS,validateDigestionTime,actionEnergyCost} from './model-rules.js';
 const bound=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 
 /** Шесть соседей гекса. Порядок соответствует первым шести действиям.
@@ -109,7 +97,7 @@ export class Evolution {
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?STRUCTURAL_TYPE:SET_BRAIN_TYPE,
   scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections}={}){
   this.temporal=Boolean(temporal);
-  Object.assign(this,structuralSettings({maxNeurons,maxLayers,structuralMutations,initialNeurons:baseGenome?null:initialNeurons,initialConnections:baseGenome?100:initialConnections}));
+  Object.assign(this,structuralSettings({maxNeurons,maxLayers,structuralMutations,initialNeurons:baseGenome?null:initialNeurons,initialConnections:baseGenome?STRUCTURE_RULES.initialConnections:initialConnections}));
   this.digestionTime=validateDigestionTime(digestionTime);
   this.digestionRate=RULES.foodEnergy/this.digestionTime;
   if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(brainType))throw new Error('В0.32 нужен мозг v13; старые основы не поддерживаются.');
@@ -132,8 +120,8 @@ export class Evolution {
   this.heritableMutations=Boolean(heritableMutations);this.upgradeMutationGenes=Boolean(upgradeMutationGenes);
   this.mutationRandom=new Random(this.seed^0x31d869ab);
   this.brainType=brainType;this.neuralRandom=new Random(this.seed^0x493cc13d);
-  this.initialPopulation=bound(Math.floor(population),1,1000);
-  this.limit=bound(Math.floor(limit),this.initialPopulation,1000);
+  this.initialPopulation=bound(Math.floor(population),WORLD_LIMITS.populationMin,WORLD_LIMITS.populationMax);
+  this.limit=bound(Math.floor(limit),this.initialPopulation,WORLD_LIMITS.populationMax);
   this.mutationRate=bound(mutationRate,0,.3);this.mutations=mutations;
   this.baseGenome=baseGenome?validateGenomeFile({format:'big-evolution-genome',
    ...genomeMetadata(baseGenome),genes:baseGenome}):null;
@@ -287,9 +275,9 @@ export class Evolution {
   const frameRotation=Math.floor(new Random(this.seed^(Math.imul(id,0x9e3779b9))^0x63a71f).next()*6);
   const a={id,parentId:parent?.id??null,founderId,generation:parent?parent.generation+1:0,
    x:position.x,y:position.y,energy:parent?RULES.newbornEnergy:RULES.initialEnergy,
-   health:100,pain:0,stomach:0,inventory:0,age:0,lastBirthAge:-this.reproduction.birthInterval,
+   health:BODY_LIMITS.health,pain:0,stomach:0,inventory:0,age:0,lastBirthAge:-this.reproduction.birthInterval,
    children:0,lastAction:null,lastDecision:null,lastDamage:0,alive:true,genome,frameRotation,brain:createControllerState(genome),life:createLifeCounters(),born:this.tick};
-  if(this.temporal){delete a.pain;delete a.lastDamage;for(const k of ['painTotal','painSteps','injuries','damage'])delete a.life[k];a.process=null;a.callReason=0;a.lastAction=8;a.readyAt=(this.subtick??0)+(parent?1:0);a.lastProcess={action:8,localDestination:{...a.brain.position},direction:null,elapsed:5,duration:5};}
+  if(this.temporal){delete a.pain;delete a.lastDamage;for(const k of ['painTotal','painSteps','injuries','damage'])delete a.life[k];a.process=null;a.callReason=0;a.lastAction=8;a.readyAt=(this.subtick??0)+(parent?1:0);a.lastProcess={action:8,localDestination:{...a.brain.position},direction:null,elapsed:ACTION_DURATIONS[8],duration:ACTION_DURATIONS[8]};}
   if(this.temporal){a.life.observer=createLifeObservations(RULES.inventoryCapacity);a.life.heritable=captureHeritable(a);}
   a.brain.wellbeing=this.feeling(a);
   this.agents.push(a);placeOccupant(this.occupancy,a);this.records.set(id,{id,parentId:a.parentId,founderId,generation:a.generation,born:this.tick,death:null,cause:null});
@@ -449,7 +437,7 @@ export class Evolution {
   * Поэтому бесконечное поедание не создаёт бесконечный внутренний склад.
   */
  digest(a){
-  const amount=Math.min(a.stomach,this.digestionRate),gain=Math.min(amount,100-a.energy);
+  const amount=Math.min(a.stomach,this.digestionRate),gain=Math.min(amount,BODY_LIMITS.energy-a.energy);
   a.stomach=Math.max(0,a.stomach-amount);a.energy+=gain;
   this.stats.digested+=amount;this.stats.overflow+=amount-gain;
  }
@@ -509,7 +497,7 @@ export class Evolution {
   * первый элемент массива не получает постоянного преимущества в сборе еды.
   * Родившиеся в этом шаге включатся в действия только на следующем шаге.
   */
- step(){if(this.temporal){for(let i=0;i<10&&this.agents.length;i++)advanceTemporal(this);return;}return this.legacyStep();}
+ step(){if(this.temporal){for(let i=0;i<SUBSTEPS&&this.agents.length;i++)advanceTemporal(this);return;}return this.legacyStep();}
  substep(){if(!this.temporal)throw new Error('Подшаги толькоv13');advanceTemporal(this);}
  legacyStep(){
   if(!this.agents.length)return;
@@ -545,7 +533,7 @@ export class Evolution {
    const cell=this.tile(a.x,a.y);
    if(cell.risk>0&&this.random.next()<cell.risk){
     const damage=5+Math.floor(this.random.next()*8);a.health=Math.max(0,a.health-damage);
-    a.pain=bound(a.pain+damage,0,100);a.lastDamage=damage;this.stats.injuries++;
+    a.pain=bound(a.pain+damage,0,BODY_LIMITS.pain);a.lastDamage=damage;this.stats.injuries++;
    }
    if(a.energy===0)a.health=Math.max(0,a.health-1.5);
    this.observe(a,true);
@@ -568,7 +556,7 @@ export class Evolution {
   }
   this.agents=this.agents.filter(a=>a.alive);
   if(!this.agents.length)this.log('Опыт завершён','Популяция вымерла. Автоматического возрождения нет.');
-  if(this.tick%10===0||!this.agents.length)this.record();
+  if(this.tick%HISTORY_SAMPLE_T===0||!this.agents.length)this.record();
   if(this.records.size>6000){
    const keep=new Set(this.agents.flatMap(a=>[a.id,a.parentId]));
    for(const [id,r]of this.records){if(this.records.size<=5000)break;if(r.death!==null&&!keep.has(id))this.records.delete(id);}

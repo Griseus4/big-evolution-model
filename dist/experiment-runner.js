@@ -1,3 +1,4 @@
+import {WORLD_LIMITS} from './world-defaults.js';
 import {STRUCTURAL_TYPE,structuralSettings} from './structural-brain.js';
 /** Длинные наблюдательные испытания одной и той же физики Evolution.
  * Миры изолированы, без отрисовки и общего RNG. Параллельность управляется UI;
@@ -28,7 +29,7 @@ export function validateExperimentConfig(input){
  const integer=(v,min,max,label)=>{if(!Number.isInteger(v)||v<min||v>max)throw new Error(`${label}: целое число ${min}…${max}.`);return v;};
  const seeds=input.seeds;if(!Array.isArray(seeds)||!seeds.length||seeds.length>64)throw new Error('Укажи от 1 до 64 различных seed.');
  seeds.forEach(v=>integer(v,1,4294967295,'Seed'));if(new Set(seeds).size!==seeds.length)throw new Error('Seed не должны повторяться.');
- const population=integer(input.population,1,1000,'Основателей'),limit=integer(input.limit,population,1000,'Лимит');
+ const population=integer(input.population,WORLD_LIMITS.populationMin,WORLD_LIMITS.populationMax,'Основателей'),limit=integer(input.limit,population,WORLD_LIMITS.populationMax,'Лимит');
  const steps=integer(input.steps,1000,300000,'Шагов на мир'),parallel=integer(input.parallel,1,12,'Параллельных миров');
  const modes=input.modes??BRAIN_MODES.map(m=>m.id);if(!Array.isArray(modes)||!modes.length||modes.some(id=>!BRAIN_MODES.some(m=>m.id===id)))throw new Error('Не выбран режим мозга.');
  const food=validateFoodSettings(input),geography=validateGeography(input.geography);

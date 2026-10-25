@@ -1,3 +1,4 @@
+import {FEELING_SCALES,LEARNING_RULES} from './brain-input-scales.js';
 /** Общая ситуация вычисляется один раз на прямой выбор жителя.
  * Q(s,a)=sum(z(s)*operation(a)*target(a))/sqrt(16)+linear(a).
  * У разных операций разные критерии одной цели. Веса всех блоков наследуются,
@@ -10,7 +11,7 @@ export function createSetBrainEngine(layout,inputs){
 const {SET_BLOCKS,SET_PARAMETER_COUNT,CELL_HIDDEN,CONTEXT_HIDDEN,CONTEXT_INPUTS,CANDIDATE_INPUTS,OPERATION_NAMES}=layout;
 const BODY_INPUTS=layout.BODY_NAMES.length;
 const {prepareSetInput,setCandidateInput}=inputs;
-const [CELLS,CONTEXT,TARGET,OPERATION,DIRECT]=SET_BLOCKS,SCALE=1/Math.sqrt(CONTEXT_HIDDEN),TEMPERATURE=.35;
+const [CELLS,CONTEXT,TARGET,OPERATION,DIRECT]=SET_BLOCKS,SCALE=1/Math.sqrt(CONTEXT_HIDDEN),TEMPERATURE=LEARNING_RULES.choiceTemperature;
 const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const workspaces=new WeakMap();
 function work(brain){let w=workspaces.get(brain);if(!w){w={parameters:new Float64Array(brain.networkBase.length),gradient:new Float64Array(brain.networkBase.length),candidateInput:new Float64Array(CANDIDATE_INPUTS),features:Array(FEATURE_NAMES.length)};workspaces.set(brain,w);}return w;}
@@ -156,10 +157,10 @@ function learnSetBrain(brain,choice,{beforeFeeling,afterFeeling,nextValue,termin
  const w=work(brain),p=effective(brain,true),{gradient,value:beforeValue}=setGradient(p,choice.batchInput,w.gradient),{alpha,discount,trace,forgetting}=brain.traits;
  const updateMark=beginComputePart('updates');let reward,delta;
  try{
-  let squared=0;for(const v of gradient)squared+=v*v;const norm=Math.max(1,Math.sqrt(squared));
-  reward=timeReward??(.04*afterFeeling/100+(terminal?0:discount*afterFeeling/100)-beforeFeeling/100);delta=clamp(reward+(terminal?0:(temporal?discount**elapsed:discount)*nextValue)-beforeValue,-2,2);
+  let squared=0;for(const v of gradient)squared+=v*v;const norm=Math.max(LEARNING_RULES.gradientNormFloor,Math.sqrt(squared));
+  reward=timeReward??(LEARNING_RULES.timeReward*afterFeeling/FEELING_SCALES.maximum+(terminal?0:discount*afterFeeling/FEELING_SCALES.maximum)-beforeFeeling/FEELING_SCALES.maximum);delta=clamp(reward+(terminal?0:(temporal?discount**elapsed:discount)*nextValue)-beforeValue,-LEARNING_RULES.tdErrorLimit,LEARNING_RULES.tdErrorLimit);
   const fade=temporal?(discount*trace)**elapsed:discount*trace;const retain=temporal?1:1-forgetting;
-  for(const i of (brain.structure?.activeParameters??p.keys())){const e=fade*brain.eligibility[i]+gradient[i]/norm;brain.eligibility[i]=e;brain.networkDelta[i]=clamp(brain.networkDelta[i]*retain+alpha*delta*e,-4,4);}
+  for(const i of (brain.structure?.activeParameters??p.keys())){const e=fade*brain.eligibility[i]+gradient[i]/norm;brain.eligibility[i]=e;brain.networkDelta[i]=clamp(brain.networkDelta[i]*retain+alpha*delta*e,-LEARNING_RULES.weightDeltaLimit,LEARNING_RULES.weightDeltaLimit);}
  }finally{endComputePart(updateMark);}
  const afterMark=beginComputePart('afterUpdate');let afterValue;
  try{const after=effective(brain,true);afterValue=setCandidateForward(after,setCommonForward(after,choice.batchInput),choice.batchInput.candidate).value;}finally{endComputePart(afterMark);}
