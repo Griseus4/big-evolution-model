@@ -40,12 +40,12 @@ export function validateExperimentConfig(input){
  const baseGenome=input.baseGenome?validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome}):null;
  const brainType=baseGenome?genomeMetadata(baseGenome).brainType:input.brainType??DUAL_BRAIN_TYPE;
  if(brainType!==BRAIN_TYPE&&!layoutForType(brainType))throw new Error('Неизвестный тип мозга.');
- if(brainType!==DUAL_BRAIN_TYPE)throw new Error('Для новых испытаний нужен геном двух сетей v15. Старые отчёты доступны для анализа.');
+ if(brainType!==DUAL_BRAIN_TYPE)throw new Error('Для новых испытаний нужен геном двух сетей; новые основы должны использовать отдельные регуляторы блоков. Старые отчёты доступны для анализа.');
  if(reproductionProfile(reproduction).automatic)throw new Error('Автоматическое размножение исключено из новых испытаний.');
  return {heritableMutations:input.heritableMutations!==false,upgradeMutationGenes:input.upgradeMutationGenes===true,individualFood:input.individualFood!==false,brainType,seeds:seeds.slice(),population,limit,steps,parallel,modes:[...new Set(modes)],
- mutations:input.mutations!==false,mutationRate,baseGenome,saveGenomes:input.saveGenomes!==false,geography,reproduction,...food};
+ mutations:input.mutations!==false,mutationRate,baseGenome,saveGenomes:input.saveGenomes!==false,geography,reproduction,...food,...dualStructureSettings(input)};
 }
-export function experimentJobs(config){let id=0;return config.seeds.flatMap(seed=>config.modes.map(mode=>({id:`world-${++id}`,kind:'world',heritableMutations:config.heritableMutations,upgradeMutationGenes:config.upgradeMutationGenes,brainType:config.brainType,seed,scenario:'custom',mode,steps:config.steps,population:config.population,limit:config.limit,mutations:config.mutations,mutationRate:config.mutationRate,baseGenome:config.baseGenome,saveGenomes:config.saveGenomes,geography:config.geography,reproduction:config.reproduction,foodSources:config.foodSources,foodRegrowInterval:config.foodRegrowInterval,foodIslandCount:config.foodIslandCount,foodPeriodSpread:config.foodPeriodSpread,foodSizeSpread:config.foodSizeSpread,individualFood:config.individualFood})));}
+export function experimentJobs(config){let id=0;return config.seeds.flatMap(seed=>config.modes.map(mode=>({id:`world-${++id}`,kind:'world',...dualStructureSettings(config),heritableMutations:config.heritableMutations,upgradeMutationGenes:config.upgradeMutationGenes,brainType:config.brainType,seed,scenario:'custom',mode,steps:config.steps,population:config.population,limit:config.limit,mutations:config.mutations,mutationRate:config.mutationRate,baseGenome:config.baseGenome,saveGenomes:config.saveGenomes,geography:config.geography,reproduction:config.reproduction,foodSources:config.foodSources,foodRegrowInterval:config.foodRegrowInterval,foodIslandCount:config.foodIslandCount,foodPeriodSpread:config.foodPeriodSpread,foodSizeSpread:config.foodSizeSpread,individualFood:config.individualFood})));}
 const require=(condition,message)=>{if(!condition)throw new Error(message);};
 /** Это ошибки механики, а не требования к успешной стратегии. Вымирание допустимо.
  * Проверяем на контрольных точках; отчёт не утверждает проверку каждого параметра
@@ -119,7 +119,7 @@ export async function runWorld(job,{onProgress=()=>{},shouldStop=()=>false,getCo
   if(job.saveGenomes)samples.push({tick:s.tick,genomes:[...champions.values()].map(g=>({...g}))});
  }
  function result(status,error=null){
-  return {id:job.id,kind:'world',modelVersion:MODEL_VERSION,status,error,settings:{...job,mutationProtocol:s.mutationProtocol,brainType:s.brainType,geography:s.geography,foodSettings:{...s.foodSettings},foodIslands:s.foodIslands,baseGenome:job.baseGenome?'stored-in-batch-config':null},
+  return {id:job.id,kind:'world',modelVersion:MODEL_VERSION,status,error,settings:{...job,mutationEnabled:{...s.mutationEnabled},mutationProtocol:s.mutationProtocol,brainType:s.brainType,geography:s.geography,foodSettings:{...s.foodSettings},foodIslands:s.foodIslands,baseGenome:job.baseGenome?'stored-in-batch-config':null},
    tick:s.tick,targetSteps:job.steps,extinct:!s.agents.length,extinctionTick:!s.agents.length?s.tick:null,
    wallSeconds:(performance.now()-start)/1000,agentSteps,meanPopulation:s.tick?agentSteps/s.tick:s.initialPopulation,
    meanFeelingAcrossAgentSteps:agentSteps?s.lifeExposure.feelingTotal/s.lifeExposure.steps:null,limitSteps,

@@ -1,7 +1,7 @@
 {
   "format": "big-evolution-guide-inventory",
   "version": 1,
-  "modelVersion": "0.55.0",
+  "modelVersion": "0.55.1",
   "files": [
     {
       "path": ".github/workflows/pages.yml",
@@ -1149,6 +1149,10 @@
     },
     {
       "path": "tests/memory-genes.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/modular-mutations.test.mjs",
       "kind": "tests"
     },
     {

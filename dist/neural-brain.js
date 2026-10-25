@@ -87,7 +87,7 @@ export function createNeuralBrain(genes){
  brain.outcomeExpectation=new Float64Array(ACTION_COUNT);
  if([TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(layout.brainType)){brain.temporal=true;brain.gateBase=createGate(genes,layout.gateOffset);const q=brain.traits.discount**.1;brain.timeReward={q,b:.04*(1-q)/(1-brain.traits.discount)};brain.decayTime=0;}
  if(layout.version===14){brain.structure=compileStructure(genes);brain.costProfile=brainCostProfile(brain.structure);}
- if(layout.version===15)Object.assign(brain,compileDualState(genes));
+ if(layout.version>=15)Object.assign(brain,compileDualState(genes));
  brain.networkBase=Float64Array.from(genes.slice(0,PARAMETER_COUNT));
  brain.networkDelta=new Float64Array(PARAMETER_COUNT);brain.eligibility=new Float64Array(PARAMETER_COUNT);
  return brain;

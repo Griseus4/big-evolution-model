@@ -29,6 +29,7 @@ import {GENOME_VERSION,randomGenome,randomNeuralGenome,genomeMetadata,mutateGeno
 import {NEURAL_BRAIN_TYPE,NEIGHBOUR_BRAIN_TYPE,SET_BRAIN_TYPE,layoutForType} from './neural-layout.js';
 import {compileFounderSenses} from './founder-senses.js';
 import {createOccupancy,placeOccupant,removeOccupant,countOthers,contactIds,visibleNeighbours} from './neighbour-perception.js';
+import {DUAL_MUTATION_SCHEMA} from './dual-brain-genome.js';
 import {withMutationGenes,mutationProfile,MUTATION_SCHEMA} from './mutation-parameters.js';
 import {WORLD_DEFAULTS} from './world-defaults.js';
 export {GENOME_VERSION,randomGenome,mutateGenome,validateGenomeFile};
@@ -98,10 +99,10 @@ export class Evolution {
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?STRUCTURAL_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections,attentionMaxNeurons=EVOLUTION_RULES.maxNeurons,attentionMaxLayers=EVOLUTION_RULES.maxLayers,attentionInitialNeurons=[],attentionInitialConnections=100,initialMutation}={}){
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections,attentionMaxNeurons=EVOLUTION_RULES.maxNeurons,attentionMaxLayers=EVOLUTION_RULES.maxLayers,attentionInitialNeurons=[],attentionInitialConnections=100,initialMutation,mutationEnabled}={}){
   this.temporal=Boolean(temporal);
   Object.assign(this,structuralSettings({maxNeurons,maxLayers,structuralMutations,initialNeurons:baseGenome?null:initialNeurons,initialConnections:baseGenome?STRUCTURE_RULES.initialConnections:initialConnections}));
-  if(brainType===DUAL_BRAIN_TYPE)Object.assign(this,dualStructureSettings({maxNeurons,maxLayers,initialNeurons,initialConnections,structuralMutations,attentionMaxNeurons,attentionMaxLayers,attentionInitialNeurons,attentionInitialConnections,initialMutation,baseGenome}));
+  if(brainType===DUAL_BRAIN_TYPE)Object.assign(this,dualStructureSettings({maxNeurons,maxLayers,initialNeurons,initialConnections,structuralMutations,attentionMaxNeurons,attentionMaxLayers,attentionInitialNeurons,attentionInitialConnections,initialMutation,mutationEnabled,baseGenome}));
   this.digestionTime=validateDigestionTime(digestionTime);
   this.digestionRate=RULES.foodEnergy/this.digestionTime;
   if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(brainType))throw new Error('Неизвестная схема временного мозга.');
@@ -193,6 +194,7 @@ export class Evolution {
   if(this.baseGenome&&this.upgradeMutationGenes)this.baseGenome=withMutationGenes(this.baseGenome,this.mutationRandom);
   this.mutationProtocol=this.baseGenome?(mutationProfile(this.baseGenome)?MUTATION_SCHEMA:'global-mutation-v1'):
    this.heritableMutations?MUTATION_SCHEMA:'global-mutation-v1';
+  if(this.brainType===DUAL_BRAIN_TYPE)this.mutationProtocol=this.baseGenome?genomeMetadata(this.baseGenome).mutationSchema:DUAL_MUTATION_SCHEMA;
   const founderEdits=compileFounderSenses(founderSenses,layoutForType(this.brainType));
   for(let i=0;i<this.initialPopulation;i++){
    // Даже при отдельном размещении сохраняем один прежний бросок перед генами.
@@ -479,7 +481,7 @@ export class Evolution {
   */
  reproduce(a){
   if(!this.birthAvailability(a).eligible)return null;
-  const childGenes=this.mutations?mutateGenome(a.genome,this.random,this.mutationRate,.7,this.cognitiveRandom,this.bodyRandom,this.neuralRandom):a.genome.slice();
+  const childGenes=this.mutations?mutateGenome(a.genome,this.random,this.mutationRate,.7,this.cognitiveRandom,this.bodyRandom,this.neuralRandom,this):a.genome.slice();
   a.energy-=RULES.birthCost;this.stats.birthSpent+=RULES.birthCost-RULES.newbornEnergy;
   a.lastBirthAge=a.age;a.children++;this.stats.births++;
   a.life.reproduction.births++;this.stats.reproduction.births++;

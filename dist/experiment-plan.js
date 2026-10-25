@@ -1,6 +1,6 @@
 import {WORLD_LIMITS} from './world-defaults.js';
 import {structuralSettings,structuralLayout} from './structural-brain.js';
-import {DUAL_BRAIN_TYPE,dualBrainLayout,unpackDualBrain} from './dual-brain-layout.js';
+import {DUAL_BRAIN_TYPE,DUAL_VERSION,dualBrainLayout,unpackDualBrain} from './dual-brain-layout.js';
 import {dualStructureSettings} from './dual-brain-settings.js';
 /** Неизменяемый план серии. Seed назначаются до запуска и не зависят от
  * очередности Workers. Настройки каждого мира отделены от глобальных правил. */
@@ -28,8 +28,8 @@ export function validateWorldOptions(input={}, {historical=false}={}){
  for(const name of ['memory','learning','mutations'])if(input[name]!==undefined&&typeof input[name]!=='boolean')throw new Error(`Некорректный переключатель ${name}.`);
  const founderSenses=validateFounderSenses(input.founderSenses);
  const digestionTime=validateDigestionTime(input.digestionTime);
- const structure=historical?(input.attentionMaxNeurons!==undefined?dualStructureSettings(input):{}):dualStructureSettings(input);if(input.baseGenome&&!historical){
-  if(!dualBrainLayout(input.baseGenome))throw new Error('Для нового опыта нужен геном двух сетей v15.');
+ const structure=historical?(input.attentionMaxNeurons!==undefined?dualStructureSettings(input,{historical:true}):{}):dualStructureSettings(input);if(input.baseGenome&&!historical){
+  if(dualBrainLayout(input.baseGenome)?.version!==DUAL_VERSION)throw new Error('Для нового опыта нужен геном v16 с отдельными регуляторами блоков.');
   const d=unpackDualBrain(input.baseGenome);if(d.main.layers.length>structure.maxNeurons||Math.max(0,...d.main.layers)>structure.maxLayers||d.attention.layers.length>structure.attentionMaxNeurons||Math.max(0,...d.attention.layers)>structure.attentionMaxLayers)throw new Error('Геном превышает пределы структуры мозга.');
  }
  return {population,limit,digestionTime,...structure,...(founderSenses?{founderSenses}:{}),...(input.terrainSeed!==undefined?{terrainSeed:integer(input.terrainSeed,1,4294967295,'Seed карты')}:{}),...(input.foodSeed!==undefined?{foodSeed:integer(input.foodSeed,1,4294967295,'Seed пищи')}:{}),...validateFoodSettings({...input,foodGeneralSettings:input.foodGeneralSettings||input.foodRegrowInterval!==undefined&&(!Number.isInteger(input.foodRegrowInterval)||input.foodRegrowInterval<10||input.foodRegrowInterval>300)||input.foodIslandCount===0}),...(input.baseGenome?{baseGenome:validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome})}:{}),automaticEnvironment:validateEnvironmentSettings(input.automaticEnvironment),reproduction:reproductionProfile(input.reproduction),memory:input.memory!==false,learning:input.learning!==false,mutations:input.mutations!==false};

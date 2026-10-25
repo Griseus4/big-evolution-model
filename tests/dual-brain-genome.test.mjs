@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {Random} from '../dist/simulation.js';
-import {randomDualGenome,validateDualBrain,mutateDualGenome,encodeMutationPair,decodeMutationPair,mutationBudget,dualMutationProfiles} from '../dist/dual-brain-genome.js';
+import {validateDualBrain,mutateDualGenome,encodeMutationPair,decodeMutationPair,mutationBudget,dualMutationProfiles} from '../dist/dual-brain-genome.js';
 import {unpackDualBrain,packDualBrain,dualBrainLayout} from '../dist/dual-brain-layout.js';
+import {randomDualGenome} from '../dist/benchmark-snapshots/0.55.0/dual-brain-genome.js';
 import {EVOLUTION_RULES as R} from '../dist/brain-evolution-rules.js';
 
 test('default founders have two direct networks and exactly six mutation regulators',()=>{

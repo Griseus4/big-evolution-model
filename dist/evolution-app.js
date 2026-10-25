@@ -1,6 +1,6 @@
 import {WORLD_LIMITS} from './world-defaults.js';
 import {initialNeuronsInput,wireInitialStructure} from './brain-initialization-ui.js';
-import {DUAL_BRAIN_TYPE} from './dual-brain-layout.js';
+import {DUAL_BRAIN_TYPE,DUAL_VERSION} from './dual-brain-layout.js';
 import {dualBrainSettingsUI} from './dual-brain-settings-ui.js';
 import {MAX_GENOME_FILE_BYTES} from './experiment-genomes.js';
 import {renderBrainDiagram} from './brain-diagram-ui.js';
@@ -192,7 +192,7 @@ element('load-genome').addEventListener('change',async event=>{
  const file=event.target.files?.[0];if(!file)return;pause();
  try{
   if(file.size>MAX_GENOME_FILE_BYTES)throw new Error('Файл генома превышает допустимый размер.');
-  const data=JSON.parse(await file.text());if(data.version!==15)throw new Error('Новый мир принимает геномы двух сетей v15. Старые результаты опытов доступны для анализа.');baseGenome=validateGenomeFile(data);legacyBase=false;
+  const data=JSON.parse(await file.text());if(data.version!==DUAL_VERSION)throw new Error('Новый мир принимает геномы v16 с отдельными регуляторами. Старые результаты опытов доступны для анализа.');baseGenome=validateGenomeFile(data);legacyBase=false;
   element('legacy-options').hidden=!legacyBase;
   const inherited=Boolean(mutationProfile(baseGenome));
   element('upgrade-mutations').checked=false;element('mutation-upgrade-options').hidden=inherited;
@@ -352,7 +352,7 @@ element('body-senses').textContent=`Переносимый запас: ${a.inven
  element('memory-summary').textContent=`Краткая память ${b.memory.size}/${traits.shortCapacity} · долгая ${b.longMemory.size}/${traits.longCapacity} · пищу видел в ${[...memoryEntries(b)].filter(r=>r.maxFoodSeen>0).length} местах · обновлений опыта ${b.updates} · среднее чувство за жизнь ${b.feelingSamples?(b.feelingTotal/b.feelingSamples).toFixed(1):'—'}`;
  if(detailSection==='traits'){renderBrainDiagram(element('brain-diagram'),a,sim.learningEnabled);element('traits-summary').textContent=`Скорость обучения ${traits.alpha.toFixed(3)} · забывание ${(traits.forgetting*100).toFixed(3)}%/Т · вес будущего ${traits.discount.toFixed(2)} · затухание следа ${traits.trace.toFixed(2)}. Память: краткая ${traits.shortCapacity}, долгая ${traits.longCapacity}; порог закрепления ${traits.consolidationThreshold.toFixed(3)}, затухание значимости ${Math.round(traits.longRetention)} шагов. Чувствительность: энергия ${traits.values[0].toFixed(2)}, здоровье ${traits.values[1].toFixed(2)}, пищеварение ${traits.values[3].toFixed(2)}.`;
   const mutation=mutationProfile(a.genome);
-  element('traits-summary').textContent+=mutation?` Наследуемая изменчивость: ${(mutation.rate*100).toPrecision(4)}% на ген, сила ±${mutation.strength.toPrecision(4)}.`:` Изменчивость старой основы: общий параметр мира ${(sim.mutationRate*100).toFixed(2)}%, сила ±0.7.`;
+  element('traits-summary').textContent+=b.dual?' Наследуемые мутации раздельны по блокам; значения каждой пары доступны в анализаторе генома.':mutation?` Наследуемая изменчивость: ${(mutation.rate*100).toPrecision(4)}% на ген, сила ±${mutation.strength.toPrecision(4)}.`:` Изменчивость старой основы: общий параметр мира ${(sim.mutationRate*100).toFixed(2)}%, сила ±0.7.`;
  }
  const memoryRow=record=>{
   const belief=memoryBelief(record,sim.tick,traits),row=document.createElement('div');row.className='memory-row';

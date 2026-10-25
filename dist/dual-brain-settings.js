@@ -1,7 +1,7 @@
-import {EVOLUTION_RULES as R,MUTATION_GROUPS} from './brain-evolution-rules.js';
+import {EVOLUTION_RULES as R,MUTATION_GROUPS,LEGACY_MUTATION_GROUPS} from './brain-evolution-rules.js';
 import {initialLayerCounts} from './brain-initialization.js';
 import {CONTEXT_INPUTS,CONTEXT_HIDDEN} from './temporal-layout.js';
-import {ATTENTION_INPUTS} from './dual-brain-layout.js';
+import {ATTENTION_INPUTS,dualBrainLayout} from './dual-brain-layout.js';
 import {encodeMutationPair} from './dual-brain-genome.js';
 export function dagConnectionBudget(inputs,outputs,counts,percent=100){
  const sizes=[inputs,...counts.filter(Boolean),outputs];let base=0,maximum=0;
@@ -10,7 +10,8 @@ export function dagConnectionBudget(inputs,outputs,counts,percent=100){
  if(!Number.isFinite(percent)||percent<0||percent>maxPercent+1e-9)throw new Error(`Связность: от 0 до ${maxPercent.toFixed(2)}%.`);
  return {base,maximum,maxPercent,count:Math.min(maximum,Math.round(base*percent/100))};
 }
-export function dualStructureSettings(input={}){
+export function dualStructureSettings(input={}, {historical=false}={}){
+ historical||=dualBrainLayout(input.baseGenome)?.version===15;
  const result={};
  for(const [prefix,I,O]of [['',CONTEXT_INPUTS,CONTEXT_HIDDEN],['attention',ATTENTION_INPUTS,1]]){
   const key=name=>prefix?prefix+name[0].toUpperCase()+name.slice(1):name;
@@ -22,12 +23,14 @@ export function dualStructureSettings(input={}){
  }
  if(input.structuralMutations!==undefined&&typeof input.structuralMutations!=='boolean')throw new Error('Неверный переключатель структурных мутаций.');
  result.structuralMutations=input.structuralMutations!==false;
- const initialMutation={};
- for(const group of MUTATION_GROUPS){const value=input.initialMutation?.[group];if(value){
+ const groups=historical?[...new Set([...MUTATION_GROUPS,...LEGACY_MUTATION_GROUPS])]:MUTATION_GROUPS,initialMutation={};
+ for(const group of groups){const value=input.initialMutation?.[group];if(value){
   if(Object.keys(value).some(k=>!['rate','strength'].includes(k)))throw new Error('Неизвестная настройка мутации.');
   encodeMutationPair(value.rate??R.initialRateMin,value.strength??R.initialStrengthMin);initialMutation[group]={...value};
  }}
- if(input.initialMutation&&Object.keys(input.initialMutation).some(k=>!MUTATION_GROUPS.includes(k)))throw new Error('Неизвестная группа мутации.');
+ if(input.initialMutation&&Object.keys(input.initialMutation).some(k=>!groups.includes(k)))throw new Error('Неизвестная группа мутации.');
  if(Object.keys(initialMutation).length)result.initialMutation=initialMutation;
+ if(input.mutationEnabled!==undefined&&(!input.mutationEnabled||typeof input.mutationEnabled!=='object'||Array.isArray(input.mutationEnabled)||Object.entries(input.mutationEnabled).some(([k,v])=>!groups.includes(k)||typeof v!=='boolean')))throw new Error('Неверные переключатели мутаций блоков.');
+ if(!historical||input.mutationEnabled!==undefined)result.mutationEnabled=Object.fromEntries(groups.map(key=>[key,input.mutationEnabled?.[key]!==false]));
  return result;
 }

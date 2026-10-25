@@ -15,9 +15,9 @@ test('dual context adapter preserves generic forward and input gradients',()=>{
  const expected=dagBackward(plan,dagParameters(d.main),generic.values,dy);assert.deepEqual(back,expected.inputGradient);
  assert.equal(new Set(state.structure.activeParameters).size,state.structure.activeParameters.length);
 });
-test('controller construction recognises v15 without a dense gate or inherited personal state',()=>{
+test('controller construction recognises v16 without a dense gate or inherited personal state',()=>{
  const genes=randomDualGenome(new Random(2)),brain=createControllerState(genes);
- assert.equal(layoutForGenes(genes).version,15);assert.equal(brain.dual,true);assert.equal(brain.temporal,true);
+ assert.equal(layoutForGenes(genes).version,16);assert.equal(brain.dual,true);assert.equal(brain.temporal,true);
  assert.equal(brain.attentionStructure.inputs,18);assert.equal(brain.networkBase.length,layoutForGenes(genes).parameters);
  assert.ok([...brain.networkDelta].every(v=>v===0));assert.equal(brain.memory.size,0);
 });
