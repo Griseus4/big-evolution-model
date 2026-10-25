@@ -119,3 +119,15 @@ P00 завершён структурно: рабочие файлы имеют 
 | Создаёт ли выкладывание источник? deposits | evolution.js: canDeposit, depositFood, die | Порог выкладывания независим от maxFood; гибель не добавляет еду. guide-food0549, guide-energy0547 | Перестройка источников P03 |
 
 Новые канонические файлы: dist/guide-food-text.js — P01–P03, авторский текст; tests/guide-food0549.test.mjs — проверки физики примера. Крупные исходные модули целиком описанными не объявляются.
+
+## Проверенная ответственность P02
+
+Статус: **описано** для статьи food, версия 0.54.10.
+
+| Вопрос / раздел | Источник / символы | Граница / проверка | Остаток |
+| --- | --- | --- | --- |
+| Источник, островок, куст; бюджет | food-islands.js: islandSizes, createIndividualFoodLayout; food-settings.js: validateFoodSettings, createFoodTemplate | Непустые группы, сохранение целого бюджета. guide-sources05410 | География P04 |
+| Когда растёт пища и что означает выработка? | food-islands.js: scheduleFoodIslands, regrowFoodIslands; environment-settings.js: foodProduction | Полный источник без долга; сумма скоростей групп. guide-sources05410 | Автоматика P03 |
+| Что применяют поля? | food-controls.js: readFoodControls; world-edit.js: planWorldFoodChange; evolution.js: changeFoodEnvironment | Запасы и места при изменении только периода сохраняются. guide-sources05410 | Исполнение команды P24/P26 |
+
+Новые файлы: dist/guide-food-sources-text.js и tests/guide-sources05410.test.mjs. Текст food теперь охватывает P01 и P02; перечисленные модули могут содержать другие обязанности, которые не закрыты этой статьёй.
