@@ -1,5 +1,5 @@
 import {STRUCTURAL_LIMITS} from './structural-brain.js';
-import {EVOLUTION_RULES,MUTATION_GROUPS,MUTATION_LABELS} from './brain-evolution-rules.js';
+import {EVOLUTION_RULES,MUTATION_GROUPS,MUTATION_LABELS,V16_MUTATION_LABELS} from './brain-evolution-rules.js';
 import {initialLayerCounts} from './brain-initialization.js';
 import {initialNeuronsInput} from './brain-initialization-ui.js';
 import {FOUNDER_SENSE_FIELDS} from './founder-senses.js';
@@ -29,6 +29,12 @@ export const EXPERIMENT_FACTOR_FIELDS=Object.freeze([...EXPERIMENT_FIELDS,
  Object.freeze(['Геном основателей','baseGenome','Геном из файла','genome']),
  ...FOUNDER_SENSE_FIELDS.map(f=>Object.freeze(['Геном основателей','founderSenses.'+f.key,f.label,f.min,f.max,'any'])),
 ]);
+const HISTORICAL_MUTATION_FIELDS=['context','attention','main'].flatMap(key=>[
+ ['Мутации v15/v16','mutationEnabled.'+key,(V16_MUTATION_LABELS[key]??'Основной оценщик v15')+': мутации потомков','check'],
+ ['Мутации v15/v16','initialMutation.'+key+'.rate','Прежняя вероятность '+key,EVOLUTION_RULES.rateFloor,1,'any'],
+ ['Мутации v15/v16','initialMutation.'+key+'.strength','Прежняя сила '+key,EVOLUTION_RULES.strengthFloor,Number.MAX_VALUE,'any']]);
+export const factorField=(key,{historical=false}={})=>EXPERIMENT_FACTOR_FIELDS.find(f=>f[1]===key)??(historical?HISTORICAL_MUTATION_FIELDS.find(f=>f[1]===key):null);
+export const historicalFactorLabel=key=>factorField(key,{historical:true})?.[2]??key;
 export const settingAt=(o,path)=>path.split('.').reduce((v,k)=>v?.[k],o);
 export function setSetting(o,path,value){const keys=path.split('.');let at=o;for(const key of keys.slice(0,-1))at=at[key]??={};at[keys.at(-1)]=value;}
 export function settingInput(root,field,value,getLimits){if(field[3]==='neurons')return initialNeuronsInput(root,value,getLimits);const input=root.createElement('input');input.type=field[3]==='check'?'checkbox':'number';if(input.type==='checkbox')input.checked=Boolean(value);else{input.min=field[3];input.max=field[4];input.step=field[5];input.value=value??'';input.optional=field[6]===true;}return input;}
@@ -37,9 +43,9 @@ export const MAX_EXPERIMENT_COMBINATIONS=64;
 /** Сначала считаем размер произведения, потом создаём условия: ошибочный
  * огромный план не выделяет массив миров/сочетаний. Никакого мирового RNG. */
 export function factorDesign(input=[],options){
- if(!Array.isArray(input)||input.length>EXPERIMENT_FACTOR_FIELDS.length)throw new Error('Нужен список изменяемых параметров.');
+ if(!Array.isArray(input)||input.length>EXPERIMENT_FACTOR_FIELDS.length+HISTORICAL_MUTATION_FIELDS.length)throw new Error('Нужен список изменяемых параметров.');
  const used=new Set();let count=1;
- const factors=input.map(f=>{const field=EXPERIMENT_FACTOR_FIELDS.find(d=>d[1]===f?.key);if(!field||used.has(f.key))throw new Error('Неизвестный или повторный параметр опыта.');used.add(f.key);
+ const factors=input.map(f=>{const field=factorField(f?.key,options);if(!field||used.has(f.key))throw new Error('Неизвестный или повторный параметр опыта.');used.add(f.key);
   if(!Array.isArray(f.values)||!f.values.length)throw new Error(`${field[2]}: выберите хотя бы одно значение.`);
   const values=field[3]==='genome'?uniqueGenomeChoices(f.values,options):field[3]==='neurons'?f.values.map(v=>initialLayerCounts(v)):f.values.slice();if(new Set(values.map(v=>field[3]==='neurons'?JSON.stringify(v):v)).size!==values.length)throw new Error(`${field[2]}: значения повторяются.`);
   for(const v of values)if(!['genome','neurons'].includes(field[3])&&(field[3]==='check'?typeof v!=='boolean':!Number.isFinite(v)||v<field[3]||v>field[4]||field[5]===1&&!Number.isInteger(v)))throw new Error(`${field[2]}: недопустимое значение.`);

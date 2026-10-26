@@ -7,6 +7,7 @@ export function chartFamilies(report){
   if(Number.isFinite(h.mainNeurons))found.add('dual');
   if(Number.isFinite(h.mainMutationRate))found.add('v15');
   if(Number.isFinite(h.contextMutationRate))found.add('v16');
+  if(Number.isFinite(h.contextWeightsMutationRate))found.add('v17');
   if(Number.isFinite(h.brainNeurons))found.add('structural');
   if(Number.isFinite(h.mutationRate))found.add('legacy');
  }
@@ -18,7 +19,10 @@ export function chartApplicable(def,families){
  if(/^brain(Neurons|Connections|Layers|ActiveNeurons|ActiveConnections)$/.test(id)||id==='structuralRate')return families.has('structural');
  if(id==='mutationRate'||id==='mutationStrength')return families.has('legacy');
  if(/^mainMutation/.test(id))return families.has('v15');
- if(/^(context|cells|target|operation|direct)Mutation/.test(id))return families.has('v16');
- if(/^(main|attention)(Neurons|Connections|Layers)$/.test(id)||/^(behavior|attention)Mutation/.test(id))return families.has('dual');
+ if(/^(contextWeights|attentionWeights|contextStructure|attentionStructure)Mutation/.test(id))return families.has('v17');
+ if(/^contextMutation/.test(id))return families.has('v16');
+ if(/^attentionMutation/.test(id))return families.has('v15')||families.has('v16');
+ if(/^(cells|target|operation|direct)Mutation/.test(id))return families.has('v16')||families.has('v17');
+ if(/^(main|attention)(Neurons|Connections|Layers)$/.test(id)||/^behaviorMutation/.test(id))return families.has('dual');
  return true;
 }

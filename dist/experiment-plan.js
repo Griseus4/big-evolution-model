@@ -6,7 +6,7 @@ import {dualStructureSettings} from './dual-brain-settings.js';
 /** Неизменяемый план серии. Seed назначаются до запуска и не зависят от
  * очередности Workers. Настройки каждого мира отделены от глобальных правил. */
 import {genomeMetadata,validateGenomeFile} from './genome.js';
-import {EXPERIMENT_FACTOR_FIELDS,factorDesign,setSetting,MAX_EXPERIMENT_COMBINATIONS} from './experiment-fields.js';
+import {factorField,EXPERIMENT_FACTOR_FIELDS,factorDesign,setSetting,MAX_EXPERIMENT_COMBINATIONS} from './experiment-fields.js';
 import {validateFounderSenses} from './founder-senses.js';
 import {WORLD_DEFAULTS} from './world-defaults.js';
 import {validateDigestionTime} from './evolution.js';
@@ -30,7 +30,7 @@ export function validateWorldOptions(input={}, {historical=false}={}){
  const founderSenses=validateFounderSenses(input.founderSenses);
  const digestionTime=validateDigestionTime(input.digestionTime);
  const structure=historical?(input.attentionMaxNeurons!==undefined?dualStructureSettings(input,{historical:true}):{}):dualStructureSettings(input);if(input.baseGenome&&!historical){
-  if(dualBrainLayout(input.baseGenome)?.version!==DUAL_VERSION)throw new Error('Для нового опыта нужен геном v16 с отдельными регуляторами блоков.');
+  if(dualBrainLayout(input.baseGenome)?.version!==DUAL_VERSION)throw new Error('Для нового опыта нужен геном v17 с отдельными регуляторами блоков.');
   const d=unpackDualBrain(input.baseGenome);if(d.main.layers.length>structure.maxNeurons||Math.max(0,...d.main.layers)>structure.maxLayers||d.attention.layers.length>structure.attentionMaxNeurons||Math.max(0,...d.attention.layers)>structure.attentionMaxLayers)throw new Error('Геном превышает пределы структуры мозга.');
  }
  return {population,limit,digestionTime,brainCostMultiplier:validateBrainCostMultiplier(input.brainCostMultiplier),...structure,...(founderSenses?{founderSenses}:{}),...(input.terrainSeed!==undefined?{terrainSeed:integer(input.terrainSeed,1,4294967295,'Seed карты')}:{}),...(input.foodSeed!==undefined?{foodSeed:integer(input.foodSeed,1,4294967295,'Seed пищи')}:{}),...validateFoodSettings({...input,foodGeneralSettings:input.foodGeneralSettings||input.foodRegrowInterval!==undefined&&(!Number.isInteger(input.foodRegrowInterval)||input.foodRegrowInterval<10||input.foodRegrowInterval>300)||input.foodIslandCount===0}),...(input.baseGenome?{baseGenome:validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome})}:{}),automaticEnvironment:validateEnvironmentSettings(input.automaticEnvironment),reproduction:reproductionProfile(input.reproduction),memory:input.memory!==false,learning:input.learning!==false,mutations:input.mutations!==false};
@@ -49,7 +49,7 @@ export function validatePlan(input,{historical=false}={}){
   raw=[];
   function expand(index,settings,labels){
    if(index===design.factors.length){raw.push({name:labels.length?`Вариант ${raw.length+1} · ${labels.join(' · ')}`:'Общие условия',settings});return;}
-   const f=design.factors[index],field=EXPERIMENT_FACTOR_FIELDS.find(d=>d[1]===f.key);
+   const f=design.factors[index],field=factorField(f.key,{historical});
    for(const value of f.values){const next={...settings,automaticEnvironment:{...settings.automaticEnvironment},reproduction:{...settings.reproduction},founderSenses:{...settings.founderSenses}};setSetting(next,f.key,field[3]==='genome'?value.genes:value);expand(index+1,next,[...labels,`${field[2]}: ${field[3]==='genome'?value.name:typeof value==='boolean'?(value?'вкл':'выкл'):value}`]);}
   }
   expand(0,{},[]);

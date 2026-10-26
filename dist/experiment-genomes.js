@@ -7,7 +7,7 @@ export const MAX_GENOME_FILE_BYTES=EVOLUTION_RULES.maxGenomeFileBytes;
 export function genomeChoice(value,{historical=false}={}){
  if(!value||typeof value.name!=='string'||!value.name.trim()||!Array.isArray(value.genes))throw new Error('Геном варианта: нужны имя и проверенные гены.');
  const genes=validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(value.genes),genes:value.genes});
- if(!historical&&genomeMetadata(genes).version!==DUAL_VERSION)throw new Error('Для новых опытов нужен геном v16 с отдельными регуляторами; старые результаты доступны для анализа.');
+ if(!historical&&genomeMetadata(genes).version!==DUAL_VERSION)throw new Error('Для новых опытов нужен геном v17 с отдельными регуляторами; старые результаты доступны для анализа.');
  return {name:value.name.trim().slice(0,120),genes};
 }
 export function uniqueGenomeChoices(values,options){

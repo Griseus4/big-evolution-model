@@ -1,8 +1,8 @@
 import {analysisPlan,analysisLayout,ANALYSIS_DEFAULT} from './analysis-builder-core.js';
-import {EXPERIMENT_FACTOR_FIELDS} from './experiment-fields.js';
+import {historicalFactorLabel,EXPERIMENT_FACTOR_FIELDS} from './experiment-fields.js';
 import {experimentWorlds,mergeLifeReports} from './experiment-statistics.js';
 const colors=['#86bf80','#e1c86e','#91b8d0','#cba4e4','#ed9a7a','#73c8bd','#d7a6bc','#c2ca8a'];
-export const groupingLabel=key=>key==='variant'?'Вариант опыта':EXPERIMENT_FACTOR_FIELDS.find(f=>f[1]===key)?.[2]??key;
+export const groupingLabel=key=>key==='variant'?'Вариант опыта':historicalFactorLabel(key);
 export function groupingLayout(plan,variantIds,state){
  const view=analysisPlan(plan);return analysisLayout({...view,variants:view.variants.filter(v=>variantIds.includes(v.id))},{...ANALYSIS_DEFAULT,start:0,end:1,width:1,group:state.group,split:state.split,variantFilters:state.variantFilters});
 }

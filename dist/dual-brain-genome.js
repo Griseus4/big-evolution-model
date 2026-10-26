@@ -1,11 +1,11 @@
 import {EVOLUTION_RULES as R,MUTATION_GROUPS} from './brain-evolution-rules.js';
-import {dualBrainLayout,unpackDualBrain,packDualBrain,ATTENTION_INPUTS} from './dual-brain-layout.js';
+import {dualBrainLayout,unpackDualBrain,packDualBrain,ATTENTION_INPUTS,DUAL_SCHEMAS} from './dual-brain-layout.js';
 import {FIXED_PARAMETERS,STRUCTURAL_BLOCKS} from './structural-brain.js';
 import {CONTEXT_INPUTS,CONTEXT_HIDDEN} from './temporal-layout.js';
 import {validateDag} from './dag-network.js';
 const LOG_MIN=Math.log(R.strengthFloor),LOG_MAX=Math.log(Number.MAX_VALUE),clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-export const DUAL_MUTATION_SCHEMA='seven-heritable-log-pairs-v1',LEGACY_DUAL_MUTATION_SCHEMA='three-heritable-log-pairs-v1';
-export const dualMutationSchema=layout=>layout.version===15?LEGACY_DUAL_MUTATION_SCHEMA:DUAL_MUTATION_SCHEMA;
+export const DUAL_MUTATION_SCHEMA=DUAL_SCHEMAS[17],LEGACY_DUAL_MUTATION_SCHEMA=DUAL_SCHEMAS[15];
+export const dualMutationSchema=layout=>DUAL_SCHEMAS[layout.version];
 
 export function encodeMutationPair(rate,strength){
  if(!Number.isFinite(rate)||!Number.isFinite(strength)||rate<R.rateFloor||rate>1||strength<R.strengthFloor)throw new Error('Неверный профиль мутации.');
@@ -124,26 +124,31 @@ function mutateTopology(graph,strength,random,maxNeurons,maxLayers){
 
 export function mutateDualGenome(parent,random,settings={}){
  const d=validateDualBrain(parent),profiles=dualMutationProfiles(parent);
- const legacy=d.layout.version===15,context=legacy?'main':'context',enabled=key=>settings.mutationEnabled?.[key]!==false;
+ const legacy=d.layout.version===15,split=d.layout.version>=17;
+ const context=legacy?'main':split?'contextWeights':'context',attention=split?'attentionWeights':'attention';
+ const contextStructure=split?'contextStructure':context,attentionStructure=split?'attentionStructure':attention;
+ const enabled=key=>settings.mutationEnabled?.[key]!==false;
  const mutate=(value,profile)=>random.next()<profile.rate?clamp(value+(random.next()*2-1)*profile.strength,-R.weightLimit,R.weightLimit):value;
  // Каждый параметр принадлежит ровно одному блоку; смещения входят в него.
- // У v15 сохраняются прежняя общая группа main и порядок бросков RNG.
+ // У v15/v16 сохраняются общие пары и прежний порядок бросков RNG.
+ // В v17 весовые пары не управляют топологией: её собственные p/s берутся
+ // из родителя ниже, независимо от уже изменённых численных параметров.
  if(legacy){if(enabled('main'))d.fixed=d.fixed.map(v=>mutate(v,profiles.main));}
- else for(const block of STRUCTURAL_BLOCKS)if(enabled(block.key))for(let j=block.offset;j<block.offset+block.weights+(block.bias===null?0:block.outputs);j++)d.fixed[j]=mutate(d.fixed[j],profiles[block.key]);
+ else for(const block of STRUCTURAL_BLOCKS){const key=block.key==='context'?context:block.key;if(enabled(key))for(let j=block.offset;j<block.offset+block.weights+(block.bias===null?0:block.outputs);j++)d.fixed[j]=mutate(d.fixed[j],profiles[key]);}
  if(enabled('behavior'))d.traits=d.traits.map(v=>mutate(v,profiles.behavior));
  // Выходные смещения контекста живут в fixed: не мутировать их вторично.
  if(enabled(context))for(let j=0;j<d.main.layers.length;j++)d.main.biases[j]=mutate(d.main.biases[j],profiles[context]);
  d.main.biases.splice(d.main.layers.length,CONTEXT_HIDDEN,...d.fixed.slice(STRUCTURAL_BLOCKS[1].bias,STRUCTURAL_BLOCKS[1].bias+CONTEXT_HIDDEN));
  if(enabled(context))for(const edge of d.main.edges)edge.weight=mutate(edge.weight,profiles[context]);
- if(enabled('attention')){d.attention.biases=d.attention.biases.map(v=>mutate(v,profiles.attention));for(const edge of d.attention.edges)edge.weight=mutate(edge.weight,profiles.attention);}
+ if(enabled(attention)){d.attention.biases=d.attention.biases.map(v=>mutate(v,profiles[attention]));for(const edge of d.attention.edges)edge.weight=mutate(edge.weight,profiles[attention]);}
  for(let group=0;group<d.layout.mutationGroups.length;group++)if(enabled(d.layout.mutationGroups[group]))for(let j=0;j<2;j++){
   const index=2*group+j,profile=profiles[d.layout.mutationGroups[group]];
   if(random.next()<profile.rate){const delta=(random.next()*2-1)*Math.log1p(profile.strength);d.regulators[index]=clamp(d.regulators[index]+delta,j?LOG_MIN:-Number.MAX_VALUE,j?LOG_MAX:Number.MAX_VALUE);}
  }
  const limits=(key,fallback)=>{const value=settings[key]??fallback;if(!Number.isSafeInteger(value)||value<0||value>(key.endsWith('Layers')?R.technicalLayers:R.technicalNeurons))throw new Error('Неверный предел структуры.');return value;};
  if(settings.structuralMutations!==false){
-  if(enabled(context)&&random.next()<profiles[context].rate)mutateTopology(d.main,profiles[context].strength,random,limits('maxNeurons',R.maxNeurons),limits('maxLayers',R.maxLayers));
-  if(enabled('attention')&&random.next()<profiles.attention.rate)mutateTopology(d.attention,profiles.attention.strength,random,limits('attentionMaxNeurons',R.maxNeurons),limits('attentionMaxLayers',R.maxLayers));
+  if(enabled(contextStructure)&&random.next()<profiles[contextStructure].rate)mutateTopology(d.main,profiles[contextStructure].strength,random,limits('maxNeurons',R.maxNeurons),limits('maxLayers',R.maxLayers));
+  if(enabled(attentionStructure)&&random.next()<profiles[attentionStructure].rate)mutateTopology(d.attention,profiles[attentionStructure].strength,random,limits('attentionMaxNeurons',R.maxNeurons),limits('attentionMaxLayers',R.maxLayers));
  }
  const genes=packDualBrain(d);validateDualBrain(genes);return genes;
 }

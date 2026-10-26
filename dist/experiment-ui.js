@@ -3,8 +3,9 @@ import {installEnergyPreview} from './energy-preview-ui.js';
 import {mutationSettingsTable,structureSettingsTable} from './brain-settings-tables.js';
 import {validatePlan,validateWorldOptions,standardSeeds,EXPERIMENT_DEFAULTS,EXPERIMENT_TEMPLATES,EXPERIMENT_PLAN_PROTOCOLS,EXPERIMENT_PLAN_VERSION,EXPERIMENT_TERRAIN_SEED,EXPERIMENT_FOOD_SEED} from './experiment-plan.js';
 import {dagConnectionBudget} from './dual-brain-settings.js';
-import {ATTENTION_INPUTS} from './dual-brain-layout.js';
-import {EXPERIMENT_FIELDS as fields,settingAt as get,setSetting as put,settingInput,settingValue} from './experiment-fields.js';
+import {genomeMetadata} from './genome.js';
+import {ATTENTION_INPUTS,DUAL_VERSION} from './dual-brain-layout.js';
+import {EXPERIMENT_FACTOR_FIELDS,EXPERIMENT_FIELDS as fields,settingAt as get,setSetting as put,settingInput,settingValue} from './experiment-fields.js';
 import {installExperimentDesign} from './experiment-design-ui.js';
 import {installExperimentRuns,runStatus} from './experiment-runs-ui.js';
 import {ExperimentSeries} from './experiment-series.js';
@@ -44,6 +45,7 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
  const storageStatus=transientStatus(byId('constructor-storage')),exportStatus=transientStatus(byId('constructor-export-state'));
  const error=message=>{byId('constructor-error').textContent=message;};
  let local;try{local=globalThis.localStorage;}catch{}
+ function readFounderGenome(value){const file=Array.isArray(value)?{format:'big-evolution-genome',...genomeMetadata(value),genes:value}:value;if(file.version!==DUAL_VERSION)throw new Error('Для новой основы нужен геном v17; прежние миры продолжаются через полное сохранение.');return validateGenomeFile(file);}
  const preferences=experimentPreferences(local,message=>byId('constructor-storage').textContent=message);let draftTimer=null,restoring=true;
  const scheduleDraft=()=>{if(restoring)return;clearTimeout(draftTimer);draftTimer=setTimeout(saveDraft,300);};
  const notification=byId('experiment-notification-dialog');
@@ -87,13 +89,13 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
  byId('constructor-make-defaults').addEventListener('click',()=>{try{if(preferences.saveStandard(readPlan()))storageStatus('Личные стандартные настройки сохранены.',{success:true});}catch(e){error(e.message);}});
  for(const name of ['input','change'])byId('test-panel-constructor').addEventListener(name,scheduleDraft);
  globalThis.addEventListener?.('pagehide',saveDraft);
- try{const draft=preferences.draft();if(draft){if(!draft.meta||!draft.common||!Array.isArray(draft.factors))throw new Error('Черновик повреждён.');for(const [id,value]of Object.entries(draft.meta))if(['name','worlds','steps','budget','workers','allocation','seeds'].includes(id))byId('constructor-'+id).value=value;for(const [key,node]of controls)if(Object.hasOwn(draft.common,key)){if(node.type==='checkbox')node.checked=Boolean(draft.common[key]);else node.value=draft.common[key];}baseGenome=draft.baseGenome?validateGenomeFile(draft.baseGenome):null;seedPool=draft.seedPool??seedPool;design.write(draft.factors);byId('constructor-base-note').textContent=baseGenome?'Загруженная основа генома':'Случайные геномы';}else if(preferences.standard())fill(preferences.standard());}catch(e){fill(factoryPlan);error('Не удалось восстановить форму: '+e.message);}finally{restoring=false;}
+ try{const draft=preferences.draft();if(draft){if(!draft.meta||!draft.common||!Array.isArray(draft.factors))throw new Error('Черновик повреждён.');if(draft.factors.some(f=>!EXPERIMENT_FACTOR_FIELDS.some(field=>field[1]===f.key)))throw new Error('Черновик содержит прежние общие факторы мутаций: задайте отдельно веса и структуру. Исходная форма сохранена в резервной копии.');for(const [id,value]of Object.entries(draft.meta))if(['name','worlds','steps','budget','workers','allocation','seeds'].includes(id))byId('constructor-'+id).value=value;for(const [key,node]of controls)if(Object.hasOwn(draft.common,key)){if(node.type==='checkbox')node.checked=Boolean(draft.common[key]);else node.value=draft.common[key];}baseGenome=draft.baseGenome?readFounderGenome(draft.baseGenome):null;seedPool=draft.seedPool??seedPool;design.write(draft.factors);byId('constructor-base-note').textContent=baseGenome?'Загруженная основа генома':'Случайные геномы';}else if(preferences.standard())fill(preferences.standard());}catch(e){fill(factoryPlan);error('Не удалось восстановить форму: '+e.message);}finally{restoring=false;}
  initialControls.refresh(true);
  const energyHost=make('div');energyHost.className='constructor-energy-preview';byId('constructor-common').append(energyHost);
  energyPreview=installEnergyPreview({host:energyHost,read:()=>({...readCommon(),baseGenome})});
  if(preferences.draft()?.previewMoves!==undefined)energyPreview.moves.value=preferences.draft().previewMoves;energyPreview.refresh();energyPreview.moves.addEventListener('input',scheduleDraft);
  for(const n of controls.values())for(const event of ['input','change'])n.addEventListener(event,()=>energyPreview.refresh());
- byId('constructor-base').addEventListener('change',async e=>{try{const file=e.target.files?.[0];if(!file)return;if(file.size>100000)throw new Error('Слишком большой файл генома.');baseGenome=validateGenomeFile(JSON.parse(await file.text()));byId('constructor-base-note').textContent='Загруженная основа генома';initialControls.refresh();attentionControls.refresh();energyPreview?.refresh();scheduleDraft();}catch(e){error(e.message);}});
+ byId('constructor-base').addEventListener('change',async e=>{try{const file=e.target.files?.[0];if(!file)return;if(file.size>100000)throw new Error('Слишком большой файл генома.');baseGenome=readFounderGenome(JSON.parse(await file.text()));byId('constructor-base-note').textContent='Загруженная основа генома';initialControls.refresh();attentionControls.refresh();energyPreview?.refresh();scheduleDraft();}catch(e){error(e.message);}});
  byId('constructor-clear-base').addEventListener('click',()=>{baseGenome=null;byId('constructor-base').value='';byId('constructor-base-note').textContent='Случайные геномы';initialControls.refresh();attentionControls.refresh();energyPreview?.refresh();scheduleDraft();});
  function templateCard(name,action){const button=make('button',name);button.className='template-card';button.addEventListener('click',()=>{try{action();}catch(e){error(e.message);}});return button;}
  for(const template of EXPERIMENT_TEMPLATES)byId('constructor-builtins').append(templateCard(template.name,()=>{fill({name:template.name,factors:template.factors});byId('test-tab-constructor').click();}));

@@ -1,7 +1,7 @@
-import {EVOLUTION_RULES as R,MUTATION_GROUPS,LEGACY_MUTATION_GROUPS} from './brain-evolution-rules.js';
+import {EVOLUTION_RULES as R,MUTATION_GROUPS,mutationGroupsForVersion} from './brain-evolution-rules.js';
 import {initialLayerCounts} from './brain-initialization.js';
 import {CONTEXT_INPUTS,CONTEXT_HIDDEN} from './temporal-layout.js';
-import {ATTENTION_INPUTS,dualBrainLayout} from './dual-brain-layout.js';
+import {ATTENTION_INPUTS,dualBrainLayout,DUAL_SCHEMAS,DUAL_VERSION} from './dual-brain-layout.js';
 import {encodeMutationPair} from './dual-brain-genome.js';
 export function dagConnectionBudget(inputs,outputs,counts,percent=100){
  const sizes=[inputs,...counts.filter(Boolean),outputs];let base=0,maximum=0;
@@ -11,7 +11,9 @@ export function dagConnectionBudget(inputs,outputs,counts,percent=100){
  return {base,maximum,maxPercent,count:Math.min(maximum,Math.round(base*percent/100))};
 }
 export function dualStructureSettings(input={}, {historical=false}={}){
- historical||=dualBrainLayout(input.baseGenome)?.version===15;
+ const encoded=dualBrainLayout(input.baseGenome)?.version??Number(Object.keys(DUAL_SCHEMAS).find(v=>DUAL_SCHEMAS[v]===input.mutationProtocol));
+ const keys=Object.keys(input.mutationEnabled??input.initialMutation??{}),version=encoded|| (historical?(keys.includes('main')?15:keys.includes('context')||keys.includes('attention')?16:DUAL_VERSION):DUAL_VERSION);
+ historical||=version<DUAL_VERSION;
  const result={};
  for(const [prefix,I,O]of [['',CONTEXT_INPUTS,CONTEXT_HIDDEN],['attention',ATTENTION_INPUTS,1]]){
   const key=name=>prefix?prefix+name[0].toUpperCase()+name.slice(1):name;
@@ -23,7 +25,7 @@ export function dualStructureSettings(input={}, {historical=false}={}){
  }
  if(input.structuralMutations!==undefined&&typeof input.structuralMutations!=='boolean')throw new Error('Неверный переключатель структурных мутаций.');
  result.structuralMutations=input.structuralMutations!==false;
- const groups=historical?[...new Set([...MUTATION_GROUPS,...LEGACY_MUTATION_GROUPS])]:MUTATION_GROUPS,initialMutation={};
+ const groups=mutationGroupsForVersion(version),initialMutation={};
  for(const group of groups){const value=input.initialMutation?.[group];if(value){
   if(Object.keys(value).some(k=>!['rate','strength'].includes(k)))throw new Error('Неизвестная настройка мутации.');
   encodeMutationPair(value.rate??R.initialRateMin,value.strength??R.initialStrengthMin);initialMutation[group]={...value};

@@ -6,7 +6,7 @@ export const DUAL_METRICS=Object.freeze([
   {id:key+'Neurons',label:label+': скрытые нейроны',unit:'нейронов',digits:1},
   {id:key+'Connections',label:label+': связи',unit:'связей',digits:1},
   {id:key+'Layers',label:label+': скрытые слои',unit:'слоёв',digits:1}]),
- ...[['main','Основной оценщик v15'],...Object.entries(MUTATION_LABELS)].flatMap(([key,label])=>[
+ ...[['main','Основной оценщик v15'],['attention','Малый мозг v15/v16: веса и структура'],['context','Контекст v16: веса и структура'],...Object.entries(MUTATION_LABELS)].flatMap(([key,label])=>[
   {id:key+'MutationRate',label:label+': вероятность мутации',unit:'% / ген или событие',digits:3},
   {id:key+'MutationStrength',label:label+': сила мутации',unit:'сила',digits:3}])
 ].map(Object.freeze));
