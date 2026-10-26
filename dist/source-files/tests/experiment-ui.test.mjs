@@ -15,8 +15,8 @@ class Element{
  append(...nodes){for(const node of nodes){node.parent=this;this.children.push(node);}if(this.tagName==='select'&&!this.value)this.value=String(nodes[0]?.value??'');}
  replaceChildren(...nodes){this.children=[];this.append(...nodes);}
  prepend(...nodes){for(const node of nodes)node.parent=this;this.children.unshift(...nodes);}
- addEventListener(name,fn){this.listeners[name]=fn;}
- setAttribute(){}
+ addEventListener(name,fn){const previous=this.listeners[name];this.listeners[name]=previous?event=>{previous(event);return fn(event);}:fn;}
+ setAttribute(k,v){(this.attributes??={})[k]=v;}
  remove(){this.parent.children=this.parent.children.filter(n=>n!==this);}
  after(node){this.afterNode=node;}
  showModal(){this.open=true;this.shown=(this.shown??0)+1;}
@@ -74,7 +74,7 @@ test('persistence writes immutable completed attempts once and marks interrupted
 const descendants=(node,predicate)=>node.children.flatMap(n=>[...(predicate(n)?[n]:[]),...descendants(n,predicate)]);
 test('initial structure table and percentage reach worker settings and enforce the shared cap',async()=>{
  const b=boot();try{
-  const table=descendants(b.elements.get('constructor-common'),n=>Boolean(n.readSetting))[0],grid=table.parent.parent,percent=grid.children.at(-1).children.at(-1),cap=grid.children[0].children.at(-1);
+  const common=b.elements.get('constructor-common'),table=descendants(common,n=>Boolean(n.readSetting))[0],percent=descendants(common,n=>n.attributes?.['aria-label']==='Мозг: Начальная связность, %')[0],cap=descendants(common,n=>n.attributes?.['aria-label']==='Мозг: Предел нейронов')[0];
   assert.equal(descendants(table,n=>n.type==='number').length,4);table.value=[2,0,3];percent.value='150';percent.emit('input');
   b.elements.get('constructor-worlds').value='1';b.elements.get('constructor-worlds').emit('change');await b.elements.get('constructor-run').click();
   assert.equal(b.ui.isActive(),true,b.elements.get('constructor-error').textContent);assert.deepEqual(b.workers[0].sent[0].job.worldOptions.initialNeurons,[2,3]);assert.equal(b.workers[0].sent[0].job.worldOptions.initialConnections,150);
@@ -93,7 +93,7 @@ test('architecture factor uses independent horizontal tables and can add a zero-
 });
 test('common tabs retain fields; boolean factors default to both states and never duplicate rows',()=>{
  const b=boot();try{
- const common=b.elements.get('constructor-common'),rows=common.children[1].children[0].children;assert.equal(rows.length,9);assert.equal(rows.filter(r=>!r.hidden).length,1);common.children[0].children[2].click();assert.equal(rows[2].hidden,false);assert.equal(rows[0].hidden,true);assert.equal(descendants(common,n=>n.tagName==='details').length,0);
+ const common=b.elements.get('constructor-common'),rows=common.children[1].children[0].children;assert.equal(rows.length,10);assert.equal(rows.filter(r=>!r.hidden).length,1);common.children[0].children[2].click();assert.equal(rows[2].hidden,false);assert.equal(rows[0].hidden,true);assert.equal(descendants(common,n=>n.tagName==='details').length,1);
  const picker=b.elements.get('constructor-factor-add'),factors=b.elements.get('constructor-factors');picker.value='memory';picker.emit('change');assert.equal(factors.children.length,1);const boxes=descendants(factors,n=>n.type==='checkbox');assert.equal(boxes.length,2);assert.ok(boxes.every(i=>i.checked));assert.match(b.elements.get('constructor-design-summary').textContent,/Сочетаний на seed: 2/);
  picker.value='memory';picker.emit('change');assert.equal(factors.children.length,1);boxes[0].checked=false;boxes[0].emit('change');assert.match(b.elements.get('constructor-design-summary').textContent,/Сочетаний на seed: 1/);
  boxes[1].checked=false;boxes[1].emit('change');assert.equal(b.elements.get('constructor-run').disabled,true);assert.match(b.elements.get('constructor-design-summary').textContent,/хотя бы одно/);

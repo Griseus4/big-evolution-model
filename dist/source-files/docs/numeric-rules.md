@@ -8,6 +8,7 @@
 
 | Тема | Источник | Основные имена |
 | --- | --- | --- |
+| Цена вычислений и условный бюджет | [brain-economy.js](../dist/brain-economy.js), [energy-preview.js](../dist/energy-preview.js) | BRAIN_ECONOMY, ENERGY_PREVIEW; фактическая подготовка входов — ATTENTION_PREPARATION в brain-cost.js |
 | Тело и деятельность | [model-rules.js](../dist/model-rules.js) | RULES, BODY_LIMITS, BODY_THRESHOLDS, DIGESTION_TIME_LIMITS |
 | Время и процессы | [action-timing.js](../dist/action-timing.js) | SUBSTEPS, DT, DURATION_SUBSTEPS, HISTORY_SAMPLE_T |
 | Входы/ощущения/обучение | [brain-input-scales.js](../dist/brain-input-scales.js) | INPUT_SCALES, FEELING_SCALES, LEARNING_RULES |

@@ -13,7 +13,11 @@ import {formatRuleNumber,GUIDE_NUMBERS_TEXT} from '../dist/guide-numbers-text.js
 import {MUTATION_RULES} from '../dist/mutation-parameters.js';
 const fixture=JSON.parse(readFileSync(new URL('./fixtures/numeric-rules0548.json',import.meta.url),'utf8'));
 // Фикстура сравнивает физику v14; новая оболочка сохранения v4 — отдельный контракт.
-const hash=w=>{const s=saveWorld(w);delete s.modelVersion;s.version=3;return createHash('sha256').update(JSON.stringify(s)).digest('hex');};
+const hash=w=>{const s=saveWorld(w);delete s.modelVersion;s.version=3;
+ // Старый снимок не содержал коэффициент. Удаляем только его единичное
+ // значение, сохраняя полную проверку тела, опыта, RNG и всех прежних полей.
+ assert.equal(w.brainCostMultiplier,1);const root=s.state.nodes[s.state.entry.ref];root[1]=root[1].filter(([key])=>key!=='brainCostMultiplier');
+ return createHash('sha256').update(JSON.stringify(s)).digest('hex');};
 
 for(const {options,samples} of fixture.cases)test(`full pre-refactor state, memory, learning and RNG stay exact: seed ${options.seed}`,()=>{
  const w=new Evolution(options);for(const point of samples){while(w.subtick<point.subtick)w.substep();assert.equal(hash(w),point.hash,`subtick ${point.subtick}`);}
