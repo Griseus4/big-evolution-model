@@ -44,7 +44,7 @@ test('genome and numeric factors form a stable product, keep independent setting
 test('multiple-file validation is atomic; cancellation, corruption and duplicate genes preserve existing values',async()=>{
  const valid={name:'new.json',size:100,text:async()=>JSON.stringify(other)},bad={name:'bad.json',size:2,text:async()=>'{}'},existing=[choices[0]],copy=structuredClone(existing);
  assert.equal(await readGenomeChoices([],existing),existing);await assert.rejects(readGenomeChoices([valid,bad],existing));assert.deepEqual(existing,copy);assert.equal((await readGenomeChoices([valid],existing)).length,2);await assert.rejects(readGenomeChoices([{...valid,size:MAX_GENOME_FILE_BYTES+1}],existing),/большой/);await assert.rejects(readGenomeChoices([{...valid,text:async()=>JSON.stringify(file)}],existing),/повторяется/);
- assert.throws(()=>uniqueGenomeChoices([{name:'old.json',genes:randomNeuralGenome({next:()=>.5})}]),/v16/);
+ assert.throws(()=>uniqueGenomeChoices([{name:'old.json',genes:randomNeuralGenome({next:()=>.5})}]),/v17/);
 });
 test('real world executor records the exact requested founder coefficients',async()=>{
  const p=validatePlan({worlds:1,steps:1,common:{population:2,limit:10},factors:[{key:'founderSenses.energy',values:[-1,1]}]});

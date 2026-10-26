@@ -22,26 +22,26 @@ const flags=value=>Object.fromEntries(MUTATION_GROUPS.map(k=>[k,value]));
 function block(d,key){
  const index=d.layout.mutationGroups.indexOf(key),regulators=d.regulators.slice(2*index,2*index+2);
  if(key==='behavior')return {traits:d.traits,regulators};
- if(key==='attention')return {graph:d.attention,regulators};
- if(key==='context')return {graph:d.main,regulators};
+ if(key.endsWith('Weights')){const g=key==='attentionWeights'?d.attention:d.main;return {parameters:[...g.biases,...g.edges.map(e=>e.weight)],regulators};}
+ if(key.endsWith('Structure'))return {regulators};
  const b=STRUCTURAL_BLOCKS.find(b=>b.key===key);
  return {parameters:d.fixed.slice(b.offset,b.offset+b.weights+(b.bias===null?0:b.outputs)),regulators};
 }
-test('v16 has seven named independent pairs and a strict versioned file contract',()=>{
+test('v17 has nine named independent pairs and a strict versioned file contract',()=>{
  const genes=randomDualGenome(new Random(40)),d=unpackDualBrain(genes);
- assert.equal(d.layout.version,16);assert.equal(d.regulators.length,14);
+ assert.equal(d.layout.version,17);assert.equal(d.regulators.length,18);
  assert.deepEqual(Object.keys(dualMutationProfiles(genes)),MUTATION_GROUPS);
  const file={format:'big-evolution-genome',...genomeMetadata(genes),genes};
  assert.deepEqual(validateGenomeFile(file),genes);assert.deepEqual(packDualBrain(d),genes);
  assert.throws(()=>validateGenomeFile({...file,version:15}));
 });
 test('each pair changes exactly its own block, including each bias only once',()=>{
- for(const key of MUTATION_GROUPS){
+ for(const key of MUTATION_GROUPS.filter(k=>!k.endsWith('Structure'))){
   const profiles=Object.fromEntries(MUTATION_GROUPS.map(k=>[k,k===key?strong[k]:{rate:R.rateFloor,strength:.2}]));
   const genes=randomDualGenome(new Random(50),{initialMutation:profiles}),old=unpackDualBrain(genes);
   const child=unpackDualBrain(mutateDualGenome(genes,{next:()=>.25},{structuralMutations:false}));
   for(const other of MUTATION_GROUPS)if(other!==key)assert.deepEqual(block(child,other),block(old,other),`${key} changed ${other}`);
-  const values=d=>key==='context'?[...d.main.biases,...d.main.edges.map(e=>e.weight)]:key==='attention'?[...d.attention.biases,...d.attention.edges.map(e=>e.weight)]:key==='behavior'?d.traits:block(d,key).parameters;
+  const values=d=>key==='contextWeights'?[...d.main.biases,...d.main.edges.map(e=>e.weight)]:key==='attentionWeights'?[...d.attention.biases,...d.attention.edges.map(e=>e.weight)]:key==='behavior'?d.traits:block(d,key).parameters;
   const a=values(old),b=values(child);assert.ok(a.length);
   for(let i=0;i<a.length;i++)assert.ok(Math.abs(b[i]-a[i]+.1)<1e-12,`${key}: parameter ${i}`);
   assert.notDeepEqual(block(child,key).regulators,block(old,key).regulators);
@@ -50,7 +50,7 @@ test('each pair changes exactly its own block, including each bias only once',()
 test('disabled blocks preserve weights, topology and their regulators while others can evolve',()=>{
  for(const key of MUTATION_GROUPS){
   const genes=randomDualGenome(new Random(80),{initialMutation:strong}),old=unpackDualBrain(genes);
-  const child=unpackDualBrain(mutateDualGenome(genes,{next:()=>.25},{mutationEnabled:{[key]:false}}));
+  const child=unpackDualBrain(mutateDualGenome(genes,{next:()=>.25},{structuralMutations:false,mutationEnabled:{[key]:false}}));
   assert.deepEqual(block(child,key),block(old,key),key);
   assert.notDeepEqual(child.regulators,old.regulators);
  }
@@ -74,13 +74,13 @@ test('settings default to enabled, validate masks and preserve per-variant switc
  assert.deepEqual(p.variants.map(v=>v.settings.mutationEnabled.target),[true,false]);
 });
 test('saved masks survive continuation and master mutation switch preserves the whole genome',()=>{
- const w=new Evolution({brainType:DUAL_BRAIN_TYPE,population:1,mutationEnabled:{context:false,cells:false}});w.step();
+ const w=new Evolution({brainType:DUAL_BRAIN_TYPE,population:1,mutationEnabled:{contextWeights:false,cells:false}});w.step();
  const restored=loadWorld(saveWorld(w));assert.deepEqual(restored.mutationEnabled,w.mutationEnabled);
  restored.step();w.step();assert.deepEqual(restored.snapshot(),w.snapshot());
  const frozen=new Evolution({brainType:DUAL_BRAIN_TYPE,population:1,mutations:false}),a=frozen.agents[0];
  a.age=200;a.energy=100;a.health=100;a.lastBirthAge=-1e6;
  const child=frozen.reproduce(a);assert.ok(child);assert.deepEqual(child.genome,a.genome);
- const stats=captureHeritable(w.agents[0]);assert.ok(Number.isFinite(stats.contextMutationRate));assert.equal(stats.mainMutationRate,undefined);
+ const stats=captureHeritable(w.agents[0]);assert.ok(Number.isFinite(stats.contextWeightsMutationRate));assert.equal(stats.mainMutationRate,undefined);
 });
 test('per-block switches reach reproduction and a v15 world retains its legacy genome',()=>{
  for(const baseGenome of [null,legacyGenome(new Random(50))]){
@@ -96,8 +96,8 @@ test('per-block switches reach reproduction and a v15 world retains its legacy g
 });
 test('splitting the regulators adds no evaluator operations or parameters',()=>{
  const old=legacyGenome(new Random(12)),d=unpackDualBrain(old);
- d.regulators=MUTATION_GROUPS.flatMap(key=>d.regulators.slice(key==='behavior'?0:key==='attention'?2:4,key==='behavior'?2:key==='attention'?4:6));
- d.layout={version:16};const current=packDualBrain(d),a=compileDualState(old),b=compileDualState(current);
+ d.regulators=MUTATION_GROUPS.flatMap(key=>d.regulators.slice(key==='behavior'?0:key.startsWith('attention')?2:4,key==='behavior'?2:key.startsWith('attention')?4:6));
+ d.layout={version:17};const current=packDualBrain(d),a=compileDualState(old),b=compileDualState(current);
  assert.deepEqual(b,a);
 });
 test('world controls enable all groups by default and imported founders keep usable mutation switches',()=>{
@@ -108,6 +108,6 @@ test('world controls enable all groups by default and imported founders keep usa
  let imported=false;const controls=dualBrainSettingsUI(doc,doc.createElement('div'),()=>imported);
  const toggles=nodes.filter(n=>n.type==='checkbox');assert.equal(toggles.length,MUTATION_GROUPS.length);
  assert.deepEqual(controls.read().mutationEnabled,flags(true));
- toggles[2].checked=false;assert.equal(controls.read().mutationEnabled.context,false);
- imported=true;controls.refresh();assert.equal(toggles[2].disabled,undefined);assert.equal(controls.read().mutationEnabled.context,false);
+ toggles[2].checked=false;assert.equal(controls.read().mutationEnabled.contextWeights,false);
+ imported=true;controls.refresh();assert.equal(toggles[2].disabled,undefined);assert.equal(controls.read().mutationEnabled.contextWeights,false);
 });
