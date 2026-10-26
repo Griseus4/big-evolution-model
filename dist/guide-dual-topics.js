@@ -1,5 +1,6 @@
 /** Только затронутые главы: текущие источники и выполненные проверки v15. */
 const sources=[
+ {file:'mutation-help.js',symbols:['MUTATION_DETAILS'],purpose:'Назначение семи групп и точный охват мутаций в подсказках и пособии.'},
  {file:'brain-economy.js',symbols:['BRAIN_ECONOMY','scaledBrainCost'],purpose:'Общая положительная цена вычислений мира.'},
  {file:'energy-preview.js',symbols:['ENERGY_PREVIEW','energyPreview'],purpose:'Условный полный бюджет питания, тела и двух сетей.'},
  {file:'guide-dual-text.js',symbols:['DUAL_GUIDE_TEXT'],purpose:'Текущие статьи о покое, геноме, мутациях, времени и цене.'},
@@ -10,7 +11,7 @@ const sources=[
  {file:'brain-cost.js',symbols:['ATTENTION_REFERENCE_OPERATIONS','ATTENTION_OPERATION_PRICE'],purpose:'Калибровка условных операций диспетчера.'},
 ];
 export const GUIDE_DUAL_TOPICS=Object.fromEntries(['genome','structure-evolution','choice','brain-cost','time'].map(id=>[id,{
- reviewedVersion:id==='brain-cost'?'0.55.3':['genome','structure-evolution'].includes(id)?'0.55.1':'0.55.0',sources,keywords:['покой','диспетчер','регуляторы блоков','v16'],checks:[
+ reviewedVersion:id==='structure-evolution'?'0.55.4':id==='brain-cost'?'0.55.3':['genome','structure-evolution'].includes(id)?'0.55.1':'0.55.0',sources,keywords:['покой','диспетчер','регуляторы блоков','v16'],checks:[
   {file:'tests/dual-world.test.mjs',symbols:[],purpose:'Локальное/Worker-исполнение, покой, цена и сохранение.'},
   {file:'tests/modular-mutations.test.mjs',symbols:[],purpose:'Семь пар, отключение блоков, наследование и сохранение.'},
   {file:'tests/dual-brain-genome.test.mjs',symbols:[],purpose:'Мутации двух структур и независимость регуляторов.'},

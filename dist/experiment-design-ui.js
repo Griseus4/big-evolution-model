@@ -1,3 +1,4 @@
+import {createHelpButton} from './help.js';
 import {EXPERIMENT_FACTOR_FIELDS as EXPERIMENT_FIELDS,settingAt,settingInput,settingValue,factorDesign,MAX_EXPERIMENT_COMBINATIONS} from './experiment-fields.js';
 import {readGenomeChoices} from './experiment-genomes.js';
 import {PAGE_TEXT} from './ui-text.js';
@@ -11,6 +12,9 @@ export function installExperimentDesign({root=document,readCommon,onChange=()=>{
  function add(key,values){
   if(rows.has(key))return;const field=EXPERIMENT_FIELDS.find(f=>f[1]===key);if(!field)return;
   const tr=make('tr'),name=make('th',`${field[0]} → ${field[2]}`),valuesCell=make('td'),actions=make('td'),valuesBox=make('div'),remove=make('button','Убрать');name.scope='row';valuesBox.className='factor-values';valuesCell.append(valuesBox);actions.append(remove);tr.append(name,valuesCell,actions);byId('constructor-factors').append(tr);
+  const mutationGroup=key.startsWith('mutationEnabled.')?key.split('.')[1]:key.startsWith('initialMutation.')?key.split('.')[1]:null;
+  const mutationHelp=key.startsWith('mutationEnabled.')?'mutation-enabled':key.endsWith('.rate')?'mutation-probability':key.endsWith('.strength')?'mutation-strength':null;
+  if(mutationGroup)name.replaceChildren(createHelpButton('mutation-block-'+mutationGroup,`${field[0]} → ${field[2]}`,root));
   const row={field,tr,inputs:[]};rows.set(key,row);
   if(field[3]==='genome'){
    row.genomes=values??[];
@@ -19,10 +23,10 @@ export function installExperimentDesign({root=document,readCommon,onChange=()=>{
    input.addEventListener('change',async()=>{if(row.loading)return;const files=Array.from(input.files??[]);if(!files.length)return;row.loading=true;input.disabled=true;render();changed();try{const choices=await readGenomeChoices(files,row.genomes);if(rows.get(key)!==row)return;row.genomes=choices;onError('');}catch(error){if(rows.get(key)===row)onError(error.message);}finally{row.loading=false;input.disabled=false;input.value='';render();changed();}});render();
    valuesCell.append(make('p',PAGE_TEXT['factor-genome']));
   }
-  else if(field[3]==='check')for(const value of [true,false]){const label=make('label',value?'Включено':'Выключено'),input=make('input');input.type='checkbox';input.checked=values?values.includes(value):true;input.factorValue=value;input.setAttribute('aria-label',`${field[2]}: ${label.textContent}`);label.className='check';label.append(input);valuesBox.append(label);row.inputs.push(input);input.addEventListener('change',changed);}
+  else if(field[3]==='check')for(const value of [true,false]){const label=make('label',value?'Включено':'Выключено'),input=make('input');input.type='checkbox';input.checked=values?values.includes(value):true;input.factorValue=value;if(mutationGroup)input.setAttribute('data-help',mutationHelp);input.setAttribute('aria-label',`${field[2]}: ${label.textContent}`);label.className='check';label.append(input);valuesBox.append(label);row.inputs.push(input);input.addEventListener('change',changed);}
   else{
    const plus=make('button','+ Значение');plus.setAttribute('aria-label',`Добавить значение: ${field[2]}`);
-   function valueInput(value){const wrap=make('span'),input=settingInput(root,field,value,()=>readCommon()),del=make('button','×');wrap.className=field[3]==='neurons'?'factor-value initial-brain-factor':'factor-value';input.setAttribute('aria-label',field[2]);input.placeholder='Значение';del.setAttribute('aria-label',`Удалить значение: ${field[2]}`);wrap.append(input,del);valuesBox.append(wrap);row.inputs.push(input);input.addEventListener('input',changed);del.addEventListener('click',()=>{row.inputs=row.inputs.filter(i=>i!==input);wrap.remove();changed();});}
+   function valueInput(value){const wrap=make('span'),input=settingInput(root,field,value,()=>readCommon()),del=make('button','×');wrap.className=field[3]==='neurons'?'factor-value initial-brain-factor':'factor-value';input.setAttribute('aria-label',field[2]);if(mutationGroup)input.setAttribute('data-help',mutationHelp);input.placeholder='Значение';del.setAttribute('aria-label',`Удалить значение: ${field[2]}`);wrap.append(input,del);valuesBox.append(wrap);row.inputs.push(input);input.addEventListener('input',changed);del.addEventListener('click',()=>{row.inputs=row.inputs.filter(i=>i!==input);wrap.remove();changed();});}
    for(const value of values??[settingAt(readCommon(),key)])valueInput(value);
    valuesCell.append(plus);plus.addEventListener('click',()=>{valueInput('');changed();row.inputs.at(-1).focus?.();});
    if(key.startsWith('founderSenses.'))valuesCell.append(make('p',PAGE_TEXT['factor-founder-senses']));

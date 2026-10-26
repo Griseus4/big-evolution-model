@@ -2,8 +2,8 @@
  * Один общий popover обслуживает также динамические карточки без наблюдения DOM. */
 import {HELP,ALIASES} from './ui-text.js';
 export {HELP,ALIASES} from './ui-text.js';
-export function createHelpButton(key,text){
- const span=document.createElement('span');span.className='help-label';span.dataset.help=ALIASES[key]??key;span.dataset.helpLabel='true';span.tabIndex=0;span.setAttribute('role','button');span.textContent=text??HELP[span.dataset.help]?.[0]??key;span.setAttribute('aria-label','Справка: '+span.textContent);return span;
+export function createHelpButton(key,text,doc=document){
+ const span=doc.createElement('span');span.className='help-label';span.dataset.help=ALIASES[key]??key;span.dataset.helpLabel='true';span.tabIndex=0;span.setAttribute('role','button');span.textContent=text??HELP[span.dataset.help]?.[0]??key;span.setAttribute('aria-label','Справка: '+span.textContent);return span;
 }
 export function installHelp(){
  const tooltip=document.createElement('div');tooltip.id='help-tooltip';tooltip.className='help-tooltip';tooltip.setAttribute('popover','manual');tooltip.setAttribute('role','tooltip');document.body.append(tooltip);let opener=null,timer=null;

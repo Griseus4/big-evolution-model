@@ -102,7 +102,7 @@ test('splitting the regulators adds no evaluator operations or parameters',()=>{
 });
 test('world controls enable all groups by default and imported founders keep usable mutation switches',()=>{
  const nodes=[],doc={createElement:tag=>{
-  const node={tagName:tag,children:[],ownerDocument:doc,value:'',append(...items){this.children.push(...items);},replaceChildren(...items){this.children=items;},addEventListener(){},setAttribute(){},setCustomValidity(){}};
+  const node={tagName:tag,children:[],dataset:{},ownerDocument:doc,value:'',append(...items){this.children.push(...items);},replaceChildren(...items){this.children=items;},addEventListener(){},setAttribute(){},setCustomValidity(){}};
   nodes.push(node);return node;
  }};
  let imported=false;const controls=dualBrainSettingsUI(doc,doc.createElement('div'),()=>imported);

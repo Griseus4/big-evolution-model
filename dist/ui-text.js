@@ -1,3 +1,4 @@
+import {MUTATION_HELP} from './mutation-help.js';
 import {GUIDE_SYSTEM_TEXT} from './guide-system-text.js';
 import {GUIDE_ANALYSIS_TEXT} from './guide-analysis-text.js';
 import {GUIDE_EXPERIMENTS_TEXT} from './guide-experiments-text.js';
@@ -32,6 +33,7 @@ import {ENERGY_DEFICIT_FACTOR} from './energy-budget.js';
 // Числа округляются только для чтения; расчётные значения модели не меняются.
 const readable=value=>Number(value).toLocaleString('ru-RU',{maximumFractionDigits:4});
 export const HELP={
+ ...MUTATION_HELP,
  'world-info-open':['Условия мира','География, источники пищи и размещение жителей в текущем мире. Открывается без паузы.'],
  'experiment-digestion':['Усвоение одной порции','Время перевода одной съеденной порции в энергию, в Т. Условия опыта заменяют это значение у всех его жителей; остальные правила пищеварения сохраняются.'],
  'experiment-reproduction':['Пороги размножения','Для начала родов одновременно должны выполняться пороги энергии и здоровья, возраст зрелости и интервал после предыдущего рождения. Значения — общие условия этого опыта; роды остаются действием мозга.'],

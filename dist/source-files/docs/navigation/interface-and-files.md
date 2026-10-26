@@ -7,6 +7,7 @@
 Числовой каталог пособия: [numeric-rules.js](../../dist/numeric-rules.js) → [guide-numbers-text.js](../../dist/guide-numbers-text.js); источник и единицы проверяются в [numeric-rules0548.test.mjs](../../tests/numeric-rules0548.test.mjs).
 
 ## interface
+Подсказки мутаций: [mutation-help.js](../../dist/mutation-help.js) → [ui-text.js](../../dist/ui-text.js)/[brain-settings-tables.js](../../dist/brain-settings-tables.js); взаимодействие — [help.js](../../dist/help.js), регрессия — [help-ui.test.mjs](../../tests/help-ui.test.mjs). [Выпуск](../updates/v055-mutation-help.md).
 **Задача:** кнопка/панель/подсказка, выбранный житель, карта, медленный показ, подпись версии.
 **Сейчас:** разметка — [index.html](../../dist/index.html), связка мира/Canvas — [evolution-app.js](../../dist/evolution-app.js); тексты/справка — [ui-text.js](../../dist/ui-text.js)/[help.js](../../dist/help.js); вкладки — [lab-tabs.js](../../dist/lab-tabs.js)/[screen-tabs.js](../../dist/screen-tabs.js). Статистика — [history-ui.js](../../dist/history-ui.js)/[history-drawers.js](../../dist/history-drawers.js), уведомления опытов — [experiment-ui.js](../../dist/experiment-ui.js). Версия — [app-version.js](../../dist/app-version.js).
 **Схема жителя:** [brain-diagram-ui.js](../../dist/brain-diagram-ui.js), камера — [brain-diagram-viewport.js](../../dist/brain-diagram-viewport.js), пояснения — [brain-diagram-help.js](../../dist/brain-diagram-help.js). [Контракт 0.53.1](../updates/v053-brain-viewer.md), [проверки](../../tests/brain-diagram0531.test.mjs).

@@ -1,11 +1,12 @@
 import {MUTATION_GROUPS,MUTATION_LABELS} from './brain-evolution-rules.js';
+import {createHelpButton} from './help.js';
 const create=(doc,tag,text)=>{const n=doc.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
 export function mutationSettingsTable(doc,controls,{percent=true}={}){
  const box=create(doc,'div'),table=create(doc,'table');box.className='brain-settings-scroll';table.className='brain-settings-table';
- const head=create(doc,'tr');for(const text of ['Блок','Мутации','Вероятность'+(percent?', %':', доля'),'Сила'])head.append(create(doc,'th',text));table.append(head);
- for(const key of MUTATION_GROUPS){const row=create(doc,'tr');row.append(create(doc,'th',MUTATION_LABELS[key]));
+ const head=create(doc,'tr');for(const [text,key]of [['Блок','mutation-founders'],['Мутации','mutation-enabled'],['Вероятность'+(percent?', %':', доля'),'mutation-probability'],['Сила','mutation-strength']]){const th=create(doc,'th');th.append(createHelpButton(key,text,doc));head.append(th);}table.append(head);
+ for(const key of MUTATION_GROUPS){const row=create(doc,'tr'),name=create(doc,'th');name.append(createHelpButton('mutation-block-'+key,MUTATION_LABELS[key],doc));row.append(name);
   for(const name of ['mutationEnabled.'+key,'initialMutation.'+key+'.rate','initialMutation.'+key+'.strength']){
-   const cell=create(doc,'td'),input=controls.get(name);input.setAttribute('aria-label',MUTATION_LABELS[key]+': '+(name.startsWith('mutationEnabled')?'мутации потомков':name.endsWith('rate')?'начальная вероятность':'начальная сила'));cell.append(input);row.append(cell);
+   const cell=create(doc,'td'),input=controls.get(name);input.setAttribute('aria-label',MUTATION_LABELS[key]+': '+(name.startsWith('mutationEnabled')?'мутации потомков':name.endsWith('rate')?'начальная вероятность':'начальная сила'));input.setAttribute('data-help',name.startsWith('mutationEnabled')?'mutation-enabled':name.endsWith('rate')?'mutation-probability':'mutation-strength');cell.append(input);row.append(cell);
   }table.append(row);
  }box.append(table);return box;
 }

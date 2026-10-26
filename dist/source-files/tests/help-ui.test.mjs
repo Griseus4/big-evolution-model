@@ -3,6 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {installHelp} from '../dist/help.js';
+import {HELP} from '../dist/help.js';
+import {mutationSettingsTable} from '../dist/brain-settings-tables.js';
+import {MUTATION_GROUPS} from '../dist/brain-evolution-rules.js';
 import {readFileSync} from 'node:fs';
 class Element{
  constructor(tag='div',className=''){this.tagName=tag.toUpperCase();this.className=className;this.children=[];this.dataset={};this.listeners={};this.hidden=false;this.style={};}
@@ -18,12 +21,25 @@ class Element{
  hidePopover(){this.open=false;}
  getBoundingClientRect(){return {left:20,top:20,bottom:40,width:250,height:80};}
  all(){return this.children.flatMap(n=>[n,...n.all()]);}
- setAttribute(k,v){this[k]=v;}
+ setAttribute(k,v){this[k]=v;if(k.startsWith('data-'))this.dataset[k.slice(5).replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]=v;}
  addEventListener(k,v){this.listeners[k]=v;}
  showModal(){this.open=true;}
  close(){this.open=false;this.listeners.close?.();}
  focus(){this.focused=true;}
 }
+test('all mutation rows and fields have working accessible explanations without toggling switches',()=>{
+ const saved=Object.fromEntries(['document','innerWidth','innerHeight','addEventListener'].map(k=>[k,globalThis[k]])),root=new Element(),controls=new Map();
+ const doc={body:root,getElementById:()=>null,createElement:tag=>new Element(tag),addEventListener:(k,fn)=>root.addEventListener(k,fn)};
+ for(const group of MUTATION_GROUPS)for(const key of ['mutationEnabled.'+group,'initialMutation.'+group+'.rate','initialMutation.'+group+'.strength']){const input=new Element('input');input.type=key.startsWith('mutationEnabled')?'checkbox':'number';input.checked=true;controls.set(key,input);}
+ globalThis.document=doc;globalThis.innerWidth=900;globalThis.innerHeight=600;globalThis.addEventListener=()=>{};
+ try{root.append(mutationSettingsTable(doc,controls));installHelp();const tooltip=root.all().find(n=>n.id==='help-tooltip');
+  for(const group of MUTATION_GROUPS){const key='mutation-block-'+group,label=root.all().find(n=>n.dataset.help===key);assert.ok(label,group);assert.equal(label.role,'button');assert.equal(label.tabIndex,0);root.listeners.keydown({target:label,key:'Enter',preventDefault(){}});assert.equal(tooltip.textContent,HELP[key][1]);assert.ok(tooltip.open);}
+  assert.match(HELP['mutation-block-behavior'][1],/не меняет веса/);assert.match(HELP['mutation-block-attention'][1],/сама структура/);assert.match(HELP['mutation-block-context'][1],/общую картину ситуации/);assert.match(HELP['mutation-block-operation'][1],/нет смещений/);
+  for(const [key,input]of controls){assert.ok(HELP[input.dataset.help],key);if(input.type==='checkbox'){let prevented=false;root.listeners.click({target:input,preventDefault(){prevented=true;},stopPropagation(){}});assert.equal(prevented,false);assert.equal(input.checked,true);}}
+  const label=root.all().find(n=>n.dataset.help==='mutation-enabled'&&n.dataset.helpLabel);let prevented=false;root.listeners.click({target:label,preventDefault(){prevented=true;},stopPropagation(){}});assert.ok(prevented);assert.equal(tooltip.textContent,HELP['mutation-enabled'][1]);
+ }finally{for(const [key,value]of Object.entries(saved))globalThis[key]=value;}
+});
+
 test('label help works by focus, touch and keyboard, deduplicates ranges and never pauses',()=>{
  const saved=Object.fromEntries(['document','innerWidth','innerHeight','addEventListener','setTimeout','clearTimeout'].map(k=>[k,globalThis[k]])),root=new Element(),ids=new Map();
  const add=(id,tag='div',parent=root)=>{const e=new Element(tag);e.id=id;ids.set(id,e);parent.append(e);return e;};

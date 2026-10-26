@@ -1,3 +1,4 @@
+import {createHelpButton} from './help.js';
 import {initialNeuronsInput,wireInitialStructure} from './brain-initialization-ui.js';
 import {dagConnectionBudget} from './dual-brain-settings.js';
 import {ATTENTION_INPUTS} from './dual-brain-layout.js';
@@ -15,7 +16,7 @@ export function dualBrainSettingsUI(doc,host,isGenome=()=>false){
  for(const key of MUTATION_GROUPS){const toggle=doc.createElement('input');toggle.type='checkbox';toggle.checked=true;inputs.set('mutationEnabled.'+key,toggle);
   field('initialMutation.'+key+'.rate',R.rateFloor*100,100);field('initialMutation.'+key+'.strength',R.strengthFloor,Number.MAX_VALUE);
  }
- const mutations=doc.createElement('fieldset'),legend=doc.createElement('legend');legend.textContent='Мутации основателей';mutations.append(legend,mutationSettingsTable(doc,inputs));
+ const mutations=doc.createElement('fieldset'),legend=doc.createElement('legend');legend.append(createHelpButton('mutation-founders','Мутации: старт и потомки',doc));mutations.append(legend,mutationSettingsTable(doc,inputs));
  const note=doc.createElement('p');note.className='note';note.textContent=`Пустые поля: вероятность ${100*R.initialRateMin}–${100*R.initialRateMax}%, сила ${R.initialStrengthMin}–${R.initialStrengthMax}. Выключение сохраняет веса, структуру и регуляторы при рождении; личное обучение задаётся отдельно.`;mutations.append(note);panel.append(mutations);host.append(panel);
  return {inputs,refresh:()=>{controls.refresh();for(const [key,n]of inputs)if(key.startsWith('initialMutation.'))n.disabled=isGenome();},read:()=>{
   const result={attentionMaxNeurons:Number(neurons.value),attentionMaxLayers:Number(layers.value),mutationEnabled:Object.fromEntries(MUTATION_GROUPS.map(key=>[key,inputs.get('mutationEnabled.'+key).checked]))};

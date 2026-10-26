@@ -1,3 +1,4 @@
+import {MUTATION_DETAILS} from './mutation-help.js';
 import {EVOLUTION_RULES as R,MUTATION_GROUPS,MUTATION_LABELS} from './brain-evolution-rules.js';
 import {ATTENTION_INPUTS,DUAL_TYPE_LAYOUT} from './dual-brain-layout.js';
 import {ATTENTION_REFERENCE_OPERATIONS} from './brain-cost.js';
@@ -20,6 +21,7 @@ export const DUAL_GUIDE_TEXT={
 
  'guide-structure-evolution-body':
  p('Структура меняется у двух сетей: контекста ситуации и малого диспетчера. Кодировщик клеток, проекции и прямая оценка сохраняют устройство. Сеть может усложняться или упрощаться при рождении; в течение жизни набор нейронов и связей остаётся тем же.')
+ +details('Что именно мутирует в каждой группе?',table('Блоки мутаций',['Группа','Назначение','Наследственные изменения'],Object.entries(MUTATION_DETAILS).map(([key,d])=>[MUTATION_LABELS[key],d.role,d.changes])))
  +table('Начало опыта',['Параметр','По умолчанию'],[
  ['Скрытые нейроны','Нет скрытых нейронов. Входы соединены непосредственно с обязательными выходами.'],
  ['Связность',`${v(R.initialConnections,'%')} относительно полного соединения соседних непустых уровней. Ноль означает отсутствие связей; смещения выходов остаются.`],
