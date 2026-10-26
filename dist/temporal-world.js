@@ -1,3 +1,4 @@
+import {scaledBrainCost} from './brain-economy.js';
 import {BODY_LIMITS,BODY_THRESHOLDS} from './model-rules.js';
 import {FEELING_SCALES} from './brain-input-scales.js';
 import {SUBSTEPS,HISTORY_SAMPLE_SUBSTEPS} from './action-timing.js';
@@ -139,10 +140,10 @@ export function acceptTemporalChoice(w,a,choice){
  const b=a.brain;w.stats.brainCalls++;if(a.callReason===CALL_REVIEW)w.stats.reviews++;
  if(a.life.observer){a.life.observer.brainCalls++;a.life.observer.reviews+=Number(a.callReason===CALL_REVIEW);}
  // Вычисление уже состоялось, но смертельная оплата не начинает действие.
- const computeCost=(choice.computeCharge??choice.decisionCost)+(b.learningCharge??0);
+ const mainCost=scaledBrainCost(choice.computeCharge??choice.decisionCost,w.brainCostMultiplier),learningCost=scaledBrainCost(b.learningCharge??0,w.brainCostMultiplier),computeCost=mainCost+learningCost;
  if(!Number.isFinite(computeCost)||computeCost<0)throw new Error('Неверная стоимость вычислений мозга.');
  if(b.costProfile&&a.life.observer)a.life.observer.brainEnergyCost=(a.life.observer.brainEnergyCost??0)+computeCost;
- if(b.dual&&a.life.observer){a.life.observer.mainDecisionEnergyCost=(a.life.observer.mainDecisionEnergyCost??0)+(choice.computeCharge??choice.decisionCost);a.life.observer.learningEnergyCost=(a.life.observer.learningEnergyCost??0)+(b.learningCharge??0);}
+ if(b.dual&&a.life.observer){a.life.observer.mainDecisionEnergyCost=(a.life.observer.mainDecisionEnergyCost??0)+mainCost;a.life.observer.learningEnergyCost=(a.life.observer.learningEnergyCost??0)+learningCost;}
  spend(w,a,computeCost,true);if(b.costProfile)b.learningCharge=0;
  if(a.health===0){fail(w,a,'death');w.die(a,'starvation');b.pending=null;return false;}
  if(b.dual&&choice.action===8){if(a.process)fail(w,a,'voluntary');a.resting=true;}
@@ -161,6 +162,7 @@ export function commitTemporalBrain(w,a,decision,choice,beforeFeeling){
 export function payAttention(w,a,cost){
  if(!a.brain.dual)return;
  if(!Number.isFinite(cost)||cost<0)throw new Error('Неверная цена диспетчера.');
+ cost=scaledBrainCost(cost,w.brainCostMultiplier);
  spend(w,a,cost,true);w.stats.attentionSpent=(w.stats.attentionSpent??0)+cost;
  if(a.life.observer){a.life.observer.attentionEnergyCost=(a.life.observer.attentionEnergyCost??0)+cost;a.life.observer.attentionCalls=(a.life.observer.attentionCalls??0)+1;}
 }

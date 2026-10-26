@@ -1,3 +1,10 @@
+import {installEnergyPreview} from './energy-preview-ui.js';
+import {installFormPreferences} from './form-preferences-ui.js';
+import {structureSettingsTable} from './brain-settings-tables.js';
+import {validateBrainCostMultiplier,BRAIN_ECONOMY} from './brain-economy.js';
+import {validateDigestionTime} from './model-rules.js';
+import {genomeMetadata} from './genome.js';
+import {validateWorldOptions} from './experiment-plan.js';
 import {WORLD_LIMITS} from './world-defaults.js';
 import {initialNeuronsInput,wireInitialStructure} from './brain-initialization-ui.js';
 import {DUAL_BRAIN_TYPE,DUAL_VERSION} from './dual-brain-layout.js';
@@ -79,6 +86,15 @@ const initialNeuronsControl=initialNeuronsInput(document,[],()=>({maxNeurons:Num
 element('brain-initial-neurons').append(initialNeuronsControl);
 const initialStructureControls=wireInitialStructure(initialNeuronsControl,element('brain-initial-connections'),element('brain-max-neurons'),element('brain-max-layers'),{isGenome:()=>Boolean(baseGenome)});
 const dualControls=dualBrainSettingsUI(document,element('brain-initial-neurons').parentElement,()=>Boolean(baseGenome));
+const startHost=element('start-panel-other');
+const oldMainLabels=['brain-max-neurons','brain-max-layers','brain-initial-connections'].map(id=>element(id).parentElement);
+const mainTable=structureSettingsTable(document,'Основной мозг',element('brain-max-neurons'),element('brain-max-layers'),initialNeuronsControl,element('brain-initial-connections'));
+for(const label of oldMainLabels)if(label?.tagName?.toLowerCase()==='label')label.remove();
+element('brain-initial-neurons').hidden=true;
+if(startHost.insertBefore)startHost.insertBefore(mainTable,startHost.firstChild);else startHost.append(mainTable);
+function economyField(title,value){const label=document.createElement('label'),n=document.createElement('input');label.textContent=title;n.type='number';n.min=Number.MIN_VALUE;n.step='any';n.value=value;label.append(n);startHost.append(label);return n;}
+const brainPriceInput=economyField('Коэффициент цены обоих мозгов',BRAIN_ECONOMY.multiplier),digestionInput=economyField('Усвоение одной порции, Т',validateDigestionTime());
+let worldForm=null;
 function settings(){
  const population=Number(element('founders').value),limit=Number(element('population-limit').value);
  const seed=Number(element('seed').value);
@@ -86,7 +102,7 @@ function settings(){
  if(!Number.isInteger(limit)||limit<population||limit>WORLD_LIMITS.populationMax)throw new Error(`Лимит должен быть не меньше числа основателей и не больше ${WORLD_LIMITS.populationMax}.`);
  if(!Number.isInteger(seed)||seed<1||seed>4294967295)throw new Error('Номер опыта должен быть целым от 1 до 4294967295.');
  const computeWorkers=activeComputationMode;
- return {seed,population,limit,computeWorkers,brainType:DUAL_BRAIN_TYPE,...dualControls.read(),...(baseGenome?{}:{initialNeurons:initialNeuronsControl.readSetting(),initialConnections:Number(element('brain-initial-connections').value)}),maxNeurons:Number(element('brain-max-neurons').value),maxLayers:Number(element('brain-max-layers').value),structuralMutations:element('structural-mutations').checked,automaticEnvironment:environmentUI?.settings(),geography:'lakes-rivers-v1',...readFoodControls(),
+ return {seed,population,limit,computeWorkers,brainCostMultiplier:validateBrainCostMultiplier(Number(brainPriceInput.value)),digestionTime:validateDigestionTime(Number(digestionInput.value)),brainType:DUAL_BRAIN_TYPE,...dualControls.read(),...(baseGenome?{}:{initialNeurons:initialNeuronsControl.readSetting(),initialConnections:Number(element('brain-initial-connections').value)}),maxNeurons:Number(element('brain-max-neurons').value),maxLayers:Number(element('brain-max-layers').value),structuralMutations:element('structural-mutations').checked,automaticEnvironment:environmentUI?.settings(),geography:'lakes-rivers-v1',...readFoodControls(),
   learning:element('learning').checked,memory:element('memory').checked,
   expandLegacy:legacyBase&&element('expand-legacy').checked,mutationRate:Number(element('mutation-rate').value),mutations:element('mutations').checked,upgradeMutationGenes:element('upgrade-mutations').checked,baseGenome};
 }
@@ -121,7 +137,7 @@ element('compute-apply').addEventListener('click',async()=>{
 // Меняем только поле следующего запуска. Текущий мир, RNG, пауза и выбранный
 // житель остаются прежними до явного «Начать новый опыт».
 element('randomize-seed').addEventListener('click',()=>{
- try{element('seed').value=randomExperienceSeed(Number(element('seed').value));element('error').textContent='';}
+ try{element('seed').value=randomExperienceSeed(Number(element('seed').value));worldForm?.save();element('error').textContent='';}
  catch(error){element('error').textContent=error.message;}
 });
 element('speed').addEventListener('change',()=>{if(client.ready)void command('speed',{value:10*Number(element('speed').value),substeps:Number(element('speed').value)<=.1}).catch(()=>{});});
@@ -157,6 +173,12 @@ element('world-food-apply').addEventListener('click',async()=>{
 element('world-food-export').addEventListener('click',()=>{pause();labTabs?.exportWorldObservation();});
 syncWorldFoodEditor();
 environmentUI=installEnvironmentUI({element,command,getWorld:()=>sim});
+const energyPreview=installEnergyPreview({doc:document,host:startHost,read:settings});
+const savedWorldControls=new Map([...dualControls.inputs,...['seed','founders','population-limit','learning','memory','mutations','structural-mutations','mutation-rate','brain-max-neurons','brain-max-layers','brain-initial-connections','food-sources','food-sources-number','food-period','food-period-number','food-islands','food-size-spread','food-size-spread-number','food-period-spread','food-period-spread-number','food-size-mean','food-size-mean-number','food-capacity-mean','food-capacity-mean-number','food-capacity-spread','food-capacity-spread-number'].map(id=>[id,element(id)]),['initialNeurons',initialNeuronsControl],['brainCostMultiplier',brainPriceInput],['digestionTime',digestionInput],['previewMoves',energyPreview.moves]]);
+worldForm=installFormPreferences({doc:document,host:startHost,key:'big-evolution-world-form-v1',controls:savedWorldControls,validate:()=>validateWorldOptions(settings()),readExtra:()=>baseGenome,writeExtra:value=>{baseGenome=value?validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(value),genes:value}):null;legacyBase=false;},refresh:()=>{initialStructureControls.refresh(true);dualControls.refresh();element('clear-base').disabled=!baseGenome;element('base-status').textContent=baseGenome?'Сохранённая основа генома':'Новая популяция: случайные геномы';energyPreview.refresh();}});
+for(const name of ['input','change'])startHost.addEventListener(name,()=>energyPreview.refresh());
+for(const n of savedWorldControls.values())for(const name of ['input','change'])n.addEventListener(name,()=>energyPreview.refresh());
+
 installWorldFiles({element,command,isBlocked:()=>labTabs?.isBenchmarkActive(),onLoad:()=>{labTabs?.onRestart();environmentUI.reset();syncWorldFoodEditor();update();draw();}});
 element('next-agent').addEventListener('click',()=>{
  if(!sim.agents.length)return;
@@ -192,7 +214,7 @@ element('load-genome').addEventListener('change',async event=>{
  const file=event.target.files?.[0];if(!file)return;pause();
  try{
   if(file.size>MAX_GENOME_FILE_BYTES)throw new Error('Файл генома превышает допустимый размер.');
-  const data=JSON.parse(await file.text());if(data.version!==DUAL_VERSION)throw new Error('Новый мир принимает геномы v16 с отдельными регуляторами. Старые результаты опытов доступны для анализа.');baseGenome=validateGenomeFile(data);legacyBase=false;
+  const data=JSON.parse(await file.text());if(data.version!==DUAL_VERSION)throw new Error('Новый мир принимает геномы v16 с отдельными регуляторами. Старые результаты опытов доступны для анализа.');baseGenome=validateGenomeFile(data);legacyBase=false;worldForm?.save();energyPreview.refresh();
   element('legacy-options').hidden=!legacyBase;
   const inherited=Boolean(mutationProfile(baseGenome));
   element('upgrade-mutations').checked=false;element('mutation-upgrade-options').hidden=inherited;
@@ -203,7 +225,7 @@ element('load-genome').addEventListener('change',async event=>{
 });
 element('upgrade-mutations').addEventListener('change',()=>{element('legacy-mutation-settings').hidden=element('upgrade-mutations').checked||!baseGenome||Boolean(mutationProfile(baseGenome));});
 element('clear-base').addEventListener('click',()=>{
- baseGenome=null;legacyBase=false;element('legacy-options').hidden=true;
+ baseGenome=null;legacyBase=false;worldForm?.save();energyPreview.refresh();element('legacy-options').hidden=true;
  element('mutation-upgrade-options').hidden=true;element('upgrade-mutations').checked=false;element('legacy-mutation-settings').hidden=true;element('load-genome').value='';element('clear-base').disabled=true;
  element('base-status').textContent='Новая популяция: случайные геномы';initialStructureControls.refresh();dualControls.refresh();
 });

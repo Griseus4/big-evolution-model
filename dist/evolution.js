@@ -1,3 +1,4 @@
+import {validateBrainCostMultiplier} from './brain-economy.js';
 import {WORLD_LIMITS} from './world-defaults.js';
 import {STRUCTURE_RULES} from './brain-structure-rules.js';
 import {RULES,validateDigestionTime,actionEnergyCost,BODY_LIMITS} from './model-rules.js';
@@ -99,8 +100,8 @@ export class Evolution {
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?STRUCTURAL_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections,attentionMaxNeurons=EVOLUTION_RULES.maxNeurons,attentionMaxLayers=EVOLUTION_RULES.maxLayers,attentionInitialNeurons=[],attentionInitialConnections=100,initialMutation,mutationEnabled}={}){
-  this.temporal=Boolean(temporal);
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,brainCostMultiplier,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections,attentionMaxNeurons=EVOLUTION_RULES.maxNeurons,attentionMaxLayers=EVOLUTION_RULES.maxLayers,attentionInitialNeurons=[],attentionInitialConnections=100,initialMutation,mutationEnabled}={}){
+  this.temporal=Boolean(temporal);this.brainCostMultiplier=validateBrainCostMultiplier(brainCostMultiplier);
   Object.assign(this,structuralSettings({maxNeurons,maxLayers,structuralMutations,initialNeurons:baseGenome?null:initialNeurons,initialConnections:baseGenome?STRUCTURE_RULES.initialConnections:initialConnections}));
   if(brainType===DUAL_BRAIN_TYPE)Object.assign(this,dualStructureSettings({maxNeurons,maxLayers,initialNeurons,initialConnections,structuralMutations,attentionMaxNeurons,attentionMaxLayers,attentionInitialNeurons,attentionInitialConnections,initialMutation,mutationEnabled,baseGenome}));
   this.digestionTime=validateDigestionTime(digestionTime);

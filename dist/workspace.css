@@ -83,6 +83,16 @@ body.workspace>#panel-world{overflow:hidden;grid-template-rows:minmax(0,1fr);ali
 .compact-sidebar>.side-tablist{flex:none;max-height:35%;overflow:auto}
 .compact-sidebar>.side-content{flex:1;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain}
 #brain-diagram>select{max-width:100%;width:100%}
+#start-panel-other .dual-brain-settings{display:block;min-width:0}
+.brain-settings-block,.dual-brain-settings>fieldset,.energy-preview{margin:16px 0;min-width:0;padding:12px;border:1px solid var(--edge);border-radius:8px}
+.brain-settings-scroll{overflow-x:auto;max-width:100%}
+.brain-settings-table{width:100%;table-layout:auto;font-size:13px}
+.brain-settings-table th,.brain-settings-table td{padding:7px;text-align:left;vertical-align:middle;white-space:normal;overflow-wrap:anywhere}
+.brain-settings-table th{font-weight:500}.brain-settings-table input[type=number]{width:9ch!important;min-width:65px!important;max-width:100%;padding:8px}
+.brain-settings-table .initial-brain-control{min-width:0;max-width:100%}.brain-settings-table .initial-brain-table th,.brain-settings-table .initial-brain-table td{padding:4px}
+.brain-settings-table input[type=checkbox]{margin:0}.constructor-conditions .common-fields:has(>.brain-settings-scroll),.constructor-conditions .common-fields:has(>.brain-settings-block){display:block}
+.energy-preview table{width:100%;font-variant-numeric:tabular-nums}.energy-preview td:last-child{text-align:right;white-space:nowrap}.energy-preview tr:last-child{font-weight:600;color:var(--gold)}
+.energy-preview label{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.energy-preview label input{width:9ch;max-width:100%}.energy-preview-positive{color:#91c88b}
 .initial-brain-field{grid-column:1/-1;min-width:0}.initial-brain-scroll{overflow-x:auto;max-width:100%}.initial-brain-control{min-width:0;width:100%}.initial-brain-table{width:100%;table-layout:auto;margin:8px 0}.initial-brain-table th,.initial-brain-table td{white-space:nowrap;padding:6px}.initial-brain-table input{width:6ch;min-width:6ch;margin:0;font-variant-numeric:tabular-nums}.initial-brain-factor{display:flex;align-items:flex-start;flex-basis:100%;min-width:0;max-width:100%}.initial-brain-factor>.initial-brain-control{flex:1}.initial-brain-control p{font-size:12px;line-height:1.5}
 .brain-diagram-preview{display:block;width:100%;min-width:0;padding:0;margin:12px 0;overflow:hidden;position:relative;border:1px solid var(--edge);background:#19251e}
 .brain-diagram-preview canvas{display:block;width:100%;height:180px;pointer-events:none}

@@ -25,6 +25,7 @@ export function operationCounts(profile,nCells,nCandidates,nOperations=6){
 const gateReference=operationCounts(null,7,11,6);
 export const ATTENTION_REFERENCE_OPERATIONS=gateReference.forward+gateReference.learning;
 export const ATTENTION_OPERATION_PRICE=DECISION_COST/ATTENTION_REFERENCE_OPERATIONS;
+export const ATTENTION_PREPARATION=Object.freeze({base:10,perCell:16,activityComparison:2,final:13});
 export function attentionCharge(brain,preparationOperations){return brain.dual?ATTENTION_OPERATION_PRICE*(brain.attentionStructure.operations+preparationOperations):0;}
 export function decisionCharge(brain,frame,rate){
  if(!brain.costProfile)return rate;

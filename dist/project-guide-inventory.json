@@ -1,7 +1,7 @@
 {
   "format": "big-evolution-guide-inventory",
   "version": 1,
-  "modelVersion": "0.55.2",
+  "modelVersion": "0.55.3",
   "files": [
     {
       "path": ".github/workflows/pages.yml",
@@ -128,6 +128,10 @@
       "kind": "app"
     },
     {
+      "path": "dist/brain-economy.js",
+      "kind": "app"
+    },
+    {
       "path": "dist/brain-evolution-rules.js",
       "kind": "app"
     },
@@ -145,6 +149,10 @@
     },
     {
       "path": "dist/brain-parameters.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/brain-settings-tables.js",
       "kind": "app"
     },
     {
@@ -280,6 +288,14 @@
       "kind": "app"
     },
     {
+      "path": "dist/energy-preview-ui.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/energy-preview.js",
+      "kind": "app"
+    },
+    {
       "path": "dist/environment-checks.js",
       "kind": "app"
     },
@@ -405,6 +421,10 @@
     },
     {
       "path": "dist/food-settings.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/form-preferences-ui.js",
       "kind": "app"
     },
     {
@@ -953,6 +973,10 @@
     },
     {
       "path": "tests/brain-diagram0531.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/brain-economy0553.test.mjs",
       "kind": "tests"
     },
     {

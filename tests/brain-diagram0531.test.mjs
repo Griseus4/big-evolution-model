@@ -59,7 +59,7 @@ test('actual renderer opens/closes dialog, pans without selecting and paints sel
  const f=documentFixture(),host=f.doc.createElement('div'),w=new Evolution({population:1}),a=w.agents[0],rng=w.random.state;
  renderBrainDiagram(host,a);const preview=f.find(host,e=>e.className==='brain-diagram-preview'),dialog=f.doc.body.children[0],stage=f.find(dialog,e=>e.className==='brain-diagram-stage'),canvas=stage.children[0];assert.equal(dialog.open,undefined);
  preview.emit('click');assert.equal(dialog.open,true);
- const model=brainDiagramModel(a),layout=diagramLayout(model,900/640),c=fitViewport(layout,900,640),n=layout.lookup.get(0),x=c.x+n.x*c.scale,y=c.y+n.y*c.scale;
+ const model=brainDiagramModel(a),layout=diagramLayout(model),c=fitViewport(layout,900,640,.94),n=layout.lookup.get(0),x=c.x+n.x*c.scale,y=c.y+n.y*c.scale;
  canvas.emit('pointerdown',{button:0,pointerId:1,clientX:x,clientY:y});f.strokes.length=0;canvas.emit('pointerup',{pointerId:1,clientX:x,clientY:y});
  const selected=f.strokes.filter(s=>s.color==='#ffffff');assert.ok(selected.length>0);assert.ok(selected.some(s=>Math.abs(s.width-EDGE_WIDTH*2/c.scale)<1e-8));
  canvas.emit('wheel',{deltaY:-200,deltaMode:0,clientX:450,clientY:320});canvas.emit('pointerdown',{button:0,pointerId:2,clientX:450,clientY:320});canvas.emit('pointermove',{pointerId:2,clientX:500,clientY:340});canvas.emit('pointerup',{pointerId:2,clientX:500,clientY:340});

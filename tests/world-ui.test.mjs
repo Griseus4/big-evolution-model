@@ -1,3 +1,10 @@
+import {structureSettingsTable} from '../dist/brain-settings-tables.js';
+import {installEnergyPreview} from '../dist/energy-preview-ui.js';
+import {installFormPreferences} from '../dist/form-preferences-ui.js';
+import {validateBrainCostMultiplier,BRAIN_ECONOMY} from '../dist/brain-economy.js';
+import {validateDigestionTime} from '../dist/model-rules.js';
+import {genomeMetadata} from '../dist/genome.js';
+import {validateWorldOptions} from '../dist/experiment-plan.js';
 import {WORLD_LIMITS} from '../dist/world-defaults.js';
 import {DUAL_BRAIN_TYPE,DUAL_VERSION} from '../dist/dual-brain-layout.js';
 /** Настоящий UI-код и протокол в минимальном DOM. Это не браузерная проверка:
@@ -37,7 +44,7 @@ const app=fs.readFileSync(new URL('../dist/evolution-app.js',import.meta.url),'u
 const performanceUI=fs.readFileSync(new URL('../dist/performance-ui.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'').replace(/^export /gm,'');
 class Element{
  constructor(){this.listeners={};this.style={setProperty(k,v){this[k]=v;}};this.children=[];this.dataset={};this.checked=false;this.value='';this.tagName='DIV';this.scrollTop=0;}
- addEventListener(name,fn){this.listeners[name]=fn;}
+ addEventListener(name,fn){const previous=this.listeners[name];this.listeners[name]=previous?event=>{previous(event);return fn(event);}:fn;}
  append(...nodes){for(const n of nodes){n.parent=this;n.ownerDocument=this.ownerDocument;this.children.push(n);}}
  replaceChildren(...nodes){this.children=[];this.append(...nodes);}
  get lastElementChild(){return this.children.at(-1);}
@@ -84,12 +91,24 @@ async function boot(){
   requestAnimationFrame:fn=>frame=fn,performance:{now:()=>now},Blob,
   URL:{createObjectURL:blob=>{downloads.push(blob);return 'blob:mock';},revokeObjectURL:()=>{}},setTimeout:()=>0});
  // Панель стартовых генов изолирована, как остальные вспомогательные панели.
- Object.assign(context,{MAX_GENOME_FILE_BYTES:8*1024*1024,DUAL_BRAIN_TYPE,DUAL_VERSION,dualBrainSettingsUI:()=>({read:()=>({}),refresh(){}}),installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
+ Object.assign(context,{structureSettingsTable,installEnergyPreview,installFormPreferences,validateBrainCostMultiplier,BRAIN_ECONOMY,validateDigestionTime,genomeMetadata,validateWorldOptions,MAX_GENOME_FILE_BYTES:8*1024*1024,DUAL_BRAIN_TYPE,DUAL_VERSION,dualBrainSettingsUI:()=>({inputs:new Map(),read:()=>({}),refresh(){}}),installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
  vm.runInContext(performanceUI,context);vm.runInContext(app,context);await settle();assert.equal(elements.get('error').textContent??'','');
  return {elements,document,context,downloads,setBenchmarkActive:value=>benchmarkActive=value,get runtime(){return runtime;},
   pulse:async value=>{now=value;runtime.pulse();await settle();},frame:value=>frame(value),
   section:async name=>{section=name;sidebarChange();await settle();}};
 }
+test('world form persists brain price and preview, validates zero and restores factory without changing the world',async()=>{
+ const old=globalThis.localStorage,values=new Map();globalThis.localStorage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)};
+ const walk=n=>[n,...n.children.flatMap(walk)];
+ try{
+  const b=await boot(),host=b.elements.get('start-panel-other'),find=text=>walk(host).find(n=>n.textContent===text),price=find('Коэффициент цены обоих мозгов').children[0];
+  price.value='0';price.emit('input');await settle();assert.ok(walk(host).some(n=>/больше нуля/.test(n.textContent)));assert.equal(b.runtime.world.brainCostMultiplier,1);
+  price.value='.5';price.emit('input');await settle();await b.elements.get('restart').emit('click');await settle();assert.equal(b.runtime.world.brainCostMultiplier,.5);
+  find('Сделать стандартными').emit('click');assert.equal(JSON.parse(values.get('big-evolution-world-form-v1')).standard.fields.brainCostMultiplier,'.5');
+  const c=await boot(),other=c.elements.get('start-panel-other');assert.equal(c.runtime.world.brainCostMultiplier,.5);walk(other).find(n=>n.textContent==='Сбросить к заводским').emit('click');await settle();assert.equal(c.runtime.world.brainCostMultiplier,.5);assert.equal(walk(other).find(n=>n.textContent==='Коэффициент цены обоих мозгов').children[0].value,1);
+ }finally{globalThis.localStorage=old;}
+});
+
 test('UI sends play/pause/step; frames do not move world and hiding continues',async()=>{
  const b=await boot(),e=b.elements;assert.equal(e.get('clock').textContent,'Шаг 0');
  await e.get('play').emit('click');await b.pulse(100);assert.equal(b.runtime.world.tick,1);

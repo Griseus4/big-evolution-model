@@ -2,7 +2,7 @@
 
 ## Текущий статус
 
-Рабочая версия — [0.55.2: карточки и проверка затрат](updates/v055-statistics-bugs.md). Версия в `dist/life-history.js`, параметры — в коде. Серия скорости modular-mutation-v1. [Конструктор](analysis-builder-guide.md), геном — в [механиках](mechanics-reference.md).
+Рабочая версия — [0.55.3: калькулятор энергии и настройки](updates/v055-brain-economy.md). Версия в `dist/life-history.js`, параметры — в коде. Серия скорости modular-mutation-v1. [Конструктор](analysis-builder-guide.md), геном — в [механиках](mechanics-reference.md).
 
 В 0.55.0 пройдены 431/431 тест и 48/48 механизмов, статические проверки и запуск. Браузерная отрисовка и длительная эволюция не проверены. [Маршрут и история проверок](verification.md).
 

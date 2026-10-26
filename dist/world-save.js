@@ -1,3 +1,4 @@
+import {validateBrainCostMultiplier} from './brain-economy.js';
 import {BODY_LIMITS} from './model-rules.js';
 import {SUBSTEPS} from './action-timing.js';
 import {STRUCTURAL_TYPE,structuralLayout,structuralSettings,compileStructure} from './structural-brain.js';
@@ -20,8 +21,8 @@ import {controllerProblems} from './brain-controller.js';
 export const WORLD_SAVE_FORMAT='big-evolution-world',WORLD_SAVE_VERSION=4,MAX_WORLD_SAVE_BYTES=512*1024*1024;
 // Старые миры продолжают прежнее усвоение: отсутствующий параметр даёт 20 Т.
 // Новые сохраняют выбранное время; номер UI сам по себе не ломает схему.
-const COMPATIBLE_MODELS=new Set([MODEL_VERSION,'0.55.0','0.54.17','0.54.16','0.54.15','0.54.14','0.54.13','0.54.12','0.54.11','0.54.10','0.54.9','0.54.8','0.54.7','0.54.6','0.54.5','0.54.4','0.54.3','0.54.2','0.53.0','0.53.1','0.53.2','0.53.3','0.54.0','0.54.1']);
-const FIELDS=('attentionMaxNeurons attentionMaxLayers attentionInitialNeurons attentionInitialConnections initialMutation mutationEnabled initialNeurons initialConnections maxNeurons maxLayers structuralMutations temporal digestionTime individualFood geography learningEnabled memoryEnabled reproduction seed foodSeed random cognitiveRandom bodyRandom scenario heritableMutations upgradeMutationGenes mutationRandom brainType neuralRandom initialPopulation limit mutationRate mutations baseGenome tick nextId maxGeneration events history agents foodCycleStart environmentRevision environmentChanges lifeHistory lifeExposure records lineages tiles stats sourceTemplate foodIslands initialFood foodSettings initialFoodSettings initialFoodIslands mutationProtocol geographyInfo foodExposure subtick _primed _viewEpoch automaticEnvironment _activities').split(' ');
+const COMPATIBLE_MODELS=new Set([MODEL_VERSION,'0.55.2','0.55.1','0.55.0','0.54.17','0.54.16','0.54.15','0.54.14','0.54.13','0.54.12','0.54.11','0.54.10','0.54.9','0.54.8','0.54.7','0.54.6','0.54.5','0.54.4','0.54.3','0.54.2','0.53.0','0.53.1','0.53.2','0.53.3','0.54.0','0.54.1']);
+const FIELDS=('brainCostMultiplier attentionMaxNeurons attentionMaxLayers attentionInitialNeurons attentionInitialConnections initialMutation mutationEnabled initialNeurons initialConnections maxNeurons maxLayers structuralMutations temporal digestionTime individualFood geography learningEnabled memoryEnabled reproduction seed foodSeed random cognitiveRandom bodyRandom scenario heritableMutations upgradeMutationGenes mutationRandom brainType neuralRandom initialPopulation limit mutationRate mutations baseGenome tick nextId maxGeneration events history agents foodCycleStart environmentRevision environmentChanges lifeHistory lifeExposure records lineages tiles stats sourceTemplate foodIslands initialFood foodSettings initialFoodSettings initialFoodIslands mutationProtocol geographyInfo foodExposure subtick _primed _viewEpoch automaticEnvironment _activities').split(' ');
 export function saveWorld(w){
  if(!w.temporal)throw new Error('Полное сохранение поддерживает текущую модель.');
  const state=Object.fromEntries(FIELDS.filter(k=>Object.hasOwn(w,k)).map(k=>[k,w[k]]));
@@ -32,8 +33,10 @@ export function loadWorld(file){
  const state=decodeState(file.state),w=Object.create(Evolution.prototype);
  if(!state||Object.keys(state).some(k=>!FIELDS.includes(k)))throw new Error('Недопустимые поля мира.');Object.assign(w,state);w.reproduction=reproductionProfile(w.reproduction);
  if(file.modelVersion===MODEL_VERSION&&!Object.hasOwn(state,'digestionTime'))throw new Error('В сохранении отсутствует время усвоения пищи.');
+ if(file.modelVersion===MODEL_VERSION&&!Object.hasOwn(state,'brainCostMultiplier'))throw new Error('В сохранении отсутствует коэффициент цены вычислений.');
  Object.assign(w,structuralSettings(w));
  if(w.brainType===DUAL_BRAIN_TYPE)Object.assign(w,dualStructureSettings(w,{historical:file.modelVersion==='0.55.0'||w.agents?.some(a=>dualBrainLayout(a.genome)?.version===15)}));
+ w.brainCostMultiplier=validateBrainCostMultiplier(w.brainCostMultiplier);
  w.digestionTime=validateDigestionTime(w.digestionTime);w.digestionRate=RULES.foodEnergy/w.digestionTime;
  const valid=n=>typeof n==='number'&&Number.isFinite(n),integer=n=>Number.isSafeInteger(n)&&n>=0;
  if(!integer(w.foodSeed)||w.foodSeed>4294967295)throw new Error('Повреждён seed пищи.');

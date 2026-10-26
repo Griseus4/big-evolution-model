@@ -8,7 +8,7 @@ export const WORLD_PROTOCOL=1;
 export const WORLD_UI_INTERVAL=200;
 // Полный отчёт жизней нужен лишь видимой истории, не каждому кадру карты.
 export const HISTORY_UI_INTERVAL=1000;
-const META=['attentionMaxNeurons','attentionMaxLayers','attentionInitialNeurons','attentionInitialConnections','initialMutation','mutationEnabled','initialNeurons','initialConnections','maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
+const META=['brainCostMultiplier','attentionMaxNeurons','attentionMaxLayers','attentionInitialNeurons','attentionInitialConnections','initialMutation','mutationEnabled','initialNeurons','initialConnections','maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
  'digestionTime','learningEnabled','memoryEnabled','mutationRate','mutations','brainType','mutationProtocol','reproduction'];
 export function worldPresentation(world,{selected,trail,section='birth',history=false,staticMap=false}={}){
  const state={tick:world.tick,environmentRevision:world.environmentRevision,automaticEnvironment:environmentStatus(world),

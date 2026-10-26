@@ -1,5 +1,6 @@
 /** Геометрия камеры в CSS-пикселях, без DOM/мозга/RNG. */
 export const NODE_PITCH=28,EDGE_WIDTH=1.1;
+export const MODAL_DIAGRAM_OCCUPANCY=.94;
 export function diagramLayout(model,aspect=null){
  const groups=new Map();for(const node of model.nodes){if(!groups.has(node.layer))groups.set(node.layer,[]);groups.get(node.layer).push(node);}
  const levels=[...groups.keys()].sort((a,b)=>a-b),rows=Math.max(1,...[...groups.values()].map(g=>g.length));
@@ -12,9 +13,9 @@ export function diagramLayout(model,aspect=null){
  return {nodes,lookup:new Map(nodes.map(n=>[n.id,n])),width,height,pitch};
 }
 const bound=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
-export function fitViewport(layout,width,height){
+export function fitViewport(layout,width,height,occupancy=1){
  width=Math.max(1,width);height=Math.max(1,height);
- const min=Math.max(.0001,Math.min(Math.max(1,width-32)/layout.width,Math.max(1,height-32)/layout.height));
+ const min=Math.max(.0001,Math.min(Math.max(1,width-32)/layout.width,Math.max(1,height-32)/layout.height)*occupancy);
  const max=Math.max(min,(height-32)/(3*layout.pitch));
  return {width,height,min,max,scale:min,x:(width-layout.width*min)/2,y:(height-layout.height*min)/2};
 }
@@ -28,8 +29,8 @@ export function zoomViewport(camera,layout,factor,x=camera.width/2,y=camera.heig
  camera.x=x-(x-camera.x)*ratio;camera.y=y-(y-camera.y)*ratio;camera.scale=scale;return clampViewport(camera,layout);
 }
 export function panViewport(camera,layout,dx,dy){camera.x+=dx;camera.y+=dy;return clampViewport(camera,layout);}
-export function resizeViewport(camera,layout,width,height){
- const next=fitViewport(layout,width,height);if(!camera||Math.abs(camera.scale-camera.min)<1e-8)return next;
+export function resizeViewport(camera,layout,width,height,occupancy=1){
+ const next=fitViewport(layout,width,height,occupancy);if(!camera||Math.abs(camera.scale-camera.min)<1e-8)return next;
  const wx=(camera.width/2-camera.x)/camera.scale,wy=(camera.height/2-camera.y)/camera.scale;
  next.scale=bound(camera.scale,next.min,next.max);next.x=width/2-wx*next.scale;next.y=height/2-wy*next.scale;return clampViewport(next,layout);
 }
