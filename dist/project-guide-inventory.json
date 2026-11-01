@@ -1272,6 +1272,10 @@
       "kind": "tests"
     },
     {
+      "path": "tests/test_open_game.py",
+      "kind": "tests"
+    },
+    {
       "path": "tests/ui-text-controls.test.mjs",
       "kind": "tests"
     },

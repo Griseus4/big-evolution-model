@@ -1,0 +1,38 @@
+{
+  "modelVersion": "0.56.2",
+  "browser": "Opera GX / Chromium isolated headless test profile",
+  "browserVersion": "154.0.8037.99",
+  "before": "Версия 0.56.0",
+  "rootAfterFilesUpdated": "Версия 0.56.0",
+  "buildPathAfterFix": "Версия 0.56.2",
+  "storagePreserved": true,
+  "worldWorkerUsesBuildPath": true,
+  "noStore": true,
+  "baselineErrors": [
+    "Cannot read properties of undefined (reading 'map')"
+  ],
+  "staleErrors": [
+    "Cannot read properties of undefined (reading 'map')"
+  ],
+  "currentErrors": [],
+  "note": "Controlled regression: root JavaScript initially cached for one hour, server switched from preserved 0.56.0 sources to current files on the same origin. Fresh HTML alone kept 0.56.0; the launcher build path loaded 0.56.2. Personal browser and its cache were not accessed.",
+  "httpRegressionTests": {
+    "passed": 4,
+    "total": 4,
+    "command": "python -m unittest discover -s tests -p test_open_game.py -v"
+  },
+  "startupAndLauncherCheck": "python tools/verify-local.py --only startup: passed",
+  "guideTests": {
+    "passed": 2,
+    "total": 2
+  },
+  "cmdLaunch": {
+    "modelVersion": "0.56.2",
+    "cmdLaunched": true,
+    "requestedUrl": "http://127.0.0.1:8000/_build/e3bd7adcb4da65d1e9645c2e27d7e6b092c4a338df176ab15da20414912ca4ea/index.html",
+    "currentBuildFingerprint": true,
+    "currentMotionModule": true,
+    "browserOpening": "replaced with a private URL recorder, not a personal browser",
+    "ownedServerCleanup": true
+  }
+}

@@ -11,7 +11,7 @@ def build_guide_inventory(root: Path) -> list[dict]:
     entries = []
     for directory, extensions, kind in [
         ('dist', {'.js', '.html', '.css'}, 'app'),
-        ('tests', {'.mjs'}, 'tests'),
+        ('tests', {'.mjs', '.py'}, 'tests'),
         ('tools', {'.py', '.mjs'}, 'tools'),
         ('.github/workflows', {'.yml', '.yaml'}, 'infrastructure'),
     ]:

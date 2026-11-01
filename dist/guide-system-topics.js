@@ -184,7 +184,7 @@ export const GUIDE_SYSTEM_TOPICS={
   ]
  },
  "development": {
-  "reviewedVersion": "0.54.16",
+  "reviewedVersion": "0.56.2",
   "keywords": [
    "development",
    "исполнение",
@@ -206,7 +206,9 @@ export const GUIDE_SYSTEM_TOPICS={
     "file": "tools/open-game.py",
     "symbols": [
      "main",
-     "existing_game"
+     "existing_game",
+     "game_url",
+     "GameRequestHandler"
     ],
     "purpose": "Локальный HTTP-запуск текущей игры, браузер и повторное использование своего сервера."
    },

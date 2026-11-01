@@ -39,6 +39,8 @@ if OUTPUT.exists():
 OUTPUT.mkdir()
 
 PURPOSES = {
+    'tools/open-game.py': 'Локальный запуск текущей сборки с новым путём импортов, no-store и сохранением origin браузера.',
+    'tests/test_open_game.py': 'Реальный HTTP: пути модулей/Worker, кэш, смена сборки и отказ повторно использовать неподходящий сервер.',
     'dist/world-motion.js': 'Подтверждённые маршруты и прогресс медленного движения, экранные позиции/отмена/пауза наблюдателя.',
     'dist/world-map-layers.js': 'Canvas-кэши рельефа, пищи и сведений наблюдателя; без физики мира.',
     'tests/world-motion0561.test.mjs': 'Маршруты/клики/разрывы, пределы отображения, кэш и точная сохранность физики/обучения/RNG.',
@@ -310,6 +312,7 @@ files += sorted((ROOT / 'docs' / 'analysis').glob('*.json'))
 files += sorted(p for p in DIST.iterdir() if p.is_file() and (p.suffix in {'.js', '.html', '.css'} or p.name in {'build-info.json', 'project-guide-inventory.json'}))
 files += sorted(p for p in (DIST / 'benchmark-snapshots').rglob('*') if p.is_file() and p.suffix in {'.js', '.json'})
 files += sorted((ROOT / 'tests').rglob('*.mjs'))
+files += sorted((ROOT / 'tests').rglob('*.py'))
 files += sorted((ROOT / 'tests' / 'fixtures').rglob('*.json'))
 files += sorted(p for p in (ROOT / 'tools').rglob('*') if p.is_file() and p.suffix in {'.py', '.mjs'})
 files.sort(key=source_order)

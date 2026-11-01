@@ -40,7 +40,7 @@
 **Структура:** v14 реализована в [0.53](../updates/v053-structural-brain.md); [таблица старта и связность 0.53.2](../updates/v053-initial-structure.md). Геометрия просмотра не меняет геном.
 
 ## delivery
-Локальный запуск Windows: корневой `Открыть игру.cmd` вызывает [open-game.py](../../tools/open-game.py), который обслуживает dist по HTTP и открывает браузер; это не старый установщик. [Контракт](../updates/v056-local-launcher.md).
+Локальный запуск Windows: `Открыть игру.cmd` → [open-game.py](../../tools/open-game.py), dist через путь сборки/no-store, прежний origin; [HTTP-регрессия](../../tests/test_open_game.py). [Контракт](../updates/v056-local-launcher.md).
 01.11.2026: старые установщик, автономный game.html, его сборщик и отдельный тест удалены. Запуск — dist/index.html через HTTP. [Состав очистки](../updates/v056-development-cleanup.md).
 **Задача:** локальный запуск, проверки, исходники, архив, старые ссылки, публикация.
 **Сейчас:** [README.ru.md](../../README.ru.md) — запуск; [verify-local.py](../../tools/verify-local.py) — части короткого набора; [check-project-docs.py](../../tools/check-project-docs.py)/[check-agent-context.py](../../tools/check-agent-context.py) — документы/вход; [export-source.py](../../tools/export-source.py) — каталог/отпечаток/исходники; [package-github.py](../../tools/package-github.py) — GitHub-пакет.

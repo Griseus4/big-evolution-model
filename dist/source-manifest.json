@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 35,
-    "bytes": 4385,
+    "bytes": 4589,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 193,
-    "bytes": 19174,
+    "lines": 195,
+    "bytes": 19360,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -910,8 +910,8 @@
   {
     "name": "docs/updates/v056-local-launcher.md",
     "url": "./source-files/docs/updates/v056-local-launcher.md",
-    "lines": 9,
-    "bytes": 2053,
+    "lines": 25,
+    "bytes": 6362,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -938,6 +938,22 @@
     "bytes": 5011,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "tools/open-game.py",
+    "url": "./source-files/tools/open-game.py",
+    "lines": 111,
+    "bytes": 5606,
+    "aliases": [],
+    "purpose": "Локальный запуск текущей сборки с новым путём импортов, no-store и сохранением origin браузера."
+  },
+  {
+    "name": "tests/test_open_game.py",
+    "url": "./source-files/tests/test_open_game.py",
+    "lines": 96,
+    "bytes": 4748,
+    "aliases": [],
+    "purpose": "Реальный HTTP: пути модулей/Worker, кэш, смена сборки и отказ повторно использовать неподходящий сервер."
   },
   {
     "name": "dist/world-motion.js",
@@ -1118,8 +1134,8 @@
   {
     "name": "dist/project-guide-inventory.json",
     "url": "./project-guide-inventory.json",
-    "lines": 1399,
-    "bytes": 28469,
+    "lines": 1403,
+    "bytes": 28549,
     "aliases": [],
     "purpose": "Производный инвентарь канонического кода; не процент полноты пособия."
   },
@@ -1127,7 +1143,7 @@
     "name": "tools/guide_inventory.py",
     "url": "./source-files/tools/guide_inventory.py",
     "lines": 33,
-    "bytes": 1729,
+    "bytes": 1736,
     "aliases": [],
     "purpose": "Список рабочих исходников без производных копий и снимков."
   },
@@ -1658,14 +1674,6 @@
     "bytes": 15834,
     "aliases": [],
     "purpose": "33 проверки текущих механик, генома, градиента и инвариантов."
-  },
-  {
-    "name": "docs/action-time-spec.md",
-    "url": "./source-files/docs/action-time-spec.md",
-    "lines": 96,
-    "bytes": 19527,
-    "aliases": [],
-    "purpose": "Точная реализованная спецификация времени0.32."
   },
   {
     "name": ".gitattributes",
@@ -11815,15 +11823,15 @@
     "name": "dist/guide-system-text.js",
     "url": "./guide-system-text.js",
     "lines": 85,
-    "bytes": 28156,
+    "bytes": 28451,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
     "name": "dist/guide-system-topics.js",
     "url": "./guide-system-topics.js",
-    "lines": 406,
-    "bytes": 9535,
+    "lines": 408,
+    "bytes": 9578,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12116,6 +12124,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/action-time-spec.md",
+    "url": "./source-files/docs/action-time-spec.md",
+    "lines": 96,
+    "bytes": 19527,
+    "aliases": [],
+    "purpose": "Точная реализованная спецификация времени0.32."
+  },
+  {
     "name": "docs/analysis-builder-guide.md",
     "url": "./source-files/docs/analysis-builder-guide.md",
     "lines": 87,
@@ -12184,6 +12200,14 @@
     "url": "./source-files/docs/analysis/v055-verification.json",
     "lines": 67,
     "bytes": 1412,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/analysis/v056-launcher-cache-verification.json",
+    "url": "./source-files/docs/analysis/v056-launcher-cache-verification.json",
+    "lines": 38,
+    "bytes": 1498,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12559,7 +12583,7 @@
     "name": "docs/navigation/interface-and-files.md",
     "url": "./source-files/docs/navigation/interface-and-files.md",
     "lines": 55,
-    "bytes": 14741,
+    "bytes": 14702,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13039,7 +13063,7 @@
     "name": "tests/guide-system05416.test.mjs",
     "url": "./source-files/tests/guide-system05416.test.mjs",
     "lines": 14,
-    "bytes": 1196,
+    "bytes": 1200,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13270,8 +13294,8 @@
   {
     "name": "tools/export-source.py",
     "url": "./source-files/tools/export-source.py",
-    "lines": 340,
-    "bytes": 46911,
+    "lines": 343,
+    "bytes": 47367,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13280,14 +13304,6 @@
     "url": "./source-files/tools/measure-dual-brain.mjs",
     "lines": 23,
     "bytes": 2242,
-    "aliases": [],
-    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
-  },
-  {
-    "name": "tools/open-game.py",
-    "url": "./source-files/tools/open-game.py",
-    "lines": 58,
-    "bytes": 2908,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13726,8 +13742,8 @@
   {
     "name": "tools/verify-local.py",
     "url": "./source-files/tools/verify-local.py",
-    "lines": 121,
-    "bytes": 8812,
+    "lines": 122,
+    "bytes": 8935,
     "aliases": [],
     "purpose": "Одна команда коротких локальных проверок, повтор выбранной части и отчёт времени/ошибок."
   },
@@ -13799,7 +13815,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 12,
-    "bytes": 3423,
+    "bytes": 3047,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -13814,8 +13830,8 @@
   {
     "name": "docs/workflows/local.md",
     "url": "./source-files/docs/workflows/local.md",
-    "lines": 42,
-    "bytes": 9414,
+    "lines": 44,
+    "bytes": 10086,
     "aliases": [],
     "purpose": "Локальный запуск, выбор коротких проверок и заключительная упаковка."
   },
