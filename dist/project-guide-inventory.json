@@ -1156,10 +1156,6 @@
       "kind": "tests"
     },
     {
-      "path": "tests/interface.test.mjs",
-      "kind": "tests"
-    },
-    {
       "path": "tests/interface0361.test.mjs",
       "kind": "tests"
     },
@@ -1313,10 +1309,6 @@
     },
     {
       "path": "tools/analyze-genomes.mjs",
-      "kind": "tools"
-    },
-    {
-      "path": "tools/build-offline.mjs",
       "kind": "tools"
     },
     {

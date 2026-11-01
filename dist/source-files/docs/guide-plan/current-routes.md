@@ -10,12 +10,8 @@
 | [.github/workflows/pages.yml](../../.github/workflows/pages.yml) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
 | [.gitignore](../../.gitignore) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
 | [AGENTS.md](../../AGENTS.md) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
-| [Install.cmd](../../Install.cmd) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
-| [Install.ps1](../../Install.ps1) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
-| [Launch.ps1](../../Launch.ps1) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
 | [README.md](../../README.md) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
 | [README.ru.md](../../README.ru.md) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
-| [Start.cmd](../../Start.cmd) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
 | [dist/action-catalog.js](../../dist/action-catalog.js) | описано | `choice` |
 | [dist/action-timing.js](../../dist/action-timing.js) | описано | `numbers`, `time`, `actions` |
 | [dist/activity-perception.js](../../dist/activity-perception.js) | описано | `observation` |
@@ -399,7 +395,6 @@
 | [docs/workflows/guide-authoring.md](../../docs/workflows/guide-authoring.md) | служебное | карта, контракт, инструкция или план; статус указан внутри документа, `development` |
 | [docs/workflows/local.md](../../docs/workflows/local.md) | служебное | карта, контракт, инструкция или план; статус указан внутри документа, `development` |
 | [docs/world-save-options.md](../../docs/world-save-options.md) | служебное | карта, контракт, инструкция или план; статус указан внутри документа, `development` |
-| [game.html](../../game.html) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
 | [package.json](../../package.json) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
 | [society_simulation_plan.md](../../society_simulation_plan.md) | служебное | корневая инструкция, запуск либо конфигурация поставки; `development` |
 | [tests/activity-perception.test.mjs](../../tests/activity-perception.test.mjs) | служебное | проверка / фикстура; `geography` |
@@ -443,7 +438,6 @@
 | [tests/help-ui.test.mjs](../../tests/help-ui.test.mjs) | служебное | проверка / фикстура; тематический запуск через verify-local; назначение по проверяемому модулю, не новая механика |
 | [tests/history-ui.test.mjs](../../tests/history-ui.test.mjs) | служебное | проверка / фикстура; тематический запуск через verify-local; назначение по проверяемому модулю, не новая механика |
 | [tests/history-window.test.mjs](../../tests/history-window.test.mjs) | служебное | проверка / фикстура; тематический запуск через verify-local; назначение по проверяемому модулю, не новая механика |
-| [tests/interface.test.mjs](../../tests/interface.test.mjs) | служебное | проверка / фикстура; тематический запуск через verify-local; назначение по проверяемому модулю, не новая механика |
 | [tests/interface0361.test.mjs](../../tests/interface0361.test.mjs) | служебное | проверка / фикстура; тематический запуск через verify-local; назначение по проверяемому модулю, не новая механика |
 | [tests/island-mobility.test.mjs](../../tests/island-mobility.test.mjs) | служебное | проверка / фикстура; `environment` |
 | [tests/js-syntax.test.mjs](../../tests/js-syntax.test.mjs) | служебное | проверка / фикстура; `checks` |
@@ -479,7 +473,6 @@
 | [tests/world-worker-adapter.mjs](../../tests/world-worker-adapter.mjs) | служебное | проверка / фикстура; тематический запуск через verify-local; назначение по проверяемому модулю, не новая механика |
 | [tests/world-worker.test.mjs](../../tests/world-worker.test.mjs) | служебное | проверка / фикстура; тематический запуск через verify-local; назначение по проверяемому модулю, не новая механика |
 | [tools/analyze-genomes.mjs](../../tools/analyze-genomes.mjs) | служебное | локальная проверка/анализ/сборка; `development`, для измерений также `performance` |
-| [tools/build-offline.mjs](../../tools/build-offline.mjs) | служебное | локальная проверка/анализ/сборка; `development`, для измерений также `performance` |
 | [tools/check-agent-context.py](../../tools/check-agent-context.py) | служебное | локальная проверка/анализ/сборка; `development`, для измерений также `performance` |
 | [tools/check-benchmark-snapshots.py](../../tools/check-benchmark-snapshots.py) | служебное | локальная проверка/анализ/сборка; `development`, для измерений также `performance` |
 | [tools/check-browser-wiring.py](../../tools/check-browser-wiring.py) | служебное | локальная проверка/анализ/сборка; `development`, для измерений также `performance` |

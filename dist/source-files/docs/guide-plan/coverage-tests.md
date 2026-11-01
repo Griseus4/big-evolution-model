@@ -40,7 +40,6 @@
 | [tests/help-ui.test.mjs](../../tests/help-ui.test.mjs) | P26: интерфейс и обновление статистики | world, research | карточка этапа | `426b290e5f33` |
 | [tests/history-ui.test.mjs](../../tests/history-ui.test.mjs) | P26: интерфейс и обновление статистики | world, research | предварительно по семейству; подтвердить владельца | `00c370d8cbf2` |
 | [tests/history-window.test.mjs](../../tests/history-window.test.mjs) | P18: история жизни, поля и происхождение показателей; P19: периоды, когорты и дожитие | research | карточка этапа | `84477c49f435` |
-| [tests/interface.test.mjs](../../tests/interface.test.mjs) | P27: архитектура, локальная работа и поддержка справочника | intro / будущий раздел разработки | предварительно по семейству; подтвердить владельца | `7aed4ae36702` |
 | [tests/interface0361.test.mjs](../../tests/interface0361.test.mjs) | P27: архитектура, локальная работа и поддержка справочника | intro / будущий раздел разработки | предварительно по семейству; подтвердить владельца | `10f11de90553` |
 | [tests/island-mobility.test.mjs](../../tests/island-mobility.test.mjs) | P03: автоматическое изменение среды | environment | карточка этапа; реестр sources/checks | `92e5f05fea50` |
 | [tests/js-syntax.test.mjs](../../tests/js-syntax.test.mjs) | P27: архитектура, локальная работа и поддержка справочника | checks | предварительно по семейству; подтвердить владельца; реестр sources/checks | `5208af884519` |

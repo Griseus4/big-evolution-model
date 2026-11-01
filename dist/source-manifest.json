@@ -10,8 +10,8 @@
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 185,
-    "bytes": 18703,
+    "lines": 187,
+    "bytes": 18831,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -900,6 +900,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v056-development-cleanup.md",
+    "url": "./source-files/docs/updates/v056-development-cleanup.md",
+    "lines": 22,
+    "bytes": 3752,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/updates/v056-split-mutations.md",
     "url": "./source-files/docs/updates/v056-split-mutations.md",
     "lines": 22,
@@ -1062,8 +1070,8 @@
   {
     "name": "dist/project-guide-inventory.json",
     "url": "./project-guide-inventory.json",
-    "lines": 1391,
-    "bytes": 28313,
+    "lines": 1383,
+    "bytes": 28152,
     "aliases": [],
     "purpose": "Производный инвентарь канонического кода; не процент полноты пособия."
   },
@@ -12398,16 +12406,16 @@
   {
     "name": "docs/guide-plan/coverage-support.md",
     "url": "./source-files/docs/guide-plan/coverage-support.md",
-    "lines": 197,
-    "bytes": 67563,
+    "lines": 191,
+    "bytes": 65516,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
     "name": "docs/guide-plan/coverage-tests.md",
     "url": "./source-files/docs/guide-plan/coverage-tests.md",
-    "lines": 79,
-    "bytes": 21371,
+    "lines": 78,
+    "bytes": 20947,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12415,15 +12423,15 @@
     "name": "docs/guide-plan/coverage.md",
     "url": "./source-files/docs/guide-plan/coverage.md",
     "lines": 222,
-    "bytes": 37531,
+    "bytes": 37437,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
     "name": "docs/guide-plan/current-routes.md",
     "url": "./source-files/docs/guide-plan/current-routes.md",
-    "lines": 501,
-    "bytes": 90325,
+    "lines": 494,
+    "bytes": 88447,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12470,8 +12478,8 @@
   {
     "name": "docs/navigation/interface-and-files.md",
     "url": "./source-files/docs/navigation/interface-and-files.md",
-    "lines": 52,
-    "bytes": 13803,
+    "lines": 53,
+    "bytes": 14020,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12574,8 +12582,8 @@
   {
     "name": "docs/next-rest-attention.md",
     "url": "./source-files/docs/next-rest-attention.md",
-    "lines": 76,
-    "bytes": 23657,
+    "lines": 88,
+    "bytes": 27973,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12655,7 +12663,7 @@
     "name": "package.json",
     "url": "./source-files/package.json",
     "lines": 9,
-    "bytes": 198,
+    "bytes": 189,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12972,14 +12980,6 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
-    "name": "tests/interface.test.mjs",
-    "url": "./source-files/tests/interface.test.mjs",
-    "lines": 49,
-    "bytes": 3494,
-    "aliases": [],
-    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
-  },
-  {
     "name": "tests/island-mobility.test.mjs",
     "url": "./source-files/tests/island-mobility.test.mjs",
     "lines": 39,
@@ -13176,14 +13176,6 @@
     "url": "./source-files/tests/world-worker-adapter.mjs",
     "lines": 7,
     "bytes": 500,
-    "aliases": [],
-    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
-  },
-  {
-    "name": "tools/build-offline.mjs",
-    "url": "./source-files/tools/build-offline.mjs",
-    "lines": 10,
-    "bytes": 685,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13703,7 +13695,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 12,
-    "bytes": 2536,
+    "bytes": 3351,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -13815,7 +13807,7 @@
     "name": "docs/future-ideas.md",
     "url": "./source-files/docs/future-ideas.md",
     "lines": 57,
-    "bytes": 11512,
+    "bytes": 11597,
     "aliases": [],
     "purpose": "Обсуждённые идеи: пищевые циклы, износ и долголетие, личное развитие; статусы и границы разрешения."
   },
