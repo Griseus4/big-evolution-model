@@ -300,7 +300,7 @@ def source_order(path):
         return (1, 0 if name.endswith('/README.md') else 1, path.name)
     return (2, list(PURPOSES).index(name) if name in PURPOSES else 100, name)
 
-files = [ROOT / 'AGENTS.md', ROOT / 'README.md', ROOT / 'README.ru.md', ROOT / '.gitignore', ROOT / '.gitattributes', ROOT / 'package.json']
+files = [ROOT / 'AGENTS.md', ROOT / 'README.md', ROOT / 'README.ru.md', ROOT / '.gitignore', ROOT / '.gitattributes', ROOT / 'package.json', ROOT / 'Открыть игру.cmd']
 files += sorted((ROOT / '.github' / 'workflows').glob('*.yml'))
 files += sorted((ROOT / 'docs').rglob('*.md'))
 files += sorted((ROOT / 'docs' / 'analysis').glob('*.json'))

@@ -174,6 +174,14 @@ export const GUIDE_SYSTEM_TOPICS={
   ],
   "sources": [
    {
+    "file": "tools/open-game.py",
+    "symbols": [
+     "main",
+     "existing_game"
+    ],
+    "purpose": "Локальный HTTP-запуск текущей игры, браузер и повторное использование своего сервера."
+   },
+   {
     "file": "evolution-app.js",
     "symbols": [],
     "purpose": "Текущая точка входа."

@@ -1372,6 +1372,10 @@
       "kind": "tools"
     },
     {
+      "path": "tools/open-game.py",
+      "kind": "tools"
+    },
+    {
       "path": "tools/package-github.py",
       "kind": "tools"
     },

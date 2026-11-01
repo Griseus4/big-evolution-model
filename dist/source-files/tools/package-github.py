@@ -22,7 +22,7 @@ def main() -> None:
     args = parser.parse_args()
     manifest = json.loads((ROOT / 'dist/source-manifest.json').read_text(encoding='utf-8'))
     version = re.search(r"MODEL_VERSION='([^']+)'", (ROOT / 'dist/life-history.js').read_text()).group(1)
-    allowed_roots = {'AGENTS.md', 'README.md', 'README.ru.md', '.gitignore', '.gitattributes', 'package.json'}
+    allowed_roots = {'AGENTS.md', 'README.md', 'README.ru.md', '.gitignore', '.gitattributes', 'package.json', 'Открыть игру.cmd'}
     forbidden_parts = {'.git', '.openai', '.codex', '.agents', '.transfer', 'node_modules', '__pycache__', 'releases'}
     canonical = {Path(item['name']) for item in manifest}
     assert {Path(name) for name in allowed_roots}.issubset(canonical)

@@ -10,8 +10,8 @@
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 187,
-    "bytes": 18831,
+    "lines": 189,
+    "bytes": 18957,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -908,6 +908,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v056-local-launcher.md",
+    "url": "./source-files/docs/updates/v056-local-launcher.md",
+    "lines": 9,
+    "bytes": 2053,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/updates/v056-split-mutations.md",
     "url": "./source-files/docs/updates/v056-split-mutations.md",
     "lines": 22,
@@ -1070,8 +1078,8 @@
   {
     "name": "dist/project-guide-inventory.json",
     "url": "./project-guide-inventory.json",
-    "lines": 1383,
-    "bytes": 28152,
+    "lines": 1387,
+    "bytes": 28227,
     "aliases": [],
     "purpose": "Производный инвентарь канонического кода; не процент полноты пособия."
   },
@@ -1654,8 +1662,8 @@
   {
     "name": "README.ru.md",
     "url": "./source-files/README.ru.md",
-    "lines": 117,
-    "bytes": 16421,
+    "lines": 121,
+    "bytes": 16949,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -11774,16 +11782,16 @@
   {
     "name": "dist/guide-system-text.js",
     "url": "./guide-system-text.js",
-    "lines": 77,
-    "bytes": 24300,
+    "lines": 78,
+    "bytes": 24976,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
     "name": "dist/guide-system-topics.js",
     "url": "./guide-system-topics.js",
-    "lines": 369,
-    "bytes": 8683,
+    "lines": 377,
+    "bytes": 8966,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12478,8 +12486,8 @@
   {
     "name": "docs/navigation/interface-and-files.md",
     "url": "./source-files/docs/navigation/interface-and-files.md",
-    "lines": 53,
-    "bytes": 14020,
+    "lines": 54,
+    "bytes": 14360,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13199,7 +13207,7 @@
     "name": "tools/export-source.py",
     "url": "./source-files/tools/export-source.py",
     "lines": 337,
-    "bytes": 46638,
+    "bytes": 46339,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13212,10 +13220,26 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "tools/open-game.py",
+    "url": "./source-files/tools/open-game.py",
+    "lines": 58,
+    "bytes": 2908,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "tools/package-github.py",
     "url": "./source-files/tools/package-github.py",
     "lines": 78,
-    "bytes": 4326,
+    "bytes": 4357,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "Открыть игру.cmd",
+    "url": "./source-files/Открыть игру.cmd",
+    "lines": 20,
+    "bytes": 513,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13695,7 +13719,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 12,
-    "bytes": 3351,
+    "bytes": 2538,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -14022,8 +14046,8 @@
   {
     "name": "README.md",
     "url": "./source-files/README.md",
-    "lines": 132,
-    "bytes": 11538,
+    "lines": 136,
+    "bytes": 11866,
     "aliases": [],
     "purpose": "Устройство проекта, ограничения, запуск исходников и проверки."
   },

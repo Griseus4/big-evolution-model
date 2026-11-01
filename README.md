@@ -46,6 +46,10 @@ Open [Big Evolution Model](https://griseus4.github.io/big-evolution-model/) and 
 
 ## Run locally
 
+On Windows, double-click `Открыть игру.cmd` in the project root. It starts a local server and opens the current game in your browser. Keep the server window open; close it or press Ctrl+C to stop. A repeated launch reuses a matching running server. Python 3 is required; no game installer is needed.
+
+Manual launch:
+
 1. Install Python 3.
 2. Open a terminal in the extracted project folder and run:
 
