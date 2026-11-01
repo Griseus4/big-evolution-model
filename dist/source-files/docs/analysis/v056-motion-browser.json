@@ -1,0 +1,126 @@
+{
+  "browser": "Opera GX, isolated visible profile",
+  "version": "154.0.8037.99",
+  "cpu": "Intel(R) Core(TM) i5-14600KF",
+  "logicalProcessors": 20,
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "seed": 42,
+  "computeWorkers": 1,
+  "targetStepsPerSecond": 640,
+  "warmupSteps": 3,
+  "secondsPerCase": 4,
+  "note": "Actual browser Canvas timing; shared Windows PC, one paired run per population after the same fixed warmup. First-cold-load errors recorded separately. No long evolutionary conclusions.",
+  "sourceHashes": {
+    "before": {
+      "evolution-app.js": "774d034acb02988795cc65881ec8f578c8508ec21c2bb6d4ef8baa3f84cefbd5",
+      "world-view.js": "b7e4b513ba3ae8b975cd3003dea9a10208194569358d8cd5f527f2d21624ebb8",
+      "world-runtime.js": "e4881838c209a5903e459e08f1d671821e6a6adcd5d2ce08efcc40406d6139d7",
+      "resident-trail.js": "512ef4148e09ccc3c83db398f9ee6a5ad5db1a7207c969533b7377e657cf40aa"
+    },
+    "after": {
+      "evolution-app.js": "07e2204d901d6ce6cf2eafa554e833c66507b45cafc41d551310cc64a6f67a61",
+      "world-motion.js": "9772c3ee44a92d3aeb49b52aec7cf1d60031a42759179a3e5c51833e8e4473f4",
+      "world-map-layers.js": "1a77e802b9fe1f0ace0b189ccbbd3003c86c9650b189b05d118be3bde0858761",
+      "world-view.js": "997f38bc605e99ce2ec9725b57288bc9a137fda8a63ab7a149911074af8a8348",
+      "world-runtime.js": "c1e1218b22134be53beb13834929f4335dec4b3b4cfea5899abb1c0d28cb4326",
+      "resident-trail.js": "4f8aae906a29d1a941cca7677bcdc58ebcc09d5f547601af72748a5a2f4e0f36"
+    }
+  },
+  "animationProof": {
+    "selectedCorrectly": true,
+    "ringMatches": true,
+    "hiddenDraws": 0,
+    "pausedSettled": true,
+    "intermediatePositionChangesWithoutNewSnapshot": 42
+  },
+  "results": [
+    {
+      "phase": "before",
+      "population": 150,
+      "steps": 45,
+      "seconds": 4.057,
+      "stepsPerSecond": 11.091939857037218,
+      "frames": 19,
+      "framesPerSecond": 4.683263495193493,
+      "drawMeanMs": 2.168421058278335,
+      "drawP95Ms": 3.2000000178813934,
+      "startupErrors": [
+        "TypeError: Cannot read properties of undefined (reading 'map')\n    at drawChartContents (http://127.0.0.1:8876/before/evolution-app.js:495:68)\n    at WorldProfiler.measureUI (http://127.0.0.1:8876/before/world-profiler.js:18:48)\n    at drawChart (http://127.0.0.1:8876/before/evolution-app.js:488:38)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:8876/before/evolution-app.js:60:98)"
+      ],
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "population": 150,
+      "steps": 46,
+      "seconds": 4.0635,
+      "stepsPerSecond": 11.320290390057831,
+      "frames": 104,
+      "framesPerSecond": 25.593700012304662,
+      "drawMeanMs": 0.3692307641299871,
+      "drawP95Ms": 1.2999999821186066,
+      "startupErrors": [],
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "population": 400,
+      "steps": 11,
+      "seconds": 4.252199999988079,
+      "stepsPerSecond": 2.586896194918122,
+      "frames": 10,
+      "framesPerSecond": 2.351723813561929,
+      "drawMeanMs": 3.3400000035762787,
+      "drawP95Ms": 4.600000023841858,
+      "startupErrors": [
+        "TypeError: Cannot read properties of undefined (reading 'map')\n    at drawChartContents (http://127.0.0.1:8876/before/evolution-app.js:495:68)\n    at WorldProfiler.measureUI (http://127.0.0.1:8876/before/world-profiler.js:18:48)\n    at drawChart (http://127.0.0.1:8876/before/evolution-app.js:488:38)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:8876/before/evolution-app.js:60:98)"
+      ],
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "population": 400,
+      "steps": 11,
+      "seconds": 4.129700000017881,
+      "stepsPerSecond": 2.6636317407928836,
+      "frames": 43,
+      "framesPerSecond": 10.412378623099453,
+      "drawMeanMs": 0.6906976762206055,
+      "drawP95Ms": 2.4000000059604645,
+      "startupErrors": [],
+      "errors": []
+    },
+    {
+      "phase": "before",
+      "population": 1000,
+      "steps": 4,
+      "seconds": 4.754199999988079,
+      "stepsPerSecond": 0.8413613226221088,
+      "frames": 6,
+      "framesPerSecond": 1.2620419839331634,
+      "drawMeanMs": 5.966666668653488,
+      "drawP95Ms": 7.0999999940395355,
+      "startupErrors": [
+        "TypeError: Cannot read properties of undefined (reading 'map')\n    at drawChartContents (http://127.0.0.1:8876/before/evolution-app.js:495:68)\n    at WorldProfiler.measureUI (http://127.0.0.1:8876/before/world-profiler.js:18:48)\n    at drawChart (http://127.0.0.1:8876/before/evolution-app.js:488:38)\n    at ResizeObserver.<anonymous> (http://127.0.0.1:8876/before/evolution-app.js:60:98)"
+      ],
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "population": 1000,
+      "steps": 4,
+      "seconds": 4.74940000000596,
+      "stepsPerSecond": 0.842211647786032,
+      "frames": 19,
+      "framesPerSecond": 4.000505326983652,
+      "drawMeanMs": 1.5210526334611993,
+      "drawP95Ms": 3.5,
+      "startupErrors": [],
+      "errors": []
+    }
+  ],
+  "animationProofNote": "Counts changes of sampled resident positions between rAF reads with the same physical snapshot, not distinct whole frames."
+}

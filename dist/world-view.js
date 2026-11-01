@@ -44,14 +44,19 @@ export function worldPresentation(world,{selected,trail,section='birth',history=
 }
 /** Локальная проекция снимка. Ни один метод здесь не двигает мир/не обучает мозг. */
 export class WorldView{
- constructor(){this.tick=-1;this.agents=[];this.tiles=[];this.environmentRevision=-1;this.lives=null;}
+ constructor(){this.tick=-1;this.agents=[];this.tiles=[];this.environmentRevision=-1;this.lives=null;this.foodRevision=0;this.terrainRevision=0;}
  apply(state){
   if(state.metadata)Object.assign(this,state.metadata);
-  if(state.tiles){this.tiles=state.tiles;this.foodIslands=state.foodIslands;this.environment=state.environment;}
-  for(let i=0;i<this.tiles.length;i++)this.tiles[i].food=state.food[i];
+  if(state.tiles){
+   if(this.tiles.length!==state.tiles.length||state.tiles.some((c,i)=>{const old=this.tiles[i];return old.x!==c.x||old.y!==c.y||old.terrain!==c.terrain||old.feature!==c.feature;}))this.terrainRevision++;
+   this.tiles=state.tiles;this.foodIslands=state.foodIslands;this.environment=state.environment;
+  }
+  let foodChanged=Boolean(state.tiles);
+  for(let i=0;i<this.tiles.length;i++){if(this.tiles[i].food!==state.food[i])foodChanged=true;this.tiles[i].food=state.food[i];}
+  if(foodChanged)this.foodRevision++;
   for(const k of ['tick','agents','stats','events','history','environmentRevision','environmentChanges'])this[k]=state[k];
   this.total=state.summary;this.nextRegrowth=state.nextRegrowth;this.detail=state.selected;
-  this.execution=state.execution;this.automaticEnvironment=state.automaticEnvironment;
+  this.execution=state.execution;this.automaticEnvironment=state.automaticEnvironment;this.motion=state.motion;
   if(state.lives)this.lives=state.lives;
  }
  tile(x,y){return x<0||y<0||x>=WORLD_WIDTH?null:this.tiles[y*WORLD_WIDTH+x]??null;}

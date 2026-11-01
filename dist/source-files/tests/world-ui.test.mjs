@@ -39,6 +39,8 @@ import {installScreenTabs} from '../dist/screen-tabs.js';
 import {installProjectGuide} from '../dist/project-guide-ui.js';
 import {installLiveFoodControls} from '../dist/food-controls.js';
 import {initialNeuronsInput,wireInitialStructure} from '../dist/brain-initialization-ui.js';
+import {MotionPlayer,MOTION_RULES,agentPoint} from '../dist/world-motion.js';
+import {WorldMapLayers} from '../dist/world-map-layers.js';
 const html=fs.readFileSync(new URL('../dist/index.html',import.meta.url),'utf8');
 const app=fs.readFileSync(new URL('../dist/evolution-app.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'');
 const performanceUI=fs.readFileSync(new URL('../dist/performance-ui.js',import.meta.url),'utf8').replace(/^import[\s\S]*?;\r?\n/gm,'').replace(/^export /gm,'');
@@ -91,7 +93,7 @@ async function boot(){
   requestAnimationFrame:fn=>frame=fn,performance:{now:()=>now},Blob,
   URL:{createObjectURL:blob=>{downloads.push(blob);return 'blob:mock';},revokeObjectURL:()=>{}},setTimeout:()=>0});
  // Панель стартовых генов изолирована, как остальные вспомогательные панели.
- Object.assign(context,{structureSettingsTable,installEnergyPreview,installFormPreferences,validateBrainCostMultiplier,BRAIN_ECONOMY,validateDigestionTime,genomeMetadata,validateWorldOptions,MAX_GENOME_FILE_BYTES:8*1024*1024,DUAL_BRAIN_TYPE,DUAL_VERSION,dualBrainSettingsUI:()=>({inputs:new Map(),read:()=>({}),refresh(){}}),installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
+ Object.assign(context,{MotionPlayer,MOTION_RULES,agentPoint,WorldMapLayers,structureSettingsTable,installEnergyPreview,installFormPreferences,validateBrainCostMultiplier,BRAIN_ECONOMY,validateDigestionTime,genomeMetadata,validateWorldOptions,MAX_GENOME_FILE_BYTES:8*1024*1024,DUAL_BRAIN_TYPE,DUAL_VERSION,dualBrainSettingsUI:()=>({inputs:new Map(),read:()=>({}),refresh(){}}),installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
  vm.runInContext(performanceUI,context);vm.runInContext(app,context);await settle();assert.equal(elements.get('error').textContent??'','');
  return {elements,document,context,downloads,setBenchmarkActive:value=>benchmarkActive=value,get runtime(){return runtime;},
   pulse:async value=>{now=value;runtime.pulse();await settle();},frame:value=>frame(value),

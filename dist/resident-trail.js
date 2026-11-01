@@ -19,7 +19,7 @@ export class ResidentTrail {
 /** Подключаем только наблюдаемый основной мир. Событие приходит после
  * перемещения, даже если между кадрами прошло много шагов. Испытания без следа.
  * Делегирование сохраняет физику moveAgent и не расходует случайность. */
-export function attachResidentTrail(world,trail){
+export function attachResidentTrail(world,trail,motion=null){
  const move=world.moveAgent.bind(world);
- world.moveAgent=(agent,destination)=>{move(agent,destination);trail.moved(agent);};
+ world.moveAgent=(agent,destination)=>{const x=agent.x,y=agent.y;move(agent,destination);trail.moved(agent);motion?.moved(agent,x,y,world.subtick);};
 }

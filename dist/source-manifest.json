@@ -3,15 +3,15 @@
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
     "lines": 35,
-    "bytes": 4363,
+    "bytes": 4340,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 189,
-    "bytes": 18957,
+    "lines": 191,
+    "bytes": 19061,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -916,12 +916,44 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v056-smooth-motion.md",
+    "url": "./source-files/docs/updates/v056-smooth-motion.md",
+    "lines": 37,
+    "bytes": 8152,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/updates/v056-split-mutations.md",
     "url": "./source-files/docs/updates/v056-split-mutations.md",
     "lines": 22,
     "bytes": 5011,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "dist/world-motion.js",
+    "url": "./world-motion.js",
+    "lines": 85,
+    "bytes": 6001,
+    "aliases": [],
+    "purpose": "Ограниченный буфер подтверждённых перемещений и отдельные экранные позиции наблюдателя."
+  },
+  {
+    "name": "dist/world-map-layers.js",
+    "url": "./world-map-layers.js",
+    "lines": 39,
+    "bytes": 3410,
+    "aliases": [],
+    "purpose": "Canvas-кэши рельефа, пищи и сведений наблюдателя; без физики мира."
+  },
+  {
+    "name": "tests/world-motion0561.test.mjs",
+    "url": "./source-files/tests/world-motion0561.test.mjs",
+    "lines": 88,
+    "bytes": 6843,
+    "aliases": [],
+    "purpose": "Маршруты/клики/разрывы, пределы отображения, кэш и точная сохранность физики/обучения/RNG."
   },
   {
     "name": "dist/model-rules.js",
@@ -958,8 +990,8 @@
   {
     "name": "dist/numeric-rules.js",
     "url": "./numeric-rules.js",
-    "lines": 64,
-    "bytes": 23962,
+    "lines": 66,
+    "bytes": 24823,
     "aliases": [],
     "purpose": "Каталог числовых источников с единицами и пояснениями."
   },
@@ -1078,8 +1110,8 @@
   {
     "name": "dist/project-guide-inventory.json",
     "url": "./project-guide-inventory.json",
-    "lines": 1387,
-    "bytes": 28227,
+    "lines": 1399,
+    "bytes": 28469,
     "aliases": [],
     "purpose": "Производный инвентарь канонического кода; не процент полноты пособия."
   },
@@ -1095,7 +1127,7 @@
     "name": "dist/project-guide.js",
     "url": "./project-guide.js",
     "lines": 64,
-    "bytes": 18106,
+    "bytes": 18097,
     "aliases": [],
     "purpose": "Пособие: выжимки, вводная статья и ссылки сверки с реализацией."
   },
@@ -1247,7 +1279,7 @@
     "name": "dist/world-save.js",
     "url": "./world-save.js",
     "lines": 75,
-    "bytes": 13043,
+    "bytes": 12977,
     "aliases": [],
     "purpose": "Полный ручной снимок, проверка и восстановление текущей модели."
   },
@@ -1383,7 +1415,7 @@
     "name": "dist/ui-text.js",
     "url": "./ui-text.js",
     "lines": 396,
-    "bytes": 114673,
+    "bytes": 115016,
     "aliases": [],
     "purpose": "Единый каталог подсказок/статических описаний, версия и числовые пояснения из модели."
   },
@@ -1628,14 +1660,6 @@
     "purpose": "Точная реализованная спецификация времени0.32."
   },
   {
-    "name": "dist/worker-timing.js",
-    "url": "./worker-timing.js",
-    "lines": 67,
-    "bytes": 5222,
-    "aliases": [],
-    "purpose": "Границы задач Worker, задержки запуска, невложенные фазы и ограниченные гистограммы профиляv3."
-  },
-  {
     "name": ".gitattributes",
     "url": "./source-files/.gitattributes",
     "lines": 4,
@@ -1663,7 +1687,7 @@
     "name": "README.ru.md",
     "url": "./source-files/README.ru.md",
     "lines": 121,
-    "bytes": 16949,
+    "bytes": 16876,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -11782,16 +11806,16 @@
   {
     "name": "dist/guide-system-text.js",
     "url": "./guide-system-text.js",
-    "lines": 78,
-    "bytes": 24976,
+    "lines": 83,
+    "bytes": 27296,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
     "name": "dist/guide-system-topics.js",
     "url": "./guide-system-topics.js",
-    "lines": 377,
-    "bytes": 8966,
+    "lines": 403,
+    "bytes": 9829,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12156,6 +12180,22 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/analysis/v056-motion-browser.json",
+    "url": "./source-files/docs/analysis/v056-motion-browser.json",
+    "lines": 126,
+    "bytes": 5175,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/analysis/v056-motion-verification.json",
+    "url": "./source-files/docs/analysis/v056-motion-verification.json",
+    "lines": 87,
+    "bytes": 49979,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/analysis/v056-split-verification.json",
     "url": "./source-files/docs/analysis/v056-split-verification.json",
     "lines": 87,
@@ -12486,8 +12526,8 @@
   {
     "name": "docs/navigation/interface-and-files.md",
     "url": "./source-files/docs/navigation/interface-and-files.md",
-    "lines": 54,
-    "bytes": 14360,
+    "lines": 55,
+    "bytes": 14743,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12671,7 +12711,7 @@
     "name": "package.json",
     "url": "./source-files/package.json",
     "lines": 9,
-    "bytes": 189,
+    "bytes": 198,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -12967,7 +13007,7 @@
     "name": "tests/guide-system05416.test.mjs",
     "url": "./source-files/tests/guide-system05416.test.mjs",
     "lines": 14,
-    "bytes": 1172,
+    "bytes": 1196,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13164,14 +13204,6 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
-    "name": "tests/worker-timing.test.mjs",
-    "url": "./source-files/tests/worker-timing.test.mjs",
-    "lines": 130,
-    "bytes": 8641,
-    "aliases": [],
-    "purpose": "Границы/пауза/отмена/срок записи и точное совпадение модели/RNG в обоих режимах."
-  },
-  {
     "name": "tests/workspace050.test.mjs",
     "url": "./source-files/tests/workspace050.test.mjs",
     "lines": 18,
@@ -13206,8 +13238,8 @@
   {
     "name": "tools/export-source.py",
     "url": "./source-files/tools/export-source.py",
-    "lines": 337,
-    "bytes": 46339,
+    "lines": 340,
+    "bytes": 46892,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13242,6 +13274,22 @@
     "bytes": 513,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "dist/worker-timing.js",
+    "url": "./worker-timing.js",
+    "lines": 67,
+    "bytes": 5222,
+    "aliases": [],
+    "purpose": "Границы задач Worker, задержки запуска, невложенные фазы и ограниченные гистограммы профиляv3."
+  },
+  {
+    "name": "tests/worker-timing.test.mjs",
+    "url": "./source-files/tests/worker-timing.test.mjs",
+    "lines": 130,
+    "bytes": 8641,
+    "aliases": [],
+    "purpose": "Границы/пауза/отмена/срок записи и точное совпадение модели/RNG в обоих режимах."
   },
   {
     "name": "tools/check-profile-overhead.mjs",
@@ -13286,16 +13334,16 @@
   {
     "name": "dist/world-runtime.js",
     "url": "./world-runtime.js",
-    "lines": 179,
-    "bytes": 17015,
+    "lines": 183,
+    "bytes": 17619,
     "aliases": [],
     "purpose": "Единственный владелец мира, команды, целевая частота и снимки."
   },
   {
     "name": "dist/world-view.js",
     "url": "./world-view.js",
-    "lines": 67,
-    "bytes": 5248,
+    "lines": 72,
+    "bytes": 5667,
     "aliases": [],
     "purpose": "Версия протокола и компактная проекция наблюдателя без физики."
   },
@@ -13326,8 +13374,8 @@
   {
     "name": "tests/world-ui.test.mjs",
     "url": "./source-files/tests/world-ui.test.mjs",
-    "lines": 200,
-    "bytes": 17926,
+    "lines": 202,
+    "bytes": 18118,
     "aliases": [],
     "purpose": "Исполнение UI со снимками Worker в минимальном DOM."
   },
@@ -13647,7 +13695,7 @@
     "name": "tools/verify-local.py",
     "url": "./source-files/tools/verify-local.py",
     "lines": 121,
-    "bytes": 8777,
+    "bytes": 8812,
     "aliases": [],
     "purpose": "Одна команда коротких локальных проверок, повтор выбранной части и отчёт времени/ошибок."
   },
@@ -13719,7 +13767,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 12,
-    "bytes": 2538,
+    "bytes": 3460,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -13767,7 +13815,7 @@
     "name": "docs/architecture.md",
     "url": "./source-files/docs/architecture.md",
     "lines": 66,
-    "bytes": 9127,
+    "bytes": 9061,
     "aliases": [],
     "purpose": "Какие модули отвечают за мир, мозг, интерфейс и проверки."
   },
@@ -13798,8 +13846,8 @@
   {
     "name": "docs/verification.md",
     "url": "./source-files/docs/verification.md",
-    "lines": 75,
-    "bytes": 11372,
+    "lines": 77,
+    "bytes": 11689,
     "aliases": [],
     "purpose": "Выбор проверок, пределы выводов и сохранение проекта."
   },
@@ -13886,8 +13934,8 @@
   {
     "name": "dist/build-info.json",
     "url": "./build-info.json",
-    "lines": 1441,
-    "bytes": 168560,
+    "lines": 1443,
+    "bytes": 168748,
     "aliases": [],
     "purpose": "Отпечаток этой сборки для точного анализа отчёта."
   },
@@ -13975,7 +14023,7 @@
     "name": "dist/resident-trail.js",
     "url": "./resident-trail.js",
     "lines": 25,
-    "bytes": 1618,
+    "bytes": 1695,
     "aliases": [],
     "purpose": "След только выбранного жителя за 20 перемещений, вне мозга."
   },
@@ -14014,8 +14062,8 @@
   {
     "name": "dist/evolution-app.js",
     "url": "./evolution-app.js",
-    "lines": 533,
-    "bytes": 53208,
+    "lines": 523,
+    "bytes": 51720,
     "aliases": [],
     "purpose": "Управление игрой, панель жителя, отображение воспоминаний, карта, график и импорт/экспорт."
   },
@@ -14047,7 +14095,7 @@
     "name": "README.md",
     "url": "./source-files/README.md",
     "lines": 136,
-    "bytes": 11866,
+    "bytes": 11838,
     "aliases": [],
     "purpose": "Устройство проекта, ограничения, запуск исходников и проверки."
   },

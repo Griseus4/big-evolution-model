@@ -1,6 +1,6 @@
 export const GUIDE_SYSTEM_TOPICS={
  "runtime": {
-  "reviewedVersion": "0.54.16",
+  "reviewedVersion": "0.56.1",
   "keywords": [
    "runtime",
    "исполнение",
@@ -8,7 +8,12 @@ export const GUIDE_SYSTEM_TOPICS={
    "производительность",
    "разработка",
    "кэш",
-   "обновление"
+   "обновление",
+   "плавное движение",
+   "интерполяция",
+   "маршрут",
+   "кадры",
+   "кэш карты"
   ],
   "related": [
    "performance",
@@ -18,6 +23,22 @@ export const GUIDE_SYSTEM_TOPICS={
    "files"
   ],
   "sources": [
+   {
+    "file": "world-motion.js",
+    "symbols": [
+     "MOTION_RULES",
+     "MotionCapture",
+     "MotionPlayer"
+    ],
+    "purpose": "Подтверждённые маршруты, пределы визуального воспроизведения и выбор точки."
+   },
+   {
+    "file": "world-map-layers.js",
+    "symbols": [
+     "WorldMapLayers"
+    ],
+    "purpose": "Отдельные Canvas-кэши рельефа, пищи и наблюдателя."
+   },
    {
     "file": "world-runtime.js",
     "symbols": [
@@ -70,6 +91,11 @@ export const GUIDE_SYSTEM_TOPICS={
    {
     "file": "tests/guide-system05416.test.mjs",
     "purpose": "Связи, источники и полный индекс статей."
+   },
+   {
+    "file": "tests/world-motion0561.test.mjs",
+    "symbols": [],
+    "purpose": "Углы маршрута, разрывы, кэши, пределы, физика/обучение/RNG до 1000 жителей."
    }
   ]
  },

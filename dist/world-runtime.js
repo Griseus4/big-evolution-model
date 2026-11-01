@@ -12,12 +12,13 @@ import {clearCognitionSummary} from './cognition-summary.js';
 import {saveWorld,loadWorld,MAX_WORLD_SAVE_BYTES} from './world-save.js';
 import {configureEnvironment,environmentStatus} from './automatic-environment.js';
 import {parallelSubstep} from './world-substeps.js';
+import {MotionCapture} from './world-motion.js';
 export class WorldRuntime{
  constructor({send,clock=()=>performance.now(),wake=()=>{},cancel=()=>{},executorFactory=null}){
   Object.assign(this,{send,clock,wake,cancel,executorFactory});this.executor=null;this.epoch=0;this.sequence=0;this.world=null;
   this.running=false;this.visible=true;this.target=10;this.quantum=1;this.credit=0;this.lastTime=clock();
   this.lastPaint=-Infinity;this.lastHistoryPaint=-Infinity;this.inFlight=null;this.staticDirty=true;this.historyDirty=true;
-  this.section='birth';this.tab='world';this.trail=new ResidentTrail();
+  this.section='birth';this.tab='world';this.trail=new ResidentTrail();this.motion=new MotionCapture();
   this.profiler=new PerformanceProfiler({clock});this.rateStart=clock();this.rateTick=0;this.actualRate=0;
   this.presentationMs=0;this.messages=0;
   this.parallelBaseline=null;this.parallelFrozen=null;this.computeMode='auto';
@@ -25,7 +26,8 @@ export class WorldRuntime{
  showingSubsteps(){return this.quantum===.1&&this.visible&&this.tab==='world';}
  schedule(){if(this.running&&!(this.showingSubsteps()&&this.inFlight!==null)){const delay=Math.max(0,(this.quantum-this.credit)*1000/this.target-(this.showingSubsteps()?this.clock()-this.lastTime:0));if(this.wake(delay)!==false)this.profiler.workerTiming.scheduled(delay,delay>0?Math.ceil(delay):0);}}
  resetTime(){this.profiler.workerTiming.resetBoundary();this.credit=0;this.lastTime=this.clock();this.rateStart=this.lastTime;this.rateTick=this.world?.tick??0;this.actualRate=0;}
- setRunning(value){this.running=Boolean(value&&this.world?.agents.length);this.profiler.setRunning(this.running);this.freezeParallel();this.resetTime();this.cancel();this.schedule();}
+ setRunning(value){this.running=Boolean(value&&this.world?.agents.length);this.profiler.setRunning(this.running);this.configureMotion();this.freezeParallel();this.resetTime();this.cancel();this.schedule();}
+ configureMotion(){this.motion.configure(this.running&&this.visible&&this.tab==='world'&&!this.showingSubsteps(),this.world?.subtick??0);}
  async substep(){
   if(this.executor){if(this.profiler.active)await this.profiler.runAsyncStep(()=>parallelSubstep(this.executor));else await parallelSubstep(this.executor);}
   else if(this.profiler.active)this.profiler.runStep(()=>this.world.substep());else this.world.substep();
@@ -65,6 +67,8 @@ export class WorldRuntime{
    section:this.section,history:(this.tab==='history'||this.restored)&&this.historyDirty&&(force||now-this.lastHistoryPaint>=HISTORY_UI_INTERVAL),staticMap:this.staticDirty});
   this.lastEnvironmentRevision=this.world.environmentRevision;this.restored=false;
   state.execution={computeWorkers:this.executor?.lanes.length??1,mode:this.computeMode};
+  // Пакет наблюдателя не участвует в вычислениях мира и не ждёт анимации UI.
+  state.motion=this.motion.take(this.world.subtick);
   this.presentationMs+=this.clock()-start;this.messages++;
   if(measuring)timing.phase('presentation',prepareStart);
   const sequence=++this.sequence;this.inFlight=sequence;this.lastPaint=now;this.staticDirty=false;
@@ -120,7 +124,7 @@ export class WorldRuntime{
     if(executor)try{await executor.ready();}catch(error){throw new Error(`Не удалось запустить ${executor.lanes.length} вычислителей: ${error.message} Попробуйте меньшее число вычислителей.`);}
     this.profiler.stop('world-restarted');this.setRunning(false);if(this.executor)await this.executor.close();this.executor=executor;
     this.world=next;this.computeMode=payload.settings?.computeWorkers??'auto';this.epoch=epoch;this.sequence=0;this.inFlight=null;
-    this.selected=next.agents[0]??null;attachResidentTrail(next,this.trail);this.trail.select(next,this.selected);
+    this.selected=next.agents[0]??null;this.motion.reset(next.subtick);attachResidentTrail(next,this.trail,this.motion);this.trail.select(next,this.selected);
     if(this.executor)this.executor.retained=this.selected;
     this.staticDirty=true;this.historyDirty=true;this.resetTime();
    }else if(type==='ack'){if(this.inFlight===payload.sequence){this.inFlight=null;if(this.showingSubsteps())this.schedule();}return;}
@@ -136,19 +140,19 @@ export class WorldRuntime{
     try{executor=this.executorFactory?.(next,{computeWorkers:this.computeMode})??null;if(executor){await executor.ready();await executor.attach();}}
     catch(error){await executor?.close();throw new Error('Не удалось подготовить загруженный мир: '+error.message);}
     this.profiler.stop('world-loaded');this.setRunning(false);this.executor=executor;this.world=next;
-    this.selected=next.agents[0]??null;this.trail=new ResidentTrail();attachResidentTrail(next,this.trail);this.trail.select(next,this.selected);if(executor)executor.retained=this.selected;
+    this.selected=next.agents[0]??null;this.trail=new ResidentTrail();this.motion.reset(next.subtick);attachResidentTrail(next,this.trail,this.motion);this.trail.select(next,this.selected);if(executor)executor.retained=this.selected;
     await previous?.close();this.staticDirty=true;this.historyDirty=true;this.restored=true;this.resetTime();result={seed:next.seed,tick:next.tick};
    }
    else if(type==='speed'){
     if(!Number.isFinite(payload.value)||payload.value<=0)throw new Error('Некорректная скорость.');
-    this.target=payload.value;this.quantum=payload.substeps===true?.1:1;this.resetTime();this.cancel();this.schedule();
+    this.target=payload.value;this.quantum=payload.substeps===true?.1:1;this.motion.reset(this.world.subtick);this.configureMotion();this.resetTime();this.cancel();this.schedule();
    }else if(type==='substep'){this.setRunning(false);await this.substep();this.historyDirty=true;
    }else if(type==='step'){this.setRunning(false);if(this.executor){if(this.profiler.active)await this.profiler.runAsyncStep(()=>this.executor.step());else await this.executor.step();}else this.world.step();this.historyDirty=true;}
    else if(type==='select'){
     const a=this.world.agents.find(a=>a.id===payload.id);
     if(a){this.selected=a;this.trail.select(this.world,a);if(this.executor)this.executor.retained=a;}
    }else if(type==='view'){
-    this.visible=payload.visible;this.tab=payload.tab;this.section=payload.section;
+    this.visible=payload.visible;this.tab=payload.tab;this.section=payload.section;this.configureMotion();
     this.cancel();this.schedule();
    }else if(type==='food'){
     // Команда обрабатывается между целыми шагами; сохраняем режим запуска

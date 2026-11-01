@@ -1,7 +1,7 @@
 {
   "format": "big-evolution-guide-inventory",
   "version": 1,
-  "modelVersion": "0.56.0",
+  "modelVersion": "0.56.1",
   "files": [
     {
       "path": ".github/workflows/pages.yml",
@@ -944,6 +944,14 @@
       "kind": "app"
     },
     {
+      "path": "dist/world-map-layers.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/world-motion.js",
+      "kind": "app"
+    },
+    {
       "path": "dist/world-profiler.js",
       "kind": "app"
     },
@@ -1293,6 +1301,10 @@
     },
     {
       "path": "tests/workspace050.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/world-motion0561.test.mjs",
       "kind": "tests"
     },
     {

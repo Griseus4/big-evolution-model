@@ -1,3 +1,5 @@
+import {MotionPlayer,MOTION_RULES,agentPoint} from './world-motion.js';
+import {WorldMapLayers} from './world-map-layers.js';
 import {installEnergyPreview} from './energy-preview-ui.js';
 import {installFormPreferences} from './form-preferences-ui.js';
 import {structureSettingsTable} from './brain-settings-tables.js';
@@ -60,13 +62,17 @@ element('world-info').addEventListener('toggle',event=>{worldInfoOpen=event.newS
 if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(!element('panel-world').hidden)drawChart();}).observe(chart);
 
 canvas.width=CANVAS_WIDTH;canvas.height=CANVAS_HEIGHT;
+const motion=new MotionPlayer(),mapLayers=new WorldMapLayers(canvas,()=>document.createElement('canvas'));
+let lastMapPaint=-Infinity,mapFrameMs=1000/MOTION_RULES.fps,mapDrawMean=0,mapNeedsPaint=true;
+function mapVisible(){return !document.hidden&&(!labTabs||labTabs.currentTab()==='world');}
 let selected=null,running=false,baseGenome=null,legacyBase=false,controlPending=false,activeComputationMode='auto';
 const trail={points:[]};
 const client=new WorldClient({onState:message=>{
  sim=client.view;selected=message.state.selected?.agent??null;trail.points=message.state.trail;
  running=message.running;actualRate=message.actualRate;profiler.accept(message.profile);
+ motion.accept(sim.agents,message.state.motion,performance.now(),running&&mapVisible()&&!message.paintBeforeNext);mapLayers.invalidateOverlay();
  if(!document.hidden){
-  if(!labTabs||labTabs.currentTab()==='world'){update();draw();}
+  if(!labTabs||labTabs.currentTab()==='world'){update();draw(message.paintBeforeNext===true);}
   else profiler.measureUI('otherTabs',()=>{updateTransport();labTabs.refresh();});
  }
 },onError:message=>{running=false;element('error').textContent=message;update();}});
@@ -193,7 +199,7 @@ document.addEventListener('keydown',event=>{
  if(event.code==='ArrowRight'){event.preventDefault();void singleStep();}
 });
 function sendView(){return command('view',{visible:!document.hidden,tab:labTabs?.currentTab()??'world',section:sidebar?.getResidentSection()??'birth'});}
-document.addEventListener('visibilitychange',()=>{if(client.ready)void sendView().catch(()=>{});});
+document.addEventListener('visibilitychange',()=>{motion.settle();if(client.ready)void sendView().catch(()=>{});});
 
 /** Экспорт сохраняет именно геном и сведения об его происхождении.
  * Это не полное сохранение мира: энергия, текущие координаты и память не загружаются.
@@ -397,67 +403,30 @@ element('body-senses').textContent=`Переносимый запас: ${a.inven
 /** У шестиугольника шесть вершин на окружности через 60 градусов.
  * Один и тот же центр используется для поля, жителей и определения щелчков.
  */
-function hexPath(x,y){
- context.beginPath();
+function hexPath(x,y,c=context){
+ c.beginPath();
  for(let i=0;i<6;i++){
   const angle=(i*60-30)*Math.PI/180,px=x+HEX_RADIUS*Math.cos(angle),py=y+HEX_RADIUS*Math.sin(angle);
-  if(i===0)context.moveTo(px,py);else context.lineTo(px,py);
+  if(i===0)c.moveTo(px,py);else c.lineTo(px,py);
  }
- context.closePath();
+ c.closePath();
 }
-/** Цвет родословной и смещение точки выводятся из id, а не из случайного генератора.
- * Несколько жителей на гексе расходятся визуально; их физические координаты одинаковы.
- */
-function agentPoint(a){const p=hexCenter(a),angle=a.id*2.399963;return {x:p.x+Math.cos(angle)*7,y:p.y+Math.sin(angle)*7};}
-function draw(){if(client.ready)return profiler.measureUI('map',drawContents);}
+/** rAF меняет только пиксельные позиции. Дорогие слои и DOM живут по снимкам. */
+function draw(force=false){if(!client.ready||!mapVisible())return;
+ const now=performance.now();mapNeedsPaint=true;if(force!==true&&now-lastMapPaint<mapFrameMs)return;
+ motion.sample(now);profiler.measureUI('map',drawContents);mapNeedsPaint=false;
+ const elapsed=performance.now()-now;mapDrawMean=mapDrawMean?mapDrawMean*.9+elapsed*.1:elapsed;
+ mapFrameMs=Math.min(MOTION_RULES.maxFrameMs,Math.max(1000/MOTION_RULES.fps,mapDrawMean/MOTION_RULES.frameBudgetFraction));lastMapPaint=now;
+}
 function drawContents(){
- context.clearRect(0,0,canvas.width,canvas.height);context.fillStyle='#1e2922';context.fillRect(0,0,canvas.width,canvas.height);
- for(const cell of sim.tiles){
-  const {x,y}=hexCenter(cell);hexPath(x,y);
-  const shade=(cell.x*13+cell.y*7)%3;
-  context.fillStyle=cell.terrain==='water'?(cell.feature==='river'?'#477b8a':'#416b70'):cell.feature==='ford'?'#a6b493':['#71875c','#788d62','#809367'][shade];context.fill();
-  context.strokeStyle='#233b2b77';context.lineWidth=.6;context.stroke();
-  if(cell.feature==='ford'){
-   // Видимый знак проходимого разрыва. В физике это обычная суша: цена
-   // шага прежняя, навык плавания или особое знание мостов не добавлены.
-   context.strokeStyle='#47665a';context.lineWidth=1.5;context.beginPath();context.moveTo(x-8,y-4);context.lineTo(x+8,y-4);context.moveTo(x-8,y+4);context.lineTo(x+8,y+4);context.stroke();
-  }
-  if(cell.food>0){
-   context.fillStyle='#324d31';context.beginPath();context.arc(x,y-2,7,0,Math.PI*2);context.fill();
-   context.fillStyle='#d5acc5';context.beginPath();context.arc(x-3,y-3,2.5,0,Math.PI*2);context.arc(x+3,y,2.5,0,Math.PI*2);context.fill();
-   context.font='9px Segoe UI';context.textAlign='center';context.fillStyle='#e9edda';context.fillText(cell.food,x,y+14);
-   if(cell.maxFood===0){
-    // Пунктир означает пищу без источника (оставленную или прежнюю): его можно доесть, но здесь
-    // уже нет производства. Это отметка наблюдателя, не новый признак мозга.
-    context.strokeStyle='#dfc98c';context.setLineDash([2,2]);context.beginPath();context.arc(x,y-2,9,0,Math.PI*2);context.stroke();context.setLineDash([]);
-   }
-  }else if(cell.maxFood>0){context.strokeStyle='#b9c69677';context.beginPath();context.arc(x,y,4,0,Math.PI*2);context.stroke();}
- }
- // Маршрут только выбранной жизни: максимум 20 отрезков, без хранения
- // для остальных. Координаты наблюдателя не передаются контроллеру.
- if(trail.points.length>1){
-  context.save();context.strokeStyle=selected?.alive?'#fff0ad':'#e09a7c';context.lineWidth=2.3;context.setLineDash([5,4]);context.beginPath();
-  trail.points.forEach((cell,i)=>{const p=agentPoint({...cell,id:selected.id});if(i===0)context.moveTo(p.x,p.y);else context.lineTo(p.x,p.y);});
-  context.stroke();context.restore();
- }
- if(element('show-memory').checked&&selected){
-  // Обводки — клетки в личной памяти. Карта под ними остаётся обзором наблюдателя.
-  for(const record of memoryEntries(selected.brain)){
-   const p=hexCenter(memoryWorldPosition(selected,record));hexPath(p.x,p.y);
-   const alpha=.15+.65*memoryBelief(record,sim.tick,selected.brain.traits).confidence;
-   context.strokeStyle=record.maxFoodSeen>0?`rgba(237,189,105,${alpha})`:`rgba(151,205,226,${alpha})`;
-   context.lineWidth=selected.brain.longMemory.has(`${record.q},${record.r}`)?3.5:1.2;context.stroke();
-  }
- }
+ mapLayers.draw(context,sim,drawMapOverlay);
  for(const a of sim.agents){
-  const p=agentPoint(a);context.fillStyle=`hsl(${(a.founderId*137.5)%360} 55% 72%)`;
+  const p=motion.point(a);context.fillStyle=`hsl(${(a.founderId*137.5)%360} 55% 72%)`;
   context.strokeStyle='#24321f';context.lineWidth=1;context.beginPath();context.arc(p.x,p.y,4,0,Math.PI*2);context.fill();context.stroke();
  }
  if(selected){
-  const p=agentPoint(selected);context.strokeStyle=selected.alive?'#ffe5a0':'#e09a7c';context.lineWidth=2;
+  const p=motion.point(selected);context.strokeStyle=selected.alive?'#ffe5a0':'#e09a7c';context.lineWidth=2;
   context.beginPath();context.arc(p.x,p.y,10,0,Math.PI*2);context.stroke();
-  // Личный взгляд преобразуем той же навигацией, что физика движения.
-  // Центр соседнего гекса существует геометрически даже за краем карты.
   const centre=hexCenter(selected),ahead=hexCenter(memoryWorldPosition(selected,localNeighbours(selected.brain)[0]));
   const dx=ahead.x-centre.x,dy=ahead.y-centre.y,length=Math.hypot(dx,dy),ux=dx/length,uy=dy/length;
   context.beginPath();context.moveTo(p.x+10*ux,p.y+10*uy);context.lineTo(p.x+20*ux,p.y+20*uy);
@@ -465,14 +434,34 @@ function drawContents(){
   context.lineTo(p.x+16*ux+3*uy,p.y+16*uy-3*ux);context.stroke();
  }
 }
-element('show-memory').addEventListener('change',draw);
+function drawMapOverlay(c){
+ // Маршрут только выбранной жизни: максимум 20 отрезков, без хранения
+ // для остальных. Координаты наблюдателя не передаются контроллеру.
+ if(trail.points.length>1){
+  c.save();c.strokeStyle=selected?.alive?'#fff0ad':'#e09a7c';c.lineWidth=2.3;c.setLineDash([5,4]);c.beginPath();
+  trail.points.forEach((cell,i)=>{const p=agentPoint({...cell,id:selected.id});if(i===0)c.moveTo(p.x,p.y);else c.lineTo(p.x,p.y);});
+  c.stroke();c.restore();
+ }
+ if(element('show-memory').checked&&selected){
+  // Обводки — клетки в личной памяти. Карта под ними остаётся обзором наблюдателя.
+  for(const record of memoryEntries(selected.brain)){
+   const p=hexCenter(memoryWorldPosition(selected,record));hexPath(p.x,p.y,c);
+   const alpha=.15+.65*memoryBelief(record,sim.tick,selected.brain.traits).confidence;
+   c.strokeStyle=record.maxFoodSeen>0?`rgba(237,189,105,${alpha})`:`rgba(151,205,226,${alpha})`;
+   c.lineWidth=selected.brain.longMemory.has(`${record.q},${record.r}`)?3.5:1.2;c.stroke();
+  }
+ }
+}
+
+element('show-memory').addEventListener('change',()=>{mapLayers.invalidateOverlay();draw();});
 canvas.addEventListener('click',event=>{
+ if(!client.ready)return;
  const box=canvas.getBoundingClientRect(),x=(event.clientX-box.left)/box.width*canvas.width,y=(event.clientY-box.top)/box.height*canvas.height;
- const cell=worldHexAt(x,y);if(!cell)return;
- const candidates=sim.agents.filter(a=>a.x===cell.x&&a.y===cell.y);
- if(candidates.length){selectResident(candidates.sort((a,b)=>{const p=agentPoint(a),q=agentPoint(b);return (p.x-x)**2+(p.y-y)**2-(q.x-x)**2-(q.y-y)**2;})[0]);sidebar.select('resident');update();draw();}
+ const agent=motion.hitTest(sim.agents,x,y);
+ if(agent){selectResident(agent);sidebar.select('resident');update();draw();}
 });
 canvas.addEventListener('mousemove',event=>{
+ if(!client.ready)return;
  const box=canvas.getBoundingClientRect(),p=worldHexAt((event.clientX-box.left)/box.width*canvas.width,(event.clientY-box.top)/box.height*canvas.height);
  if(!p){element('hover').textContent='За пределами карты.';return;}
  const cell=sim.tile(p.x,p.y),count=sim.agents.filter(a=>a.x===p.x&&a.y===p.y).length;
@@ -487,7 +476,7 @@ canvas.addEventListener('mousemove',event=>{
  */
 function drawChart(){return profiler.measureUI('chart',drawChartContents);}
 function drawChartContents(){
- if(element('panel-world').hidden)return;
+ if(!client.ready||element('panel-world').hidden)return;
  const rect=chart.getBoundingClientRect(),ratio=globalThis.devicePixelRatio||1,w=Math.max(220,rect.width||900),h=Math.max(160,rect.height||180);
  if(chart.width!==Math.round(w*ratio)||chart.height!==Math.round(h*ratio)){chart.width=Math.round(w*ratio);chart.height=Math.round(h*ratio);}graph.setTransform(ratio,0,0,ratio,0,0);
  const left=56,right=w-56,top=18,bottom=h-30;
@@ -514,6 +503,7 @@ function drawChartContents(){
 /** rAF обслуживает только интерфейс. Worker сам планирует шаги и принимает
  * команды даже без кадров; скрытое окно не ставит мир на программную паузу. */
 function frame(now){
+ if(client.ready&&mapVisible()&&(motion.active||mapNeedsPaint)&&now-lastMapPaint>=mapFrameMs)draw();
  if(!document.hidden&&now-lastPaint>=200){
   updateTransport();
   if(!labTabs?.isBenchmarkActive())performancePanel?.refresh(now);
@@ -524,7 +514,7 @@ function frame(now){
 labTabs=installLabTabs({getSimulation:()=>sim,pauseWorld:pause,getWorldState:()=>({running,epoch:client.epoch}),
  suspendWorld:async()=>{if(!client.ready)throw new Error('Основной мир ещё не готов.');await command('running',{value:false});},
  resumeWorld:async state=>{if(client.epoch!==state.epoch)throw new Error('Основной мир сменился.');await command('running',{value:true});},getPerformanceReport:()=>profiler.report(),
- getWorldObservation:()=>command('observation'),onTabChange:()=>{if(client.ready)void sendView().catch(()=>{});}});
+ getWorldObservation:()=>command('observation'),onTabChange:()=>{motion.settle();if(client.ready)void sendView().catch(()=>{});}});
 performancePanel=installPerformancePanel({profiler,getSimulation:()=>sim,isRunning:()=>running});
 sidebar=installSidebar(()=>{if(client.ready)void sendView().catch(()=>{});});
 installProjectGuide({root:document,getWorld:()=>sim,getVariants:()=>labTabs.guideVariants?.()??[],onOpen:()=>element('tab-about').click()});
