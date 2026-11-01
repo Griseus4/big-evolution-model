@@ -10,9 +10,15 @@ export const WORLD_UI_INTERVAL=200;
 export const HISTORY_UI_INTERVAL=1000;
 const META=['brainCostMultiplier','attentionMaxNeurons','attentionMaxLayers','attentionInitialNeurons','attentionInitialConnections','initialMutation','mutationEnabled','initialNeurons','initialConnections','maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
  'digestionTime','learningEnabled','memoryEnabled','mutationRate','mutations','brainType','mutationProtocol','reproduction'];
-export function worldPresentation(world,{selected,trail,section='birth',history=false,staticMap=false}={}){
+export function worldPresentation(world,{selected,trail,section='birth',history=false,staticMap=false,movement=false}={}){
  const state={tick:world.tick,environmentRevision:world.environmentRevision,automaticEnvironment:environmentStatus(world),
-  agents:world.agents.map(a=>({id:a.id,x:a.x,y:a.y,founderId:a.founderId})),
+  agents:world.agents.map(a=>{
+   const point={id:a.id,x:a.x,y:a.y,founderId:a.founderId},p=a.process;
+   // Только наблюдателю медленной карты: физическое тело остаётся в x/y.
+   // Копируем четыре числа процесса, а не мозг/полный процесс всей популяции.
+   if(movement&&p&&p.action<6)point.movement={x:p.destination.x,y:p.destination.y,elapsed:p.elapsed,duration:p.duration};
+   return point;
+  }),
   food:Float64Array.from(world.tiles,c=>c.food),summary:world.summary(),
   stats:{reproduction:world.stats.reproduction,deathsByCause:world.stats.deathsByCause,started:world.stats.started,completed:world.stats.completed,interrupted:world.stats.interrupted,brainCalls:world.stats.brainCalls,gateCalls:world.stats.gateCalls,brainSpent:world.stats.brainSpent},
   events:world.events.slice(0,20),history:world.history,environmentChanges:world.environmentChanges,

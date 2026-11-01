@@ -1,0 +1,16 @@
+{
+  "modelVersion": "0.56.2",
+  "node": "v24.19.0",
+  "cpu": "Intel(R) Core(TM) i5-14600KF",
+  "population": 1000,
+  "presentationWithoutProgressMeanMs": 0.5489520000000084,
+  "presentationWithProgressMeanMs": 0.6065649999999914,
+  "observerAcceptAndFinalSampleMeanMs": 0.4654860000000008,
+  "intermediateSampleMeanMs": 0.019228859999999987,
+  "compatibilityVersions": [
+    "0.56.1",
+    "0.56.0"
+  ],
+  "compatibilityExactState": true,
+  "note": "Short in-process microbenchmarks, 30 warmups, 200 snapshot/accept iterations and 5000 intermediate samples. Not browser FPS or model throughput; accepting includes synthetic cancellations/new starts, while sample measures 1000 moving tracks."
+}

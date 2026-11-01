@@ -1,0 +1,58 @@
+{
+  "modelVersion": "0.56.2",
+  "browser": "Opera GX, isolated visible profile",
+  "version": "154.0.8037.99",
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "seed": 42,
+  "population": 150,
+  "computeWorkers": 1,
+  "results": [
+    {
+      "rateTPerSecond": 0.2,
+      "substepsPerSecond": 2,
+      "physicalStable": true,
+      "pauseFrozen": true,
+      "clickMatches": true,
+      "ringMatches": true,
+      "selectionPreserves": true,
+      "resumesTime": true,
+      "intermediatePositionChangesWithoutNewSnapshot": 2490
+    },
+    {
+      "rateTPerSecond": 0.4,
+      "substepsPerSecond": 4,
+      "physicalStable": true,
+      "pauseFrozen": true,
+      "clickMatches": true,
+      "ringMatches": true,
+      "selectionPreserves": true,
+      "resumesTime": true,
+      "intermediatePositionChangesWithoutNewSnapshot": 1829
+    },
+    {
+      "rateTPerSecond": 1,
+      "substepsPerSecond": 10,
+      "physicalStable": true,
+      "pauseFrozen": true,
+      "clickMatches": true,
+      "ringMatches": true,
+      "selectionPreserves": true,
+      "resumesTime": true,
+      "intermediatePositionChangesWithoutNewSnapshot": 1696
+    }
+  ],
+  "manualSubstep": true,
+  "hiddenDraws": 0,
+  "errors": [],
+  "sourceHashes": {
+    "evolution-app.js": "a6232ed71ed21d05103388fc427ae1e7251ad954601e03d98513a8bf7ca5c70a",
+    "world-motion.js": "5c39713d1910341f9107c15c24e55211fa5c2a2d1816f7c42be80af44868c8f4",
+    "world-view.js": "4057fbeebe0d203564b53184b44f514499a83a8917c1770ae6b09b3c7b06c657",
+    "world-runtime.js": "70747e4e0b08a5e5dbd551b52510b975cbdc94034bc49a514f5b324985bd4afa"
+  },
+  "limits": "Short observer/UI checks only; cancellation and state equivalence are covered by executable tests, not a long browser experiment.",
+  "countMeaning": "Counts changes of individual agent positions between animation frames sharing the same physical snapshot, not distinct frames."
+}

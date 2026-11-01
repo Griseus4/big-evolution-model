@@ -1,6 +1,6 @@
 export const GUIDE_SYSTEM_TOPICS={
  "runtime": {
-  "reviewedVersion": "0.56.1",
+  "reviewedVersion": "0.56.2",
   "keywords": [
    "runtime",
    "исполнение",
@@ -13,7 +13,10 @@ export const GUIDE_SYSTEM_TOPICS={
    "интерполяция",
    "маршрут",
    "кадры",
-   "кэш карты"
+   "кэш карты",
+   "медленное движение",
+   "пауза",
+   "прерывание перемещения"
   ],
   "related": [
    "performance",

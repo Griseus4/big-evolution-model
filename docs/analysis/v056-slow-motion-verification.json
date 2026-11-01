@@ -1,0 +1,100 @@
+{
+  "format": "big-evolution-local-verification",
+  "version": 1,
+  "modelVersion": "0.56.2",
+  "scope": "all",
+  "plannedChecks": [
+    "browser-wiring",
+    "project-docs",
+    "agent-context",
+    "benchmark-snapshots",
+    "startup",
+    "world-worker",
+    "mechanisms"
+  ],
+  "checks": [
+    {
+      "id": "browser-wiring",
+      "status": "passed",
+      "exitCode": 0,
+      "stdout": "Статическая проверка: 1407 JS-файлов, 529 ID, 44 браузерная проверка подготовлена, не запущена.\n",
+      "stderr": "",
+      "durationMs": 603.96
+    },
+    {
+      "id": "project-docs",
+      "status": "passed",
+      "exitCode": 0,
+      "stdout": "Документы согласованы: 205 файлов, 2951 локальных ссылок; карта 48×32, сетевой геном None.\n",
+      "stderr": "",
+      "durationMs": 564.76
+    },
+    {
+      "id": "agent-context",
+      "status": "passed",
+      "exitCode": 0,
+      "stdout": "Контекст агента: бюджеты и поля проверены; AGENTS.md 6243/6500, docs/START_HERE.md 2750/3000, docs/decisions.md 4989/5000, docs/future-ideas.md 6977/7000, docs/architecture.md 6952/7000, docs/mechanics-reference.md 11983/12000, docs/work/current.md 1349/3000 символов.\n",
+      "stderr": "",
+      "durationMs": 43.32
+    },
+    {
+      "id": "benchmark-snapshots",
+      "status": "passed",
+      "exitCode": 0,
+      "stdout": "Снимки: SHA-256 всех 1173 файлов совпадает с манифестами. Историческое сравнение с Git явно пропущено (--hash-only).\n",
+      "stderr": "",
+      "durationMs": 121.27
+    },
+    {
+      "id": "startup",
+      "status": "passed",
+      "exitCode": 0,
+      "stdout": "Инициализация: обычный мир и текущая сохранённая основа работают; шаги симуляции не выполнялись.\n",
+      "stderr": "",
+      "durationMs": 155.98
+    },
+    {
+      "id": "world-worker",
+      "status": "passed",
+      "exitCode": 0,
+      "stdout": " Worker runs while parent is blocked and confirms pause (415.7779ms)\n✔ presentation remains equivalent at 150, 400 and 1000 residents (6422.6918ms)\nℹ tests 475\nℹ suites 0\nℹ pass 475\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 42393.924\n",
+      "stderr": "",
+      "durationMs": 42437.82
+    },
+    {
+      "id": "mechanisms",
+      "status": "passed",
+      "exitCode": 0,
+      "stdout": "{\n  \"modelVersion\": \"0.56.2\",\n  \"passed\": 48,\n  \"total\": 48,\n  \"durationMs\": 1929.5273000000002,\n  \"failures\": []\n}\n",
+      "stderr": "",
+      "durationMs": 2030.3
+    }
+  ],
+  "sourceOnly": true,
+  "skippedChecks": [
+    {
+      "id": "historical-snapshot-git",
+      "reason": "Explicit --source-only; SHA-256 remains checked."
+    },
+    {
+      "id": "git-diff",
+      "reason": "Explicit --source-only; no original working-tree history required."
+    }
+  ],
+  "status": "passed",
+  "finishedAt": "2026-11-01T17:04:03.843388+00:00",
+  "durationMs": 45957.78,
+  "launcherCheck": {
+    "modelVersion": "0.56.2",
+    "cmdLaunched": true,
+    "requestedUrl": "http://127.0.0.1:8000/",
+    "currentBuildFingerprint": true,
+    "currentMotionModule": true,
+    "browserOpening": "replaced with a private URL recorder, not a personal browser",
+    "ownedServerCleanup": true
+  },
+  "additionalGuideTests": {
+    "passed": 2,
+    "total": 2
+  }
+}

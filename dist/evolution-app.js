@@ -70,7 +70,7 @@ const trail={points:[]};
 const client=new WorldClient({onState:message=>{
  sim=client.view;selected=message.state.selected?.agent??null;trail.points=message.state.trail;
  running=message.running;actualRate=message.actualRate;profiler.accept(message.profile);
- motion.accept(sim.agents,message.state.motion,performance.now(),running&&mapVisible()&&!message.paintBeforeNext);mapLayers.invalidateOverlay();
+ motion.accept(sim.agents,message.state.motion,performance.now(),running&&mapVisible());mapLayers.invalidateOverlay();
  if(!document.hidden){
   if(!labTabs||labTabs.currentTab()==='world'){update();draw(message.paintBeforeNext===true);}
   else profiler.measureUI('otherTabs',()=>{updateTransport();labTabs.refresh();});

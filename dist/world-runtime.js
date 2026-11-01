@@ -27,7 +27,7 @@ export class WorldRuntime{
  schedule(){if(this.running&&!(this.showingSubsteps()&&this.inFlight!==null)){const delay=Math.max(0,(this.quantum-this.credit)*1000/this.target-(this.showingSubsteps()?this.clock()-this.lastTime:0));if(this.wake(delay)!==false)this.profiler.workerTiming.scheduled(delay,delay>0?Math.ceil(delay):0);}}
  resetTime(){this.profiler.workerTiming.resetBoundary();this.credit=0;this.lastTime=this.clock();this.rateStart=this.lastTime;this.rateTick=this.world?.tick??0;this.actualRate=0;}
  setRunning(value){this.running=Boolean(value&&this.world?.agents.length);this.profiler.setRunning(this.running);this.configureMotion();this.freezeParallel();this.resetTime();this.cancel();this.schedule();}
- configureMotion(){this.motion.configure(this.running&&this.visible&&this.tab==='world'&&!this.showingSubsteps(),this.world?.subtick??0);}
+ configureMotion(){this.motion.configure(this.visible&&this.tab==='world',this.world?.subtick??0);}
  async substep(){
   if(this.executor){if(this.profiler.active)await this.profiler.runAsyncStep(()=>parallelSubstep(this.executor));else await parallelSubstep(this.executor);}
   else if(this.profiler.active)this.profiler.runStep(()=>this.world.substep());else this.world.substep();
@@ -64,11 +64,13 @@ export class WorldRuntime{
   if(this.executor)await this.executor.syncAgent(this.selected);
   const timing=this.profiler.workerTiming,measuring=timing.active,prepareStart=measuring?timing.now():null;
   const start=this.clock(),state=worldPresentation(this.world,{selected:this.selected,trail:this.trail,
-   section:this.section,history:(this.tab==='history'||this.restored)&&this.historyDirty&&(force||now-this.lastHistoryPaint>=HISTORY_UI_INTERVAL),staticMap:this.staticDirty});
+   section:this.section,history:(this.tab==='history'||this.restored)&&this.historyDirty&&(force||now-this.lastHistoryPaint>=HISTORY_UI_INTERVAL),staticMap:this.staticDirty,movement:this.showingSubsteps()});
   this.lastEnvironmentRevision=this.world.environmentRevision;this.restored=false;
   state.execution={computeWorkers:this.executor?.lanes.length??1,mode:this.computeMode};
   // Пакет наблюдателя не участвует в вычислениях мира и не ждёт анимации UI.
   state.motion=this.motion.take(this.world.subtick);
+  state.motion.preview=this.showingSubsteps();
+  state.motion.intervalMs=this.quantum*1000/this.target;
   this.presentationMs+=this.clock()-start;this.messages++;
   if(measuring)timing.phase('presentation',prepareStart);
   const sequence=++this.sequence;this.inFlight=sequence;this.lastPaint=now;this.staticDirty=false;
