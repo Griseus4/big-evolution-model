@@ -49,10 +49,10 @@ js = """
 import {GENOME_VERSION,WORLD_WIDTH,WORLD_HEIGHT,GENE_COUNT} from './dist/evolution.js';
 import {BODY_WEIGHT_COUNT} from './dist/policy-layout.js';
 import {NEURAL_GENE_COUNT,PARAMETER_COUNT,NEIGHBOUR_BRAIN_TYPE,layoutForType} from './dist/neural-layout.js';
-import {DUAL_TYPE_LAYOUT as SET_LAYOUT} from './dist/dual-brain-layout.js';
+import {PHYSIOLOGY_GENOME_VERSION as SET_VERSION} from './dist/dual-brain-layout.js';
 import {MEMORY_LIMIT,TRACE_LIMIT,EXPERIENCE_SIZE,FEATURE_NAMES} from './dist/cognition.js';
 import {GUIDE_ARTICLES,GUIDE_INTRO_TEXT} from './dist/project-guide.js';
-console.log(JSON.stringify({setVersion:SET_LAYOUT.version,setGenes:null,neighbourGenes:layoutForType(NEIGHBOUR_BRAIN_TYPE).genes,neuralGenes:NEURAL_GENE_COUNT,parameters:PARAMETER_COUNT,width:WORLD_WIDTH,height:WORLD_HEIGHT,genes:GENE_COUNT,
+console.log(JSON.stringify({setVersion:SET_VERSION,setGenes:null,neighbourGenes:layoutForType(NEIGHBOUR_BRAIN_TYPE).genes,neuralGenes:NEURAL_GENE_COUNT,parameters:PARAMETER_COUNT,width:WORLD_WIDTH,height:WORLD_HEIGHT,genes:GENE_COUNT,
 version:GENOME_VERSION,memory:MEMORY_LIMIT,trace:TRACE_LIMIT,
 experience:EXPERIENCE_SIZE,features:FEATURE_NAMES.length,bodyWeights:BODY_WEIGHT_COUNT,guideArticles:GUIDE_ARTICLES,guideTextKeys:Object.keys(GUIDE_INTRO_TEXT)}));
 """

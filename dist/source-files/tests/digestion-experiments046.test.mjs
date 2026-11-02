@@ -8,7 +8,7 @@ import {decodeState,encodeState} from '../dist/state-codec.js';
 
 test('digestion time forms independent experiment combinations with the previous default',()=>{
  assert.equal(validateWorldOptions().digestionTime,20);
- const p=validatePlan({worlds:1,factors:[{key:'digestionTime',values:[5,20]},{key:'learning',values:[true,false]}]});
+ const p=validatePlan({worlds:1,factors:[{key:'digestionTime',values:[5,20]},{key:'learning',values:[true,false]}]},{historical:true});
  assert.equal(p.variants.length,4);
  assert.deepEqual(p.variants.map(v=>[v.settings.digestionTime,v.settings.learning]),[[5,true],[5,false],[20,true],[20,false]]);
  for(const n of [0,-1,null,NaN,Infinity,.01])assert.throws(()=>validateDigestionTime(n));

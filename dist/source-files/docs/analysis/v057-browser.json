@@ -1,0 +1,15 @@
+{
+  "modelVersion": "0.57.2",
+  "browser": "isolated headless Chrome",
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "autorestored": true,
+  "help": true,
+  "actions": true,
+  "saveLoad": true,
+  "experiment": "Новый опыт · Завершён · завершено миров 1/1 · запусков 1 · активных миров 0 · в очереди 0",
+  "experimentError": "",
+  "errors": []
+}

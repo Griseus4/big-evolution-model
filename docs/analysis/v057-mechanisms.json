@@ -1,0 +1,322 @@
+{
+  "format": "big-evolution-local-checks",
+  "version": 1,
+  "modelVersion": "0.57.2",
+  "runtime": "v24.19.0",
+  "finishedAt": "2026-11-02T22:02:59.841Z",
+  "durationMs": 2058.9998,
+  "checks": [
+    {
+      "id": "physiology-body",
+      "label": "0.57 · Тело основателя и ёмкости",
+      "status": "passed",
+      "durationMs": 0.20589999999999975
+    },
+    {
+      "id": "physiology-digestion",
+      "label": "0.57 · Усвоение и выведение трёх видов пищи",
+      "status": "passed",
+      "durationMs": 1.5649999999999977
+    },
+    {
+      "id": "physiology-balances",
+      "label": "0.57 · Реестры энергии, ткани и пищи",
+      "status": "passed",
+      "durationMs": 111.3066
+    },
+    {
+      "id": "physiology-resume",
+      "label": "0.57 · Сохранение и точное продолжение",
+      "status": "passed",
+      "durationMs": 104.46119999999999
+    },
+    {
+      "id": "structure-founder",
+      "label": "0.53 · Структура основателей и геном",
+      "status": "passed",
+      "durationMs": 12.998299999999972
+    },
+    {
+      "id": "structure-gradient",
+      "label": "0.53 · Градиент DAG и нулевой выход",
+      "status": "passed",
+      "durationMs": 6.470900000000029
+    },
+    {
+      "id": "structure-save",
+      "label": "0.53 · Сохранение структуры и опыта",
+      "status": "passed",
+      "durationMs": 56.170799999999986
+    },
+    {
+      "id": "structure-cost",
+      "label": "0.53 · Цена зависит от выполняемой структуры",
+      "status": "passed",
+      "durationMs": 0.07110000000000127
+    },
+    {
+      "id": "time-analysis",
+      "label": "0.36 · Анализ v14 показывает структуру, обе сети и регуляторы",
+      "status": "passed",
+      "durationMs": 6.80600000000004
+    },
+    {
+      "id": "time-trial-contract",
+      "label": "0.36 · Новые испытания не принимают автоматическое рождение",
+      "status": "passed",
+      "durationMs": 0.29179999999996653
+    },
+    {
+      "id": "time-trial-invariants",
+      "label": "0.36 · Инварианты испытаний совпадают с новой моделью и восстановлением",
+      "status": "passed",
+      "durationMs": 308.12620000000004
+    },
+    {
+      "id": "time-schema",
+      "label": "0.36 · v14: переменный основной мозг, внимание и регуляторы",
+      "status": "passed",
+      "durationMs": 5.831900000000019
+    },
+    {
+      "id": "time-old-base",
+      "label": "0.36 · Старый геном не читается под новым смыслом",
+      "status": "passed",
+      "durationMs": 0.40989999999999327
+    },
+    {
+      "id": "time-move",
+      "label": "0.36 · Движение меняет гекс только после15 подшагов",
+      "status": "passed",
+      "durationMs": 2.8262000000000853
+    },
+    {
+      "id": "time-wait-repeat",
+      "label": "0.36 · Ожидание5, первоначальная/повторная скидка0,03",
+      "status": "passed",
+      "durationMs": 1.9997999999999365
+    },
+    {
+      "id": "time-deposit",
+      "label": "0.36 · Выкладывание3, перенос одной порции и расход0,108",
+      "status": "passed",
+      "durationMs": 1.9138000000000375
+    },
+    {
+      "id": "time-meal",
+      "label": "0.36 · Трапеза2, усвоение новой порции со следующего интервала",
+      "status": "passed",
+      "durationMs": 2.046100000000024
+    },
+    {
+      "id": "time-gather",
+      "label": "0.36 · Сбор5 не резервирует пищу при начале",
+      "status": "passed",
+      "durationMs": 1.918800000000033
+    },
+    {
+      "id": "time-competition",
+      "label": "0.36 · Последняя порция достаётся одному, остальные попытки прерываются",
+      "status": "passed",
+      "durationMs": 2.6172000000000253
+    },
+    {
+      "id": "time-early-failure",
+      "label": "0.36 · Исчезновение пищи прекращает ещё незавершённый сбор",
+      "status": "passed",
+      "durationMs": 1.9936999999999898
+    },
+    {
+      "id": "time-review-continue",
+      "label": "0.36 · Пересмотр сохраняет прогресс и стоит0,10",
+      "status": "passed",
+      "durationMs": 2.6041999999999916
+    },
+    {
+      "id": "time-review-cancel",
+      "label": "0.36 · Прерванный переход оставляет исходный гекс и расходы",
+      "status": "passed",
+      "durationMs": 2.132099999999923
+    },
+    {
+      "id": "time-direction-repeat",
+      "label": "0.36 · Скидка движения сравнивает направление, а не номер команды",
+      "status": "passed",
+      "durationMs": 1.893199999999979
+    },
+    {
+      "id": "time-soft-limit",
+      "label": "0.36 · Начатые роды завершаются сверхN",
+      "status": "passed",
+      "durationMs": 2.938099999999963
+    },
+    {
+      "id": "time-birth-lock",
+      "label": "0.36 · Роды20 без малой сети и добровольного пересмотра",
+      "status": "passed",
+      "durationMs": 2.123299999999972
+    },
+    {
+      "id": "time-birth-end",
+      "label": "0.36 · В конце родов не повторяются пороги50/40",
+      "status": "passed",
+      "durationMs": 1.655999999999949
+    },
+    {
+      "id": "time-death-birth",
+      "label": "0.36 · Смерть раньше окончания родов исключает потомка",
+      "status": "passed",
+      "durationMs": 2.019900000000007
+    },
+    {
+      "id": "time-birth-energy",
+      "label": "0.36 · Недостаток32 в конце не создаёт ребёнка",
+      "status": "passed",
+      "durationMs": 1.5389999999999873
+    },
+    {
+      "id": "time-newborn",
+      "label": "0.36 · Ребёнок начинает выбор на следующем подшаге",
+      "status": "passed",
+      "durationMs": 1.725999999999999
+    },
+    {
+      "id": "time-hunger",
+      "label": "0.36 · Нехватка энергии мышления/действия оплачивается здоровьем без второго штрафа",
+      "status": "passed",
+      "durationMs": 2.416599999999903
+    },
+    {
+      "id": "time-partial-fee",
+      "label": "0.36 · За решение списывается только доступный остаток",
+      "status": "passed",
+      "durationMs": 3.9891000000000076
+    },
+    {
+      "id": "time-memory-time",
+      "label": "0.36 · Частые наблюдения не умножают статистику памяти",
+      "status": "passed",
+      "durationMs": 2.554499999999962
+    },
+    {
+      "id": "time-learning",
+      "label": "0.36 · Обучение живого по следующему выбору",
+      "status": "passed",
+      "durationMs": 2.2153999999999314
+    },
+    {
+      "id": "time-death-learning",
+      "label": "0.36 · Умерший не получает финальное обучение",
+      "status": "passed",
+      "durationMs": 1.6614000000000715
+    },
+    {
+      "id": "time-gate-inherited",
+      "label": "0.36 · Малая сеть наследуется, личные поправки/память нет",
+      "status": "passed",
+      "durationMs": 2.3777000000000044
+    },
+    {
+      "id": "time-gate-mutations",
+      "label": "0.36 · Параметры малой сети мутируют как обычные веса",
+      "status": "passed",
+      "durationMs": 0.29129999999997835
+    },
+    {
+      "id": "time-scalar",
+      "label": "0.36 · Числовой TD и полный оценщик дают одну ожидаемую оценку",
+      "status": "passed",
+      "durationMs": 6.958099999999945
+    },
+    {
+      "id": "time-gradient",
+      "label": "0.36 · Эталон v13: градиент всех1827 весов",
+      "status": "passed",
+      "durationMs": 33.59619999999995
+    },
+    {
+      "id": "time-reward-time",
+      "label": "0.36 · Разбиение одинакового времени сохраняет подкрепление",
+      "status": "passed",
+      "durationMs": 0.09519999999997708
+    },
+    {
+      "id": "time-balances",
+      "label": "0.36 · Миры разныхseed сохраняют балансы/конечные веса",
+      "status": "passed",
+      "durationMs": 802.6682000000001
+    },
+    {
+      "id": "time-repeatability",
+      "label": "0.36 · Повторный мир сохраняет действия и RNG",
+      "status": "passed",
+      "durationMs": 362.01929999999993
+    },
+    {
+      "id": "v037-group-shape",
+      "label": "0.37 · Целый островок сохраняет форму переноса и запасы",
+      "status": "passed",
+      "durationMs": 4.870899999999892
+    },
+    {
+      "id": "v037-genetic-statistics",
+      "label": "0.37 · Наследуемые значения живых и распределение чувствительностей",
+      "status": "passed",
+      "durationMs": 5.3887999999999465
+    },
+    {
+      "id": "v037-production-integral",
+      "label": "0.37 · Выработка пищи усредняется по времени событий",
+      "status": "passed",
+      "durationMs": 0.11639999999988504
+    },
+    {
+      "id": "environment-deficit",
+      "label": "0.36 · Неоплаченная энергия превращается в здоровье без второго штрафа",
+      "status": "passed",
+      "durationMs": 3.735500000000002
+    },
+    {
+      "id": "environment-stages",
+      "label": "0.38 · Пять событий подготовки, сохранение пищи и выбранный минимум",
+      "status": "passed",
+      "durationMs": 20.964699999999993
+    },
+    {
+      "id": "environment-save",
+      "label": "0.38 · Полный JSON-снимок точно продолжает мир и целевую автоматику",
+      "status": "passed",
+      "durationMs": 52.96369999999979
+    },
+    {
+      "id": "target-environment-preparation",
+      "label": "0.38 · Пятая ступень достигает числа источников и долгого периода",
+      "status": "passed",
+      "durationMs": 19.978299999999763
+    },
+    {
+      "id": "target-environment-fallback",
+      "label": "0.38 · На пределе числа источников корректируется период",
+      "status": "passed",
+      "durationMs": 8.117699999999786
+    },
+    {
+      "id": "target-environment-minimum",
+      "label": "0.38 · Минимум настраивается ниже двух и запрещает ноль",
+      "status": "passed",
+      "durationMs": 0.07500000000027285
+    },
+    {
+      "id": "island-count-small",
+      "label": "0.38.1 · Одного островка не удерживает округление слабого шума",
+      "status": "passed",
+      "durationMs": 0.04390000000012151
+    },
+    {
+      "id": "island-distance",
+      "label": "0.38.1 · Целый островок переносится на 5–20 гексов",
+      "status": "passed",
+      "durationMs": 0.1024000000002161
+    }
+  ]
+}

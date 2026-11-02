@@ -22,8 +22,8 @@ test('settings validate both independent limits and allow optional high founder 
  assert.throws(()=>dagConnectionBudget(18,1,[],101));
 });
 test('experiment plans preserve new settings and old reports do not invent them',()=>{
- const common=validateWorldOptions({attentionInitialNeurons:[2],attentionMaxNeurons:3,initialMutation:{contextWeights:{rate:.9,strength:2}}});
- assert.deepEqual(common.attentionInitialNeurons,[2]);assert.equal(common.initialMutation.contextWeights.rate,.9);
+ const common=validateWorldOptions({attentionInitialNeurons:[2],attentionMaxNeurons:3,initialMutation:{contextWeights:{shape:.9,ceiling:.1}}});
+ assert.deepEqual(common.attentionInitialNeurons,[2]);assert.equal(common.initialMutation.contextWeights.shape,.9);
  assert.equal(validateWorldOptions(common,{historical:true}).attentionMaxNeurons,3);
  assert.equal(validateWorldOptions({},{historical:true}).attentionMaxNeurons,undefined);
  const plan=validatePlan({worlds:1,steps:1,common,factors:[]});assert.ok(plan.variants.length);

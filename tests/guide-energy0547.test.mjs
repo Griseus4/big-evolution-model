@@ -10,7 +10,7 @@ test('handbook deficit example covers partial payment, exact zero and lethal sho
  const exact=guideDeficitExample({energy:1,health:10,cost:1});assert.equal(exact.after.energy,0);assert.equal(exact.after.health,10);
  const lethal=guideDeficitExample({energy:0,health:1,cost:1});assert.equal(lethal.after.health,0);assert.equal(lethal.paid,0);
  const small=guideDeficitExample({energy:0,health:10,cost:.1});assert.ok(Math.abs(small.healthLoss-.1*ENERGY_DEFICIT_FACTOR)<1e-10);
- assert.equal(GUIDE_ARTICLES.find(a=>a.id==='energy').reviewedVersion,'0.54.7');
+ assert.equal(GUIDE_ARTICLES.find(a=>a.id==='energy').reviewedVersion,'0.57.2');
 });
 test('death records resource losses without placing body food on the world cell',()=>{
  const w=new Evolution({population:1,seed:42}),a=w.agents[0],cell=w.tile(a.x,a.y),food=cell.food;

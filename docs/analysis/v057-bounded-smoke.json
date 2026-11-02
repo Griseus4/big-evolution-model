@@ -1,0 +1,53 @@
+{
+  "modelVersion": "0.57.2",
+  "seriesId": "physiology-v1",
+  "suiteId": "physiology-workloads-v1",
+  "scope": "bounded Node smoke; not browser or evolutionary result",
+  "node": "v24.19.0",
+  "cpu": "Intel(R) Core(TM) i5-14600KF",
+  "results": [
+    {
+      "population": 150,
+      "substeps": 20,
+      "createMs": 213.7072,
+      "runMs": 506.11319999999995,
+      "msPerResidentSubstep": 0.16870439999999998,
+      "alive": 150,
+      "balances": {
+        "schema": "physiology-balances-v1",
+        "energyError": 4.547473508864641e-13,
+        "massError": 0,
+        "foodError": -2.9103830456733704e-11,
+        "energy": 1250.2509773152483,
+        "expectedEnergy": 1250.2509773152478,
+        "mass": 4999.999999999999,
+        "expectedMass": 4999.999999999999,
+        "foodEnergy": 155351.64219396372,
+        "expectedFoodEnergy": 155351.64219396375,
+        "energyTolerance": 0.0001569632141939638
+      }
+    },
+    {
+      "population": 1000,
+      "substeps": 20,
+      "createMs": 1075.8244,
+      "runMs": 3046.9255999999996,
+      "msPerResidentSubstep": 0.15234627999999997,
+      "alive": 1000,
+      "balances": {
+        "schema": "physiology-balances-v1",
+        "energyError": 4.9112713895738125e-11,
+        "massError": 0,
+        "foodError": 1.1641532182693481e-10,
+        "energy": 8348.28438224222,
+        "expectedEnergy": 8348.284382242171,
+        "mass": 33333.3333333329,
+        "expectedMass": 33333.3333333329,
+        "foodEnergy": 156034.36269396386,
+        "expectedFoodEnergy": 156034.36269396375,
+        "energyTolerance": 0.00016626769369396365
+      }
+    }
+  ],
+  "evaluatorCandidates": 18
+}

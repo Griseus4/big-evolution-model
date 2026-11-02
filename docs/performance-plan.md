@@ -1,5 +1,7 @@
 # Производительность: маршрут измерений
 
+Текущая модель 0.57.2: серия physiology-v1, нагрузка physiology-workloads-v1. [Ограниченный Node-проход](analysis/v057-bounded-smoke.json) проверяет 20 подшагов и балансы; не заменяет полную серию скорости или длительный опыт.
+
 ## Действующая база
 
 Расчётный снимок — **0.53.2**, серия `structural-brain-v1`, протокол `rotating-fixed-work-v1`, набор `structural-brain-workloads-v1`. Источники: [версии](../dist/benchmark-versions.js), [нагрузки](../dist/benchmark-fixtures.js). Версия интерфейса и расчётный снимок могут различаться; их соответствие проверяет `tools/check-benchmark-snapshots.py`. Рабочая версия указана в [START_HERE](START_HERE.md).
