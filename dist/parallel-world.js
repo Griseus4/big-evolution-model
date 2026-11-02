@@ -128,7 +128,13 @@ export class ParallelWorld{
  async sync(agents){
   this.ensureOpen();if(this.busy)throw new Error('Снимок доступен только после полного шага.');const start=performance.now(),groups=this.lanes.map(()=>[]),lookup=new Map();
   for(const a of agents){const index=this.owners.get(a.id);if(index!==undefined){groups[index].push(a.id);lookup.set(a.id,a);}}
-  await Promise.all(groups.map(async(ids,i)=>{if(!ids.length)return;const snapshots=await this.lanes[i].endpoint.call('snapshot',{ids});for(const s of snapshots){const a=lookup.get(s.id);a.brain=s.brain;a.lastDecision=s.lastDecision;a._cells=s.cells;}}));this.metrics.snapshotMs+=performance.now()-start;
+  await Promise.all(groups.map(async(ids,i)=>{if(!ids.length)return;const snapshots=await this.lanes[i].endpoint.call('snapshot',{ids});for(const s of snapshots){const a=lookup.get(s.id);
+   // В новой фазовой модели тело может завершить движение ПОСЛЕ последней
+   // оценки. Координатор владеет навигацией; снимок владельца не откатывает её.
+   if(this.world.physiology)for(const key of ['position','facing','lastDecisionSubtick','feelingTotal','feelingSamples','wellbeing'])s.brain[key]=a.brain[key];
+   if(this.world.physiology&&!a.alive)s.brain.pending=null;
+   a.brain=s.brain;a.lastDecision=s.lastDecision;a._cells=s.cells;
+  }}));this.metrics.snapshotMs+=performance.now()-start;
  }
  async syncAll(){await this.sync(this.world.agents);}
  async syncAgent(agent){if(agent)await this.sync([agent]);}

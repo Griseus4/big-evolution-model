@@ -1,4 +1,4 @@
-const common={reviewedVersion:'0.57.1',sources:[
+const common={reviewedVersion:'0.57.2',sources:[
  {file:'physiology-settings.js',symbols:['PHYSIOLOGY_FIELDS','BODY_GENE_FIELDS'],purpose:'Единые числовые правила мира и генов тела.'},
  {file:'physiology-world.js',symbols:['advancePhysiologyBodies','physiologyFrame'],purpose:'Общие фазы физики и локальные варианты решений.'},
  {file:'guide-physiology-text.js',symbols:['PHYSIOLOGY_GUIDE_TEXT','digestionGuideExample'],purpose:'Объяснения и пример, рассчитанный функциями пищеварения.'},
