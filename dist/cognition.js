@@ -74,6 +74,7 @@ export function observe(brain,cells,position,tick,visit=true,elapsed=1){
   }
   if(cell.food===0&&record.emptySince===null)record.emptySince=tick;
   if(cell.food>0)record.emptySince=null;
+  if(cell.foods){if(!record.foodTypes)record.foodTypes=cell.foods.map(food=>({food,samples:0,total:0,max:food,recoveries:0,recoveryTotal:0,emptySince:food===0?tick:null}));for(let j=0;j<3;j++){const f=record.foodTypes[j],food=cell.foods[j];if(food>0&&f.emptySince!==null){f.recoveries++;f.recoveryTotal+=tick-f.emptySince;}if(food===0&&f.emptySince===null)f.emptySince=tick;if(food>0)f.emptySince=null;f.food=food;f.samples+=elapsed;f.total+=food*elapsed;f.max=Math.max(f.max,food);}}
   record.food=cell.food;record.terrain=cell.terrain;record.lastSeen=tick;
   // Последнее увиденное свойство места, не признак важности. Куст не даёт
   // бонуса закреплению и не обновляется при скрытом вмешательстве в мир.
@@ -178,6 +179,7 @@ export function memoryBelief(record,tick,traits){
  }
  return {
   food:clamp(predicted*confidence+average*(1-confidence),0,MEMORY_RULES.foodPredictionScale),confidence,
+  ...(record.foodTypes?{foods:record.foodTypes.map(f=>{const avg=f.samples?f.total/f.samples:f.food,guess=f.food===0&&f.recoveries?f.max*Math.min(1,age/Math.max(MEMORY_RULES.recoveryTimeFloor,f.recoveryTotal/f.recoveries)):f.food;return clamp(guess*confidence+avg*(1-confidence),0,MEMORY_RULES.foodPredictionScale);})}:{}),
   risk:(record.injuries??0)/((record.exposures??0)+MEMORY_RULES.riskPrior)*confidence,
   // Физическая вместимость склада/источника не расширяет шкалу прогноза.
   // Истинный запас сохраняется в записи; насыщается только числовая оценка.

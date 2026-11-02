@@ -1,4 +1,5 @@
 import {validateBrainCostMultiplier} from './brain-economy.js';
+import {savePhysiologyWorld,loadPhysiologyWorld} from './physiology-save.js';
 import {BODY_LIMITS} from './model-rules.js';
 import {SUBSTEPS} from './action-timing.js';
 import {STRUCTURAL_TYPE,structuralLayout,structuralSettings,compileStructure} from './structural-brain.js';
@@ -18,18 +19,20 @@ import {genomeMetadata,validateGenomeFile} from './genome.js';
 import {validateEnvironmentSettings,ENVIRONMENT_DEFAULTS,ENVIRONMENT_SCHEMA,ENVIRONMENT_RULES,foodProduction} from './environment-settings.js';
 import {reproductionProfile} from './reproduction.js';
 import {controllerProblems} from './brain-controller.js';
-export const WORLD_SAVE_FORMAT='big-evolution-world',WORLD_SAVE_VERSION=4,MAX_WORLD_SAVE_BYTES=512*1024*1024;
+export const WORLD_SAVE_FORMAT='big-evolution-world',WORLD_SAVE_VERSION=5,LEGACY_WORLD_SAVE_VERSION=4,MAX_WORLD_SAVE_BYTES=512*1024*1024;
 // Старые миры продолжают прежнее усвоение: отсутствующий параметр даёт 20 Т.
 // Новые сохраняют выбранное время; номер UI сам по себе не ломает схему.
 const COMPATIBLE_MODELS=new Set([MODEL_VERSION,'0.56.1','0.56.0','0.55.4','0.55.3','0.55.2','0.55.1','0.55.0','0.54.17','0.54.16','0.54.15','0.54.14','0.54.13','0.54.12','0.54.11','0.54.10','0.54.9','0.54.8','0.54.7','0.54.6','0.54.5','0.54.4','0.54.3','0.54.2','0.53.0','0.53.1','0.53.2','0.53.3','0.54.0','0.54.1']);
 const FIELDS=('brainCostMultiplier attentionMaxNeurons attentionMaxLayers attentionInitialNeurons attentionInitialConnections initialMutation mutationEnabled initialNeurons initialConnections maxNeurons maxLayers structuralMutations temporal digestionTime individualFood geography learningEnabled memoryEnabled reproduction seed foodSeed random cognitiveRandom bodyRandom scenario heritableMutations upgradeMutationGenes mutationRandom brainType neuralRandom initialPopulation limit mutationRate mutations baseGenome tick nextId maxGeneration events history agents foodCycleStart environmentRevision environmentChanges lifeHistory lifeExposure records lineages tiles stats sourceTemplate foodIslands initialFood foodSettings initialFoodSettings initialFoodIslands mutationProtocol geographyInfo foodExposure subtick _primed _viewEpoch automaticEnvironment _activities').split(' ');
 export function saveWorld(w){
+ if(w.physiology)return savePhysiologyWorld(w,FIELDS);
  if(!w.temporal)throw new Error('Полное сохранение поддерживает текущую модель.');
  const state=Object.fromEntries(FIELDS.filter(k=>Object.hasOwn(w,k)).map(k=>[k,w[k]]));
- return {format:WORLD_SAVE_FORMAT,version:WORLD_SAVE_VERSION,modelVersion:MODEL_VERSION,activityRevision:w._activities?.revision??0,state:encodeState(state)};
+ return {format:WORLD_SAVE_FORMAT,version:LEGACY_WORLD_SAVE_VERSION,modelVersion:MODEL_VERSION,activityRevision:w._activities?.revision??0,state:encodeState(state)};
 }
 export function loadWorld(file){
- if(file?.format!==WORLD_SAVE_FORMAT||file.version!==WORLD_SAVE_VERSION||!COMPATIBLE_MODELS.has(file.modelVersion))throw new Error('Неподдерживаемый формат или версия сохранения мира. Требуется совместимая схема целевой автоматики.');
+ if(file?.version===5)return loadPhysiologyWorld(file,FIELDS);
+ if(file?.format!==WORLD_SAVE_FORMAT||file.version!==LEGACY_WORLD_SAVE_VERSION||!COMPATIBLE_MODELS.has(file.modelVersion))throw new Error('Неподдерживаемый формат или версия сохранения мира. Требуется совместимая схема целевой автоматики.');
  const state=decodeState(file.state),w=Object.create(Evolution.prototype);
  if(!state||Object.keys(state).some(k=>!FIELDS.includes(k)))throw new Error('Недопустимые поля мира.');Object.assign(w,state);w.reproduction=reproductionProfile(w.reproduction);
  if(file.modelVersion===MODEL_VERSION&&!Object.hasOwn(state,'digestionTime'))throw new Error('В сохранении отсутствует время усвоения пищи.');

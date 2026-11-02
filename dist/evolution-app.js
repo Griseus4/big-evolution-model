@@ -1,3 +1,4 @@
+import {PHYSIOLOGY_ACTIONS} from './physiology-actions.js';
 import {MotionPlayer,MOTION_RULES,agentPoint} from './world-motion.js';
 import {WorldMapLayers} from './world-map-layers.js';
 import {installEnergyPreview} from './energy-preview-ui.js';
@@ -6,12 +7,16 @@ import {structureSettingsTable} from './brain-settings-tables.js';
 import {validateBrainCostMultiplier,BRAIN_ECONOMY} from './brain-economy.js';
 import {validateDigestionTime} from './model-rules.js';
 import {genomeMetadata} from './genome.js';
+import {physiologySettingsUI} from './physiology-settings-ui.js';
+import {CONTEXT_INPUTS as BODY_CONTEXT_INPUTS,ATTENTION_INPUTS as BODY_ATTENTION_INPUTS} from './physiology-brain-layout.js';
+import {dagConnectionBudget} from './dual-brain-settings.js';
 import {validateWorldOptions} from './experiment-plan.js';
 import {WORLD_LIMITS} from './world-defaults.js';
 import {initialNeuronsInput,wireInitialStructure} from './brain-initialization-ui.js';
-import {DUAL_BRAIN_TYPE,DUAL_VERSION} from './dual-brain-layout.js';
+import {DUAL_BRAIN_TYPE,PHYSIOLOGY_GENOME_VERSION as DUAL_VERSION} from './dual-brain-layout.js';
 import {dualBrainSettingsUI} from './dual-brain-settings-ui.js';
 import {MAX_GENOME_FILE_BYTES} from './experiment-genomes.js';
+import {PHYSIOLOGY_OPERATIONS} from './physiology-actions.js';
 import {renderBrainDiagram} from './brain-diagram-ui.js';
 import {TEMPORAL_BRAIN_TYPE as SET_BRAIN_TYPE,CANDIDATE_NAMES,OPERATION_NAMES} from './temporal-layout.js';
 /**
@@ -90,8 +95,8 @@ let displayedEnvironmentRevision=-1;
  */
 const initialNeuronsControl=initialNeuronsInput(document,[],()=>({maxNeurons:Number(element('brain-max-neurons').value),maxLayers:Number(element('brain-max-layers').value)}));
 element('brain-initial-neurons').append(initialNeuronsControl);
-const initialStructureControls=wireInitialStructure(initialNeuronsControl,element('brain-initial-connections'),element('brain-max-neurons'),element('brain-max-layers'),{isGenome:()=>Boolean(baseGenome)});
-const dualControls=dualBrainSettingsUI(document,element('brain-initial-neurons').parentElement,()=>Boolean(baseGenome));
+const initialStructureControls=wireInitialStructure(initialNeuronsControl,element('brain-initial-connections'),element('brain-max-neurons'),element('brain-max-layers'),{isGenome:()=>Boolean(baseGenome),connectionBudget:(counts,p=100)=>dagConnectionBudget(BODY_CONTEXT_INPUTS,16,counts,p)});
+const dualControls=dualBrainSettingsUI(document,element('brain-initial-neurons').parentElement,()=>Boolean(baseGenome),{physiology:true});
 const startHost=element('start-panel-other');
 const oldMainLabels=['brain-max-neurons','brain-max-layers','brain-initial-connections'].map(id=>element(id).parentElement);
 const mainTable=structureSettingsTable(document,'Основной мозг',element('brain-max-neurons'),element('brain-max-layers'),initialNeuronsControl,element('brain-initial-connections'));
@@ -100,6 +105,7 @@ element('brain-initial-neurons').hidden=true;
 if(startHost.insertBefore)startHost.insertBefore(mainTable,startHost.firstChild);else startHost.append(mainTable);
 function economyField(title,value){const label=document.createElement('label'),n=document.createElement('input');label.textContent=title;n.type='number';n.min=Number.MIN_VALUE;n.step='any';n.value=value;label.append(n);startHost.append(label);return n;}
 const brainPriceInput=economyField('Коэффициент цены обоих мозгов',BRAIN_ECONOMY.multiplier),digestionInput=economyField('Усвоение одной порции, Т',validateDigestionTime());
+if(digestionInput.parentElement)digestionInput.parentElement.hidden=true;const physiologyControls=physiologySettingsUI(document,startHost);
 let worldForm=null;
 function settings(){
  const population=Number(element('founders').value),limit=Number(element('population-limit').value);
@@ -108,7 +114,7 @@ function settings(){
  if(!Number.isInteger(limit)||limit<population||limit>WORLD_LIMITS.populationMax)throw new Error(`Лимит должен быть не меньше числа основателей и не больше ${WORLD_LIMITS.populationMax}.`);
  if(!Number.isInteger(seed)||seed<1||seed>4294967295)throw new Error('Номер опыта должен быть целым от 1 до 4294967295.');
  const computeWorkers=activeComputationMode;
- return {seed,population,limit,computeWorkers,brainCostMultiplier:validateBrainCostMultiplier(Number(brainPriceInput.value)),digestionTime:validateDigestionTime(Number(digestionInput.value)),brainType:DUAL_BRAIN_TYPE,...dualControls.read(),...(baseGenome?{}:{initialNeurons:initialNeuronsControl.readSetting(),initialConnections:Number(element('brain-initial-connections').value)}),maxNeurons:Number(element('brain-max-neurons').value),maxLayers:Number(element('brain-max-layers').value),structuralMutations:element('structural-mutations').checked,automaticEnvironment:environmentUI?.settings(),geography:'lakes-rivers-v1',...readFoodControls(),
+ return {...physiologyControls.read(),seed,population,limit,computeWorkers,brainCostMultiplier:validateBrainCostMultiplier(Number(brainPriceInput.value)),digestionTime:validateDigestionTime(Number(digestionInput.value)),brainType:DUAL_BRAIN_TYPE,...dualControls.read(),...(baseGenome?{}:{initialNeurons:initialNeuronsControl.readSetting(),initialConnections:Number(element('brain-initial-connections').value)}),maxNeurons:Number(element('brain-max-neurons').value),maxLayers:Number(element('brain-max-layers').value),structuralMutations:element('structural-mutations').checked,automaticEnvironment:environmentUI?.settings(),geography:'lakes-rivers-v1',...readFoodControls(),
   learning:element('learning').checked,memory:element('memory').checked,
   expandLegacy:legacyBase&&element('expand-legacy').checked,mutationRate:Number(element('mutation-rate').value),mutations:element('mutations').checked,upgradeMutationGenes:element('upgrade-mutations').checked,baseGenome};
 }
@@ -180,8 +186,8 @@ element('world-food-export').addEventListener('click',()=>{pause();labTabs?.expo
 syncWorldFoodEditor();
 environmentUI=installEnvironmentUI({element,command,getWorld:()=>sim});
 const energyPreview=installEnergyPreview({doc:document,host:startHost,read:settings});
-const savedWorldControls=new Map([...dualControls.inputs,...['seed','founders','population-limit','learning','memory','mutations','structural-mutations','mutation-rate','brain-max-neurons','brain-max-layers','brain-initial-connections','food-sources','food-sources-number','food-period','food-period-number','food-islands','food-size-spread','food-size-spread-number','food-period-spread','food-period-spread-number','food-size-mean','food-size-mean-number','food-capacity-mean','food-capacity-mean-number','food-capacity-spread','food-capacity-spread-number'].map(id=>[id,element(id)]),['initialNeurons',initialNeuronsControl],['brainCostMultiplier',brainPriceInput],['digestionTime',digestionInput],['previewMoves',energyPreview.moves]]);
-worldForm=installFormPreferences({doc:document,host:startHost,key:'big-evolution-world-form-v1',controls:savedWorldControls,validate:()=>validateWorldOptions(settings()),readExtra:()=>baseGenome,writeExtra:value=>{if(value&&genomeMetadata(value).version!==DUAL_VERSION)throw new Error('Сохранённая основа прежней схемы: загрузите геном v17 или сбросьте форму. Старый мир можно продолжить из полного сохранения.');baseGenome=value?validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(value),genes:value}):null;legacyBase=false;},refresh:()=>{initialStructureControls.refresh(true);dualControls.refresh();element('clear-base').disabled=!baseGenome;element('base-status').textContent=baseGenome?'Сохранённая основа генома':'Новая популяция: случайные геномы';energyPreview.refresh();}});
+const savedWorldControls=new Map([...physiologyControls.inputs,...dualControls.inputs,...['seed','founders','population-limit','learning','memory','mutations','structural-mutations','mutation-rate','brain-max-neurons','brain-max-layers','brain-initial-connections','food-sources','food-sources-number','food-period','food-period-number','food-islands','food-size-spread','food-size-spread-number','food-period-spread','food-period-spread-number','food-size-mean','food-size-mean-number','food-capacity-mean','food-capacity-mean-number','food-capacity-spread','food-capacity-spread-number'].map(id=>[id,element(id)]),['initialNeurons',initialNeuronsControl],['brainCostMultiplier',brainPriceInput],['digestionTime',digestionInput],['previewFood',energyPreview.food],['previewCalls',energyPreview.calls],['previewMoves',energyPreview.moves]]);
+worldForm=installFormPreferences({doc:document,host:startHost,key:'big-evolution-world-form-physiology-v1',controls:savedWorldControls,validate:()=>validateWorldOptions(settings()),readExtra:()=>baseGenome,writeExtra:value=>{if(value&&genomeMetadata(value).version!==DUAL_VERSION)throw new Error('Сохранённая основа прежней схемы: загрузите геном v18 или сбросьте форму. Старые результаты доступны для анализа.');baseGenome=value?validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(value),genes:value}):null;legacyBase=false;},refresh:()=>{initialStructureControls.refresh(true);dualControls.refresh();physiologyControls.refresh();element('clear-base').disabled=!baseGenome;element('base-status').textContent=baseGenome?'Сохранённая основа генома':'Новая популяция: случайные геномы';energyPreview.refresh();}});
 for(const name of ['input','change'])startHost.addEventListener(name,()=>energyPreview.refresh());
 for(const n of savedWorldControls.values())for(const name of ['input','change'])n.addEventListener(name,()=>energyPreview.refresh());
 
@@ -220,7 +226,7 @@ element('load-genome').addEventListener('change',async event=>{
  const file=event.target.files?.[0];if(!file)return;pause();
  try{
   if(file.size>MAX_GENOME_FILE_BYTES)throw new Error('Файл генома превышает допустимый размер.');
-  const data=JSON.parse(await file.text());if(data.version!==DUAL_VERSION)throw new Error('Новый мир принимает геномы v17 с отдельными регуляторами. Старые результаты опытов доступны для анализа.');baseGenome=validateGenomeFile(data);legacyBase=false;worldForm?.save();energyPreview.refresh();
+  const data=JSON.parse(await file.text());if(data.version!==DUAL_VERSION)throw new Error('Новый мир принимает геномы v18 с отдельными регуляторами. Старые результаты опытов доступны для анализа.');baseGenome=validateGenomeFile(data);legacyBase=false;worldForm?.save();energyPreview.refresh();
   element('legacy-options').hidden=!legacyBase;
   const inherited=Boolean(mutationProfile(baseGenome));
   element('upgrade-mutations').checked=false;element('mutation-upgrade-options').hidden=inherited;
@@ -295,18 +301,18 @@ function updateContents(){
  }
  element('limit-status').textContent=total.atLimit?'Достигнут лимит: рождения приостановлены':'';
  element('extinction').hidden=total.population>0;
- element('reproduction-summary').textContent=reproductionSummary(sim.stats.reproduction);
+ element('reproduction-summary').textContent=(sim.physiology?`Зачатий: ${sim.stats.physiology?.conceptions??0}; живых рождений: ${sim.stats.reproduction.births}.`:reproductionSummary(sim.stats.reproduction));
  const causes=sim.stats.deathsByCause;
- element('causes').textContent=`Истощение ${causes.starvation} · возраст ${causes.age}`;
+ element('causes').textContent=sim.physiology?`Истощение ${causes.starvation??0} · атаки ${causes.attack??0}`:`Истощение ${causes.starvation} · возраст ${causes.age}`;
  if(selected&&!element('side-panel-resident').hidden){
   const a=selected;
   const birth=sim.birthAvailability(a);
-  element('reproduction-status').textContent=(birth.eligible?'Сейчас может родить. ':'Сейчас рождение недоступно: '+birth.blocked.map(k=>BIRTH_BLOCK_LABELS[k]).join(', ')+'. ')+reproductionSummary(a.life.reproduction);
+  element('reproduction-status').textContent=(birth.eligible?(sim.physiology?'Сейчас может зачать. ':'Сейчас может родить. '):(sim.physiology?'Зачатие недоступно: ':'Сейчас рождение недоступно: ')+birth.blocked.map(k=>BIRTH_BLOCK_LABELS[k]).join(', ')+'. ')+(sim.physiology?`Решений о зачатии: ${a.life.reproduction.chosen}; живых детей: ${a.children}.`:reproductionSummary(a.life.reproduction));
   element('resident-title').textContent=`Житель №${a.id}`;
-  element('resident-detail').textContent=`${a.alive?'Жив':'Погиб'} · поколение ${a.generation} · родитель ${a.parentId===null?'нет':a.parentId} · линия №${a.founderId} · возраст ${a.age} · потомков ${a.children} · положил ${a.life.deposited} · последнее: ${a.lastAction===null?'—':ACTIONS[a.lastAction]}`;
-  element('resident-detail').textContent+=a.process?` · выполняет: ${ACTIONS[a.process.action]}, ${a.process.elapsed}/${a.process.duration} подшагов`:' · действие завершено';
-  const metrics=[['Энергия',a.energy.toFixed(1)],['Самочувствие',sim.feeling(a).toFixed(1)],['Здоровье',a.health.toFixed(1)],
-   ['Предметов при себе',`${a.inventory}/${RULES.inventoryCapacity}`],['Усваивается',`${(a.stomach/RULES.foodEnergy).toFixed(1)} порции`],['Личная позиция',`(${a.brain.position.q}, ${a.brain.position.r})`],['Взгляд',`${a.brain.facing*60}° от рождения`]];
+  element('resident-detail').textContent=`${a.alive?'Жив':'Погиб'} · поколение ${a.generation} · родитель ${a.parentId===null?'нет':a.parentId} · линия №${a.founderId} · возраст ${a.age} · потомков ${a.children} · положил ${a.life.deposited} · последнее: ${a.lastAction===null?'—':(sim.physiology?PHYSIOLOGY_ACTIONS:ACTIONS)[a.lastAction]}`;
+  element('resident-detail').textContent+=a.process?` · выполняет: ${(sim.physiology?PHYSIOLOGY_ACTIONS:ACTIONS)[a.process.action]}, ${a.process.elapsed}/${a.process.duration} подшагов`:' · действие завершено';
+  const metrics=[['Энергия',a.energy.toFixed(1)+(sim.physiology?' / '+a.energyCapacity.toFixed(1):'')],['Самочувствие',sim.feeling(a).toFixed(1)],['Здоровье',a.health.toFixed(1)+(sim.physiology?' / '+a.healthCapacity.toFixed(1):'')],
+   ['Предметов при себе',`${a.inventory.toFixed(2)}/${sim.physiology?.inventoryCapacity??RULES.inventoryCapacity}`],['Усваивается',sim.physiology?`${a.stomach.toFixed(2)} / ${a.stomachCapacity.toFixed(2)} порции`:`${(a.stomach/RULES.foodEnergy).toFixed(1)} порции`],['Личная позиция',`(${a.brain.position.q}, ${a.brain.position.r})`],['Взгляд',`${a.brain.facing*60}° от рождения`]];
   const metricHelp=['metric-energy','feeling-mean','metric-health','metric-inventory','metric-stomach','metric-position','metric-facing'];
   // Не заменяем кнопки каждые 200 мс: иначе фокус клавиатуры терялся бы
   // во время наблюдения. Меняем только числа, сама справка остаётся на месте.
@@ -320,6 +326,7 @@ function updateContents(){
    }
    body.replaceChildren(main);
   }else for(const host of [body,position])for(const number of host.querySelectorAll('.metric-value'))number.textContent=metrics[Number(number.dataset.index)][1];
+  renderPhysiologyResident(body,a);
   const detailSection=sidebar?.getResidentSection()??'birth';
   // Полная диагностическая оценка нужна только открытым действиям/реакциям.
   // Это уменьшает работу UI, но не частоту решений или обучения организма.
@@ -335,7 +342,7 @@ function updateContents(){
    const fill=document.createElement('span');fill.style.width=option.probability*100+'%';meter.append(fill);
    const detail=document.createElement('small');detail.className='choice-detail';
    detail.textContent=Boolean(layoutForType(a.brain.controllerType))?
-    `${option.operation!==undefined?`Операция «${OPERATION_NAMES[option.operation]}» ${(option.operationProbability*100).toFixed(1)}% × вариант ${(option.targetProbability*100).toFixed(1)}%. `:''}Прогноз Q ${option.learningValue.toFixed(3)} · генетическая сеть с личными поправками. Это оценка последствий, не вероятность выживания.`:
+    `${option.operation!==undefined?`Операция «${(a.brain.physiology?PHYSIOLOGY_OPERATIONS:OPERATION_NAMES)[option.operation]}» ${(option.operationProbability*100).toFixed(1)}% × вариант ${(option.targetProbability*100).toFixed(1)}%. `:''}Прогноз Q ${option.learningValue.toFixed(3)} · генетическая сеть с личными поправками. Это оценка последствий, не вероятность выживания.`:
     `Геном ${option.innate.toFixed(2)} · опыт ${option.experience.toFixed(2)}. Вклад запасов/желудка: врождённый ${option.bodyInnate.toFixed(2)}, выученный ${option.bodyExperience.toFixed(2)}.`;
    row.append(head,meter,detail);return row;
   }));
@@ -355,18 +362,24 @@ function updateContents(){
  * Сортировка создаёт новый массив и не меняет очередь забывания в Map.
  * Панель отделяет удовольствие, изменение оценок и физическое благополучие.
  */
+function renderPhysiologyResident(host,a){
+ let box=host.querySelector('.physiology-resident');if(!sim.physiology){box?.remove();return;}
+ if(!box){box=document.createElement('table');box.className='physiology-resident brain-settings-table';host.append(box);}
+ const p=a.pregnancy,rows=[['Масса / рекорд',`${a.L.toFixed(2)} / ${a.M.toFixed(2)}`],['Трава / плоды / мясо',a.foodInventory.map(n=>n.toFixed(2)).join(' / ')],['Развитие',p?(p.stage==='labor'?`Роды: ещё ${Math.max(0,p.laborDue/10-sim.tick).toFixed(1)} Т`:`Оплачено ${(100*p.paid/p.cost).toFixed(1)}%; вынашивание ещё ${Math.max(0,p.due/10-sim.tick).toFixed(1)} Т`):'Беременности нет']];
+ box.replaceChildren(...rows.map(([name,value])=>{const row=document.createElement('tr'),label=document.createElement('th'),cell=document.createElement('td');label.textContent=name;cell.textContent=value;row.append(label,cell);return row;}));
+}
 function renderBrain(options){return profiler.measureUI('resident',()=>renderBrainContents(options));}
 function renderBrainContents(options){
  if(!selected||element('side-panel-resident').hidden)return;
  const a=selected,b=a.brain,traits=b.traits,change=b.lastLearning;
- const detailSection=sidebar?.getResidentSection()??'birth';
- const senses=bodySenses(a,RULES.inventoryCapacity,RULES.stomachCapacity);
+  const detailSection=sidebar?.getResidentSection()??'birth';
+ const senses=bodySenses(a,sim.physiology?.inventoryCapacity??RULES.inventoryCapacity,a.stomachCapacity??RULES.stomachCapacity);
  const layout=layoutForType(b.controllerType),neural=Boolean(layout);
  if(detailSection==='senses'){
-element('body-senses').textContent=`Переносимый запас: ${a.inventory}/${RULES.inventoryCapacity} порций (${(senses[0]*100).toFixed(0)}%). Желудок: ${(senses[1]*100).toFixed(0)}%. `+(neural?'Входы сети вместе с энергией, здоровьем и личными наблюдениями.':'Это два числовых признака; у каждого действия свои веса.')+' Больший запас не получает готовой награды.';
+element('body-senses').textContent=`Переносимый запас: ${a.inventory}/${sim.physiology?.inventoryCapacity??RULES.inventoryCapacity} порций (${(senses[0]*100).toFixed(0)}%). Желудок: ${(senses[1]*100).toFixed(0)}%. `+(neural?'Входы сети вместе с энергией, здоровьем и личными наблюдениями.':'Это два числовых признака; у каждого действия свои веса.')+' Больший запас не получает готовой награды.';
   const view=sim.neighbours(a),ids=sim.contacts(a);
   const rows=[`Других особей в обзоре: ${view.visibleCount}; на своей клетке: ${view.ownCount}.`,
-   ...view.cells.map(c=>`${c.action===null?'Своя клетка':ACTIONS[c.action]}: ${c.count}`),
+   ...view.cells.map(c=>`${c.action===null?'Своя клетка':(sim.physiology?PHYSIOLOGY_ACTIONS:ACTIONS)[c.action]}: ${c.count}`),
    `Контакты на своей клетке: ${ids.length?ids.map(id=>'№'+id).join(', '):'нет'}. На соседних клетках личности не различимы.`,
    layout?.version===8||b.controllerType===SET_BRAIN_TYPE||b.temporal?'Количества доступны сети. Узнавания прежних встреч и социальной памяти пока нет.':'Этот сохранённый мозг не использует количества соседей; его схема сохранена.'];
   if(b.controllerType===SET_BRAIN_TYPE||b.temporal)rows.push(...sim.visibleDecisionCells(a).map(cell=>
@@ -375,7 +388,7 @@ element('body-senses').textContent=`Переносимый запас: ${a.inven
  }
 
  if(detailSection==='learning')element('learning-report').textContent=change?
-  `Шаг ${change.tick}: ${ACTIONS[change.action]}${neural?'':', состояние '+change.row}. Подкрепление ${change.reward.toFixed(3)}, ошибка ожидания ${change.delta.toFixed(3)}. Оценка ${change.beforeValue.toFixed(3)} → ${change.afterValue.toFixed(3)}. След: ${neural?'накопленный градиент':change.traceLength+' решений'}.`:
+  `Шаг ${change.tick}: ${(sim.physiology?PHYSIOLOGY_ACTIONS:ACTIONS)[change.action]}${neural?'':', состояние '+change.row}. Подкрепление ${change.reward.toFixed(3)}, ошибка ожидания ${change.delta.toFixed(3)}. Оценка ${change.beforeValue.toFixed(3)} → ${change.afterValue.toFixed(3)}. След: ${neural?'накопленный градиент':change.traceLength+' решений'}.`:
   sim.learningEnabled?'Пока нет завершённого перехода для обучения. После решения нужно дождаться следующего ощущения.':'Личное обучение отключено в этом опыте.';
  element('memory-summary').textContent=`Краткая память ${b.memory.size}/${traits.shortCapacity} · долгая ${b.longMemory.size}/${traits.longCapacity} · пищу видел в ${[...memoryEntries(b)].filter(r=>r.maxFoodSeen>0).length} местах · обновлений опыта ${b.updates} · среднее чувство за жизнь ${b.feelingSamples?(b.feelingTotal/b.feelingSamples).toFixed(1):'—'}`;
  if(detailSection==='traits'){renderBrainDiagram(element('brain-diagram'),a,sim.learningEnabled);element('traits-summary').textContent=`Скорость обучения ${traits.alpha.toFixed(3)} · забывание ${(traits.forgetting*100).toFixed(3)}%/Т · вес будущего ${traits.discount.toFixed(2)} · затухание следа ${traits.trace.toFixed(2)}. Память: краткая ${traits.shortCapacity}, долгая ${traits.longCapacity}; порог закрепления ${traits.consolidationThreshold.toFixed(3)}, затухание значимости ${Math.round(traits.longRetention)} шагов. Чувствительность: энергия ${traits.values[0].toFixed(2)}, здоровье ${traits.values[1].toFixed(2)}, пищеварение ${traits.values[3].toFixed(2)}.`;
@@ -420,9 +433,10 @@ function draw(force=false){if(!client.ready||!mapVisible())return;
 }
 function drawContents(){
  mapLayers.draw(context,sim,drawMapOverlay);
+ const renderedResidents=new Map(sim.agents.map(a=>[a.id,a]));
  for(const a of sim.agents){
   const p=motion.point(a);context.fillStyle=`hsl(${(a.founderId*137.5)%360} 55% 72%)`;
-  context.strokeStyle='#24321f';context.lineWidth=1;context.beginPath();context.arc(p.x,p.y,4,0,Math.PI*2);context.fill();context.stroke();
+  context.strokeStyle='#24321f';context.lineWidth=1;context.beginPath();context.arc(p.x,p.y,a.L?Math.max(2,Math.min(9,4*Math.sqrt(a.L/a.referenceMass))):4,0,Math.PI*2);context.fill();context.stroke();if(a.pregnant){context.strokeStyle='#e1c88c';context.strokeRect(p.x-6,p.y-6,12,12);}if(a.attackTarget!==null&&a.attackTarget!==undefined){const target=renderedResidents.get(a.attackTarget);if(target){const t=motion.point(target);context.strokeStyle='#f59683';context.beginPath();context.moveTo(p.x,p.y);context.lineTo(t.x+6,t.y-6);context.stroke();}}
  }
  if(selected){
   const p=motion.point(selected);context.strokeStyle=selected.alive?'#ffe5a0':'#e09a7c';context.lineWidth=2;

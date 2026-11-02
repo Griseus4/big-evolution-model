@@ -1,3 +1,4 @@
+import {PHYSIOLOGY_TOPICS} from './guide-physiology-topics.js';
 import {GUIDE_TOPICS} from './project-guide-topics.js';
 /** Указатель пособия: короткие выжимки и следы сверки, без загрузки модели.
  * Текст новых статей хранится здесь один раз; прежние пояснения — в ui-text.
@@ -49,7 +50,7 @@ export const GUIDE_ARTICLES=[
  {id:'development',title:'Как найти и изменить нужную часть проекта?',summary:'Владельцы правил, числовые источники, локальные проверки, упаковка, GitHub и поддержка справочника.'},
  {id:'checks',title:'Что проверяют испытания?',summary:'Проверки механизмов и длительные наблюдения отвечают на разные вопросы. Успешная проверка не гарантирует появления определённой стратегии.'},
  {id:'limits',title:'Что упрощено в модели?',summary:'Один родитель, предел возраста и населения, границы наблюдения, полнота записей и условия сравнения.'},
-].map(article=>{const topic=GUIDE_TOPICS[article.id]??{};return Object.freeze({reviewedVersion:null,sources:[],related:[],keywords:[],checks:[],...article,...topic,sources:[...(article.sources??[]),...(topic.sources??[])]});});
+].map(article=>{const topic=PHYSIOLOGY_TOPICS[article.id]??GUIDE_TOPICS[article.id]??{};return Object.freeze({reviewedVersion:null,sources:[],related:[],keywords:[],checks:[],...article,...topic,sources:[...(article.sources??[]),...(topic.sources??[])]});});
 
 export const GUIDE_INTRO_TEXT={
  'guide-intro-brief':'Big Evolution — браузерная лаборатория для наблюдения за жизнью, размножением и изменением поколений организмов. Жители действуют в общей среде, расходуют ресурсы, получают опыт и оставляют потомков. Можно исследовать, какие наследуемые свойства сохраняются и как личное обучение меняет поведение за одну жизнь.',

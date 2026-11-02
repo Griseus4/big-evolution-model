@@ -1,6 +1,7 @@
 /** Сводки наблюдателя по полуоткрытым интервалам рождения [b,b+width).
  * Один проход по сохранённым жизням; сортируются только собственные массивы
  * значений внутри групп. Нет обращения к миру, мозгам или RNG. */
+import {PHYSIOLOGY_METRICS,physiologyMetric} from './physiology-metrics.js';
 import {weightedSummary,worldWeights} from './weighted-statistics.js';
 /** Полнота исходного отчёта, а не размер загруженного окна рождения.
  * Архив хранит возраста всех записанных смертей отдельно; отсутствующие
@@ -13,12 +14,13 @@ const finite=x=>typeof x==='number'&&Number.isFinite(x);
 const inheritedIds=new Set(HERITABLE_METRICS.map(m=>m.id));
 const rate=(row,n)=>finite(n)&&n>=0&&row.observedSteps>0?n*100/row.observedSteps:null;
 export const LIFE_METRICS=Object.freeze([
+ ...PHYSIOLOGY_METRICS,
  {id:'lifetime',label:'Продолжительность завершённой жизни',unit:'Т',digits:1},
  {id:'movement',label:'Частота перемещений',unit:'переходов / 100 Т',digits:2},
  {id:'eating',label:'Частота еды',unit:'порций / 100 Т',digits:2},
  {id:'inventory',label:'Средний переносимый запас',unit:'порций',digits:2},
  {id:'energy',label:'Средняя энергия',unit:'энергии',digits:1},
- {id:'health',label:'Среднее здоровье',unit:'здоровья',digits:1,maximum:100},
+ {id:'health',label:'Среднее здоровье',unit:'здоровья',digits:1},
  {id:'feeling',label:'Среднее самочувствие',unit:'шкалы чувств',digits:1,minimum:-100,maximum:100},
  {id:'hunger',label:'Доля жизни с нулевой энергией',unit:'%',digits:1},
  {id:'children',label:'Число прямых детей',unit:'детей',digits:1},
@@ -34,6 +36,7 @@ export const LIFE_METRICS=Object.freeze([
  {id:'interruptions',label:'Частота прерываний',unit:'прерываний / 100 Т',digits:2},
 ].map(Object.freeze));
 export function lifeMetric(row,id,interruptionKind='all'){
+ const physiology=physiologyMetric(row,id);if(physiology!==undefined)return physiology;
  if(inheritedIds.has(id))return row.heritable?.schema===HERITABLE_SCHEMA&&finite(row.heritable[id])?row.heritable[id]:null;
  const o=row.observations?.schema===LIFE_OBSERVATION_SCHEMA?row.observations:null;
  switch(id){

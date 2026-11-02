@@ -1,3 +1,5 @@
+import {PHYSIOLOGY_FIELDS,BODY_GENE_FIELDS} from './physiology-settings.js';
+import {NUMERIC_MUTATION_GROUPS,NUMERIC_MUTATION_RULES as N} from './numeric-mutation.js';
 import {STRUCTURAL_LIMITS} from './structural-brain.js';
 import {EVOLUTION_RULES,MUTATION_GROUPS,MUTATION_LABELS,V16_MUTATION_LABELS} from './brain-evolution-rules.js';
 import {initialLayerCounts} from './brain-initialization.js';
@@ -10,17 +12,18 @@ import {DIGESTION_TIME_LIMITS} from './evolution.js';
 export const EXPERIMENT_FIELDS=Object.freeze([
  ['Мир','population','Основателей',1,1000,1],['Мир','limit','Лимит живых',1,1000,1],
  ['Вычисления','brainCostMultiplier','Коэффициент цены обоих мозгов',Number.MIN_VALUE,Number.MAX_VALUE,'any'],
- ['Физиология','digestionTime','Усвоение одной порции, Т',DIGESTION_TIME_LIMITS.min,DIGESTION_TIME_LIMITS.max,'any'],
+ ...Object.entries(BODY_GENE_FIELDS).map(([key,f])=>['Тело основателей','bodyGenes.'+key,f.label+' ('+f.unit+')',f.exclusiveMin&&f.min===0?Number.MIN_VALUE:f.min,f.max,'any']),
+ ...Object.entries(PHYSIOLOGY_FIELDS).map(([key,f])=>['Правила тела и пищи','physiology.'+key,f.label+' ('+f.unit+')',f.exclusiveMin&&f.min===0?Number.MIN_VALUE:f.min,f.max,f.unit==='подшаги'?1:'any']),
  ['Возможности','memory','Память мест','check'],['Возможности','learning','Личное обучение','check'],['Возможности','mutations','Мутации потомков','check'],
  ['Возможности','structuralMutations','Структурные мутации','check'],['Мозг','maxNeurons','Предел скрытых нейронов',0,STRUCTURAL_LIMITS.maxNeurons,1],['Мозг','maxLayers','Предел скрытых слоёв',0,STRUCTURAL_LIMITS.maxLayers,1],
  ['Мозг','initialNeurons','Начальные нейроны по слоям','neurons'],['Мозг','initialConnections','Начальная связность, %',0,1e6,'any'],
  ['Малый мозг','attentionMaxNeurons','Предел скрытых нейронов',0,STRUCTURAL_LIMITS.maxNeurons,1],['Малый мозг','attentionMaxLayers','Предел скрытых слоёв',0,STRUCTURAL_LIMITS.maxLayers,1],
  ['Малый мозг','attentionInitialNeurons','Начальные нейроны по слоям','neurons'],['Малый мозг','attentionInitialConnections','Начальная связность, %',0,1e6,'any'],
  ...MUTATION_GROUPS.map(key=>Object.freeze(['Мутации блоков','mutationEnabled.'+key,MUTATION_LABELS[key]+': мутации потомков','check'])),
- ...MUTATION_GROUPS.flatMap(key=>[
+ ...MUTATION_GROUPS.flatMap(key=>NUMERIC_MUTATION_GROUPS.includes(key)?[Object.freeze(['Мутации блоков','initialMutation.'+key+'.shape',MUTATION_LABELS[key]+': форма A',Number.MIN_VALUE,Number.MAX_VALUE,'any',true]),Object.freeze(['Мутации блоков','initialMutation.'+key+'.ceiling',MUTATION_LABELS[key]+': потолок r',N.ceilingMin,N.ceilingMax,'any',true])]:[
   Object.freeze(['Мутации блоков','initialMutation.'+key+'.rate',MUTATION_LABELS[key]+': вероятность мутации',EVOLUTION_RULES.rateFloor,1,'any',true]),
   Object.freeze(['Мутации блоков','initialMutation.'+key+'.strength',MUTATION_LABELS[key]+': сила мутации',EVOLUTION_RULES.strengthFloor,Number.MAX_VALUE,'any',true])]),
- ['Размножение','reproduction.energy','Энергия для начала родов',0,100,.1],['Размножение','reproduction.health','Здоровье для начала родов',0,100,.1],['Размножение','reproduction.maturity','Возраст зрелости, Т',0,1000000,.1],['Размножение','reproduction.birthInterval','Интервал между рождениями, Т',0,1000000,.1],
+
  ['Пища на старте','foodSources','Количество источников',0,384,1],['Пища на старте','foodRegrowInterval','Средний период, Т',.1,1e9,.1],['Пища на старте','foodIslandCount','Количество островков',0,384,1],['Пища на старте','foodSizeSpread','Разброс размеров, %',0,90,1],['Пища на старте','foodPeriodSpread','Разброс периодов, %',0,90,1],['Пища на старте','foodCapacityMin','Минимальная вместимость',1,24,1],['Пища на старте','foodCapacityMax','Максимальная вместимость',1,24,1],
  ['Изменение пищи','automaticEnvironment.enabled','Автоматическое изменение пищи','check'],['Изменение пищи','automaticEnvironment.targetSources','Целевое число источников',1,384,1],['Изменение пищи','automaticEnvironment.targetPeriod','Целевой средний период, Т',.1,1e9,.1],['Изменение пищи','automaticEnvironment.minimumRate','Минимальная выработка, порций/Т',Number.MIN_VALUE,3840,'any'],['Изменение пищи','automaticEnvironment.maximumRate','Максимальная выработка, порций/Т',Number.MIN_VALUE,Number.MAX_VALUE,'any'],['Изменение пищи','automaticEnvironment.preparationInterval','Интервал пяти подготовительных событий, Т',1,1e9,1],['Изменение пищи','automaticEnvironment.randomInterval','Интервал последующих изменений, Т',1,1e9,1],
 ].map(Object.freeze));
@@ -29,14 +32,14 @@ export const EXPERIMENT_FACTOR_FIELDS=Object.freeze([...EXPERIMENT_FIELDS,
  Object.freeze(['Геном основателей','baseGenome','Геном из файла','genome']),
  ...FOUNDER_SENSE_FIELDS.map(f=>Object.freeze(['Геном основателей','founderSenses.'+f.key,f.label,f.min,f.max,'any'])),
 ]);
-const HISTORICAL_MUTATION_FIELDS=['context','attention','main'].flatMap(key=>[
+const HISTORICAL_MUTATION_FIELDS=[['Физиология','digestionTime','Прежнее усвоение порции, Т',DIGESTION_TIME_LIMITS.min,DIGESTION_TIME_LIMITS.max,'any'],...['energy','health','maturity','birthInterval'].map(key=>['Прежнее размножение','reproduction.'+key,key,0,1e9,'any']),...['context','attention','main',...NUMERIC_MUTATION_GROUPS].flatMap(key=>[
  ['Мутации v15/v16','mutationEnabled.'+key,(V16_MUTATION_LABELS[key]??'Основной оценщик v15')+': мутации потомков','check'],
  ['Мутации v15/v16','initialMutation.'+key+'.rate','Прежняя вероятность '+key,EVOLUTION_RULES.rateFloor,1,'any'],
- ['Мутации v15/v16','initialMutation.'+key+'.strength','Прежняя сила '+key,EVOLUTION_RULES.strengthFloor,Number.MAX_VALUE,'any']]);
+ ['Мутации v15/v16','initialMutation.'+key+'.strength','Прежняя сила '+key,EVOLUTION_RULES.strengthFloor,Number.MAX_VALUE,'any']])];
 export const factorField=(key,{historical=false}={})=>EXPERIMENT_FACTOR_FIELDS.find(f=>f[1]===key)??(historical?HISTORICAL_MUTATION_FIELDS.find(f=>f[1]===key):null);
 export const historicalFactorLabel=key=>factorField(key,{historical:true})?.[2]??key;
 export const settingAt=(o,path)=>path.split('.').reduce((v,k)=>v?.[k],o);
-export function setSetting(o,path,value){const keys=path.split('.');let at=o;for(const key of keys.slice(0,-1))at=at[key]??={};at[keys.at(-1)]=value;}
+export function setSetting(o,path,value){const keys=path.split('.');let at=o;for(const key of keys.slice(0,-1)){at[key]={...at[key]};at=at[key];}at[keys.at(-1)]=value;}
 export function settingInput(root,field,value,getLimits){if(field[3]==='neurons')return initialNeuronsInput(root,value,getLimits);const input=root.createElement('input');input.type=field[3]==='check'?'checkbox':'number';if(input.type==='checkbox')input.checked=Boolean(value);else{input.min=field[3];input.max=field[4];input.step=field[5];input.value=value??'';input.optional=field[6]===true;}return input;}
 export const settingValue=input=>input.readSetting?input.readSetting():input.type==='checkbox'?input.checked:String(input.value??'').trim()===''?(input.optional?undefined:NaN):Number(input.value);
 export const MAX_EXPERIMENT_COMBINATIONS=64;

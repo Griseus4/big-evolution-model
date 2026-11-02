@@ -1,8 +1,10 @@
 import {EVOLUTION_RULES as R,MUTATION_GROUPS} from './brain-evolution-rules.js';
-import {dualBrainLayout,unpackDualBrain,packDualBrain,ATTENTION_INPUTS,DUAL_SCHEMAS} from './dual-brain-layout.js';
+import {dualBrainLayout,unpackDualBrain,packDualBrain,dualDimensions,ATTENTION_INPUTS,DUAL_SCHEMAS} from './dual-brain-layout.js';
 import {FIXED_PARAMETERS,STRUCTURAL_BLOCKS} from './structural-brain.js';
 import {CONTEXT_INPUTS,CONTEXT_HIDDEN} from './temporal-layout.js';
 import {validateDag} from './dag-network.js';
+import {BODY_GENE_FIELDS,BODY_GENE_DEFAULTS,bodyGeneValues} from './physiology-settings.js';
+import {NUMERIC_MUTATION_GROUPS,NUMERIC_MUTATION_RULES as N,numericMutationProfile,mutateNumeric} from './numeric-mutation.js';
 const LOG_MIN=Math.log(R.strengthFloor),LOG_MAX=Math.log(Number.MAX_VALUE),clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export const DUAL_MUTATION_SCHEMA=DUAL_SCHEMAS[17],LEGACY_DUAL_MUTATION_SCHEMA=DUAL_SCHEMAS[15];
 export const dualMutationSchema=layout=>DUAL_SCHEMAS[layout.version];
@@ -16,14 +18,15 @@ export function decodeMutationPair(pair){
  const [g,s]=pair,e=Math.exp(-Math.abs(g)),sigmoid=g>=0?1/(1+e):e/(1+e);
  return {rate:R.rateFloor+(1-R.rateFloor)*sigmoid,strength:Math.max(R.strengthFloor,Math.exp(s))};
 }
-export function dualMutationProfiles(genes){const l=dualBrainLayout(genes);if(!l)throw new Error('Нужен геном двух сетей.');return Object.fromEntries(l.mutationGroups.map((key,j)=>[key,decodeMutationPair(genes.slice(l.regulatorOffset+j*2,l.regulatorOffset+j*2+2))]));}
+export function dualMutationProfiles(genes){const l=dualBrainLayout(genes);if(!l)throw new Error('Нужен геном двух сетей.');return Object.fromEntries(l.mutationGroups.map((key,j)=>{const pair=genes.slice(l.regulatorOffset+j*2,l.regulatorOffset+j*2+2);return [key,l.version>=18&&NUMERIC_MUTATION_GROUPS.includes(key)?numericMutationProfile(...pair):decodeMutationPair(pair)];}));}
 
 export function validateDualBrain(genes){
  const d=unpackDualBrain(genes);
- if(!Array.isArray(genes)||!genes.every(Number.isFinite)||d.fixed.length!==FIXED_PARAMETERS||d.traits.length!==12||
+ if(!Array.isArray(genes)||!genes.every(Number.isFinite)||d.fixed.length!==d.layout.fixedParameters||d.traits.length!==12||
  [...d.fixed,...d.traits].some(v=>Math.abs(v)>R.weightLimit))throw new Error('Неверные параметры двух сетей.');
  validateDag(d.main);validateDag(d.attention);
- for(let j=0;j<d.layout.regulatorCount;j++)if(!Number.isFinite(d.regulators[j])||j%2&&(d.regulators[j]<LOG_MIN||d.regulators[j]>LOG_MAX))throw new Error('Неверные регуляторы мутаций.');
+ if(d.layout.version>=18){bodyGeneValues(d.body);dualMutationProfiles(genes);}
+ for(let j=0;j<d.layout.regulatorCount;j++)if(!(d.layout.version>=18&&NUMERIC_MUTATION_GROUPS.includes(d.layout.mutationGroups[Math.floor(j/2)]))&&(!Number.isFinite(d.regulators[j])||j%2&&(d.regulators[j]<LOG_MIN||d.regulators[j]>LOG_MAX)))throw new Error('Неверные регуляторы мутаций.');
  return d;
 }
 
@@ -54,6 +57,9 @@ export function randomDag(inputs,outputs,counts,percent,random){
 }
 
 export function randomDualGenome(random,settings={}){
+ const version=settings.genomeVersion??17;
+ if(![17,18].includes(version))throw new Error('Неподдерживаемая начальная схема генома.');
+ const dimensions=dualDimensions(version),FIXED_PARAMETERS=dimensions.fixed,STRUCTURAL_BLOCKS=dimensions.blocks,CONTEXT_INPUTS=dimensions.inputs,ATTENTION_INPUTS=dimensions.attentionInputs;
  const fixed=Array(FIXED_PARAMETERS).fill(0);
  for(const b of STRUCTURAL_BLOCKS)for(let j=0;j<b.weights;j++)fixed[b.offset+j]=(random.next()*2-1)*Math.sqrt(6/(b.inputs+b.outputs));
  const main=randomDag(CONTEXT_INPUTS,CONTEXT_HIDDEN,settings.initialNeurons??R.initialNeurons,settings.initialConnections??R.initialConnections,random),
@@ -64,11 +70,12 @@ export function randomDualGenome(random,settings={}){
   if(!Number.isSafeInteger(maximum)||maximum<0||maximum>R.technicalNeurons||!Number.isSafeInteger(depth)||depth<0||depth>R.technicalLayers||graph.layers.length>maximum||Math.max(0,...graph.layers)>depth)throw new Error('Начальная сеть превышает заданные пределы.');
  }
  const regulators=MUTATION_GROUPS.flatMap(key=>{
+  if(version>=18&&NUMERIC_MUTATION_GROUPS.includes(key)){const p=numericMutationProfile(settings.initialMutation?.[key]?.shape,settings.initialMutation?.[key]?.ceiling);return [p.shape,p.ceiling];}
   const initial=settings.initialMutation?.[key],rate=random.next(),strength=random.next();
   return encodeMutationPair(initial?.rate??(R.initialRateMin+rate*(R.initialRateMax-R.initialRateMin)),
    initial?.strength??(R.initialStrengthMin+strength*(R.initialStrengthMax-R.initialStrengthMin)));
  });
- const genes=packDualBrain({fixed,main,attention,traits:Array.from({length:12},()=>(random.next()-.5)*5),regulators});
+ const genes=packDualBrain({fixed,main,attention,traits:Array.from({length:12},()=>(random.next()-.5)*5),regulators,body:bodyGeneValues(settings.bodyGenes??{}),layout:{version}});
  validateDualBrain(genes);return genes;
 }
 
@@ -123,7 +130,9 @@ function mutateTopology(graph,strength,random,maxNeurons,maxLayers){
 }
 
 export function mutateDualGenome(parent,random,settings={}){
+ if(settings.mutations===false)return parent.slice();
  const d=validateDualBrain(parent),profiles=dualMutationProfiles(parent);
+ if(d.layout.version>=18)return mutateNumericDual(d,profiles,random,settings);
  const legacy=d.layout.version===15,split=d.layout.version>=17;
  const context=legacy?'main':split?'contextWeights':'context',attention=split?'attentionWeights':'attention';
  const contextStructure=split?'contextStructure':context,attentionStructure=split?'attentionStructure':attention;
@@ -151,4 +160,39 @@ export function mutateDualGenome(parent,random,settings={}){
   if(enabled(attentionStructure)&&random.next()<profiles[attentionStructure].rate)mutateTopology(d.attention,profiles[attentionStructure].strength,random,limits('attentionMaxNeurons',R.maxNeurons),limits('attentionMaxLayers',R.maxLayers));
  }
  const genes=packDualBrain(d);validateDualBrain(genes);return genes;
+}
+
+/** В v18 все исходные профили сняты до изменения ребёнка; числовые гены
+ * проходят один раз, а структура использует прежние родительские p/s. */
+function mutateNumericDual(d,profiles,random,settings){
+ const STRUCTURAL_BLOCKS=d.layout.blocks;
+ const enabled=key=>settings.mutationEnabled?.[key]!==false,weightDomain={min:-R.weightLimit,max:R.weightLimit};
+ const change=(v,key,scale=N.weightScale,domain=weightDomain)=>enabled(key)?mutateNumeric(v,scale,profiles[key],random,domain):v;
+ for(const b of STRUCTURAL_BLOCKS){const key=b.key==='context'?'contextWeights':b.key;for(let j=b.offset;j<b.offset+b.weights+(b.bias===null?0:b.outputs);j++)d.fixed[j]=change(d.fixed[j],key);}
+ d.traits=d.traits.map(v=>change(v,'behavior',N.traitScale));
+ for(const [key,field]of Object.entries(BODY_GENE_FIELDS))d.body[key]=change(d.body[key],'behavior',Math.abs(BODY_GENE_DEFAULTS[key]),field);
+ for(let j=0;j<d.main.layers.length;j++)d.main.biases[j]=change(d.main.biases[j],'contextWeights');
+ d.main.biases.splice(d.main.layers.length,CONTEXT_HIDDEN,...d.fixed.slice(STRUCTURAL_BLOCKS[1].bias,STRUCTURAL_BLOCKS[1].bias+CONTEXT_HIDDEN));
+ for(const edge of d.main.edges)edge.weight=change(edge.weight,'contextWeights');
+ d.attention.biases=d.attention.biases.map(v=>change(v,'attentionWeights'));
+ for(const edge of d.attention.edges)edge.weight=change(edge.weight,'attentionWeights');
+ for(let j=0;j<d.layout.mutationGroups.length;j++){
+  const key=d.layout.mutationGroups[j];if(!enabled(key))continue;
+  const parent=profiles[key],behavior=profiles.behavior;
+  if(NUMERIC_MUTATION_GROUPS.includes(key)){
+   d.regulators[2*j]=mutateNumeric(parent.shape,N.shapeScale,behavior,random,{min:0,exclusiveMin:true});
+   d.regulators[2*j+1]=mutateNumeric(parent.ceiling,N.ceilingScale,behavior,random,{min:N.ceilingMin,max:N.ceilingMax});
+  }else{
+   const rate=mutateNumeric(parent.rate,N.traitScale,behavior,random,{min:R.rateFloor,max:1});
+   const strength=mutateNumeric(parent.strength,N.traitScale,behavior,random,{min:R.strengthFloor});
+   d.regulators.splice(2*j,2,...encodeMutationPair(rate,strength));
+  }
+ }
+ if(settings.structuralMutations!==false)for(const [key,graph,prefix]of [['contextStructure',d.main,''],['attentionStructure',d.attention,'attention']]){
+  const p=profiles[key];if(!enabled(key)||random.next()>=p.rate)continue;
+  const neurons=settings[prefix?prefix+'MaxNeurons':'maxNeurons']??R.maxNeurons,layers=settings[prefix?prefix+'MaxLayers':'maxLayers']??R.maxLayers;
+  if(!Number.isSafeInteger(neurons)||neurons<0||neurons>R.technicalNeurons||!Number.isSafeInteger(layers)||layers<0||layers>R.technicalLayers)throw new Error('Неверные пределы мутации структуры.');
+  mutateTopology(graph,p.strength,random,neurons,layers);
+ }
+ const result=packDualBrain(d);validateDualBrain(result);return result;
 }

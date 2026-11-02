@@ -4,7 +4,8 @@ import {mutationSettingsTable,structureSettingsTable} from './brain-settings-tab
 import {validatePlan,validateWorldOptions,standardSeeds,EXPERIMENT_DEFAULTS,EXPERIMENT_TEMPLATES,EXPERIMENT_PLAN_PROTOCOLS,EXPERIMENT_PLAN_VERSION,EXPERIMENT_TERRAIN_SEED,EXPERIMENT_FOOD_SEED} from './experiment-plan.js';
 import {dagConnectionBudget} from './dual-brain-settings.js';
 import {genomeMetadata} from './genome.js';
-import {ATTENTION_INPUTS,DUAL_VERSION} from './dual-brain-layout.js';
+import {CONTEXT_INPUTS as BODY_CONTEXT_INPUTS,ATTENTION_INPUTS as BODY_ATTENTION_INPUTS} from './physiology-brain-layout.js';
+import {ATTENTION_INPUTS,PHYSIOLOGY_GENOME_VERSION as DUAL_VERSION} from './dual-brain-layout.js';
 import {EXPERIMENT_FACTOR_FIELDS,EXPERIMENT_FIELDS as fields,settingAt as get,setSetting as put,settingInput,settingValue} from './experiment-fields.js';
 import {installExperimentDesign} from './experiment-design-ui.js';
 import {installExperimentRuns,runStatus} from './experiment-runs-ui.js';
@@ -45,7 +46,7 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
  const storageStatus=transientStatus(byId('constructor-storage')),exportStatus=transientStatus(byId('constructor-export-state'));
  const error=message=>{byId('constructor-error').textContent=message;};
  let local;try{local=globalThis.localStorage;}catch{}
- function readFounderGenome(value){const file=Array.isArray(value)?{format:'big-evolution-genome',...genomeMetadata(value),genes:value}:value;if(file.version!==DUAL_VERSION)throw new Error('Для новой основы нужен геном v17; прежние миры продолжаются через полное сохранение.');return validateGenomeFile(file);}
+ function readFounderGenome(value){const file=Array.isArray(value)?{format:'big-evolution-genome',...genomeMetadata(value),genes:value}:value;if(file.version!==DUAL_VERSION)throw new Error('Для новой основы нужен геном v18; прежние миры продолжаются через полное сохранение.');return validateGenomeFile(file);}
  const preferences=experimentPreferences(local,message=>byId('constructor-storage').textContent=message);let draftTimer=null,restoring=true;
  const scheduleDraft=()=>{if(restoring)return;clearTimeout(draftTimer);draftTimer=setTimeout(saveDraft,300);};
  const notification=byId('experiment-notification-dialog');
@@ -63,8 +64,8 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
   for(const [category,prefix]of [['Мозг',''],['Малый мозг','attention']])if(title===category){const key=n=>prefix?prefix+n[0].toUpperCase()+n.slice(1):n;grid.replaceChildren(structureSettingsTable(document,title,controls.get(key('maxNeurons')),controls.get(key('maxLayers')),controls.get(key('initialNeurons')),controls.get(key('initialConnections'))));}
  }
  let energyPreview=null;
- const initialControls=wireInitialStructure(controls.get('initialNeurons'),controls.get('initialConnections'),controls.get('maxNeurons'),controls.get('maxLayers'),{onChange:updateDesign,isGenome:()=>Boolean(baseGenome)});
- const attentionControls=wireInitialStructure(controls.get('attentionInitialNeurons'),controls.get('attentionInitialConnections'),controls.get('attentionMaxNeurons'),controls.get('attentionMaxLayers'),{onChange:updateDesign,isGenome:()=>Boolean(baseGenome),connectionBudget:(counts,p=100)=>dagConnectionBudget(ATTENTION_INPUTS,1,counts,p)});
+ const initialControls=wireInitialStructure(controls.get('initialNeurons'),controls.get('initialConnections'),controls.get('maxNeurons'),controls.get('maxLayers'),{onChange:updateDesign,isGenome:()=>Boolean(baseGenome),connectionBudget:(counts,p=100)=>dagConnectionBudget(BODY_CONTEXT_INPUTS,16,counts,p)});
+ const attentionControls=wireInitialStructure(controls.get('attentionInitialNeurons'),controls.get('attentionInitialConnections'),controls.get('attentionMaxNeurons'),controls.get('attentionMaxLayers'),{onChange:updateDesign,isGenome:()=>Boolean(baseGenome),connectionBudget:(counts,p=100)=>dagConnectionBudget(BODY_ATTENTION_INPUTS,1,counts,p)});
  installConditionTabs(byId('constructor-common'),commonTabs);
  byId('constructor-map-note').textContent=`Карта: seed ${EXPERIMENT_TERRAIN_SEED} · пища: seed ${EXPERIMENT_FOOD_SEED} — общие для всех повторов и попыток при одинаковых пищевых настройках. Seed жителей ниже меняют основателей и случайность их жизни. Собранная жителями пища может различаться.`;
  const cap=byId('constructor-workers');for(const count of COMPUTATION_WORKER_COUNTS){const o=make('option',String(count));o.value=count;cap.append(o);}cap.value=4;

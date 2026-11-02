@@ -1,8 +1,11 @@
+import {PHYSIOLOGY_METRICS,BODY_HERITABLE_METRICS} from './physiology-metrics.js';
 import {compileExpression} from './analysis-expression.js';
 import {DUAL_METRICS} from './dual-brain-statistics.js';
 import {createWorldEstimator,bootstrapDraws,quantile,MIN_CONFIDENCE_WORLDS} from './statistics-estimates.js';
 export const ANALYSIS_TEMPLATE_VERSION=1;
 export const ANALYSIS_FIELDS=Object.freeze([
+ ...BODY_HERITABLE_METRICS.map(m=>['heritable.'+m.id,m.label]),
+ ...PHYSIOLOGY_METRICS.filter(m=>!m.death).map(m=>['physiology.'+(m.mean?m.id+'Total':m.array?m.array+'.'+m.index:m.field),m.label]),
  ...DUAL_METRICS.map(m=>['heritable.'+m.id,m.label]),
  ...[['restTime','Время покоя, Т'],['attentionCalls','Проверки диспетчера'],['attentionEnergyCost','Энергия диспетчера'],['mainDecisionEnergyCost','Энергия основного выбора'],['learningEnergyCost','Энергия обучения']].map(([key,label])=>['observations.'+key,label]),
  ...[['brainNeurons','Скрытые нейроны'],['brainConnections','Связи контекста'],['brainLayers','Скрытые слои'],['brainActiveNeurons','Действующие нейроны'],['brainActiveConnections','Действующие связи'],['structuralRate','Вероятность структурной мутации, %']].map(([key,label])=>['heritable.'+key,label]),

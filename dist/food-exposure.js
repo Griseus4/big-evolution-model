@@ -7,9 +7,9 @@ const BLOCK=2048;
 export const FOOD_EXPOSURE_SCHEMA='ground-food-exposure-v1';
 export const MAX_HISTORY_INTERVALS=5000;
 export function createFoodExposure(){return {blocks:[new Float64Array(BLOCK)],length:1,partialSum:0,substeps:0};}
-export function sampleFoodExposure(w){
+export function sampleFoodExposure(w,groundFood=null){
  const e=w.foodExposure;if(!e)return;
- e.partialSum+=w.initialFood+w.stats.regrown-w.stats.gathered+w.stats.deposited;
+ e.partialSum+=groundFood??(w.initialFood+w.stats.regrown-w.stats.gathered+w.stats.deposited);
  if(++e.substeps!==SUBSTEPS)return;
  const i=e.length,previous=e.blocks[Math.floor((i-1)/BLOCK)][(i-1)%BLOCK];
  if(i%BLOCK===0)e.blocks.push(new Float64Array(BLOCK));

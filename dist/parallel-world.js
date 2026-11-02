@@ -1,3 +1,5 @@
+import {parallelPhysiologyCognition} from './physiology-cognition.js';
+import {advancePhysiologyBodies} from './physiology-world.js';
 import {validateCognitionCosts} from './cognition-result-validation.js';
 import {SUBSTEPS} from './action-timing.js';
 import {brainCostProfile} from './brain-cost.js';
@@ -25,7 +27,7 @@ class Endpoint{
  }
  close(error){if(this.pending){clearTimeout(this.pending.timer);this.pending.reject(error);this.pending=null;}return this.worker.terminate();}
 }
-function mirrorBrain(b){return {costProfile:b.costProfile,traits:b.traits,controllerType:b.controllerType,temporal:b.temporal,dual:b.dual,lastDecisionSubtick:b.lastDecisionSubtick,position:b.position,facing:b.facing,updates:b.updates,feelingTotal:b.feelingTotal,feelingSamples:b.feelingSamples,wellbeing:b.wellbeing,memory:new Map(),longMemory:new Map()};}
+function mirrorBrain(b){return {physiology:b.physiology,costProfile:b.costProfile,traits:b.traits,controllerType:b.controllerType,temporal:b.temporal,dual:b.dual,lastDecisionSubtick:b.lastDecisionSubtick,position:b.position,facing:b.facing,updates:b.updates,feelingTotal:b.feelingTotal,feelingSamples:b.feelingSamples,wellbeing:b.wellbeing,memory:new Map(),longMemory:new Map()};}
 export class ParallelWorld{
  constructor(world,{workers=4,createWorker=()=>new Worker(new URL('./cognition-worker.js',import.meta.url),{type:'module'}),timeout=30000}={}){
   if(!world.temporal)throw new Error('Параллельный расчёт поддерживает модель v13.');
@@ -62,6 +64,7 @@ export class ParallelWorld{
  reserve(l,count){if(l.input&&l.capacity>=count)return;let capacity=Math.max(8,l.capacity);while(capacity<count)capacity*=2;l.capacity=capacity;l.input=new Float64Array(capacity*INPUT_WIDTH);l.selections=new Int16Array(capacity);}
  removed(a){const index=this.owners.get(a.id);if(index===undefined)return;this.lanes[index].removed.push({id:a.id,feeling:{feelingTotal:a.brain.feelingTotal,feelingSamples:a.brain.feelingSamples,wellbeing:a.brain.wellbeing}});if(a!==this.retained)this.owners.delete(a.id);}
  async cognition(priming){
+  if(this.world.physiology)return parallelPhysiologyCognition(this,mirrorBrain);
   const w=this.world,packStart=performance.now();
   prepareTemporalBoundary(w);
   this.batch++;
@@ -116,6 +119,7 @@ export class ParallelWorld{
   this.ensureOpen();if(this.busy)throw new Error('Шаг мира уже выполняется.');this.busy=true;
   try{
    const w=this.world;if(!w.agents.length)return;
+   if(w.physiology){for(let i=0;i<SUBSTEPS&&w.agents.length;i++){await this.cognition();advancePhysiologyBodies(w,a=>this.removed(a));finishTemporal(w);}return;}
    if(!w._primed){await this.cognition(true);w._primed=true;}
    if(!w.agents.length){finishTemporal(w);return;}
    for(let i=0;i<SUBSTEPS&&w.agents.length;i++){advanceTemporalBodies(w,a=>this.removed(a));await this.cognition(false);finishTemporal(w);}

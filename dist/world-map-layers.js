@@ -13,6 +13,8 @@ export function drawTerrainLayer(context,tiles,width,height){
 export function drawFoodLayer(context,tiles,width,height){
  context.clearRect(0,0,width,height);
  for(const cell of tiles){const {x,y}=hexCenter(cell);
+  if(cell.grassAmount>0){context.strokeStyle='#b6d57d';context.lineWidth=1;context.beginPath();context.moveTo(x-8,y+5);context.lineTo(x-8,y);context.moveTo(x-10,y+4);context.lineTo(x-8,y+2);context.lineTo(x-6,y);context.stroke();}
+  if(cell.meatAmount>0){context.fillStyle='#c98372';context.fillRect(x+6,y+4,5,4);}
   if(cell.food>0){context.fillStyle='#324d31';context.beginPath();context.arc(x,y-2,7,0,Math.PI*2);context.fill();
    context.fillStyle='#d5acc5';context.beginPath();context.arc(x-3,y-3,2.5,0,Math.PI*2);context.arc(x+3,y,2.5,0,Math.PI*2);context.fill();
    context.font='9px Segoe UI';context.textAlign='center';context.fillStyle='#e9edda';context.fillText(cell.food,x,y+14);

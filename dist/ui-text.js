@@ -1,3 +1,5 @@
+import {PHYSIOLOGY_HELP} from './physiology-help.js';
+import {PHYSIOLOGY_GUIDE_TEXT} from './guide-physiology-text.js';
 import {MUTATION_HELP} from './mutation-help.js';
 import {GUIDE_SYSTEM_TEXT} from './guide-system-text.js';
 import {GUIDE_ANALYSIS_TEXT} from './guide-analysis-text.js';
@@ -287,7 +289,7 @@ ALIASES['history-curve-age-slider']='history-curve-age-max';
 ALIASES['constructor-results-next']='constructor-results-prev';
 export const PAGE_TEXT={
  ...GUIDE_INTRO_TEXT,
- ...GUIDE_REFERENCE_TEXT,...GUIDE_FOOD_TEXT,...GUIDE_FOOD_SOURCES_TEXT,...GUIDE_ENVIRONMENT_TEXT,...GUIDE_MIND_TEXT,...GUIDE_LEARNING_TEXT,...GUIDE_GENETICS_TEXT,...GUIDE_EXPERIMENTS_TEXT,...GUIDE_ANALYSIS_TEXT,...GUIDE_SYSTEM_TEXT,...GUIDE_TIME_TEXT,...GUIDE_NUMBERS_TEXT,...GUIDE_ENERGY_TEXT,...GUIDE_ACTIONS_TEXT,...GUIDE_GEOGRAPHY_TEXT,
+ ...GUIDE_REFERENCE_TEXT,...GUIDE_FOOD_TEXT,...GUIDE_FOOD_SOURCES_TEXT,...GUIDE_ENVIRONMENT_TEXT,...GUIDE_MIND_TEXT,...GUIDE_LEARNING_TEXT,...GUIDE_GENETICS_TEXT,...GUIDE_EXPERIMENTS_TEXT,...GUIDE_ANALYSIS_TEXT,...GUIDE_SYSTEM_TEXT,...GUIDE_TIME_TEXT,...GUIDE_NUMBERS_TEXT,...GUIDE_ENERGY_TEXT,...GUIDE_ACTIONS_TEXT,...GUIDE_GEOGRAPHY_TEXT,...PHYSIOLOGY_GUIDE_TEXT,
  'factor-genome':'Один файл — одно значение фактора. Все основатели варианта получают выбранный геном. Отдельные коэффициенты заменяют только выбранные гены.',
  'factor-founder-senses':'Коэффициент −8…8, не проценты. Без этого параметра сохраняются исходные значения. Меняется геном основателей; потомки наследуют и мутируют по общим условиям.',
  'constructor-genetics':'Все сочетания выбранных значений; максимум 64 на seed. В группе «Геном основателей» доступны файлы геномов и отдельные коэффициенты чувствительности. По умолчанию геномы случайные; загруженная общая основа сохраняет свои значения. Не добавляйте чувствительность, которую хотите оставить исходной.',
@@ -369,6 +371,7 @@ for(const article of GUIDE_ARTICLES){
 // добавляются с явными разделителями в своих модулях представления.
 for(const entry of Object.values(HELP)){entry[0]=typography(entry[0]);entry[1]=typography(entry[1]);}
 for(const key of Object.keys(PAGE_TEXT))PAGE_TEXT[key]=typography(PAGE_TEXT[key]);
+Object.assign(HELP,PHYSIOLOGY_HELP);
 export const UI_TEXT={
  activities:cell=>'Деятельность других: '+(ACTIONS.map((name,i)=>{const n=cell.activities?.[i]??0;return n?`${i<6?'движение ':''}${name.toLowerCase()} — ${n}`:'';}).filter(Boolean).join('; ')||'нет выполняемых действий')+'.',
  evaluatorOnce:'Последовательный оценщик: один замер на версию; число вычислителей не применяется.',

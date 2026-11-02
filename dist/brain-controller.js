@@ -1,3 +1,4 @@
+import {prepareSetDecisionInput as preparePhysiologyInput} from './physiology-inputs.js';
 import {FEELING_SCALES} from './brain-input-scales.js';
 import {BODY_THRESHOLDS} from './model-rules.js';
 /** Контракт между миром и контроллером, первый этап перехода к сети.
@@ -23,7 +24,7 @@ import {beginComputePart,endComputePart} from './performance-probe.js';
 
 export const BRAIN_TYPE='table-linear-v6',DECISION_SCHEMA='local-decision-v1';
 export function createControllerState(genes){return layoutForGenes(genes)?createNeuralBrain(genes):{...createBrain(genes),controllerType:BRAIN_TYPE};}
-export function controllerFeeling(brain,body,stomachCapacity){if(!brain.temporal)return wellbeing(body,brain.traits,stomachCapacity);const v=brain.traits.values,n=Math.abs(v[0])+Math.abs(v[1])+Math.abs(v[3]);return n<1e-12?0:Math.max(-FEELING_SCALES.maximum,Math.min(FEELING_SCALES.maximum,FEELING_SCALES.maximum*(v[0]*(body.energy/FEELING_SCALES.energyCenter-1)+v[1]*(body.health/FEELING_SCALES.healthCenter-1)+v[3]*body.stomach/stomachCapacity)/n));}
+export function controllerFeeling(brain,body,stomachCapacity){if(brain.physiology){body={...body,energy:body.energy/body.energyCapacity*2*FEELING_SCALES.energyCenter,health:body.health/body.healthCapacity*2*FEELING_SCALES.healthCenter};}if(!brain.temporal)return wellbeing(body,brain.traits,stomachCapacity);const v=brain.traits.values,n=Math.abs(v[0])+Math.abs(v[1])+Math.abs(v[3]);return n<1e-12?0:Math.max(-FEELING_SCALES.maximum,Math.min(FEELING_SCALES.maximum,FEELING_SCALES.maximum*(v[0]*(body.energy/FEELING_SCALES.energyCenter-1)+v[1]*(body.health/FEELING_SCALES.healthCenter-1)+v[3]*body.stomach/stomachCapacity)/n));}
 export function observeController(brain,cells,position,tick,visit){observe(brain,cells,position,tick,visit);}
 
 /** Строка — особенность нынешнего контроллера, не правило физики мира.
@@ -41,11 +42,11 @@ export function controllerState(observation){
  * выбора; сейчас они различаются, как в прежней врождённой политике + критике.
  */
 export function prepareControllerDecision(brain,request){
- if(request.schema!==DECISION_SCHEMA)throw new Error('Неизвестная схема наблюдений мозга.');
- return brain.temporal?prepareTemporalInput(brain,request):brain.controllerType===SET_BRAIN_TYPE?prepareSetDecisionInput(brain,request):null;
+ if(request.schema!==(brain.physiology?'local-body-food-target-v1':DECISION_SCHEMA))throw new Error('Неизвестная схема наблюдений мозга.');
+ return brain.physiology?preparePhysiologyInput(brain,request):brain.temporal?prepareTemporalInput(brain,request):brain.controllerType===SET_BRAIN_TYPE?prepareSetDecisionInput(brain,request):null;
 }
 export function evaluateController(brain,genes,request,decision=null){
- if(request.schema!==DECISION_SCHEMA)throw new Error('Неизвестная схема наблюдений мозга.');
+ if(request.schema!==(brain.physiology?'local-body-food-target-v1':DECISION_SCHEMA))throw new Error('Неизвестная схема наблюдений мозга.');
  if(brain.temporal)return temporalBrain.evaluateSetBrain(brain,request,true,decision);
  if(brain.controllerType===SET_BRAIN_TYPE)return evaluateSetBrain(brain,request,true,decision);
  if(Boolean(layoutForType(brain.controllerType))){
@@ -82,7 +83,7 @@ export function evaluateController(brain,genes,request,decision=null){
  * выбранного действия/исторических входов. Старый табличный адаптер сохраняет
  * полную оценку и прежний порядок reduce; сеть использует частные буферы. */
 export function expectedControllerValue(brain,genes,request,decision=null){
- if(request.schema!==DECISION_SCHEMA)throw new Error('Неизвестная схема наблюдений мозга.');
+ if(request.schema!==(brain.physiology?'local-body-food-target-v1':DECISION_SCHEMA))throw new Error('Неизвестная схема наблюдений мозга.');
  if(brain.temporal)return temporalBrain.expectedSetValue(brain,request,decision);
  if(brain.controllerType===SET_BRAIN_TYPE)return expectedSetValue(brain,request,decision);
  if(Boolean(layoutForType(brain.controllerType)))return expectedNeuralValue(brain,request);

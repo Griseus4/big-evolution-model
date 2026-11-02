@@ -1,3 +1,4 @@
+import {checkPhysiologyInvariants} from './physiology-invariants.js';
 import {validateBrainCostMultiplier} from './brain-economy.js';
 import {WORLD_LIMITS} from './world-defaults.js';
 import {STRUCTURAL_TYPE,structuralSettings} from './structural-brain.js';
@@ -53,6 +54,7 @@ const require=(condition,message)=>{if(!condition)throw new Error(message);};
  * на каждом шаге. Механические фикстуры запускаются отдельно.
  */
 export function checkInvariants(s){
+ if(s.physiology)return checkPhysiologyInvariants(s);
  const b=s.balances();
  // Допуск масштабируется с оборотом энергии: миллионы дробных списаний дают
  // погрешность IEEE-754. Допуск записывается в отчёт, потеря порции его превышает.

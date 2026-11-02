@@ -1,6 +1,7 @@
 /** Протокол наблюдателя: без методов физики и без мозгов всей популяции.
  * Статика карты идёт только при смене мира/среды; обычный снимок содержит
  * пищу, точки жителей и подробности одной выбранной жизни. RNG не вызывается. */
+import {grassAmount,meatAmount} from './food-resources.js';
 import {WORLD_WIDTH} from './evolution.js';
 import {foodEnvironment} from './world-edit.js';
 import {environmentStatus} from './automatic-environment.js';
@@ -8,19 +9,19 @@ export const WORLD_PROTOCOL=1;
 export const WORLD_UI_INTERVAL=200;
 // Полный отчёт жизней нужен лишь видимой истории, не каждому кадру карты.
 export const HISTORY_UI_INTERVAL=1000;
-const META=['brainCostMultiplier','attentionMaxNeurons','attentionMaxLayers','attentionInitialNeurons','attentionInitialConnections','initialMutation','mutationEnabled','initialNeurons','initialConnections','maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
+const META=['physiology','bodyGenes','genomeVersion','brainCostMultiplier','attentionMaxNeurons','attentionMaxLayers','attentionInitialNeurons','attentionInitialConnections','initialMutation','mutationEnabled','initialNeurons','initialConnections','maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
  'digestionTime','learningEnabled','memoryEnabled','mutationRate','mutations','brainType','mutationProtocol','reproduction'];
 export function worldPresentation(world,{selected,trail,section='birth',history=false,staticMap=false,movement=false}={}){
  const state={tick:world.tick,environmentRevision:world.environmentRevision,automaticEnvironment:environmentStatus(world),
   agents:world.agents.map(a=>{
-   const point={id:a.id,x:a.x,y:a.y,founderId:a.founderId},p=a.process;
+   const point={id:a.id,x:a.x,y:a.y,founderId:a.founderId,...(world.physiology?{L:a.L,referenceMass:world.physiology.referenceMass,pregnant:!!a.pregnancy,labor:a.pregnancy?.stage==='labor',attackTarget:a.process?.action===11?a.process.targetHandle:null}:{})},p=a.process;
    // Только наблюдателю медленной карты: физическое тело остаётся в x/y.
    // Копируем четыре числа процесса, а не мозг/полный процесс всей популяции.
    if(movement&&p&&p.action<6)point.movement={x:p.destination.x,y:p.destination.y,elapsed:p.elapsed,duration:p.duration};
    return point;
   }),
-  food:Float64Array.from(world.tiles,c=>c.food),summary:world.summary(),
-  stats:{reproduction:world.stats.reproduction,deathsByCause:world.stats.deathsByCause,started:world.stats.started,completed:world.stats.completed,interrupted:world.stats.interrupted,brainCalls:world.stats.brainCalls,gateCalls:world.stats.gateCalls,brainSpent:world.stats.brainSpent},
+  ...(world.physiology?{grass:Float64Array.from(world.tiles,c=>c.looseGrass+(c.grass?grassAmount(c.grass,world.subtick,world.physiology):0)),meat:Float64Array.from(world.tiles,c=>meatAmount(c.meat))}:{}),food:Float64Array.from(world.tiles,c=>c.food),summary:world.summary(),
+  stats:{physiology:world.stats.physiology,reproduction:world.stats.reproduction,deathsByCause:world.stats.deathsByCause,started:world.stats.started,completed:world.stats.completed,interrupted:world.stats.interrupted,brainCalls:world.stats.brainCalls,gateCalls:world.stats.gateCalls,brainSpent:world.stats.brainSpent},
   events:world.events.slice(0,20),history:world.history,environmentChanges:world.environmentChanges,
   nextRegrowth:world.nextFoodRegrowth(),trail:trail.points,selected:null};
  if(staticMap){
@@ -33,13 +34,13 @@ export function worldPresentation(world,{selected,trail,section='birth',history=
   // Полная память только выбранного наблюдателем. Рабочие следы/градиенты и
   // pending-переход не нужны UI, их не копируем даже для выбранного мозга.
   const a=selected,b=a.brain;
-  const fields=['dual','lastDecisionSubtick','traits','controllerType','position','facing','memory','longMemory','updates','feelingTotal',
+  const fields=['physiology','dual','lastDecisionSubtick','traits','controllerType','position','facing','memory','longMemory','updates','feelingTotal',
    'costProfile','feelingSamples','lastLearning','temporal','gateBase','scale','weights','bodyGenes','bodyWeights'];
   const brain=Object.fromEntries(fields.map(k=>[k,b[k]]));
   brain.networkDelta=b.networkDelta;
-  const body=['id','x','y','frameRotation','founderId','generation','parentId','age','children','alive','energy','health','pain',
+  const body=['L','M','energyCapacity','healthCapacity','stomachCapacity','bodyGenes','bodyPlan','foodInventory','id','x','y','frameRotation','founderId','generation','parentId','age','children','alive','energy','health','pain',
    'inventory','stomach','lastAction','process','resting','lastProcess','life','genome'];
-  state.selected={agent:{...Object.fromEntries(body.map(k=>[k,a[k]])),brain},
+  state.selected={agent:{...Object.fromEntries(body.map(k=>[k,a[k]])),pregnancy:a.pregnancy?{stage:a.pregnancy.stage,due:a.pregnancy.due,paid:a.pregnancy.paid,cost:a.pregnancy.cost,fraction:a.pregnancy.fraction,laborDue:a.pregnancy.laborDue}:null,brain},
    birth:world.birthAvailability(a),feeling:world.feeling(a),state:world.state(a),
    options:section==='actions'?(a.alive?world.evaluate(a):a.lastDecision?.options??[]):[],
    neighbours:world.neighbours(a),contacts:world.contacts(a),cells:world.visibleDecisionCells(a)};
@@ -58,7 +59,7 @@ export class WorldView{
    this.tiles=state.tiles;this.foodIslands=state.foodIslands;this.environment=state.environment;
   }
   let foodChanged=Boolean(state.tiles);
-  for(let i=0;i<this.tiles.length;i++){if(this.tiles[i].food!==state.food[i])foodChanged=true;this.tiles[i].food=state.food[i];}
+  for(let i=0;i<this.tiles.length;i++){if(this.tiles[i].food!==state.food[i])foodChanged=true;this.tiles[i].food=state.food[i];if(state.grass){if(this.tiles[i].grassAmount!==state.grass[i]||this.tiles[i].meatAmount!==state.meat[i])foodChanged=true;this.tiles[i].grassAmount=state.grass[i];this.tiles[i].meatAmount=state.meat[i];}}
   if(foodChanged)this.foodRevision++;
   for(const k of ['tick','agents','stats','events','history','environmentRevision','environmentChanges'])this[k]=state[k];
   this.total=state.summary;this.nextRegrowth=state.nextRegrowth;this.detail=state.selected;

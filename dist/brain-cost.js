@@ -3,14 +3,16 @@
  * Эталон — фиксированный v13 на том же числе клеток/кандидатов. Ставки 0.10
  * и 0.03 относятся к полному циклу выбора+обучения эталона, не к каждой фазе. */
 import {SET_BLOCKS,SET_PARAMETER_COUNT,CELL_HIDDEN,CONTEXT_INPUTS,CONTEXT_HIDDEN,CANDIDATE_INPUTS} from './temporal-layout.js';
+import * as physiology from './physiology-brain-layout.js';
 import {DECISION_COST} from './action-timing.js';
 const dense=b=>2*b.weights+(b.bias===null?0:b.outputs);
 const [cells,context,target,operation,direct]=SET_BLOCKS;
 export function brainCostProfile(plan){
- return {context:2*plan.activeEdges+plan.nodes.length+plan.nodes.filter(id=>id<plan.inputs+plan.hidden).length,
+ return {...(plan.physiology?{physiology:true}:{}),context:2*plan.activeEdges+plan.nodes.length+plan.nodes.filter(id=>id<plan.inputs+plan.hidden).length,
   parameters:plan.activeParameters.length};
 }
 export function operationCounts(profile,nCells,nCandidates,nOperations=6){
+ const [cells,context,target,operation,direct]=profile?.physiology?physiology.SET_BLOCKS:SET_BLOCKS,CONTEXT_INPUTS=profile?.physiology?physiology.CONTEXT_INPUTS:context.inputs,CANDIDATE_INPUTS=direct.inputs;
  const contextCost=profile?.context??dense(context)+CONTEXT_HIDDEN;
  const common=nCells*(dense(cells)+CELL_HIDDEN)+nCells*CELL_HIDDEN*5+CONTEXT_INPUTS+contextCost;
  const heads=nOperations*(CONTEXT_HIDDEN*(4+2*target.inputs)+direct.inputs),candidates=nCandidates*(2*target.inputs+8);

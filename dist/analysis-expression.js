@@ -10,7 +10,7 @@ export function compileExpression(source){
  if(typeof source!=='string'||!source.trim()||source.length>600)throw new Error('Выражение должно содержать от 1 до 600 символов.');
  const tokens=[];let offset=0;
  while(offset<source.length){const rest=source.slice(offset),space=/^\s+/.exec(rest);if(space){offset+=space[0].length;continue;}
-  const match=/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|^[A-Za-z_][A-Za-z_0-9]*(?:\.[A-Za-z_][A-Za-z_0-9]*)*|^(?:&&|\|\||<=|>=|==|!=|[()+\-*/%,!<>])/.exec(rest);
+  const match=/^(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|^[A-Za-z_][A-Za-z_0-9]*(?:\.(?:[A-Za-z_][A-Za-z_0-9]*|\d+))*|^(?:&&|\|\||<=|>=|==|!=|[()+\-*/%,!<>])/.exec(rest);
   if(!match)throw new Error(`Неизвестный символ в выражении: ${rest.slice(0,16)}`);tokens.push(match[0]);offset+=match[0].length;
  }
  let at=0,depth=0;const fields=new Set(),births=new Set();

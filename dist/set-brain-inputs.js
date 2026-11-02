@@ -2,6 +2,7 @@
  * Хранилища/закрепление не меняем. Мозг видит наблюдённое и личные гипотезы,
  * не истинные скрытые таймеры. Нейросетевого поиска воспоминаний здесь нет.
  */
+import * as physiology from './physiology-brain-layout.js';
 import {getMemory,memoryBelief,spatialContext,fillActionFeatures,FEATURE_NAMES} from './cognition.js';
 import {positionKey,localNeighbours} from './navigation.js';
 import {bodySenses} from './brain-parameters.js';
@@ -75,4 +76,4 @@ export function prepareSetDecisionInput(brain,request){
 /** Исторический переход владеет снимком, а не ссылкой на нынешнюю память.
  * Обучение прошлого решения не подменяет входы новыми наблюдениями. */
 export function cloneSetInput(frame){return {body:frame.body.slice(),cells:frame.cells.map(row=>row.slice()),memory:frame.memory.slice(),candidate:frame.candidate.slice(),...(frame.process?{process:frame.process.slice()}:{})};}
-export function validSetInput(frame){const temporal=Boolean(frame?.process);return Boolean(frame&&frame.body?.length===(temporal?4:5)&&(!temporal||frame.process.length===PROCESS_NAMES.length&&frame.process.every(Number.isFinite))&&frame.memory?.length===7&&frame.candidate?.length===(temporal?TIME_CANDIDATES:CANDIDATE_INPUTS)&&Array.isArray(frame.cells)&&[frame.body,frame.memory,frame.candidate,...frame.cells].every(row=>row.every(Number.isFinite))&&frame.cells.every(row=>row.length===(temporal?TIME_CELLS:CELL_INPUTS)));}
+export function validSetInput(frame){const temporal=Boolean(frame?.process);if(frame?.body?.length===physiology.BODY_NAMES.length)return Boolean(frame.process?.length===physiology.PROCESS_NAMES.length&&frame.memory?.length===7&&frame.candidate?.length===physiology.CANDIDATE_INPUTS&&Array.isArray(frame.cells)&&frame.cells.every(row=>row.length===physiology.CELL_INPUTS)&&[frame.body,frame.process,frame.memory,frame.candidate,...frame.cells].every(row=>row.every(Number.isFinite)));return Boolean(frame&&frame.body?.length===(temporal?4:5)&&(!temporal||frame.process.length===PROCESS_NAMES.length&&frame.process.every(Number.isFinite))&&frame.memory?.length===7&&frame.candidate?.length===(temporal?TIME_CANDIDATES:CANDIDATE_INPUTS)&&Array.isArray(frame.cells)&&[frame.body,frame.memory,frame.candidate,...frame.cells].every(row=>row.every(Number.isFinite))&&frame.cells.every(row=>row.length===(temporal?TIME_CELLS:CELL_INPUTS)));}

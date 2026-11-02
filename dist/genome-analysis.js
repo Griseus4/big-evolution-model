@@ -1,5 +1,7 @@
 import {STRUCTURAL_TYPE,structuralLayout,structuralData,STRUCTURAL_BLOCKS,FIXED_PARAMETERS,structureCounts} from './structural-brain.js';
 import {DUAL_BRAIN_TYPE,unpackDualBrain} from './dual-brain-layout.js';
+import {BODY_GENE_FIELDS} from './physiology-settings.js';
+import {PHYSIOLOGY_ACTIONS} from './physiology-actions.js';
 import {DUAL_METRICS,dualHeritable} from './dual-brain-statistics.js';
 import {EVOLUTION_RULES} from './brain-evolution-rules.js';
 import {TEMPORAL_BRAIN_TYPE,TEMPORAL_TRAIT_INDICES,temporalParameterLabel,GATE_OFFSET,GATE_NAMES,GATE_INPUTS,GATE_HIDDEN,GATE_PARAMETERS,GATE_HIDDEN_BIAS,GATE_OUTPUT_WEIGHTS,GATE_OUTPUT_BIAS} from './temporal-layout.js';
@@ -220,6 +222,7 @@ function analyzeNeuralGenome(data,{name,sha256}){
  if(layout.version===14)for(const [key,value]of Object.entries(structureCounts(data.genes)))properties.push({key,label:key,group:'Структура мозга',description:'Наследуемая структура главного контекста',present:true,index:null,raw:value,derived:value,unit:key==='structuralRate'?'% / рождение':'элементов',share:null});
  if(layout.version>=15){
   const d=unpackDualBrain(data.genes),stats=dualHeritable(data.genes);
+  if(layout.version===18)Object.entries(BODY_GENE_FIELDS).forEach(([key,f],i)=>properties.push({key:'body-'+key,label:f.label,group:'Тело и пищеварение',description:'Наследуемое значение; эффективные сроки округляются до целого подшага.',present:true,index:layout.bodyOffset+i,raw:d.body[key],derived:d.body[key],unit:f.unit,share:null}));
   const gateTopology=[...d.attention.layers,...d.attention.edges.flatMap(e=>[e.from,e.to])].reduce((h,v)=>Math.imul(h^v,16777619)>>>0,2166136261).toString(16);
   for(const m of DUAL_METRICS)if(stats[m.id]!==undefined)properties.push({key:m.id,label:m.label,group:m.id.includes('Mutation')?'Мутации':'Структура мозга',description:'Наследуемое свойство схемы двух сетей',present:true,index:null,raw:stats[m.id],derived:stats[m.id],unit:m.unit,share:null});
   for(let i=0;i<layout.gateParameters;i++){
@@ -239,7 +242,7 @@ function analyzeNeuralGenome(data,{name,sha256}){
  const environment={};for(const [key,value]of Object.entries(data.environment??{}))if(typeof value==='string'||typeof value==='boolean'||finite(value))environment[key]=value;
  return {name:String(name).slice(0,200),sha256:typeof sha256==='string'&&/^[a-f0-9]{64}$/i.test(sha256)?sha256:null,genomeVersion:layout.version,geneCount:data.genes.length,columns:11,
   stateEncoding:data.network.inputSchema,stateKnown:false,bodySenseKnown:true,bodySenseEncoding:'network-input-v1',modelVersion:data.modelVersion??null,brainType:layout.brainType,
-  traitScale:context.traitScale??TRAIT_SCALE_VERSION,actions:ACTIONS.slice(),source,rules,environment,properties,policy:[],network:{...NETWORK_SCHEMA},inputNames:NEURAL_INPUT_NAMES.slice(),
+  traitScale:context.traitScale??TRAIT_SCALE_VERSION,actions:(layout.version===18?PHYSIOLOGY_ACTIONS:ACTIONS).slice(),source,rules,environment,properties,policy:[],network:{...NETWORK_SCHEMA},inputNames:NEURAL_INPUT_NAMES.slice(),
   architectureLabel:layout.version>=15?`Контекст DAG (${layout.hidden} скрытых), диспетчер DAG (${layout.gateHidden} скрытых); покой без процесса`:[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout.brainType)?`Клетки, деятельность и процесс → все Q; наследуемое внимание ${GATE_INPUTS} → ${GATE_HIDDEN} → 1`:layout.brainType===SET_BRAIN_TYPE?'Общие клетки → ситуация → все Q; 6 операций, направления внутри движения':`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q`,
   insights:[layout.version>=15?`${PARAMETER_COUNT} параметров основного оценщика; ${layout.gateParameters} параметров диспетчера; ${layout.regulatorCount} регуляторов. Начальные диапазоны не ограничивают эволюцию. Диспетчер не обучается за жизнь.`:[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout.brainType)?`${PARAMETER_COUNT} параметров основного мозга, 12 свойств, ${GATE_PARAMETERS} параметра малого мозга. Основной мозг учитывает текущий процесс, его прогресс, причину вызова и цену решения. Малый мозг не обучается за жизнь.`:layout.brainType===SET_BRAIN_TYPE?`Вариант Б: кодировщик клеток ${layout.network.cellInputs} → ${layout.network.cellHidden}, ситуация ${layout.network.contextInputs} → ${layout.network.contextHidden}, цели ${layout.network.targetInputs} → ${layout.network.contextHidden}, критерии 6 операций; ${PARAMETER_COUNT} параметров и 13 общих свойств. Все Q за один прямой вызов; видимость источника независима от порций.`:`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q; ${PARAMETER_COUNT} параметров и 13 свойств ощущений/памяти/обучения.`,
    `Память: краткая ${known?traits.shortCapacity:'неизвестна'}, долгая ${known?traits.longCapacity:'неизвестна'}. Личный опыт не сохранён.`,
@@ -274,9 +277,9 @@ function compareNeuralGenomes(a,b){
 }
 
 function structuralParameterLabel(d,index){
- const l=d.layout;
- if(index>=FIXED_PARAMETERS+l.hidden){const e=d.edges[index-FIXED_PARAMETERS-l.hidden];return `DAG: ${e.to} ← ${e.from}`;}
- if(index>=FIXED_PARAMETERS)return `DAG: смещение скрытого ${index-FIXED_PARAMETERS+1}`;
- const b=STRUCTURAL_BLOCKS.find(b=>index>=b.offset&&index<b.offset+b.weights+(b.bias===null?0:b.outputs));
+ const l=d.layout,fixed=l.fixedParameters??FIXED_PARAMETERS;
+ if(index>=fixed+l.hidden){const e=d.edges[index-fixed-l.hidden];return `DAG: ${e.to} ← ${e.from}`;}
+ if(index>=fixed)return `DAG: смещение скрытого ${index-fixed+1}`;
+ const b=(l.blocks??STRUCTURAL_BLOCKS).find(b=>index>=b.offset&&index<b.offset+b.weights+(b.bias===null?0:b.outputs));
  return `${b.label}: ${index<b.offset+b.weights?'связь '+(index-b.offset+1):'смещение '+(index-b.bias+1)}`;
 }

@@ -33,7 +33,7 @@ function setCommonForward(p,frame){
 }
 function setCandidateForward(p,common,input){
  const mark=beginComputePart('forward');try{
-  const hidden=dense(p,TARGET,input.subarray(6),false),operation=dense(p,OPERATION,input.subarray(0,6),false);
+  const hidden=dense(p,TARGET,input.subarray(OPERATION_NAMES.length),false),operation=dense(p,OPERATION,input.subarray(0,OPERATION_NAMES.length),false);
   let value=p[DIRECT.bias];
   for(let i=0;i<input.length;i++)value+=p[DIRECT.offset+i]*input[i];
   for(let h=0;h<CONTEXT_HIDDEN;h++)value+=common.z[h]*operation[h]*hidden[h]*SCALE;
@@ -44,8 +44,8 @@ function setCandidateForward(p,common,input){
  * строится один вектор коэффициентов; каждое назначение требует 15 умножений.
  * Это та же функция, что setCandidateForward, с иной группировкой сумм. */
 function operationHead(p,common,operation,reuse=null){
- const coefficients=reuse?.coefficients??p.slice(DIRECT.offset+6,DIRECT.bias);let bias=p[DIRECT.bias]+p[DIRECT.offset+operation];
- if(reuse)for(let i=0;i<coefficients.length;i++)coefficients[i]=p[DIRECT.offset+6+i];
+ const coefficients=reuse?.coefficients??p.slice(DIRECT.offset+OPERATION_NAMES.length,DIRECT.bias);let bias=p[DIRECT.bias]+p[DIRECT.offset+operation];
+ if(reuse)for(let i=0;i<coefficients.length;i++)coefficients[i]=p[DIRECT.offset+OPERATION_NAMES.length+i];
  for(let h=0;h<CONTEXT_HIDDEN;h++){
   const factor=common.z[h]*p[OPERATION.offset+h*OPERATION.inputs+operation]*SCALE;
   bias+=factor*p[TARGET.bias+h];for(let i=0;i<TARGET.inputs;i++)coefficients[i]+=factor*p[TARGET.offset+h*TARGET.inputs+i];
@@ -70,7 +70,7 @@ function normalizeProbabilities(s,length){
  let total=0;for(let i=0;i<length;i++){s.probabilities[i]=Math.exp(s.scores[i]-Math.log(s.counts[s.operations[i]])-peak);total+=s.probabilities[i];}
  for(let i=0;i<length;i++){s.probabilities[i]/=total;s.totals[s.operations[i]]+=s.probabilities[i];}
 }
-function headValue(head,input){let value=head.bias;for(let i=0;i<head.coefficients.length;i++)value+=head.coefficients[i]*input[i+6];return value;}
+function headValue(head,input){let value=head.bias;for(let i=0;i<head.coefficients.length;i++)value+=head.coefficients[i]*input[i+OPERATION_NAMES.length];return value;}
 /** Равные Q дают равные вероятности доступных операций. Внутри операции
  * цели имеют softmax(Q/T). Оценка операции — log(mean(exp(Q/T))).
  * Совместная вероятность получается одним устойчивым softmax(Q/T-log(n)).
@@ -149,7 +149,7 @@ function setGradient(p,frame,gradient=new Float64Array(SET_PARAMETER_COUNT)){
    const dz=candidate.hidden[h]*candidate.operation[h]*SCALE*(layout.contextBackward?1:1-common.z[h]**2),dr=common.z[h]*candidate.operation[h]*SCALE;
    outputGradient[h]=dz;if(!layout.contextBackward)gradient[CONTEXT.bias+h]=dz;gradient[TARGET.bias+h]=dr;
    if(!layout.contextBackward)for(let i=0;i<CONTEXT_INPUTS;i++){gradient[CONTEXT.offset+h*CONTEXT_INPUTS+i]=dz*common.input[i];back[i]+=dz*p[CONTEXT.offset+h*CONTEXT_INPUTS+i];}
-   for(let i=0;i<TARGET.inputs;i++)gradient[TARGET.offset+h*TARGET.inputs+i]=dr*frame.candidate[i+6];
+   for(let i=0;i<TARGET.inputs;i++)gradient[TARGET.offset+h*TARGET.inputs+i]=dr*frame.candidate[i+OPERATION_NAMES.length];
    for(let i=0;i<OPERATION.inputs;i++)gradient[OPERATION.offset+h*OPERATION.inputs+i]=common.z[h]*candidate.hidden[h]*SCALE*frame.candidate[i];
   }
   if(layout.contextBackward)layout.contextBackward(p,common,outputGradient,gradient,back,p.structure);

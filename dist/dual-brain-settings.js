@@ -2,6 +2,8 @@ import {EVOLUTION_RULES as R,MUTATION_GROUPS,mutationGroupsForVersion} from './b
 import {initialLayerCounts} from './brain-initialization.js';
 import {CONTEXT_INPUTS,CONTEXT_HIDDEN} from './temporal-layout.js';
 import {ATTENTION_INPUTS,dualBrainLayout,DUAL_SCHEMAS,DUAL_VERSION} from './dual-brain-layout.js';
+import {numericMutationProfile,NUMERIC_MUTATION_GROUPS} from './numeric-mutation.js';
+import {dualDimensions} from './dual-brain-layout.js';
 import {encodeMutationPair} from './dual-brain-genome.js';
 export function dagConnectionBudget(inputs,outputs,counts,percent=100){
  const sizes=[inputs,...counts.filter(Boolean),outputs];let base=0,maximum=0;
@@ -11,11 +13,11 @@ export function dagConnectionBudget(inputs,outputs,counts,percent=100){
  return {base,maximum,maxPercent,count:Math.min(maximum,Math.round(base*percent/100))};
 }
 export function dualStructureSettings(input={}, {historical=false}={}){
- const encoded=dualBrainLayout(input.baseGenome)?.version??Number(Object.keys(DUAL_SCHEMAS).find(v=>DUAL_SCHEMAS[v]===input.mutationProtocol));
+ const encoded=input.genomeVersion??dualBrainLayout(input.baseGenome)?.version??Number(Object.keys(DUAL_SCHEMAS).find(v=>DUAL_SCHEMAS[v]===input.mutationProtocol));
  const keys=Object.keys(input.mutationEnabled??input.initialMutation??{}),version=encoded|| (historical?(keys.includes('main')?15:keys.includes('context')||keys.includes('attention')?16:DUAL_VERSION):DUAL_VERSION);
  historical||=version<DUAL_VERSION;
- const result={};
- for(const [prefix,I,O]of [['',CONTEXT_INPUTS,CONTEXT_HIDDEN],['attention',ATTENTION_INPUTS,1]]){
+ const result={},dim=dualDimensions(version);
+ for(const [prefix,I,O]of [['',dim.inputs,CONTEXT_HIDDEN],['attention',dim.attentionInputs,1]]){
   const key=name=>prefix?prefix+name[0].toUpperCase()+name.slice(1):name;
   const maxNeurons=input[key('maxNeurons')]??R.maxNeurons,maxLayers=input[key('maxLayers')]??R.maxLayers;
   if(!Number.isSafeInteger(maxNeurons)||maxNeurons<0||maxNeurons>R.technicalNeurons||!Number.isSafeInteger(maxLayers)||maxLayers<0||maxLayers>R.technicalLayers)throw new Error('Неверные пределы структуры мозга.');
@@ -27,6 +29,7 @@ export function dualStructureSettings(input={}, {historical=false}={}){
  result.structuralMutations=input.structuralMutations!==false;
  const groups=mutationGroupsForVersion(version),initialMutation={};
  for(const group of groups){const value=input.initialMutation?.[group];if(value){
+  if(version>=18&&NUMERIC_MUTATION_GROUPS.includes(group)){if(Object.keys(value).some(k=>!['shape','ceiling'].includes(k)))throw new Error('v18 требует A/r, прежние p/s не преобразуются.');numericMutationProfile(value.shape,value.ceiling);initialMutation[group]={...value};continue;}
   if(Object.keys(value).some(k=>!['rate','strength'].includes(k)))throw new Error('Неизвестная настройка мутации.');
   encodeMutationPair(value.rate??R.initialRateMin,value.strength??R.initialStrengthMin);initialMutation[group]={...value};
  }}

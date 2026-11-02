@@ -1,12 +1,13 @@
+import {PHYSIOLOGY_METRICS} from './physiology-metrics.js';
 import {LIFE_METRICS} from './life-cohorts.js';
 import {HERITABLE_METRICS} from './heritable-statistics.js';
 import {ANALYSIS_DEFAULT,validateAnalysis} from './analysis-builder-core.js';
 import {validateChartPins} from './chart-context.js';
 export const CHART_CATEGORIES=Object.freeze([
  {id:'survival',label:'Выживание',charts:['population','lifetime','survival','curve']},
- {id:'behavior',label:'Поведение',charts:['movement','eating','reviews','interruptions','brainCalls','brainCost','restTime','attentionCalls','attentionEnergyCost','mainDecisionEnergyCost','learningEnergyCost']},
- {id:'resources',label:'Ресурсы',charts:['inventory','energy','health','feeling','hunger','food','production']},
- {id:'reproduction',label:'Размножение',charts:['children','reproduced','firstBirth']},
+ {id:'behavior',label:'Поведение',charts:['movement','eating','reviews','interruptions','brainCalls','brainCost','restTime','attentionCalls','attentionEnergyCost','mainDecisionEnergyCost','learningEnergyCost','attackDamage','attackDeath']},
+ {id:'resources',label:'Ресурсы',charts:['inventory','energy','health','feeling','hunger','food','production',...PHYSIOLOGY_METRICS.filter(m=>!['pregnancyTime','laborTime','attackDamage','attackDeath'].includes(m.id)).map(m=>m.id)]},
+ {id:'reproduction',label:'Размножение',charts:['children','reproduced','firstBirth','pregnancyTime','laborTime']},
  {id:'genome',label:'Наследуемые свойства',charts:LIFE_METRICS.filter(m=>m.inherited&&!m.signed).map(m=>m.id)},
  {id:'distributions',label:'Распределения',charts:HERITABLE_METRICS.filter(m=>m.signed).map(m=>'distribution-'+m.id)},
 ]);

@@ -8,7 +8,7 @@ import {CELL_INPUTS,CANDIDATE_INPUTS,TARGET_NAMES,PROCESS_NAMES,operationForActi
 import {ACTIVITY_COUNT} from './activity-perception.js';
 import {beginComputePart,endComputePart} from './performance-probe.js';
 const bound=x=>Math.max(-1,Math.min(1,x));
-function target(brain,o,place,cell,potentials,out,at,repeat=false){
+export function target(brain,o,place,cell,potentials,out,at,repeat=false){
  const r=o.memoryEnabled?getMemory(brain,positionKey(place)):null,b=r?memoryBelief(r,o.tick,brain.traits):null;
  const dq=place.q-o.position.q,dr=place.r-o.position.r,own=dq===0&&dr===0;
  let gradient=0;if(o.memoryEnabled&&!own){const positions=localNeighbours(brain),i=positions.findIndex(p=>p.q===place.q&&p.r===place.r);if(i>=0)gradient=potentials[i+1]-potentials[0];}

@@ -1,8 +1,12 @@
 /** Возможности источника определяются по сохранённым полям, до фильтра
  * периода/происхождения. Пустая выборка не меняет схему показателей. */
+import {PHYSIOLOGY_METRICS,BODY_HERITABLE_METRICS} from './physiology-metrics.js';
+const physiologyIds=new Set([...PHYSIOLOGY_METRICS,...BODY_HERITABLE_METRICS].map(m=>m.id));
 export function chartFamilies(report){
  const found=new Set();
  for(const rows of [report?.dead,report?.living])for(const row of rows??[]){
+  found.add('recorded');
+  if(row.physiology?.schema==='physiology-life-v1')found.add('physiology');
   const h=row.heritable;if(!h)continue;
   if(Number.isFinite(h.mainNeurons))found.add('dual');
   if(Number.isFinite(h.mainMutationRate))found.add('v15');
@@ -16,6 +20,7 @@ export function chartFamilies(report){
 export function chartApplicable(def,families){
  if(!def.standard||!families.size)return true;
  const id=def.metric;
+ if(physiologyIds.has(id))return families.has('physiology');
  if(/^brain(Neurons|Connections|Layers|ActiveNeurons|ActiveConnections)$/.test(id)||id==='structuralRate')return families.has('structural');
  if(id==='mutationRate'||id==='mutationStrength')return families.has('legacy');
  if(/^mainMutation/.test(id))return families.has('v15');

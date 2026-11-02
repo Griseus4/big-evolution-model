@@ -1,3 +1,4 @@
+import {physiologyEnergyPreview} from './physiology-preview.js';
 import {RULES,actionEnergyCost,validateDigestionTime} from './model-rules.js';
 import {ACTION_DURATIONS,SUBSTEPS,DECISION_COST} from './action-timing.js';
 import {operationCounts,attentionCharge,ATTENTION_PREPARATION as PREP} from './brain-cost.js';
@@ -11,11 +12,12 @@ import {ACTIVITY_COUNT} from './activity-perception.js';
  * Все суммы — энергия/Т установившегося цикла до заполнения запаса. */
 export const ENERGY_PREVIEW=Object.freeze({moves:12,maxMoves:10000,calls:1,cells:7,candidates:11,operations:6,seed:553});
 export function previewBrain(options={}){
- const genes=options.baseGenome??randomDualGenome(new Random(ENERGY_PREVIEW.seed),dualStructureSettings({...options,initialMutation:undefined}));
+ const genes=options.baseGenome??randomDualGenome(new Random(ENERGY_PREVIEW.seed),{...dualStructureSettings({...options,genomeVersion:options.physiology?18:undefined,initialMutation:undefined}),genomeVersion:options.physiology?18:17,bodyGenes:options.bodyGenes});
  return compileDualState(genes);
 }
-export function energyPreview(options={},brain=previewBrain(options),moves=ENERGY_PREVIEW.moves){
+export function energyPreview(options={},brain=previewBrain(options),moves=ENERGY_PREVIEW.moves,scenario={}){
  if(!Number.isSafeInteger(moves)||moves<1||moves>ENERGY_PREVIEW.maxMoves)throw new Error(`Перемещений на порцию: целое от 1 до ${ENERGY_PREVIEW.maxMoves}.`);
+ if(options.physiology)return physiologyEnergyPreview(options,brain,moves,scenario);
  const k=validateBrainCostMultiplier(options.brainCostMultiplier),digestion=validateDigestionTime(options.digestionTime),p=ENERGY_PREVIEW;
  const moveT=moves*ACTION_DURATIONS[0]/SUBSTEPS,gatherT=ACTION_DURATIONS[6]/SUBSTEPS,eatT=ACTION_DURATIONS[7]/SUBSTEPS;
  const activeT=moveT+gatherT+eatT,cycleT=Math.max(activeT,digestion),waitT=cycleT-activeT;

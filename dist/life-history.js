@@ -7,8 +7,8 @@ import {ACTION_COUNT,DEPOSIT_ACTION} from './policy-layout.js';
 import {reproductionCounters} from './reproduction.js';
 import {cognitionPlaces} from './cognition-summary.js';
 import {describeLifeObservations} from './life-observations.js';
-export const MODEL_VERSION='0.56.2';
-export const CAUSE_LABELS={starvation:'Истощение',injury:'Повреждения',age:'Предел возраста'};
+export const MODEL_VERSION='0.57.0';
+export const CAUSE_LABELS={attack:'Атака',starvation:'Истощение',injury:'Повреждения',age:'Предел возраста'};
 export function createLifeCounters(){return {samples:0,energyTotal:0,healthTotal:0,painTotal:0,
  hungerSteps:0,emptyEnergySteps:0,painSteps:0,gathered:0,eaten:0,deposited:0,moved:0,injuries:0,damage:0,
  firstBirthAge:null,firstMealAge:null,lastMealAge:null,maxMealGap:0,actions:Array(ACTION_COUNT).fill(0),reproduction:reproductionCounters()};}
@@ -38,17 +38,18 @@ export function lifeRow(a,born,tick,cause=null){
  maxStepsWithoutEating:Math.max(c.maxMealGap,a.age-(c.lastMealAge??0)),
  feedingActionFraction:n?(c.gathered+c.eaten)/n:null,
  actions:c.actions.slice(),reproduction:structuredClone(c.reproduction),learningUpdates:a.brain.updates,shortPlaces:cognitionPlaces(a).short,longPlaces:cognitionPlaces(a).long};
- if(a.brain.temporal){for(const k of ['meanPain','painSteps','injuries','damage'])delete result[k];const actions=c.actions.reduce((n,x)=>n+x,0);result.feedingActionFraction=actions?(c.gathered+c.eaten)/actions:null;result.timeSchema='model-time-substeps-v1';if(c.observer)result.observations=describeLifeObservations(c.observer);}return result;
+ if(c.physiology)result.physiology=structuredClone(c.physiology);
+ if(a.brain.temporal){for(const k of ['meanPain','painSteps','injuries','damage'])delete result[k];const actions=c.actions.reduce((n,x)=>n+x,0);result.feedingActionFraction=actions?(c.gathered+c.eaten)/actions:null;result.timeSchema='model-time-substeps-v1';if(c.observer)result.observations=describeLifeObservations(c.observer);if(c.physiology&&result.observations){result.observations.inventoryObservedSteps=c.physiology.samples;result.observations.meanInventory=c.physiology.samples?c.physiology.inventoryTotal/c.physiology.samples:null;result.observations.medianInventory=null;}}return result;
 }
 function group(){return {count:0,ageTotal:0,childrenTotal:0,feelingTotal:0,feelingCount:0,ages:[],
  meals:[],eatenTotal:0,depositedTotal:0,observedSteps:0,feedingActions:0,hungerSteps:0,emptyEnergySteps:0,
  gapTotal:0,maxGap:0,minMeals:null,maxMeals:0,actions:Array(ACTION_COUNT).fill(0),reproduction:reproductionCounters(),causes:{starvation:0,injury:0,age:0}};}
-function add(g,row){g.count++;g.ageTotal+=row.age;g.childrenTotal+=row.children;g.causes[row.cause]++;
+function add(g,row){g.count++;g.ageTotal+=row.age;g.childrenTotal+=row.children;g.causes[row.cause]=(g.causes[row.cause]??0)+1;
  g.eatenTotal+=row.eaten;g.depositedTotal+=row.deposited??0;g.meals[row.eaten]=(g.meals[row.eaten]??0)+1;
  g.minMeals=g.minMeals===null?row.eaten:Math.min(g.minMeals,row.eaten);g.maxMeals=Math.max(g.maxMeals,row.eaten);
  g.observedSteps+=row.observedSteps;g.feedingActions+=row.gathered+row.eaten;g.hungerSteps+=row.hungerSteps;g.emptyEnergySteps+=row.emptyEnergySteps;
  g.gapTotal+=row.maxStepsWithoutEating;g.maxGap=Math.max(g.maxGap,row.maxStepsWithoutEating);
- for(let i=0;i<g.actions.length;i++)g.actions[i]+=row.actions[i]??0;
+ for(let i=0;i<Math.max(g.actions.length,row.actions.length);i++)g.actions[i]=(g.actions[i]??0)+(row.actions[i]??0);
  if(row.reproduction){for(const name of ['decisions','eligible','chosen','births'])g.reproduction[name]+=row.reproduction[name];
   for(const reason of Object.keys(g.reproduction.blocked))g.reproduction.blocked[reason]+=row.reproduction.blocked[reason];}
  if(row.timeSchema)g.ageScale=10;const ageBin=Math.round(row.age*(g.ageScale??1));g.ages[ageBin]=(g.ages[ageBin]??0)+1;if(row.meanFeeling!==null){g.feelingTotal+=row.meanFeeling;g.feelingCount++;}}
@@ -72,9 +73,9 @@ function describe(g){
 }
 export class LifeHistory{
  constructor({retain=Infinity}={}){this.retain=retain;this.rows=[];this.offset=0;this.omitted=0;
-  this.all=group();this.founders=group();this.descendants=group();this.byCause=Object.fromEntries(Object.keys(CAUSE_LABELS).map(k=>[k,group()]));}
+  this.all=group();this.founders=group();this.descendants=group();this.byCause=Object.fromEntries(['starvation','injury','age'].map(k=>[k,group()]));}
  complete(row){
-  add(this.all,row);add(row.parentId===null?this.founders:this.descendants,row);add(this.byCause[row.cause],row);
+  add(this.all,row);add(row.parentId===null?this.founders:this.descendants,row);add(this.byCause[row.cause]??=group(),row);
   this.rows.push(row);
   if(this.rows.length-this.offset>this.retain){this.offset++;this.omitted++;}
   // Амортизированная очистка очереди: не копируем длинный массив при каждой смерти.

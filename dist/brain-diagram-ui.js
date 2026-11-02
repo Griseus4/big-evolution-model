@@ -2,13 +2,16 @@ import {BRAIN_COMPONENTS,BRAIN_LEGEND,brainFeatureExplanation} from './brain-dia
 import {diagramLayout,fitViewport,resizeViewport,zoomViewport,panViewport,diagramHit,selectedEdge,EDGE_WIDTH,MODAL_DIAGRAM_OCCUPANCY} from './brain-diagram-viewport.js';
 /** Только представление выбранного мозга. Клик читает существующие веса;
  * ни активаций, ни выбора, ни обучения, ни RNG просмотр не выполняет. */
-import {structuralData,STRUCTURAL_BLOCKS,FIXED_PARAMETERS} from './structural-brain.js';
+import {structuralData,STRUCTURAL_BLOCKS as OLD_BLOCKS,FIXED_PARAMETERS as OLD_FIXED_PARAMETERS} from './structural-brain.js';
 import {dualBrainLayout,unpackDualBrain} from './dual-brain-layout.js';
+import * as physiologyLayout from './physiology-brain-layout.js';
+import * as oldLayout from './temporal-layout.js';
 import {CONTEXT_NAMES,CELL_NAMES,CANDIDATE_NAMES,OPERATION_NAMES,GATE_NAMES,GATE_HIDDEN_BIAS,GATE_OUTPUT_WEIGHTS,GATE_OUTPUT_BIAS} from './temporal-layout.js';
 const views=new WeakMap();
 export function brainDiagramModel(agent,component='context',learningEnabled=true){
  const dual=dualBrainLayout(agent.genome)?unpackDualBrain(agent.genome):null;
  const d=dual?{layout:dual.layout,layers:dual.main.layers,edges:dual.main.edges}:structuralData(agent.genome);if(!d)return null;const b=agent.brain,l=d.layout;
+ const {CONTEXT_NAMES,CELL_NAMES,CANDIDATE_NAMES,OPERATION_NAMES,GATE_NAMES}=l.version>=18?physiologyLayout:oldLayout,STRUCTURAL_BLOCKS=l.blocks??OLD_BLOCKS,FIXED_PARAMETERS=l.fixedParameters??OLD_FIXED_PARAMETERS;
  const nodes=[],edges=[],base=agent.genome,delta=b.networkDelta;
  const node=(id,layer,label,index=null)=>nodes.push({id,layer,label,index});
  const edge=(from,to,index,gate=false)=>edges.push({from,to,index,base:gate?b.gateBase[index]:base[index],delta:gate?0:delta?.[index]??0,enabled:gate||learningEnabled});
@@ -20,7 +23,7 @@ export function brainDiagramModel(agent,component='context',learningEnabled=true
   d.edges.forEach((e,j)=>edge(e.from,e.to,FIXED_PARAMETERS+n+j));
  }else if(component==='gate'&&dual){
   const graph=dual.attention,I=graph.inputs,H=graph.layers.length,depth=Math.max(0,...graph.layers);
-  [...GATE_NAMES,'Давность основного решения'].forEach((name,j)=>node(j,0,name));
+  (l.version>=18?GATE_NAMES:[...GATE_NAMES,'Давность основного решения']).forEach((name,j)=>node(j,0,name));
   graph.layers.forEach((layer,j)=>node(I+j,layer,`Диспетчер ${j+1}`,l.gateOffset+j));
   node(I+H,depth+1,'Запросить основной мозг',l.gateOffset+H);
   graph.edges.forEach((e,j)=>edge(e.from,e.to,H+1+j,true));
@@ -30,7 +33,7 @@ export function brainDiagramModel(agent,component='context',learningEnabled=true
   node(21,2,'Запросить основной мозг',l.gateOffset+GATE_OUTPUT_BIAS);
  }else{
   const block=STRUCTURAL_BLOCKS.find(b=>b.key===component);if(!block)return null;
-  const names=component==='cells'?CELL_NAMES:component==='target'?CANDIDATE_NAMES.slice(6):component==='operation'?OPERATION_NAMES:CANDIDATE_NAMES;
+  const names=component==='cells'?CELL_NAMES:component==='target'?CANDIDATE_NAMES.slice(OPERATION_NAMES.length):component==='operation'?OPERATION_NAMES:CANDIDATE_NAMES;
   for(let i=0;i<block.inputs;i++)node(i,0,names[i]);
   for(let h=0;h<block.outputs;h++){node(block.inputs+h,1,`${block.label} ${h+1}`,block.bias===null?null:block.bias+h);for(let i=0;i<block.inputs;i++)edge(i,block.inputs+h,block.offset+h*block.inputs+i);}
  }

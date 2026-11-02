@@ -19,6 +19,9 @@ import {EVOLUTION_RULES} from './brain-evolution-rules.js';
  * Отрисовка не обращается к нему и не влияет на результаты опыта.
  */
 import {TEMPORAL_BRAIN_TYPE} from './temporal-layout.js';
+import {physiologyBalances,physiologySummary} from './physiology-statistics.js';
+import {physiologySettings,bodyGeneValues} from './physiology-settings.js';
+import {initializePhysiologyAgent,initializePhysiologyWorld,physiologyFrame,physiologyObservation,physiologyBirthAvailability,physiologyDeath,advancePhysiology} from './physiology-world.js';
 import {initializeTemporal,advanceTemporal,temporalObservation,temporalFrame,temporalBirthAvailability} from './temporal-world.js';
 import {Random, key, hexCenter, HEX_RADIUS, HEX_WIDTH} from './simulation.js';
 import {ACTIONS} from './action-catalog.js';
@@ -100,10 +103,11 @@ export class Evolution {
   * В режиме «мутации выключены» их геном и геномы потомков остаются неизменны.
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?STRUCTURAL_TYPE:SET_BRAIN_TYPE,
-  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,brainCostMultiplier,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections,attentionMaxNeurons=EVOLUTION_RULES.maxNeurons,attentionMaxLayers=EVOLUTION_RULES.maxLayers,attentionInitialNeurons=[],attentionInitialConnections=100,initialMutation,mutationEnabled}={}){
+  scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,brainCostMultiplier,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections,attentionMaxNeurons=EVOLUTION_RULES.maxNeurons,attentionMaxLayers=EVOLUTION_RULES.maxLayers,attentionInitialNeurons=[],attentionInitialConnections=100,initialMutation,mutationEnabled,physiology=null,bodyGenes,genomeVersion}={}){
+  if(physiology!==null){this.physiology=physiologySettings(physiology);this.genomeVersion=18;this.bodyGenes=bodyGeneValues(bodyGenes??{});temporal=true;brainType=DUAL_BRAIN_TYPE;}else if(genomeVersion!==undefined)this.genomeVersion=genomeVersion;
   this.temporal=Boolean(temporal);this.brainCostMultiplier=validateBrainCostMultiplier(brainCostMultiplier);
   Object.assign(this,structuralSettings({maxNeurons,maxLayers,structuralMutations,initialNeurons:baseGenome?null:initialNeurons,initialConnections:baseGenome?STRUCTURE_RULES.initialConnections:initialConnections}));
-  if(brainType===DUAL_BRAIN_TYPE)Object.assign(this,dualStructureSettings({maxNeurons,maxLayers,initialNeurons,initialConnections,structuralMutations,attentionMaxNeurons,attentionMaxLayers,attentionInitialNeurons,attentionInitialConnections,initialMutation,mutationEnabled,baseGenome}));
+  if(brainType===DUAL_BRAIN_TYPE)Object.assign(this,dualStructureSettings({maxNeurons,maxLayers,initialNeurons,initialConnections,structuralMutations,attentionMaxNeurons,attentionMaxLayers,attentionInitialNeurons,attentionInitialConnections,initialMutation,mutationEnabled,baseGenome,genomeVersion:this.genomeVersion}));
   this.digestionTime=validateDigestionTime(digestionTime);
   this.digestionRate=RULES.foodEnergy/this.digestionTime;
   if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(brainType))throw new Error('Неизвестная схема временного мозга.');
@@ -131,6 +135,7 @@ export class Evolution {
   this.mutationRate=bound(mutationRate,0,.3);this.mutations=mutations;
   this.baseGenome=baseGenome?validateGenomeFile({format:'big-evolution-genome',
    ...genomeMetadata(baseGenome),genes:baseGenome}):null;
+  if(this.physiology&&this.baseGenome&&unpackDualBrain(this.baseGenome).layout.version!==18)throw new Error('Старый геном не является основой новой физики.');
   if(this.baseGenome){this.brainType=genomeMetadata(this.baseGenome).brainType;const l=structuralLayout(this.baseGenome);if(l&&(l.hidden>this.maxNeurons||Math.max(0,...this.baseGenome.slice(l.topologyOffset,l.topologyOffset+l.hidden))>this.maxLayers))throw new Error('Геном превышает выбранные пределы нейронов/слоёв.');}
   if(this.baseGenome&&this.brainType===DUAL_BRAIN_TYPE){const d=unpackDualBrain(this.baseGenome);for(const [graph,n,l]of [[d.main,this.maxNeurons,this.maxLayers],[d.attention,this.attentionMaxNeurons,this.attentionMaxLayers]])if(graph.layers.length>n||Math.max(0,...graph.layers)>l)throw new Error('Геном превышает пределы двух структур.');}
   if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(this.brainType))throw new Error('Неизвестная схема временного мозга.');
@@ -225,6 +230,7 @@ export class Evolution {
   this.log('Начало',`${this.agents.length} основателей. Предпочтения ${this.baseGenome?'взяты из сохранённого генома':'случайны'}.`);
   if(this.temporal)initializeTemporal(this);
   if(this.temporal)initializeEnvironment(this,automaticEnvironment);
+  if(this.physiology)initializePhysiologyWorld(this);
   this.record();
  }
  tile(x,y){return x<0||y<0||x>=WORLD_WIDTH||y>=WORLD_HEIGHT?null:this.tiles[y*WORLD_WIDTH+x];}
@@ -276,7 +282,7 @@ export class Evolution {
   * Сам геном хранится у живого жителя. Это ограничивает накопление больших таблиц.
   * Лёгкие записи старых умерших удаляются, текущие родители сохраняются.
   */
- addAgent(position,genome,parent){
+ addAgent(position,genome,parent,body=null){
   const id=this.nextId++,founderId=parent?.founderId??id;
   // Поворот личной системы не наследуется и не зависит от координат рождения.
   // Отдельный генератор не расходует RNG физики и прежних генов.
@@ -286,6 +292,7 @@ export class Evolution {
    health:BODY_LIMITS.health,pain:0,stomach:0,inventory:0,age:0,lastBirthAge:-this.reproduction.birthInterval,
    children:0,lastAction:null,lastDecision:null,lastDamage:0,alive:true,genome,frameRotation,brain:createControllerState(genome),life:createLifeCounters(),born:this.tick};
   if(this.temporal){delete a.pain;delete a.lastDamage;for(const k of ['painTotal','painSteps','injuries','damage'])delete a.life[k];a.process=null;a.callReason=0;a.lastAction=8;a.readyAt=(this.subtick??0)+(parent?1:0);a.lastProcess={action:8,localDestination:{...a.brain.position},direction:null,elapsed:ACTION_DURATIONS[8],duration:ACTION_DURATIONS[8]};}
+  if(this.physiology)initializePhysiologyAgent(this,a,body);
   if(this.temporal){a.life.observer=createLifeObservations(RULES.inventoryCapacity);a.life.heritable=captureHeritable(a);}
   if(a.brain.dual)Object.assign(a.life.observer,{restTime:0,attentionCalls:0,attentionEnergyCost:0,mainDecisionEnergyCost:0,learningEnergyCost:0});
   a.brain.wellbeing=this.feeling(a);
@@ -311,13 +318,14 @@ export class Evolution {
  /** Только круговой обзор. Мировые адреса остаются у исполнителя. Источник
   * виден даже пустым; наружу выходит только булев признак, не ёмкость/таймер. */
  visibleDecisionCells(a){
+  if(this.physiology)return physiologyObservation(this,a).cells;
   if(this.temporal)return temporalObservation(this,a).cells;
   return [a.brain.position,...localNeighbours(a.brain)].flatMap(place=>{
    const world=memoryWorldPosition(a,place),cell=this.tile(world.x,world.y);
    return cell?[{q:place.q,r:place.r,food:cell.food,isFoodSource:cell.maxFood>0,terrain:cell.terrain,hazard:cell.risk>0,neighbours:countOthers(this.occupancy,a,world.x,world.y)}]:[];
   });
  }
- decisionObservation(a){if(this.temporal)return temporalObservation(this,a);return {
+ decisionObservation(a){if(this.physiology)return physiologyObservation(this,a);if(this.temporal)return temporalObservation(this,a);return {
   body:{energy:a.energy,health:a.health,inventory:a.inventory,pain:a.pain,stomach:a.stomach},
   capacities:{inventory:RULES.inventoryCapacity,stomach:RULES.stomachCapacity},
   position:{...a.brain.position},currentFood:this.tile(a.x,a.y).food>0,
@@ -334,6 +342,7 @@ export class Evolution {
   * и никогда ему не передаётся. id связывает оценённый вариант с исполнением.
   */
  decisionFrame(a,withExecution=true){
+  if(this.physiology)return physiologyFrame(this,a,withExecution);
   if(this.temporal)return temporalFrame(this,a,withExecution);
   // Продолжение TD оценивает допустимые действия, но не исполняет их:
   // не создаём Map и копии мировых назначений. Публичный пакет прежний.
@@ -409,7 +418,7 @@ export class Evolution {
   return true;
  }
  /** Чувства вычисляются только из тела и генетической чувствительности. */
- feeling(a){return controllerFeeling(a.brain,{energy:a.energy,health:a.health,pain:a.pain,stomach:a.stomach},RULES.stomachCapacity);}
+ feeling(a){if(this.physiology)return controllerFeeling(a.brain,a,a.stomachCapacity);return controllerFeeling(a.brain,{energy:a.energy,health:a.health,pain:a.pain,stomach:a.stomach},RULES.stomachCapacity);}
  /** Смотрим на текущий гекс и шесть соседей. Дальние клетки не читаются.
   * Повторный взгляд после действия уточняет пищу, подобранную самим жителем.
   */
@@ -455,6 +464,7 @@ export class Evolution {
   * Проверка не пишет статистику: evaluate вызывается также UI и TD-критиком.
   */
  birthAvailability(a){
+  if(this.physiology)return physiologyBirthAvailability(this,a);
   if(this.temporal)return temporalBirthAvailability(this,a);
   const blocked=[];
   if(a.energy<this.reproduction.energy)blocked.push('energy');
@@ -495,8 +505,8 @@ export class Evolution {
   * Возвращение её в среду, лечение и сложная физиология — будущие механизмы.
   */
  die(a,cause){
-  if(!a.alive)return;a.alive=false;removeOccupant(this.occupancy,a.id);
-  this.stats.deaths++;this.stats.deathsByCause[cause]++;
+  if(!a.alive)return;if(this.physiology)physiologyDeath(this,a);a.alive=false;removeOccupant(this.occupancy,a.id);
+  this.stats.deaths++;this.stats.deathsByCause[cause]=(this.stats.deathsByCause[cause]??0)+1;
   this.stats.discardedFood+=a.inventory;this.stats.deathEnergy+=a.energy+a.stomach;
   Object.assign(this.records.get(a.id),{death:this.tick,cause});
   this.lifeHistory.complete(lifeRow(a,a.born,this.tick,cause));
@@ -506,8 +516,8 @@ export class Evolution {
   * первый элемент массива не получает постоянного преимущества в сборе еды.
   * Родившиеся в этом шаге включатся в действия только на следующем шаге.
   */
- step(){if(this.temporal){for(let i=0;i<SUBSTEPS&&this.agents.length;i++)advanceTemporal(this);return;}return this.legacyStep();}
- substep(){if(!this.temporal)throw new Error('Подшаги толькоv13');advanceTemporal(this);}
+ step(){if(this.physiology){for(let i=0;i<SUBSTEPS&&this.agents.length;i++)advancePhysiology(this);return;}if(this.temporal){for(let i=0;i<SUBSTEPS&&this.agents.length;i++)advanceTemporal(this);return;}return this.legacyStep();}
+ substep(){if(this.physiology){advancePhysiology(this);return;}if(!this.temporal)throw new Error('Подшаги толькоv13');advanceTemporal(this);}
  legacyStep(){
   if(!this.agents.length)return;
   this.tick++;
@@ -580,7 +590,7 @@ export class Evolution {
  /** Общие показатели не заменяют индивидуальных жителей в расчёте. */
  summary(){
   const n=this.agents.length;
-  return {tick:this.tick,population:n,meanEnergy:n?this.agents.reduce((s,a)=>s+a.energy,0)/n:0,
+  return {...(this.physiology?physiologySummary(this):{}),tick:this.tick,population:n,meanEnergy:n?this.agents.reduce((s,a)=>s+a.energy,0)/n:0,
    meanFeeling:n?this.agents.reduce((sum,a)=>sum+this.feeling(a),0)/n:0,
    learningUpdates:this.agents.reduce((sum,a)=>sum+a.brain.updates,0),maxGeneration:this.maxGeneration,
    births:this.stats.births,deaths:this.stats.deaths,atLimit:n>=this.limit,
@@ -591,7 +601,7 @@ export class Evolution {
   * Энергия пищи в мире + инвентаре + желудках + теле учитывается одним запасом.
   * Полный баланс включает расход, выброшенную пищу, потери при смерти и насыщении.
   */
- balances(){
+ balances(){if(this.physiology)return physiologyBalances(this);
   const worldFood=this.tiles.reduce((s,c)=>s+c.food,0);
   const inventory=this.agents.reduce((s,a)=>s+a.inventory,0);
   const stored=this.agents.reduce((s,a)=>s+a.energy+a.stomach,0)+(worldFood+inventory)*RULES.foodEnergy;

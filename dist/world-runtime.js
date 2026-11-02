@@ -138,7 +138,8 @@ export class WorldRuntime{
     result={name:`big-evolution-world-seed-${this.world.seed}-step-${this.world.tick}.json`,json:JSON.stringify(saveWorld(this.world))};
    }else if(type==='load-world'){
     if(typeof payload.json!=='string'||payload.json.length>MAX_WORLD_SAVE_BYTES)throw new Error('Недопустимый размер сохранения.');
-    const next=loadWorld(JSON.parse(payload.json)),previous=this.executor;let executor=null;
+    const file=JSON.parse(payload.json);if(this.world?.physiology&&file.version!==5)throw new Error('Этот мир создан для прежней физики. Для новой модели начните новый мир; старые результаты доступны в статистике.');
+    const next=loadWorld(file),previous=this.executor;let executor=null;
     try{executor=this.executorFactory?.(next,{computeWorkers:this.computeMode})??null;if(executor){await executor.ready();await executor.attach();}}
     catch(error){await executor?.close();throw new Error('Не удалось подготовить загруженный мир: '+error.message);}
     this.profiler.stop('world-loaded');this.setRunning(false);this.executor=executor;this.world=next;

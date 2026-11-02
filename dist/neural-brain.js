@@ -84,7 +84,7 @@ export function createNeuralBrain(genes){
  // Пространственная память общая, но таблицы оценок/пар тела не храним.
  brain.experience=new Float64Array(0);brain.weights=new Float64Array(0);
  brain.bodyGenes=new Float64Array(0);brain.bodyWeights=new Float64Array(0);
- brain.outcomeExpectation=new Float64Array(ACTION_COUNT);
+ brain.outcomeExpectation=new Float64Array(layout.version>=18?12:ACTION_COUNT);
  if([TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(layout.brainType)){brain.temporal=true;brain.gateBase=createGate(genes,layout.gateOffset);const q=brain.traits.discount**.1;brain.timeReward={q,b:.04*(1-q)/(1-brain.traits.discount)};brain.decayTime=0;}
  if(layout.version===14){brain.structure=compileStructure(genes);brain.costProfile=brainCostProfile(brain.structure);}
  if(layout.version>=15)Object.assign(brain,compileDualState(genes));

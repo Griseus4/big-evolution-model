@@ -119,11 +119,13 @@ export function compileStructure(genes){
 }
 export function structureCounts(genes,plan=null){const p=plan??compileStructure(genes);return {brainNeurons:p.hidden,brainConnections:structuralLayout(genes).edgeCount,brainLayers:Math.max(0,...p.layers),brainActiveNeurons:p.nodes.filter(id=>id<I+p.hidden).length,brainActiveConnections:p.activeEdges,structuralRate:100*structuralProbability(genes)};}
 export function contextForward(p,input,plan){
+ const I=plan.inputs,O=plan.outputs,FIXED_PARAMETERS=plan.fixedParameters??STRUCTURAL_BLOCKS.at(-1).bias+1;
  const values=new Float64Array(I+plan.hidden+O);values.set(input);
  for(const id of plan.nodes){let v=id<I+plan.hidden?p[FIXED_PARAMETERS+id-I]:p[plan.outputBias+id-I-plan.hidden];for(const e of plan.incoming[id])v+=p[e.index]*values[e.from];values[id]=id<I+plan.hidden?Math.tanh(v):v;}
  return {z:values.subarray(I+plan.hidden),values};
 }
 export function contextBackward(p,common,dz,gradient,back,plan){
+ const I=plan.inputs,FIXED_PARAMETERS=plan.fixedParameters??STRUCTURAL_BLOCKS.at(-1).bias+1;
  const derivatives=new Float64Array(common.values.length);derivatives.set(dz,I+plan.hidden);
  for(let k=plan.nodes.length-1;k>=0;k--){const id=plan.nodes[k],hidden=id<I+plan.hidden,d=derivatives[id]*(hidden?1-common.values[id]**2:1),index=hidden?FIXED_PARAMETERS+id-I:plan.outputBias+id-I-plan.hidden;gradient[index]+=d;for(const e of plan.incoming[id]){gradient[e.index]+=d*common.values[e.from];derivatives[e.from]+=d*p[e.index];}}
  for(let i=0;i<I;i++)back[i]+=derivatives[i];

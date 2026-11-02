@@ -4,7 +4,7 @@ import {experimentOutcomes} from './experiment-outcomes.js';
 import {LIFE_METRICS} from './life-cohorts.js';
 import {v,p,a,table,details} from './guide-markup.js';
 
-export function guidePlanExample(){return validatePlan({worlds:1,seeds:[42],steps:100,factors:[{key:'learning',values:[true,false]},{key:'digestionTime',values:[2,5,20]}]});}
+export function guidePlanExample(){return validatePlan({worlds:1,seeds:[42],steps:100,factors:[{key:'learning',values:[true,false]},{key:'bodyGenes.tau',values:[2,5,20]}]});}
 export function guideAttemptExample(){const attempts=[{id:'first',status:'completed',extinct:true,tick:20},{id:'second',status:'completed',extinct:false,tick:100}];return {attempts,selected:selectAttempt(attempts,100)};}
 export function guideOutcomesExample(){const e=guideAttemptExample();return experimentOutcomes({plan:{variants:[{id:'v1',name:'Учебный вариант'}]},groups:[{variantId:'v1',status:'completed',attempts:e.attempts,selectedId:e.selected.id}]})[0];}
 export const GUIDE_METRIC_MEANINGS={
@@ -22,8 +22,8 @@ const plan=guidePlanExample(),attempt=guideAttemptExample();
 export const GUIDE_EXPERIMENTS_TEXT={
  'guide-experiment-design-body':
  p('План опыта задаёт общие условия и список отличающихся параметров. Каждое сочетание значений становится вариантом. Внутри варианта запускается несколько независимых исходных повторов. Поля плана не меняют уже рассчитанные результаты.')
- +'<h4>Пример: обучение и длительность усвоения</h4>'
- +p(`В учебном плане обучение имеет значения «включено/выключено», а время усвоения — 2, 5 и 20 Т. Валидатор строит ${v(plan.variants.length,'вариантов')}: каждое значение первого фактора сочетается с каждым значением второго. Число миров на вариант затем умножает количество исходных повторов, а повторные попытки при вымирании могут добавить фактические запуски.`)
+ +'<h4>Пример: обучение и срок удержания пищи</h4>'
+ +p(`В учебном плане обучение имеет значения «включено/выключено», а срок удержания пищи — 2, 5 и 20 Т. Валидатор строит ${v(plan.variants.length,'вариантов')}: каждое значение первого фактора сочетается с каждым значением второго. Число миров на вариант затем умножает количество исходных повторов, а повторные попытки при вымирании могут добавить фактические запуски.`)
  +table('Какие данные плана различаются',['Часть','Роль'],[
  ['План опыта','Название, длительность мира, число повторов, seeds и бюджет вычислителей.'],
  ['Общие условия','Стартовое население/лимит, пища, возможности, физиология, размножение, структура и автоматика.'],

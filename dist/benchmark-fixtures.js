@@ -9,12 +9,12 @@ import {ACTION_DURATIONS} from './action-timing.js';
 import {Evolution} from './evolution.js';
 import {observe} from './cognition.js';
 import {positionKey,localNeighbours} from './navigation.js';
-export const BENCHMARK_SUITE_ID='structural-brain-workloads-v1';
+export const BENCHMARK_SUITE_ID='physiology-workloads-v1';
 export const BENCHMARK_REPEATS=3;
 export const BENCHMARK_CASES=Object.freeze([
  {id:'evaluator-empty',label:'Оценщик · пустая память',kind:'evaluator',seed:701,population:16,filled:false,work:4096,warmup:256},
  {id:'evaluator-memory',label:'Оценщик · заполненная память',kind:'evaluator',seed:702,population:16,filled:true,work:4096,warmup:256},
- {id:'evaluator-all-actions',label:'Оценщик · все 11 действий',kind:'evaluator',seed:703,population:16,filled:true,allActions:true,work:4096,warmup:256},
+ {id:'evaluator-all-actions',label:'Оценщик · действия, виды пищи и жертва',kind:'evaluator',seed:703,population:16,filled:true,allActions:true,work:4096,warmup:256},
  {id:'world-150',label:'Мир · 150 основателей',kind:'world',seed:801,population:150,filled:false,work:64,warmup:8},
  {id:'world-400',label:'Мир · 400, заполненная память',kind:'world',seed:802,population:400,filled:true,work:64,warmup:8},
  {id:'world-1000',label:'Мир · 1000, заполненная память',kind:'world',seed:803,population:1000,filled:true,work:64,warmup:8},
@@ -41,7 +41,7 @@ function fillMemory(brain){
  brain.spatialCache=null;
 }
 export function createBenchmarkFixture(spec,options={}){
- const world=new Evolution({seed:spec.seed,population:spec.population,limit:1000,foodSources:384,foodRegrowInterval:20,
+ const world=new Evolution({...(options.brainType?{}:{physiology:{}}),seed:spec.seed,population:spec.population,limit:1000,foodSources:384,foodRegrowInterval:20,
   temporal:options.temporal??(!options.brainType||[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(options.brainType)),brainType:options.brainType??DUAL_BRAIN_TYPE,memory:true,learning:true,mutationRate:.02,mutations:true,lifeHistoryLimit:250,heritableMutations:!options.brainType,...options});
  for(const agent of world.agents){
   agent.brain.memory.clear();agent.brain.longMemory.clear();agent.brain.spatialCache=null;
@@ -53,7 +53,10 @@ export function createBenchmarkFixture(spec,options={}){
 export function evaluatorRequests(world,spec){
  return world.agents.map(agent=>{
   const request=world.decisionFrame(agent).request;
-  if(spec.allActions){
+  if(spec.allActions&&world.physiology){
+   const cell={...request.observation.cells[0],foods:[2,2,2],food:6},neighbours=localNeighbours(agent.brain);request.candidates=[];
+   for(let action=0;action<12;action++)for(const foodType of [6,7,10].includes(action)?[0,1,2]:[null])request.candidates.push({id:`fixture-${action}-${foodType}`,action,foodType,targetHandle:action===11?1:null,visibleTarget:action===11?{size:agent.L,health:1,action:8,attacksMe:false,attacksOther:false}:null,duration:action===8?0:ACTION_DURATIONS[action]??3,decisionCost:.10,continuation:false,repeat:false,localDestination:action<6?neighbours[action]:{...agent.brain.position},cell});
+  }else if(spec.allActions){
    const neighbours=localNeighbours(agent.brain);
    // Контракт оценщика допускает все действия; исполнение здесь отсутствует.
    // Таким образом измеряется максимальный пакет, а не нарушение физики игры.

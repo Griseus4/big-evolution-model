@@ -1,7 +1,8 @@
+import {physiologySettings,bodyGeneValues} from './physiology-settings.js';
 import {validateBrainCostMultiplier} from './brain-economy.js';
 import {WORLD_LIMITS} from './world-defaults.js';
 import {structuralSettings,structuralLayout} from './structural-brain.js';
-import {DUAL_BRAIN_TYPE,DUAL_VERSION,dualBrainLayout,unpackDualBrain} from './dual-brain-layout.js';
+import {DUAL_BRAIN_TYPE,PHYSIOLOGY_GENOME_VERSION as DUAL_VERSION,dualBrainLayout,unpackDualBrain} from './dual-brain-layout.js';
 import {dualStructureSettings} from './dual-brain-settings.js';
 /** Неизменяемый план серии. Seed назначаются до запуска и не зависят от
  * очередности Workers. Настройки каждого мира отделены от глобальных правил. */
@@ -15,9 +16,9 @@ import {validateEnvironmentSettings} from './environment-settings.js';
 import {reproductionProfile} from './reproduction.js';
 import {COMPUTATION_WORKER_COUNTS} from './computation-settings.js';
 import {DEFAULT_SEEDS} from './experiment-runner.js';
-export const EXPERIMENT_PROTOCOL='world-constructor-v3';
-export const EXPERIMENT_PLAN_VERSION=3;
-export const EXPERIMENT_PLAN_PROTOCOLS=Object.freeze([EXPERIMENT_PROTOCOL,'world-constructor-v2']);
+export const EXPERIMENT_PROTOCOL='world-constructor-v4';
+export const EXPERIMENT_PLAN_VERSION=4;
+export const EXPERIMENT_PLAN_PROTOCOLS=Object.freeze([EXPERIMENT_PROTOCOL,'world-constructor-v3','world-constructor-v2']);
 export const EXPERIMENT_TERRAIN_SEED=42;
 export const EXPERIMENT_FOOD_SEED=42;
 export const EXPERIMENT_DEFAULTS=Object.freeze({worlds:5,steps:20000,budget:Math.max(1,Math.min(32,(globalThis.navigator?.hardwareConcurrency??4)-1)),maxWorkers:4,allocation:'auto'});
@@ -25,17 +26,20 @@ export function standardSeeds(count){const seeds=DEFAULT_SEEDS.slice(0,count);le
 export function seedMatrix(seeds){const used=new Set(seeds);return seeds.map(seed=>{let x=seed;const row=[seed];while(row.length<3){x=(Math.imul(x,1664525)+1013904223)>>>0;if(x&&!used.has(x)){used.add(x);row.push(x);}}return row;});}
 const integer=(v,min,max,label)=>{if(!Number.isSafeInteger(v)||v<min||v>max)throw new Error(`${label}: целое от ${min} до ${max}.`);return v;};
 export function validateWorldOptions(input={}, {historical=false}={}){
+ const physiology=historical&&!input.physiology?null:physiologySettings(input.physiology??{}),bodyGenes=physiology?bodyGeneValues(input.bodyGenes??{}):null;
+ if(physiology)input={...input,physiology,bodyGenes,genomeVersion:18};
  const population=integer(input.population??WORLD_DEFAULTS.population,WORLD_LIMITS.populationMin,WORLD_LIMITS.populationMax,'Основатели'),limit=integer(input.limit??WORLD_DEFAULTS.limit,population,WORLD_LIMITS.populationMax,'Лимит');
  for(const name of ['memory','learning','mutations'])if(input[name]!==undefined&&typeof input[name]!=='boolean')throw new Error(`Некорректный переключатель ${name}.`);
  const founderSenses=validateFounderSenses(input.founderSenses);
  const digestionTime=validateDigestionTime(input.digestionTime);
  const structure=historical?(input.attentionMaxNeurons!==undefined?dualStructureSettings(input,{historical:true}):{}):dualStructureSettings(input);if(input.baseGenome&&!historical){
-  if(dualBrainLayout(input.baseGenome)?.version!==DUAL_VERSION)throw new Error('Для нового опыта нужен геном v17 с отдельными регуляторами блоков.');
+  if(dualBrainLayout(input.baseGenome)?.version!==DUAL_VERSION)throw new Error('Для нового опыта нужен геном v18 с отдельными регуляторами блоков.');
   const d=unpackDualBrain(input.baseGenome);if(d.main.layers.length>structure.maxNeurons||Math.max(0,...d.main.layers)>structure.maxLayers||d.attention.layers.length>structure.attentionMaxNeurons||Math.max(0,...d.attention.layers)>structure.attentionMaxLayers)throw new Error('Геном превышает пределы структуры мозга.');
  }
- return {population,limit,digestionTime,brainCostMultiplier:validateBrainCostMultiplier(input.brainCostMultiplier),...structure,...(founderSenses?{founderSenses}:{}),...(input.terrainSeed!==undefined?{terrainSeed:integer(input.terrainSeed,1,4294967295,'Seed карты')}:{}),...(input.foodSeed!==undefined?{foodSeed:integer(input.foodSeed,1,4294967295,'Seed пищи')}:{}),...validateFoodSettings({...input,foodGeneralSettings:input.foodGeneralSettings||input.foodRegrowInterval!==undefined&&(!Number.isInteger(input.foodRegrowInterval)||input.foodRegrowInterval<10||input.foodRegrowInterval>300)||input.foodIslandCount===0}),...(input.baseGenome?{baseGenome:validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome})}:{}),automaticEnvironment:validateEnvironmentSettings(input.automaticEnvironment),reproduction:reproductionProfile(input.reproduction),memory:input.memory!==false,learning:input.learning!==false,mutations:input.mutations!==false};
+ return {...(physiology?{physiology,bodyGenes,genomeVersion:18}:{}),population,limit,digestionTime,brainCostMultiplier:validateBrainCostMultiplier(input.brainCostMultiplier),...structure,...(founderSenses?{founderSenses}:{}),...(input.terrainSeed!==undefined?{terrainSeed:integer(input.terrainSeed,1,4294967295,'Seed карты')}:{}),...(input.foodSeed!==undefined?{foodSeed:integer(input.foodSeed,1,4294967295,'Seed пищи')}:{}),...validateFoodSettings({...input,foodGeneralSettings:input.foodGeneralSettings||input.foodRegrowInterval!==undefined&&(!Number.isInteger(input.foodRegrowInterval)||input.foodRegrowInterval<10||input.foodRegrowInterval>300)||input.foodIslandCount===0}),...(input.baseGenome?{baseGenome:validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(input.baseGenome),genes:input.baseGenome})}:{}),automaticEnvironment:validateEnvironmentSettings(input.automaticEnvironment),reproduction:reproductionProfile(input.reproduction),memory:input.memory!==false,learning:input.learning!==false,mutations:input.mutations!==false};
 }
 export function validatePlan(input,{historical=false}={}){
+ if(!historical&&input.protocolId&&input.protocolId!==EXPERIMENT_PROTOCOL)throw new Error('Прежний план относится к другой физике. Результаты можно читать; для нового опыта создайте план v4.');
  const worlds=integer(input.worlds??EXPERIMENT_DEFAULTS.worlds,1,64,'Миров на вариант'),steps=integer(input.steps??EXPERIMENT_DEFAULTS.steps,1,1000000,'Длительность, Т'),budget=integer(input.budget??EXPERIMENT_DEFAULTS.budget,1,64,'Бюджет потоков');
  const maxWorkers=input.maxWorkers??4;if(!COMPUTATION_WORKER_COUNTS.includes(maxWorkers))throw new Error('Недоступное число вычислителей.');
  const allocation=input.allocation??'auto';if(!['auto','fixed'].includes(allocation))throw new Error('Неизвестный режим распределения.');
@@ -57,8 +61,8 @@ export function validatePlan(input,{historical=false}={}){
  // Готовые варианты остаются внутренним контрактом исполнителя и чтения
  // прежних результатов. Редактор принимает только новую схему factors.
  if(!Array.isArray(raw)||!raw.length||raw.length>MAX_EXPERIMENT_COMBINATIONS)throw new Error(`Нужно от 1 до ${MAX_EXPERIMENT_COMBINATIONS} вариантов.`);
- const variants=raw.map((v,i)=>{try{validateFounderSenses(v.settings?.founderSenses);return {id:`v${i+1}`,name:String(v.name??`Вариант ${i+1}`).trim().slice(0,240)||`Вариант ${i+1}`,settings:validateWorldOptions({...common,...v.settings,automaticEnvironment:{...common.automaticEnvironment,...v.settings?.automaticEnvironment},reproduction:{...common.reproduction,...v.settings?.reproduction},founderSenses:{...common.founderSenses,...v.settings?.founderSenses}},{historical})};}catch(e){throw new Error(`Вариант ${i+1}: ${e.message}`);}});
- return {protocolId:EXPERIMENT_PROTOCOL,name:String(input.name??'Новый опыт').slice(0,120),worlds,steps,budget,maxWorkers,allocation,seeds:seeds.slice(),seedMatrix:seedMatrix(seeds),common,...(design?{factors:design.factors}:{}),variants};
+ const variants=raw.map((v,i)=>{try{validateFounderSenses(v.settings?.founderSenses);return {id:`v${i+1}`,name:String(v.name??`Вариант ${i+1}`).trim().slice(0,240)||`Вариант ${i+1}`,settings:validateWorldOptions({...common,...v.settings,...(common.physiology?{physiology:{...common.physiology,...v.settings?.physiology},bodyGenes:{...common.bodyGenes,...v.settings?.bodyGenes}}:{}),automaticEnvironment:{...common.automaticEnvironment,...v.settings?.automaticEnvironment},reproduction:{...common.reproduction,...v.settings?.reproduction},founderSenses:{...common.founderSenses,...v.settings?.founderSenses}},{historical})};}catch(e){throw new Error(`Вариант ${i+1}: ${e.message}`);}});
+ return {protocolId:historical?(input.protocolId??EXPERIMENT_PROTOCOL):EXPERIMENT_PROTOCOL,name:String(input.name??'Новый опыт').slice(0,120),worlds,steps,budget,maxWorkers,allocation,seeds:seeds.slice(),seedMatrix:seedMatrix(seeds),common,...(design?{factors:design.factors}:{}),variants};
 }
 export const workerCost=count=>count===1?1:count+1;
 /** Сначала независимые миры. Смена режима только при изменении очереди,
