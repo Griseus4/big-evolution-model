@@ -67,7 +67,7 @@ export function physiologyCells(w,a){
   for(let j=0;j<13;j++){const category=j<6?(rotation+ACTION_TURNS[j])%6:j;activities[j]=(row?.[category]??0)-Number(own&&(j<6?v.action===j:v.action===(j===12?'labor':j)));}
   cells.push({...places[i],food:foods[0]+foods[1]+foods[2],foods,terrain:c.terrain,isFoodSource:c.maxFood>0,neighbours:countOthers(w.occupancy,a,c.x,c.y),activities});
  }
- return cells;
+ a._cells=cells;return cells;
 }
 export function physiologyObservation(w,a,cells=physiologyCells(w,a)){
  const p=a.process,gestation=a.pregnancy,c=bodyCapacities(a,w.physiology),place=p?.localDestination??a.brain.position;

@@ -1,10 +1,10 @@
-const common={reviewedVersion:'0.57.0',sources:[
+const common={reviewedVersion:'0.57.1',sources:[
  {file:'physiology-settings.js',symbols:['PHYSIOLOGY_FIELDS','BODY_GENE_FIELDS'],purpose:'Единые числовые правила мира и генов тела.'},
  {file:'physiology-world.js',symbols:['advancePhysiologyBodies','physiologyFrame'],purpose:'Общие фазы физики и локальные варианты решений.'},
  {file:'guide-physiology-text.js',symbols:['PHYSIOLOGY_GUIDE_TEXT','digestionGuideExample'],purpose:'Объяснения и пример, рассчитанный функциями пищеварения.'},
 ],checks:[{file:'tests/physiology-world057.test.mjs',symbols:[],purpose:'Общий цикл, атаки и реестры энергии, ткани и пищи.'},{file:'tests/physiology-save057.test.mjs',symbols:[],purpose:'Точное продолжение и отказ повреждённого сохранения.'}]};
 export const PHYSIOLOGY_TOPICS=Object.fromEntries([
- ['saves','Полный мир v5 продолжает новую физику с телом, пищевыми группами и беременностью. Старые результаты доступны для анализа.',['v5','совместимость','загрузка']],
+ ['saves','Полный мир v5 продолжает новую физику с телом, пищевыми группами и беременностью. Старые результаты доступны для анализа.',['v5','совместимость','загрузка','world-save.js','physiology-save.js']],
  ['observation','Собственное тело, три вида пищи и наблюдаемые признаки конкретных соседей. Глобальные координаты и скрытые запасы не входят в сеть.',['наблюдения','жертва','признаки']],
  ['feelings','Относительные энергия, здоровье и желудок формируют субъективное самочувствие. Проценты предпочтений показывают коэффициенты.',['самочувствие','предпочтения']],
  ['brain-structure','Входы тела, пищи, процесса и жертвы схемы v18. Две изменяемые сети и фиксированные преобразования.',['кодировщик','проекция','входы']],
