@@ -20,3 +20,6 @@ export const PHYSIOLOGY_HELP={
  'experiment-reproduction':['Развитие и размножение','Параметры gmax, tAdult, kBirth, alpha и tPreg наследуются. Пороги энергии, здоровья и интервал после рождения относятся только к прежней модели.'],
 };
 for(const [group,fields]of [['physiology',PHYSIOLOGY_FIELDS],['bodyGenes',BODY_GENE_FIELDS]])for(const [key,f]of Object.entries(fields))PHYSIOLOGY_HELP[group+'.'+key]=[f.label,(group==='bodyGenes'?genes[key]+' Наследуемое значение основателей; меняется поведенческой мутацией.':'Общее правило этого мира, не наследуемый ген. Изменение в форме применяется при новом запуске. Точная зависимость приведена в «О проекте → Энергия», «Пища» и «Рождение».')+' Единица: '+f.unit+'.'];
+
+PHYSIOLOGY_HELP['physiology.portionPerAction']=[PHYSIOLOGY_FIELDS.portionPerAction.label,'Ограничивает только сбор и выкладывание. При еде переносится весь доступный объём выбранного вида пищи, который помещается в желудок; несъеденный остаток остаётся в инвентаре.'];
+PHYSIOLOGY_HELP['physiology.eatSteps']=[PHYSIOLOGY_FIELDS.eatSteps.label,'Фиксированное время одного приёма пищи в подшагах, независимо от съеденного объёма. Один подшаг — 0,1 Т.'];

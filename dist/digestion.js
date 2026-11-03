@@ -18,7 +18,8 @@ export function ingestFood(d,type,portion,capacity,energies){
  }
  const energy=swallowed*energies[type];if(!Number.isFinite(energy))throw new Error('Неконечная энергия пищи.');
  d.volumes[slot]+=swallowed;d.remaining[slot*3+type]+=energy;d.volume+=swallowed;
- return {started:portion,swallowed,discarded:portion-swallowed};
+ // Списывается только проглоченный объём: остаток остаётся в инвентаре.
+ return {started:swallowed,swallowed,discarded:0};
 }
 /** Строго один следующий подшаг. Итоги всех типов берутся до любых списаний;
  * на последней границе сначала усвоение, затем потеря остатков и объёма. */

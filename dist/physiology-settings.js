@@ -61,7 +61,7 @@ export const PHYSIOLOGY_FIELDS=Object.freeze({
  grassMax:field('Максимальный запас травы','порции',5),
  grassRegrowth:field('Восстановление травы','порции/Т',.1),
  meatHalfLife:field('Полураспад мяса','Т',1,0,Infinity,true),
- portionPerAction:field('Предел порции за действие','порции',1,0,Infinity,true),
+ portionPerAction:field('Предел сбора и выкладывания за действие','порции',1,0,Infinity,true),
 });
 const defaults=fields=>Object.freeze(Object.fromEntries(Object.entries(fields).map(([key,f])=>[key,f.value])));
 export const BODY_GENE_DEFAULTS=defaults(BODY_GENE_FIELDS);
