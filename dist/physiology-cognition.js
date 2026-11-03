@@ -18,11 +18,11 @@ export function evaluateBodyCognition(owner,{rows,added=[],removed=[],retainedId
   expectedContinuation:(a,d)=>expectedControllerValue(a.brain,null,d.frame.request,d.input)};
  const batch=[],results=[];
  for(const row of rows){
-  const a=owner.agents.get(row.id);if(!a||a.dead||row.request.schema!=='local-body-food-target-v1')throw new Error('Неверный владелец/схема наблюдений.');
+  const a=owner.agents.get(row.id);if(!a||a.dead||!['local-body-food-target-v1','local-body-food-care-v1'].includes(row.request.schema))throw new Error('Неверный владелец/схема наблюдений.');
   Object.assign(a,row.state);a.pregnancy=row.request.observation.body.pregnant?{stage:row.labor?'labor':'gestation'}:null;Object.assign(a.brain,row.navigation);a.request=row.request;a.cells=row.request.observation.cells;
   if(memoryEnabled)observeTime(w,a,a.cells,primed?DT:0);if(primed)accrueTemporalReward(w,a);
   let gateCost=0,gate=false,wants=false;
-  if(!row.labor){wants=!a.process&&!a.resting;if(!wants){gate=true;wants=attentionRequest(a,a.cells,row.request.observation.capacities.inventory,a.stomachCapacity,subtick);gateCost=a.brain.gateCharge;if(wants){a.callReason=CALL_REVIEW;a.request.observation.callReason=CALL_REVIEW;}}}
+  if(!row.labor&&!row.passive){wants=!a.process&&!a.resting;if(!wants){gate=true;wants=attentionRequest(a,a.cells,row.request.observation.capacities.inventory,a.stomachCapacity,subtick);gateCost=a.brain.gateCharge;if(wants){a.callReason=CALL_REVIEW;a.request.observation.callReason=CALL_REVIEW;}}}
   let decision=null,options=null,beforeFeeling=null;
   if(wants){decision=prepareTemporalDecision(w,a);beforeFeeling=w.feeling(a);options=evaluateController(a.brain,null,decision.frame.request,decision.input);}
   batch.push({a,decision,options,beforeFeeling});
@@ -42,7 +42,7 @@ export function commitBodyCognition(owner,selections){
  }
  owner.batch=null;
 }
-const physicalKeys=['x','y','frameRotation','energy','health','referenceMass','energyCapacity','healthCapacity','stomachCapacity','L','M','inventory','stomach','process','resting','lastAction','callReason','visibleAttacks'];
+const physicalKeys=['x','y','frameRotation','energy','health','referenceMass','energyCapacity','healthCapacity','stomachCapacity','L','M','inventory','stomach','process','resting','lastAction','callReason','visibleAttacks','carrierId','carryingChildId','_careVisible'];
 export async function parallelPhysiologyCognition(pool,mirrorBrain){
  const w=pool.world;preparePhysiologyBoundary(w);const groups=pool.lanes.map(()=>[]),frames=new Map();
  for(const a of w.agents){
@@ -51,7 +51,7 @@ export async function parallelPhysiologyCognition(pool,mirrorBrain){
   let index=pool.owners.get(a.id);if(index===undefined){index=(a.id-1)%pool.lanes.length;pool.owners.set(a.id,index);pool.lanes[index].added.push({id:a.id,brain:a.brain,lastDecision:a.lastDecision});pool.metrics.registrations++;}
   const frame=physiologyFrame(w,a);frames.set(a.id,frame);
   // Координаты исполнения не включаются в request; они остаются в frame Map.
-  groups[index].push({id:a.id,state:Object.fromEntries(physicalKeys.map(k=>[k,a[k]])),navigation:{position:{...a.brain.position},facing:a.brain.facing,feelingTotal:a.brain.feelingTotal,feelingSamples:a.brain.feelingSamples,wellbeing:a.brain.wellbeing},request:frame.request,labor:a.pregnancy?.stage==='labor'});
+  groups[index].push({id:a.id,state:Object.fromEntries(physicalKeys.map(k=>[k,a[k]])),navigation:{position:{...a.brain.position},facing:a.brain.facing,feelingTotal:a.brain.feelingTotal,feelingSamples:a.brain.feelingSamples,wellbeing:a.brain.wellbeing},request:frame.request,labor:a.pregnancy?.stage==='labor',passive:a.carrierId!=null});
  }
  const start=performance.now(),replies=await Promise.all(pool.lanes.map((l,i)=>l.endpoint.call('evaluate-body',{rows:groups[i],added:l.added,removed:l.removed,retainedId:pool.retained?.id??null,tick:w.tick,subtick:w.subtick,primed:w._primed,memoryEnabled:w.memoryEnabled,learningEnabled:w.learningEnabled})));
  pool.metrics.evaluateMs+=performance.now()-start;

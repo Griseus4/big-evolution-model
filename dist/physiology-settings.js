@@ -4,6 +4,7 @@ import {DT,SUBSTEPS} from './action-timing.js';
  * численные значения определяются здесь один раз. Техническая сетка не является геном. */
 const field=(label,unit,value,min=0,max=Infinity,exclusiveMin=false,exclusiveMax=false)=>
  Object.freeze({label,unit,value,min,max,exclusiveMin,exclusiveMax});
+const INITIAL_EATING_MOTOR_RATE=.18;
 export const PHYSIOLOGY_SCHEMA='tissue-food-pregnancy-v1';
 export const BODY_GENE_FIELDS=Object.freeze({
  gmax:field('Строительная мощность','масса/Т',.15,0,Infinity,true),
@@ -37,9 +38,11 @@ export const PHYSIOLOGY_FIELDS=Object.freeze({
  digestionReferencePower:field('Эталонная суммарная мощность','доля/подшаг',.00175,0,Infinity,true),
  moveRate:field('Добавка перемещения эталона','энергия/Т',.48),
  gatherRate:field('Добавка сбора эталона','энергия/Т',.36),
- eatRate:field('Добавка еды эталона','энергия/Т',.18),
+ eatRate:field('Добавка еды эталона','энергия/Т',INITIAL_EATING_MOTOR_RATE),
  depositRate:field('Добавка выкладывания эталона','энергия/Т',.06),
  gatherSteps:field('Длительность сбора','подшаги',5,1,Number.MAX_SAFE_INTEGER),
+ feedSteps:field('Длительность кормления ребёнка','подшаги',1,1,1),
+ feedRate:field('Двигательная цена кормления','энергии/Т при опорной массе',INITIAL_EATING_MOTOR_RATE,0),
  eatSteps:field('Длительность еды','подшаги',2,1,Number.MAX_SAFE_INTEGER),
  depositSteps:field('Длительность выкладывания','подшаги',3,1,Number.MAX_SAFE_INTEGER),
  birthSteps:field('Длительность родов','подшаги',20,1,Number.MAX_SAFE_INTEGER),

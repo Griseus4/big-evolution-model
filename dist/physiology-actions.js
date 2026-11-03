@@ -4,7 +4,7 @@ import {movementSteps,motorRate,attackProfile,attackDamage,bodyCapacities} from 
 
 export const PHYSIOLOGY_ACTIONS=Object.freeze(['Вперёд','Назад','Назад-влево','Вперёд-влево','Назад-вправо','Вперёд-вправо','Подобрать','Съесть','Покой','Зачать','Положить','Атаковать']);
 export const PHYSIOLOGY_OPERATIONS=Object.freeze(['Переместиться','Подобрать','Съесть','Покой','Зачать','Положить','Атаковать']);
-export const actionKind=action=>action<6?'move':['gather','eat','rest','conceive','deposit','attack'][action-6];
+export const actionKind=action=>action<6?'move':['gather','eat','rest','conceive','deposit','attack','feed'][action-6];
 export const operationForAction=action=>action<6?0:action-5;
 
 /** Ключ различает порции разных типов и отдельные наблюдаемые цели. Handle
@@ -13,7 +13,7 @@ export function candidateKey(action,foodType=null,targetHandle=null){return `${a
 export function processTiming(a,choice,r=PHYSIOLOGY_DEFAULTS){
  const kind=actionKind(choice.action);
  if(kind==='attack'){const p=attackProfile(a,a.bodyPlan,r);return {...p,motor:p.motor/p.steps,kind};}
- const steps=kind==='move'?movementSteps(a,r):kind==='gather'?r.gatherSteps:kind==='eat'?r.eatSteps:kind==='deposit'?r.depositSteps:kind==='conceive'?1:0;
+ const steps=kind==='move'?movementSteps(a,r):kind==='gather'?r.gatherSteps:kind==='eat'?r.eatSteps:kind==='deposit'?r.depositSteps:kind==='conceive'?1:kind==='feed'?r.feedSteps:0;
  if(!kind)throw new Error('Неизвестное действие тела.');
  return {kind,steps,motor:motorRate(a,kind,r)*DT,total:motorRate(a,kind,r)*DT*steps};
 }
@@ -24,7 +24,7 @@ export function startProcess(a,choice,subtick,r=PHYSIOLOGY_DEFAULTS){
  return {id,action,foodType,targetHandle,destination:{...destination},localDestination:{...localDestination},...timing,duration:timing.steps,elapsed:0,startedAt:subtick};
 }
 export function sameProcess(a,choice){return !!a.process&&a.process.id===choice.id;}
-export function canConceive(a,aliveCount,populationCap){return a.alive&&a.ageSteps>=a.bodyPlan.conceptionSteps&&!a.pregnancy&&aliveCount<populationCap;}
+export function canConceive(a,aliveCount,populationCap){return a.alive&&a.ageSteps>=a.bodyPlan.conceptionSteps&&!a.pregnancy&&a.carryingChildId==null&&a.carrierId==null&&aliveCount<populationCap;}
 export function inventoryTotal(a){return a.foodInventory.reduce((sum,value)=>sum+value,0);}
 export function foodChoices(action,amounts){return FOOD_TYPES.flatMap((type,j)=>amounts[j]>0?[{id:candidateKey(action,j),action,foodType:j}]:[]);}
 
@@ -43,5 +43,5 @@ export function resolveAttacks(attackers,byId,r=PHYSIOLOGY_DEFAULTS){
 }
 export function visibleBody(a,r=PHYSIOLOGY_DEFAULTS){
  const c=bodyCapacities(a,r);
- return {handle:a.id,size:a.L,health:a.health/c.health,action:a.pregnancy?.stage==='labor'?'labor':a.process?.action??8,attackTarget:a.process?.action===11?a.process.targetHandle:null};
+ return {handle:a.id,size:a.L,health:a.health/c.health,action:a.carrierId!=null?'carried':a.pregnancy?.stage==='labor'?'labor':a.process?.action??8,attackTarget:a.process?.action===11?a.process.targetHandle:null};
 }

@@ -16,5 +16,5 @@ export function physiologySummary(w){
  const n=w.agents.length;if(!n)return {meanBodyMass:0,meanMaximumMass:0,meanEnergyCapacity:0,meanHealthCapacity:0,meanStomachVolume:0,pregnancies:0,labors:0};
  let mass=0,maximum=0,energy=0,health=0,volume=0,pregnancies=0,labors=0;
  for(const a of w.agents){mass+=a.L;maximum+=a.M;energy+=a.energyCapacity;health+=a.healthCapacity;volume+=a.stomachCapacity;pregnancies+=Number(!!a.pregnancy);labors+=Number(a.pregnancy?.stage==='labor');}
- return {meanBodyMass:mass/n,meanMaximumMass:maximum/n,meanEnergyCapacity:energy/n,meanHealthCapacity:health/n,meanStomachVolume:volume/n,pregnancies,labors};
+ return {...(w.childCare?{carriedChildren:w.agents.reduce((n,a)=>n+Number(a.carrierId!==null),0)}:{}),meanBodyMass:mass/n,meanMaximumMass:maximum/n,meanEnergyCapacity:energy/n,meanHealthCapacity:health/n,meanStomachVolume:volume/n,pregnancies,labors};
 }

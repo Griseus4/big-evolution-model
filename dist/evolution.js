@@ -1,10 +1,11 @@
+import {careGeneValues} from './care-settings.js';
 import {validateBrainCostMultiplier} from './brain-economy.js';
 import {WORLD_LIMITS} from './world-defaults.js';
 import {STRUCTURE_RULES} from './brain-structure-rules.js';
 import {RULES,validateDigestionTime,actionEnergyCost,BODY_LIMITS} from './model-rules.js';
 import {SUBSTEPS,HISTORY_SAMPLE_T,ACTION_DURATIONS} from './action-timing.js';
 import {STRUCTURAL_TYPE,structuralSettings,structuralLayout} from './structural-brain.js';
-import {DUAL_BRAIN_TYPE,unpackDualBrain} from './dual-brain-layout.js';
+import {DUAL_BRAIN_TYPE,dualBrainLayout,unpackDualBrain} from './dual-brain-layout.js';
 import {dualStructureSettings} from './dual-brain-settings.js';
 import {EVOLUTION_RULES} from './brain-evolution-rules.js';
 /**
@@ -104,7 +105,7 @@ export class Evolution {
   */
  constructor({seed=42,population=WORLD_DEFAULTS.population,limit=WORLD_DEFAULTS.limit,mutationRate=WORLD_DEFAULTS.mutationRate,mutations=true,temporal=true,brainType=temporal?STRUCTURAL_TYPE:SET_BRAIN_TYPE,
   scenario='custom',foodSources,foodRegrowInterval,foodIslandCount,foodPeriodSpread,foodSizeSpread,foodGeneralSettings,foodCapacityMin,foodCapacityMax,individualFood=scenario==='custom',geography,terrainSeed,foodSeed,reproduction=DEFAULT_REPRODUCTION,baseGenome=null,learning=true,memory=true,expandLegacy=false,lifeHistoryLimit=Infinity,heritableMutations=true,upgradeMutationGenes=false,automaticEnvironment,founderSenses,digestionTime,brainCostMultiplier,maxNeurons,maxLayers,structuralMutations,initialNeurons,initialConnections,attentionMaxNeurons=EVOLUTION_RULES.maxNeurons,attentionMaxLayers=EVOLUTION_RULES.maxLayers,attentionInitialNeurons=[],attentionInitialConnections=100,initialMutation,mutationEnabled,physiology=null,bodyGenes,genomeVersion}={}){
-  if(physiology!==null){this.physiology=physiologySettings(physiology);this.genomeVersion=18;this.bodyGenes=bodyGeneValues(bodyGenes??{});temporal=true;brainType=DUAL_BRAIN_TYPE;}else if(genomeVersion!==undefined)this.genomeVersion=genomeVersion;
+  if(physiology!==null){this.physiology=physiologySettings(physiology);this.genomeVersion=genomeVersion??18;if(this.genomeVersion>=19)this.childCare=true;this.bodyGenes=(this.childCare?careGeneValues:bodyGeneValues)(bodyGenes??{});temporal=true;brainType=DUAL_BRAIN_TYPE;}else if(genomeVersion!==undefined)this.genomeVersion=genomeVersion;
   this.temporal=Boolean(temporal);this.brainCostMultiplier=validateBrainCostMultiplier(brainCostMultiplier);
   Object.assign(this,structuralSettings({maxNeurons,maxLayers,structuralMutations,initialNeurons:baseGenome?null:initialNeurons,initialConnections:baseGenome?STRUCTURE_RULES.initialConnections:initialConnections}));
   if(brainType===DUAL_BRAIN_TYPE)Object.assign(this,dualStructureSettings({maxNeurons,maxLayers,initialNeurons,initialConnections,structuralMutations,attentionMaxNeurons,attentionMaxLayers,attentionInitialNeurons,attentionInitialConnections,initialMutation,mutationEnabled,baseGenome,genomeVersion:this.genomeVersion}));
@@ -135,7 +136,7 @@ export class Evolution {
   this.mutationRate=bound(mutationRate,0,.3);this.mutations=mutations;
   this.baseGenome=baseGenome?validateGenomeFile({format:'big-evolution-genome',
    ...genomeMetadata(baseGenome),genes:baseGenome}):null;
-  if(this.physiology&&this.baseGenome&&unpackDualBrain(this.baseGenome).layout.version!==18)throw new Error('Старый геном не является основой новой физики.');
+  if(this.physiology&&this.baseGenome&&unpackDualBrain(this.baseGenome).layout.version!==this.genomeVersion)throw new Error('Старый геном не является основой новой физики.');
   if(this.baseGenome){this.brainType=genomeMetadata(this.baseGenome).brainType;const l=structuralLayout(this.baseGenome);if(l&&(l.hidden>this.maxNeurons||Math.max(0,...this.baseGenome.slice(l.topologyOffset,l.topologyOffset+l.hidden))>this.maxLayers))throw new Error('Геном превышает выбранные пределы нейронов/слоёв.');}
   if(this.baseGenome&&this.brainType===DUAL_BRAIN_TYPE){const d=unpackDualBrain(this.baseGenome);for(const [graph,n,l]of [[d.main,this.maxNeurons,this.maxLayers],[d.attention,this.attentionMaxNeurons,this.attentionMaxLayers]])if(graph.layers.length>n||Math.max(0,...graph.layers)>l)throw new Error('Геном превышает пределы двух структур.');}
   if(this.temporal&&![TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(this.brainType))throw new Error('Неизвестная схема временного мозга.');
@@ -216,7 +217,7 @@ export class Evolution {
     }else genome=randomGenome(this.random,this.cognitiveRandom,this.bodyRandom);
    }
    if(!this.baseGenome&&this.heritableMutations)genome=withMutationGenes(genome,this.mutationRandom);
-   const edits=structuralLayout(genome)?compileFounderSenses(founderSenses,structuralLayout(genome)):founderEdits;
+   const layout=dualBrainLayout(genome)??structuralLayout(genome),edits=layout?compileFounderSenses(founderSenses,layout):founderEdits;
    for(const [index,value]of edits)genome[index]=value;
    this.addAgent(p,genome,null);
   }
@@ -386,7 +387,7 @@ export class Evolution {
   return {frame,options};
  }
  evaluate(a){
-  if(!a.alive)return [];
+  if(!a.alive||a.carrierId!=null||a.pregnancy?.stage==='labor')return [];
   const {frame,options}=this.evaluateFrame(a);
   return options.map(option=>this.executableDecision(frame,option));
  }
@@ -482,7 +483,7 @@ export class Evolution {
   const status=this.birthAvailability(a);
   for(const c of [a.life.reproduction,this.stats.reproduction]){
    c.decisions++;c.eligible+=Number(status.eligible);
-   for(const reason of status.blocked)c.blocked[reason]++;
+   for(const reason of status.blocked)c.blocked[reason]=(c.blocked[reason]??0)+1;
   }
   return status;
  }

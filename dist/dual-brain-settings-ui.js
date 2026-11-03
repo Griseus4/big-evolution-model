@@ -1,5 +1,5 @@
 import {NUMERIC_MUTATION_GROUPS,NUMERIC_MUTATION_RULES as N} from './numeric-mutation.js';
-import {ATTENTION_INPUTS as BODY_ATTENTION_INPUTS} from './physiology-brain-layout.js';
+import {ATTENTION_INPUTS as BODY_ATTENTION_INPUTS} from './care-brain-layout.js';
 import {createHelpButton} from './help.js';
 import {initialNeuronsInput,wireInitialStructure} from './brain-initialization-ui.js';
 import {dagConnectionBudget} from './dual-brain-settings.js';

@@ -1,3 +1,4 @@
+import * as care from './care-brain-layout.js';
 /** Детерминированные условные операции, не время ПК. Умножение+сумма=2,
  * tanh/смещение/скалярная операция=1. Общие клетки и контекст — раз на пакет.
  * Эталон — фиксированный v13 на том же числе клеток/кандидатов. Ставки 0.10
@@ -8,11 +9,11 @@ import {DECISION_COST} from './action-timing.js';
 const dense=b=>2*b.weights+(b.bias===null?0:b.outputs);
 const [cells,context,target,operation,direct]=SET_BLOCKS;
 export function brainCostProfile(plan){
- return {...(plan.physiology?{physiology:true}:{}),context:2*plan.activeEdges+plan.nodes.length+plan.nodes.filter(id=>id<plan.inputs+plan.hidden).length,
+ return {...(plan.care?{care:true}:{}),...(plan.physiology?{physiology:true}:{}),context:2*plan.activeEdges+plan.nodes.length+plan.nodes.filter(id=>id<plan.inputs+plan.hidden).length,
   parameters:plan.activeParameters.length};
 }
 export function operationCounts(profile,nCells,nCandidates,nOperations=6){
- const [cells,context,target,operation,direct]=profile?.physiology?physiology.SET_BLOCKS:SET_BLOCKS,CONTEXT_INPUTS=profile?.physiology?physiology.CONTEXT_INPUTS:context.inputs,CANDIDATE_INPUTS=direct.inputs;
+ const [cells,context,target,operation,direct]=profile?.care?care.SET_BLOCKS:profile?.physiology?physiology.SET_BLOCKS:SET_BLOCKS,CONTEXT_INPUTS=profile?.care?care.CONTEXT_INPUTS:profile?.physiology?physiology.CONTEXT_INPUTS:context.inputs,CANDIDATE_INPUTS=direct.inputs;
  const contextCost=profile?.context??dense(context)+CONTEXT_HIDDEN;
  const common=nCells*(dense(cells)+CELL_HIDDEN)+nCells*CELL_HIDDEN*5+CONTEXT_INPUTS+contextCost;
  const heads=nOperations*(CONTEXT_HIDDEN*(4+2*target.inputs)+direct.inputs),candidates=nCandidates*(2*target.inputs+8);

@@ -1,3 +1,4 @@
+import {attachChild} from './child-care.js';
 import {STRUCTURAL_TYPE} from './structural-brain.js';
 import {DUAL_BRAIN_TYPE} from './dual-brain-layout.js';
 /** Версионные нагрузки, а не образцы успешной эволюции. Геномы случайные,
@@ -9,7 +10,7 @@ import {ACTION_DURATIONS} from './action-timing.js';
 import {Evolution} from './evolution.js';
 import {observe} from './cognition.js';
 import {positionKey,localNeighbours} from './navigation.js';
-export const BENCHMARK_SUITE_ID='physiology-workloads-v1';
+export const BENCHMARK_SUITE_ID='child-care-workloads-v1';
 export const BENCHMARK_REPEATS=3;
 export const BENCHMARK_CASES=Object.freeze([
  {id:'evaluator-empty',label:'Оценщик · пустая память',kind:'evaluator',seed:701,population:16,filled:false,work:4096,warmup:256},
@@ -18,6 +19,7 @@ export const BENCHMARK_CASES=Object.freeze([
  {id:'world-150',label:'Мир · 150 основателей',kind:'world',seed:801,population:150,filled:false,work:64,warmup:8},
  {id:'world-400',label:'Мир · 400, заполненная память',kind:'world',seed:802,population:400,filled:true,work:64,warmup:8},
  {id:'world-1000',label:'Мир · 1000, заполненная память',kind:'world',seed:803,population:1000,filled:true,work:64,warmup:8},
+ {id:'world-care',label:'Мир · 150, пары ношения',kind:'world',seed:804,population:150,filled:true,carried:true,work:32,warmup:4},
 ].map(Object.freeze));
 function fillMemory(brain){
  const count=brain.traits.shortCapacity+brain.traits.longCapacity,cells=[];
@@ -41,13 +43,14 @@ function fillMemory(brain){
  brain.spatialCache=null;
 }
 export function createBenchmarkFixture(spec,options={}){
- const world=new Evolution({...(options.brainType?{}:{physiology:{}}),seed:spec.seed,population:spec.population,limit:1000,foodSources:384,foodRegrowInterval:20,
+ const world=new Evolution({...(options.brainType?{}:{physiology:{},genomeVersion:19}),seed:spec.seed,population:spec.population,limit:1000,foodSources:384,foodRegrowInterval:20,
   temporal:options.temporal??(!options.brainType||[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(options.brainType)),brainType:options.brainType??DUAL_BRAIN_TYPE,memory:true,learning:true,mutationRate:.02,mutations:true,lifeHistoryLimit:250,heritableMutations:!options.brainType,...options});
  for(const agent of world.agents){
   agent.brain.memory.clear();agent.brain.longMemory.clear();agent.brain.spatialCache=null;
   if(spec.filled)fillMemory(agent.brain);
   if(spec.kind==='evaluator')for(let i=0;i<agent.brain.networkDelta.length;i++)agent.brain.networkDelta[i]=Math.sin(i+agent.id)*.04;
  }
+ if(spec.carried&&world.childCare)for(let i=0;i+1<world.agents.length;i+=2){const p=world.agents[i],c=world.agents[i+1];world.moveAgent(c,p);attachChild(world,p,c);}
  return world;
 }
 export function evaluatorRequests(world,spec){

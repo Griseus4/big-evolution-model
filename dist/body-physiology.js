@@ -4,9 +4,9 @@ import {BODY_GENE_DEFAULTS,PHYSIOLOGY_DEFAULTS,bodyGeneValues,effectiveSubsteps}
 /** Собственные ткани отделены от содержимого и плода. Первичны L/M/E/H;
  * energy/health сохраняют имена тела, используемые наблюдением и обучением. */
 export function bodyPlan(genes=BODY_GENE_DEFAULTS){
- const g=bodyGeneValues(genes),adultSteps=effectiveSubsteps(g.tAdult),pregnancySteps=effectiveSubsteps(g.tPreg),retentionSteps=effectiveSubsteps(g.tau);
+ const {tCarry,...oldGenes}=genes,g=bodyGeneValues(oldGenes),adultSteps=effectiveSubsteps(g.tAdult),pregnancySteps=effectiveSubsteps(g.tPreg),retentionSteps=effectiveSubsteps(g.tau);
  const potential=g.gmax*(adultSteps/SUBSTEPS)/(1-g.kBirth);
- return {...g,tAdult:adultSteps/SUBSTEPS,tPreg:pregnancySteps/SUBSTEPS,tau:retentionSteps/SUBSTEPS,adultSteps,pregnancySteps,retentionSteps,potential,birthMass:g.kBirth*potential,conceptionSteps:Math.max(1,Math.ceil(g.alpha*adultSteps))};
+ return {...g,...(tCarry!==undefined?{tCarry,carrySteps:effectiveSubsteps(tCarry)}:{}),tAdult:adultSteps/SUBSTEPS,tPreg:pregnancySteps/SUBSTEPS,tau:retentionSteps/SUBSTEPS,adultSteps,pregnancySteps,retentionSteps,potential,birthMass:g.kBirth*potential,conceptionSteps:Math.max(1,Math.ceil(g.alpha*adultSteps))};
 }
 export function bodyCapacities(a,r=PHYSIOLOGY_DEFAULTS,out={}){
  out.organs=r.organFraction*a.M;out.energy=r.energyPerMass*a.L;out.health=r.healthPerMass*a.L;out.volume=r.volumePerOrgan*out.organs;out.tissueEnergy=r.tissueEnergy*a.L;
@@ -36,7 +36,7 @@ export function movementSteps(a,r=PHYSIOLOGY_DEFAULTS){
  return n;
 }
 export function motorRate(a,kind,r=PHYSIOLOGY_DEFAULTS){
- const rate={move:r.moveRate,gather:r.gatherRate,eat:r.eatRate,deposit:r.depositRate,rest:0,birth:0,conceive:0}[kind];
+ const rate={move:r.moveRate,gather:r.gatherRate,eat:r.eatRate,deposit:r.depositRate,rest:0,birth:0,conceive:0,feed:r.feedRate}[kind];
  if(rate===undefined)throw new Error('Для атаки требуется фиксированная цена замаха.');
  return rate*a.L/r.referenceMass;
 }

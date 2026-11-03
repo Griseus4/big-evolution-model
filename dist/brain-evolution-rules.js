@@ -10,5 +10,5 @@ export const V16_MUTATION_LABELS=Object.freeze({behavior:'Поведенческ
 export const V16_MUTATION_GROUPS=Object.freeze(Object.keys(V16_MUTATION_LABELS));
 export const MUTATION_LABELS=Object.freeze({behavior:'Поведенческие свойства',attentionWeights:'Малый мозг: веса',contextWeights:'Контекст ситуации: веса',cells:'Кодировщик клеток',target:'Проекция цели',operation:'Проекция операции',direct:'Прямая оценка',attentionStructure:'Малый мозг: структура',contextStructure:'Контекст ситуации: структура'});
 export const MUTATION_GROUPS=Object.freeze(Object.keys(MUTATION_LABELS));
-export function mutationGroupsForVersion(version){if(version===15)return LEGACY_MUTATION_GROUPS;if(version===16)return V16_MUTATION_GROUPS;if(version===17||version===18)return MUTATION_GROUPS;throw new Error('Неизвестная версия регуляторов.');}
+export function mutationGroupsForVersion(version){if(version===15)return LEGACY_MUTATION_GROUPS;if(version===16)return V16_MUTATION_GROUPS;if(version===17||version===18||version===19)return MUTATION_GROUPS;throw new Error('Неизвестная версия регуляторов.');}
 export const LEGACY_MUTATION_GROUPS=Object.freeze(['behavior','attention','main']);

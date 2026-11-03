@@ -1,3 +1,4 @@
+import {CARE_GENE_FIELDS} from './care-settings.js';
 import {PHYSIOLOGY_FIELDS,BODY_GENE_FIELDS} from './physiology-settings.js';
 import {NUMERIC_MUTATION_GROUPS,NUMERIC_MUTATION_RULES as N} from './numeric-mutation.js';
 import {STRUCTURAL_LIMITS} from './structural-brain.js';
@@ -12,7 +13,7 @@ import {DIGESTION_TIME_LIMITS} from './evolution.js';
 export const EXPERIMENT_FIELDS=Object.freeze([
  ['Мир','population','Основателей',1,1000,1],['Мир','limit','Лимит живых',1,1000,1],
  ['Вычисления','brainCostMultiplier','Коэффициент цены обоих мозгов',Number.MIN_VALUE,Number.MAX_VALUE,'any'],
- ...Object.entries(BODY_GENE_FIELDS).map(([key,f])=>['Тело основателей','bodyGenes.'+key,f.label+' ('+f.unit+')',f.exclusiveMin&&f.min===0?Number.MIN_VALUE:f.min,f.max,'any']),
+ ...Object.entries(CARE_GENE_FIELDS).map(([key,f])=>['Тело основателей','bodyGenes.'+key,f.label+' ('+f.unit+')',f.exclusiveMin&&f.min===0?Number.MIN_VALUE:f.min,f.max,'any']),
  ...Object.entries(PHYSIOLOGY_FIELDS).map(([key,f])=>['Правила тела и пищи','physiology.'+key,f.label+' ('+f.unit+')',f.exclusiveMin&&f.min===0?Number.MIN_VALUE:f.min,f.max,f.unit==='подшаги'?1:'any']),
  ['Возможности','memory','Память мест','check'],['Возможности','learning','Личное обучение','check'],['Возможности','mutations','Мутации потомков','check'],
  ['Возможности','structuralMutations','Структурные мутации','check'],['Мозг','maxNeurons','Предел скрытых нейронов',0,STRUCTURAL_LIMITS.maxNeurons,1],['Мозг','maxLayers','Предел скрытых слоёв',0,STRUCTURAL_LIMITS.maxLayers,1],

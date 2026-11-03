@@ -4,8 +4,8 @@ import {mutationSettingsTable,structureSettingsTable} from './brain-settings-tab
 import {validatePlan,validateWorldOptions,standardSeeds,EXPERIMENT_DEFAULTS,EXPERIMENT_TEMPLATES,EXPERIMENT_PLAN_PROTOCOLS,EXPERIMENT_PLAN_VERSION,EXPERIMENT_TERRAIN_SEED,EXPERIMENT_FOOD_SEED} from './experiment-plan.js';
 import {dagConnectionBudget} from './dual-brain-settings.js';
 import {genomeMetadata} from './genome.js';
-import {CONTEXT_INPUTS as BODY_CONTEXT_INPUTS,ATTENTION_INPUTS as BODY_ATTENTION_INPUTS} from './physiology-brain-layout.js';
-import {ATTENTION_INPUTS,PHYSIOLOGY_GENOME_VERSION as DUAL_VERSION} from './dual-brain-layout.js';
+import {CONTEXT_INPUTS as BODY_CONTEXT_INPUTS,ATTENTION_INPUTS as BODY_ATTENTION_INPUTS} from './care-brain-layout.js';
+import {ATTENTION_INPUTS,CARE_GENOME_VERSION as DUAL_VERSION} from './dual-brain-layout.js';
 import {EXPERIMENT_FACTOR_FIELDS,EXPERIMENT_FIELDS as fields,settingAt as get,setSetting as put,settingInput,settingValue} from './experiment-fields.js';
 import {installExperimentDesign} from './experiment-design-ui.js';
 import {installExperimentRuns,runStatus} from './experiment-runs-ui.js';
@@ -46,7 +46,7 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
  const storageStatus=transientStatus(byId('constructor-storage')),exportStatus=transientStatus(byId('constructor-export-state'));
  const error=message=>{byId('constructor-error').textContent=message;};
  let local;try{local=globalThis.localStorage;}catch{}
- function readFounderGenome(value){const file=Array.isArray(value)?{format:'big-evolution-genome',...genomeMetadata(value),genes:value}:value;if(file.version!==DUAL_VERSION)throw new Error('Для новой основы нужен геном v18; прежние миры продолжаются через полное сохранение.');return validateGenomeFile(file);}
+ function readFounderGenome(value){const file=Array.isArray(value)?{format:'big-evolution-genome',...genomeMetadata(value),genes:value}:value;if(file.version!==DUAL_VERSION)throw new Error('Для новой основы нужен геном v19; прежние миры продолжаются через полное сохранение.');return validateGenomeFile(file);}
  const preferences=experimentPreferences(local,message=>byId('constructor-storage').textContent=message);let draftTimer=null,restoring=true;
  const scheduleDraft=()=>{if(restoring)return;clearTimeout(draftTimer);draftTimer=setTimeout(saveDraft,300);};
  const notification=byId('experiment-notification-dialog');
@@ -103,7 +103,7 @@ export function installExperimentUI({getSimulation,getWorldState,pauseWorld,resu
  async function savedTemplates(){try{const names=[];for(const name of await store.templates()){const p=await store.template(name);if(EXPERIMENT_PLAN_PROTOCOLS.includes(p?.protocolId)&&Array.isArray(p.factors))names.push(name);}byId('constructor-saved-templates').replaceChildren(...names.map(name=>templateCard(name,async()=>{try{fill(await store.template(name));byId('test-tab-constructor').click();}catch(e){error(e.message);}})));}catch{}}
  byId('constructor-save-template').addEventListener('click',async()=>{try{const plan=readPlan();await store.saveTemplate(plan.name,plan);await savedTemplates();storageStatus('Шаблон сохранён в этом браузере.',{success:true});}catch(e){error(e.message);}});savedTemplates();
  byId('constructor-export-plan').addEventListener('click',async()=>{try{await downloadExperiment('big-evolution-experiment-plan.json',{format:'big-evolution-experiment-plan',version:EXPERIMENT_PLAN_VERSION,plan:readPlan()});}catch(e){error(e.message);}});
- byId('constructor-import-plan').addEventListener('change',async e=>{try{const f=e.target.files?.[0];if(!f)return;if(f.size>16000000)throw new Error('Слишком большой план.');const data=JSON.parse(await f.text());if(data.format!=='big-evolution-experiment-plan'||![2,EXPERIMENT_PLAN_VERSION].includes(data.version))throw new Error('Нужен план опытов v2/v3 с наборами значений параметров. Старые планы не поддерживаются.');fill(data.plan);}catch(e){error(e.message);}});
+ byId('constructor-import-plan').addEventListener('change',async e=>{try{const f=e.target.files?.[0];if(!f)return;if(f.size>16000000)throw new Error('Слишком большой план.');const data=JSON.parse(await f.text());if(data.format!=='big-evolution-experiment-plan'||![2,EXPERIMENT_PLAN_VERSION].includes(data.version))throw new Error('Для нового опыта нужен план v5 с ношением детей. Старые результаты доступны для анализа.');fill(data.plan);}catch(e){error(e.message);}});
  function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(save,1500);}
  function save(){clearTimeout(saveTimer);if(!report)return;const current=report;saveChain=saveChain.catch(()=>{}).then(()=>store.save(current)).catch(e=>{byId('constructor-storage').textContent=e.message;});return saveChain;}
  let lastRender=0,lastRevision=-1,lastSourcesKey=null;

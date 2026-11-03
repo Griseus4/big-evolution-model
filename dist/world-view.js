@@ -9,14 +9,16 @@ export const WORLD_PROTOCOL=1;
 export const WORLD_UI_INTERVAL=200;
 // Полный отчёт жизней нужен лишь видимой истории, не каждому кадру карты.
 export const HISTORY_UI_INTERVAL=1000;
-const META=['physiology','bodyGenes','genomeVersion','brainCostMultiplier','attentionMaxNeurons','attentionMaxLayers','attentionInitialNeurons','attentionInitialConnections','initialMutation','mutationEnabled','initialNeurons','initialConnections','maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
+const META=['childCare','physiology','bodyGenes','genomeVersion','brainCostMultiplier','attentionMaxNeurons','attentionMaxLayers','attentionInitialNeurons','attentionInitialConnections','initialMutation','mutationEnabled','initialNeurons','initialConnections','maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
  'digestionTime','learningEnabled','memoryEnabled','mutationRate','mutations','brainType','mutationProtocol','reproduction'];
 export function worldPresentation(world,{selected,trail,section='birth',history=false,staticMap=false,movement=false}={}){
  const state={tick:world.tick,environmentRevision:world.environmentRevision,automaticEnvironment:environmentStatus(world),
   agents:world.agents.map(a=>{
-   const point={id:a.id,x:a.x,y:a.y,founderId:a.founderId,...(world.physiology?{L:a.L,referenceMass:world.physiology.referenceMass,pregnant:!!a.pregnancy,labor:a.pregnancy?.stage==='labor',attackTarget:a.process?.action===11?a.process.targetHandle:null}:{})},p=a.process;
+   const point={id:a.id,x:a.x,y:a.y,founderId:a.founderId,...(world.physiology?{L:a.L,referenceMass:world.physiology.referenceMass,...(world.childCare?{carrierId:a.carrierId,carryingChildId:a.carryingChildId}:{}),pregnant:!!a.pregnancy,labor:a.pregnancy?.stage==='labor',attackTarget:a.process?.action===11?a.process.targetHandle:null}:{})},p=a.process;
    // Только наблюдателю медленной карты: физическое тело остаётся в x/y.
    // Копируем четыре числа процесса, а не мозг/полный процесс всей популяции.
+   const carrierProcess=world.childCare&&a.carrierId!==null?world._physById.get(a.carrierId)?.process:null;
+   if(movement&&carrierProcess?.action<6)point.movement={x:carrierProcess.destination.x,y:carrierProcess.destination.y,elapsed:carrierProcess.elapsed,duration:carrierProcess.duration};
    if(movement&&p&&p.action<6)point.movement={x:p.destination.x,y:p.destination.y,elapsed:p.elapsed,duration:p.duration};
    return point;
   }),
@@ -34,11 +36,11 @@ export function worldPresentation(world,{selected,trail,section='birth',history=
   // Полная память только выбранного наблюдателем. Рабочие следы/градиенты и
   // pending-переход не нужны UI, их не копируем даже для выбранного мозга.
   const a=selected,b=a.brain;
-  const fields=['physiology','dual','lastDecisionSubtick','traits','controllerType','position','facing','memory','longMemory','updates','feelingTotal',
+  const fields=['care','physiology','dual','lastDecisionSubtick','traits','controllerType','position','facing','memory','longMemory','updates','feelingTotal',
    'costProfile','feelingSamples','lastLearning','temporal','gateBase','scale','weights','bodyGenes','bodyWeights'];
   const brain=Object.fromEntries(fields.map(k=>[k,b[k]]));
   brain.networkDelta=b.networkDelta;
-  const body=['L','M','energyCapacity','healthCapacity','stomachCapacity','bodyGenes','bodyPlan','foodInventory','id','x','y','frameRotation','founderId','generation','parentId','age','children','alive','energy','health','pain',
+  const body=['carrierId','carryingChildId','carryStarted','carryDue','L','M','energyCapacity','healthCapacity','stomachCapacity','bodyGenes','bodyPlan','foodInventory','id','x','y','frameRotation','founderId','generation','parentId','age','children','alive','energy','health','pain',
    'inventory','stomach','lastAction','process','resting','lastProcess','life','genome'];
   state.selected={agent:{...Object.fromEntries(body.map(k=>[k,a[k]])),pregnancy:a.pregnancy?{stage:a.pregnancy.stage,due:a.pregnancy.due,paid:a.pregnancy.paid,cost:a.pregnancy.cost,fraction:a.pregnancy.fraction,laborDue:a.pregnancy.laborDue}:null,brain},
    birth:world.birthAvailability(a),feeling:world.feeling(a),state:world.state(a),

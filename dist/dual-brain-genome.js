@@ -1,3 +1,4 @@
+import {CARE_GENE_FIELDS,careGeneValues} from './care-settings.js';
 import {EVOLUTION_RULES as R,MUTATION_GROUPS} from './brain-evolution-rules.js';
 import {dualBrainLayout,unpackDualBrain,packDualBrain,dualDimensions,ATTENTION_INPUTS,DUAL_SCHEMAS} from './dual-brain-layout.js';
 import {FIXED_PARAMETERS,STRUCTURAL_BLOCKS} from './structural-brain.js';
@@ -25,7 +26,7 @@ export function validateDualBrain(genes){
  if(!Array.isArray(genes)||!genes.every(Number.isFinite)||d.fixed.length!==d.layout.fixedParameters||d.traits.length!==12||
  [...d.fixed,...d.traits].some(v=>Math.abs(v)>R.weightLimit))throw new Error('Неверные параметры двух сетей.');
  validateDag(d.main);validateDag(d.attention);
- if(d.layout.version>=18){bodyGeneValues(d.body);dualMutationProfiles(genes);}
+ if(d.layout.version>=18){(d.layout.version>=19?careGeneValues:bodyGeneValues)(d.body);dualMutationProfiles(genes);}
  for(let j=0;j<d.layout.regulatorCount;j++)if(!(d.layout.version>=18&&NUMERIC_MUTATION_GROUPS.includes(d.layout.mutationGroups[Math.floor(j/2)]))&&(!Number.isFinite(d.regulators[j])||j%2&&(d.regulators[j]<LOG_MIN||d.regulators[j]>LOG_MAX)))throw new Error('Неверные регуляторы мутаций.');
  return d;
 }
@@ -58,7 +59,7 @@ export function randomDag(inputs,outputs,counts,percent,random){
 
 export function randomDualGenome(random,settings={}){
  const version=settings.genomeVersion??17;
- if(![17,18].includes(version))throw new Error('Неподдерживаемая начальная схема генома.');
+ if(![17,18,19].includes(version))throw new Error('Неподдерживаемая начальная схема генома.');
  const dimensions=dualDimensions(version),FIXED_PARAMETERS=dimensions.fixed,STRUCTURAL_BLOCKS=dimensions.blocks,CONTEXT_INPUTS=dimensions.inputs,ATTENTION_INPUTS=dimensions.attentionInputs;
  const fixed=Array(FIXED_PARAMETERS).fill(0);
  for(const b of STRUCTURAL_BLOCKS)for(let j=0;j<b.weights;j++)fixed[b.offset+j]=(random.next()*2-1)*Math.sqrt(6/(b.inputs+b.outputs));
@@ -75,7 +76,7 @@ export function randomDualGenome(random,settings={}){
   return encodeMutationPair(initial?.rate??(R.initialRateMin+rate*(R.initialRateMax-R.initialRateMin)),
    initial?.strength??(R.initialStrengthMin+strength*(R.initialStrengthMax-R.initialStrengthMin)));
  });
- const genes=packDualBrain({fixed,main,attention,traits:Array.from({length:12},()=>(random.next()-.5)*5),regulators,body:bodyGeneValues(settings.bodyGenes??{}),layout:{version}});
+ const genes=packDualBrain({fixed,main,attention,traits:Array.from({length:12},()=>(random.next()-.5)*5),regulators,body:(version>=19?careGeneValues:bodyGeneValues)(settings.bodyGenes??{}),layout:{version}});
  validateDualBrain(genes);return genes;
 }
 
@@ -170,7 +171,7 @@ function mutateNumericDual(d,profiles,random,settings){
  const change=(v,key,scale=N.weightScale,domain=weightDomain)=>enabled(key)?mutateNumeric(v,scale,profiles[key],random,domain):v;
  for(const b of STRUCTURAL_BLOCKS){const key=b.key==='context'?'contextWeights':b.key;for(let j=b.offset;j<b.offset+b.weights+(b.bias===null?0:b.outputs);j++)d.fixed[j]=change(d.fixed[j],key);}
  d.traits=d.traits.map(v=>change(v,'behavior',N.traitScale));
- for(const [key,field]of Object.entries(BODY_GENE_FIELDS))d.body[key]=change(d.body[key],'behavior',Math.abs(BODY_GENE_DEFAULTS[key]),field);
+ for(const [key,field]of Object.entries(d.layout.version>=19?CARE_GENE_FIELDS:BODY_GENE_FIELDS))d.body[key]=change(d.body[key],'behavior',Math.abs(field.value),field);
  for(let j=0;j<d.main.layers.length;j++)d.main.biases[j]=change(d.main.biases[j],'contextWeights');
  d.main.biases.splice(d.main.layers.length,CONTEXT_HIDDEN,...d.fixed.slice(STRUCTURAL_BLOCKS[1].bias,STRUCTURAL_BLOCKS[1].bias+CONTEXT_HIDDEN));
  for(const edge of d.main.edges)edge.weight=change(edge.weight,'contextWeights');

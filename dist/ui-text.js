@@ -1,3 +1,4 @@
+import {CARE_GUIDE_TEXT} from './guide-child-care-text.js';
 import {PHYSIOLOGY_HELP} from './physiology-help.js';
 import {PHYSIOLOGY_GUIDE_TEXT} from './guide-physiology-text.js';
 import {MUTATION_HELP} from './mutation-help.js';
@@ -289,7 +290,7 @@ ALIASES['history-curve-age-slider']='history-curve-age-max';
 ALIASES['constructor-results-next']='constructor-results-prev';
 export const PAGE_TEXT={
  ...GUIDE_INTRO_TEXT,
- ...GUIDE_REFERENCE_TEXT,...GUIDE_FOOD_TEXT,...GUIDE_FOOD_SOURCES_TEXT,...GUIDE_ENVIRONMENT_TEXT,...GUIDE_MIND_TEXT,...GUIDE_LEARNING_TEXT,...GUIDE_GENETICS_TEXT,...GUIDE_EXPERIMENTS_TEXT,...GUIDE_ANALYSIS_TEXT,...GUIDE_SYSTEM_TEXT,...GUIDE_TIME_TEXT,...GUIDE_NUMBERS_TEXT,...GUIDE_ENERGY_TEXT,...GUIDE_ACTIONS_TEXT,...GUIDE_GEOGRAPHY_TEXT,...PHYSIOLOGY_GUIDE_TEXT,
+ ...GUIDE_REFERENCE_TEXT,...GUIDE_FOOD_TEXT,...GUIDE_FOOD_SOURCES_TEXT,...GUIDE_ENVIRONMENT_TEXT,...GUIDE_MIND_TEXT,...GUIDE_LEARNING_TEXT,...GUIDE_GENETICS_TEXT,...GUIDE_EXPERIMENTS_TEXT,...GUIDE_ANALYSIS_TEXT,...GUIDE_SYSTEM_TEXT,...GUIDE_TIME_TEXT,...GUIDE_NUMBERS_TEXT,...GUIDE_ENERGY_TEXT,...GUIDE_ACTIONS_TEXT,...GUIDE_GEOGRAPHY_TEXT,...PHYSIOLOGY_GUIDE_TEXT,...CARE_GUIDE_TEXT,
  'factor-genome':'Один файл — одно значение фактора. Все основатели варианта получают выбранный геном. Отдельные коэффициенты заменяют только выбранные гены.',
  'factor-founder-senses':'Коэффициент −8…8, не проценты. Без этого параметра сохраняются исходные значения. Меняется геном основателей; потомки наследуют и мутируют по общим условиям.',
  'constructor-genetics':'Все сочетания выбранных значений; максимум 64 на seed. В группе «Геном основателей» доступны файлы геномов и отдельные коэффициенты чувствительности. По умолчанию геномы случайные; загруженная общая основа сохраняет свои значения. Не добавляйте чувствительность, которую хотите оставить исходной.',

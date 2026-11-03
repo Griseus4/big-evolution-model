@@ -1,3 +1,4 @@
+import {prepareSetDecisionInput as prepareCareInput} from './care-inputs.js';
 import {prepareSetDecisionInput as preparePhysiologyInput} from './physiology-inputs.js';
 import {FEELING_SCALES} from './brain-input-scales.js';
 import {BODY_THRESHOLDS} from './model-rules.js';
@@ -42,11 +43,11 @@ export function controllerState(observation){
  * выбора; сейчас они различаются, как в прежней врождённой политике + критике.
  */
 export function prepareControllerDecision(brain,request){
- if(request.schema!==(brain.physiology?'local-body-food-target-v1':DECISION_SCHEMA))throw new Error('Неизвестная схема наблюдений мозга.');
- return brain.physiology?preparePhysiologyInput(brain,request):brain.temporal?prepareTemporalInput(brain,request):brain.controllerType===SET_BRAIN_TYPE?prepareSetDecisionInput(brain,request):null;
+ if(request.schema!==(brain.care?'local-body-food-care-v1':brain.physiology?'local-body-food-target-v1':DECISION_SCHEMA))throw new Error('Неизвестная схема наблюдений мозга.');
+ return brain.care?prepareCareInput(brain,request):brain.physiology?preparePhysiologyInput(brain,request):brain.temporal?prepareTemporalInput(brain,request):brain.controllerType===SET_BRAIN_TYPE?prepareSetDecisionInput(brain,request):null;
 }
 export function evaluateController(brain,genes,request,decision=null){
- if(request.schema!==(brain.physiology?'local-body-food-target-v1':DECISION_SCHEMA))throw new Error('Неизвестная схема наблюдений мозга.');
+ if(request.schema!==(brain.care?'local-body-food-care-v1':brain.physiology?'local-body-food-target-v1':DECISION_SCHEMA))throw new Error('Неизвестная схема наблюдений мозга.');
  if(brain.temporal)return temporalBrain.evaluateSetBrain(brain,request,true,decision);
  if(brain.controllerType===SET_BRAIN_TYPE)return evaluateSetBrain(brain,request,true,decision);
  if(Boolean(layoutForType(brain.controllerType))){
@@ -83,7 +84,7 @@ export function evaluateController(brain,genes,request,decision=null){
  * выбранного действия/исторических входов. Старый табличный адаптер сохраняет
  * полную оценку и прежний порядок reduce; сеть использует частные буферы. */
 export function expectedControllerValue(brain,genes,request,decision=null){
- if(request.schema!==(brain.physiology?'local-body-food-target-v1':DECISION_SCHEMA))throw new Error('Неизвестная схема наблюдений мозга.');
+ if(request.schema!==(brain.care?'local-body-food-care-v1':brain.physiology?'local-body-food-target-v1':DECISION_SCHEMA))throw new Error('Неизвестная схема наблюдений мозга.');
  if(brain.temporal)return temporalBrain.expectedSetValue(brain,request,decision);
  if(brain.controllerType===SET_BRAIN_TYPE)return expectedSetValue(brain,request,decision);
  if(Boolean(layoutForType(brain.controllerType)))return expectedNeuralValue(brain,request);

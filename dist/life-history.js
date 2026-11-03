@@ -7,7 +7,7 @@ import {ACTION_COUNT,DEPOSIT_ACTION} from './policy-layout.js';
 import {reproductionCounters} from './reproduction.js';
 import {cognitionPlaces} from './cognition-summary.js';
 import {describeLifeObservations} from './life-observations.js';
-export const MODEL_VERSION='0.58.0';
+export const MODEL_VERSION='0.59.0';
 export const CAUSE_LABELS={attack:'Атака',starvation:'Истощение',injury:'Повреждения',age:'Предел возраста'};
 export function createLifeCounters(){return {samples:0,energyTotal:0,healthTotal:0,painTotal:0,
  hungerSteps:0,emptyEnergySteps:0,painSteps:0,gathered:0,eaten:0,deposited:0,moved:0,injuries:0,damage:0,
@@ -38,7 +38,7 @@ export function lifeRow(a,born,tick,cause=null){
  maxStepsWithoutEating:Math.max(c.maxMealGap,a.age-(c.lastMealAge??0)),
  feedingActionFraction:n?(c.gathered+c.eaten)/n:null,
  actions:c.actions.slice(),reproduction:structuredClone(c.reproduction),learningUpdates:a.brain.updates,shortPlaces:cognitionPlaces(a).short,longPlaces:cognitionPlaces(a).long};
- if(c.physiology)result.physiology=structuredClone(c.physiology);
+ if(c.physiology)result.physiology=structuredClone(c.physiology);if(c.care)result.care=structuredClone(c.care);
  if(a.brain.temporal){for(const k of ['meanPain','painSteps','injuries','damage'])delete result[k];const actions=c.actions.reduce((n,x)=>n+x,0);result.feedingActionFraction=actions?(c.gathered+c.eaten)/actions:null;result.timeSchema='model-time-substeps-v1';if(c.observer)result.observations=describeLifeObservations(c.observer);if(c.physiology&&result.observations){result.observations.inventoryObservedSteps=c.physiology.samples;result.observations.meanInventory=c.physiology.samples?c.physiology.inventoryTotal/c.physiology.samples:null;result.observations.medianInventory=null;}}return result;
 }
 function group(){return {count:0,ageTotal:0,childrenTotal:0,feelingTotal:0,feelingCount:0,ages:[],
@@ -51,7 +51,7 @@ function add(g,row){g.count++;g.ageTotal+=row.age;g.childrenTotal+=row.children;
  g.gapTotal+=row.maxStepsWithoutEating;g.maxGap=Math.max(g.maxGap,row.maxStepsWithoutEating);
  for(let i=0;i<Math.max(g.actions.length,row.actions.length);i++)g.actions[i]=(g.actions[i]??0)+(row.actions[i]??0);
  if(row.reproduction){for(const name of ['decisions','eligible','chosen','births'])g.reproduction[name]+=row.reproduction[name];
-  for(const reason of Object.keys(g.reproduction.blocked))g.reproduction.blocked[reason]+=row.reproduction.blocked[reason];}
+  for(const [reason,count]of Object.entries(row.reproduction.blocked))g.reproduction.blocked[reason]=(g.reproduction.blocked[reason]??0)+count;}
  if(row.timeSchema)g.ageScale=10;const ageBin=Math.round(row.age*(g.ageScale??1));g.ages[ageBin]=(g.ages[ageBin]??0)+1;if(row.meanFeeling!==null){g.feelingTotal+=row.meanFeeling;g.feelingCount++;}}
 function describe(g){
  let median=null;

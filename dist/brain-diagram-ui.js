@@ -1,3 +1,4 @@
+import * as careLayout from './care-brain-layout.js';
 import {BRAIN_COMPONENTS,BRAIN_LEGEND,brainFeatureExplanation} from './brain-diagram-help.js';
 import {diagramLayout,fitViewport,resizeViewport,zoomViewport,panViewport,diagramHit,selectedEdge,EDGE_WIDTH,MODAL_DIAGRAM_OCCUPANCY} from './brain-diagram-viewport.js';
 /** Только представление выбранного мозга. Клик читает существующие веса;
@@ -11,7 +12,7 @@ const views=new WeakMap();
 export function brainDiagramModel(agent,component='context',learningEnabled=true){
  const dual=dualBrainLayout(agent.genome)?unpackDualBrain(agent.genome):null;
  const d=dual?{layout:dual.layout,layers:dual.main.layers,edges:dual.main.edges}:structuralData(agent.genome);if(!d)return null;const b=agent.brain,l=d.layout;
- const {CONTEXT_NAMES,CELL_NAMES,CANDIDATE_NAMES,OPERATION_NAMES,GATE_NAMES}=l.version>=18?physiologyLayout:oldLayout,STRUCTURAL_BLOCKS=l.blocks??OLD_BLOCKS,FIXED_PARAMETERS=l.fixedParameters??OLD_FIXED_PARAMETERS;
+ const {CONTEXT_NAMES,CELL_NAMES,CANDIDATE_NAMES,OPERATION_NAMES,GATE_NAMES}=l.version>=19?careLayout:l.version>=18?physiologyLayout:oldLayout,STRUCTURAL_BLOCKS=l.blocks??OLD_BLOCKS,FIXED_PARAMETERS=l.fixedParameters??OLD_FIXED_PARAMETERS;
  const nodes=[],edges=[],base=agent.genome,delta=b.networkDelta;
  const node=(id,layer,label,index=null)=>nodes.push({id,layer,label,index});
  const edge=(from,to,index,gate=false)=>edges.push({from,to,index,base:gate?b.gateBase[index]:base[index],delta:gate?0:delta?.[index]??0,enabled:gate||learningEnabled});

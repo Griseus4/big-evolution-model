@@ -1,3 +1,4 @@
+import {CARE_GENE_FIELDS} from './care-settings.js';
 import {PHYSIOLOGY_FIELDS,BODY_GENE_FIELDS,PHYSIOLOGY_DEFAULTS,BODY_GENE_DEFAULTS} from './physiology-settings.js';
 import {NUMERIC_MUTATION_RULES} from './numeric-mutation.js';
 import {BRAIN_ECONOMY} from './brain-economy.js';

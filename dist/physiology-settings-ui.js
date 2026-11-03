@@ -1,3 +1,4 @@
+import {CARE_GENE_FIELDS,careGeneValues} from './care-settings.js';
 import {PHYSIOLOGY_FIELDS,BODY_GENE_FIELDS,physiologySettings,bodyGeneValues} from './physiology-settings.js';
 import {bodyPlan,createBody,bodyCapacities,bodySpeed} from './body-physiology.js';
 import {createHelpButton} from './help.js';
@@ -6,7 +7,7 @@ import {formatStatistic} from './statistics-format.js';
  * только читаются: пользователь не задаёт отдельно массу/энергию/желудок. */
 export function physiologySettingsUI(doc,host){
  const inputs=new Map(),make=(tag,text)=>{const n=doc.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
- for(const [prefix,title,fields]of [['bodyGenes','Тело и пищеварение основателей',BODY_GENE_FIELDS],['physiology','Физические правила мира',PHYSIOLOGY_FIELDS]]){
+ for(const [prefix,title,fields]of [['bodyGenes','Тело и пищеварение основателей',CARE_GENE_FIELDS],['physiology','Физические правила мира',PHYSIOLOGY_FIELDS]]){
   const details=make('details'),summary=make('summary',title),table=make('table');details.className='physiology-settings';table.className='brain-settings-table';details.append(summary);
   const note=make('p',prefix==='bodyGenes'?'Эти значения получают случайные основатели. У потомков они наследуются и меняются числовой мутацией поведенческих свойств.':'Общие правила действуют на всех жителей этого мира. Они не являются генами.');note.className='note';details.append(note,table);
   for(const [key,f]of Object.entries(fields)){
@@ -16,7 +17,7 @@ export function physiologySettingsUI(doc,host){
   host.append(details);
  }
  const derived=make('p');derived.className='note';host.append(derived);
- const read=()=>{const result={physiology:{},bodyGenes:{}};for(const [path,n]of inputs){const [group,key]=path.split('.');result[group][key]=Number(n.value);}result.physiology=physiologySettings(result.physiology);result.bodyGenes=bodyGeneValues(result.bodyGenes);return {...result,genomeVersion:18};};
+ const read=()=>{const result={physiology:{},bodyGenes:{}};for(const [path,n]of inputs){const [group,key]=path.split('.');result[group][key]=Number(n.value);}result.physiology=physiologySettings(result.physiology);result.bodyGenes=careGeneValues(result.bodyGenes);return {...result,genomeVersion:19};};
  const refresh=()=>{try{const s=read(),p=bodyPlan(s.bodyGenes),a=createBody(p,s.physiology),c=bodyCapacities(a,s.physiology),f=v=>formatStatistic(v,3);derived.textContent=`Основатель: масса ${f(a.L)}, энергия ${f(a.energy)} из ${f(c.energy)}, здоровье ${f(c.health)}, желудок ${f(c.volume)} порции. Скорость ${f(bodySpeed(a,s.physiology))} гекса/Т. Плановая масса ребёнка ${f(p.birthMass)}.`;}catch(e){derived.textContent=e.message;}};
  for(const input of inputs.values())input.addEventListener('input',refresh);refresh();return {inputs,read,refresh};
 }
