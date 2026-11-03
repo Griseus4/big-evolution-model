@@ -6,9 +6,9 @@ An artificial life simulation with evolving neural agents, individual learning, 
 
 Big Evolution explores how behavior develops through inherited neural parameters, mutation, individual experience, and competition for renewable food. Agents manage energy, carry and digest food, reproduce, and die in a shared environment. The browser interface lets you observe individuals, inspect their decisions, and compare experiments. Version 0.52 adds an edge handle for statistics settings, local survival-curve controls and isolated chart updates. Calculations remain cached across tabs; paused worlds and completed experiments support background preparation. [Release notes](docs/updates/v052-local-chart-updates.md).
 
-**Status:** experimental prototype · **Current implementation:** 0.57.2 · **Interface:** Russian.
+**Status:** experimental prototype · **Current implementation:** 0.58.0 · **Interface:** Russian.
 
-0.57.2 introduces tissue-based bodies, grass/fruit/meat digestion, pregnancy, attacks and numeric mutations. New worlds use genome v18 and save format v5; historical reports remain readable. [Details](docs/updates/v057-physiology.md).
+0.58.0 allows fractional meals and eating all available food of the selected type that fits in the stomach. Uneaten food stays in inventory; meal duration remains fixed. [Details](docs/updates/v058-fractional-meals.md).
 
 Patch 0.52.1 removes chart captions, including text generated on hover or point selection. Numerical tables and field help remain available. [Release notes](docs/updates/v052-no-chart-captions.md).
 

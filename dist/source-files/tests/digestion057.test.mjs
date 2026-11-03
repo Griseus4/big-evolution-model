@@ -18,8 +18,8 @@ test('смесь и пропорции считаются по одному со
  close(advanceDigestion(d,1,3,powers,energy),.0825+.0165+.0018);
  const e=createDigestion(20);advanceDigestion(e,1,3,powers,energy);ingestFood(e,0,1,3,energy);close(e.remaining.reduce((a,b)=>a+b),22);close(advanceDigestion(e,2,3,powers,energy),.0825);
 });
-test('малая ёмкость списывает начатую порцию целиком, при нуле не начинает',()=>{
- const d=createDigestion(20);assert.deepEqual(ingestFood(d,0,1,.3,energy),{started:1,swallowed:.3,discarded:.7});assert.deepEqual(ingestFood(d,0,1,.3,energy),{started:0,swallowed:0,discarded:0});
+test('малая ёмкость списывает только проглоченную долю, при нуле не начинает',()=>{
+ const d=createDigestion(20);assert.deepEqual(ingestFood(d,0,1,.3,energy),{started:.3,swallowed:.3,discarded:0});assert.deepEqual(ingestFood(d,0,1,.3,energy),{started:0,swallowed:0,discarded:0});
 });
 test('кольцо не растёт с tau, выведение и повторное заполнение не конфликтуют',()=>{
  for(let n=1;n<10000;n++)assert.ok(createDigestion(n).starts.length<=39);

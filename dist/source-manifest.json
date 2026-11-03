@@ -2,16 +2,16 @@
   {
     "name": "docs/START_HERE.md",
     "url": "./source-files/docs/START_HERE.md",
-    "lines": 37,
-    "bytes": 4711,
+    "lines": 39,
+    "bytes": 4391,
     "aliases": [],
     "purpose": "Начни здесь после потери контекста: короткий статус, маршруты чтения и ближайший блок."
   },
   {
     "name": "docs/updates/README.md",
     "url": "./source-files/docs/updates/README.md",
-    "lines": 197,
-    "bytes": 19669,
+    "lines": 199,
+    "bytes": 19786,
     "aliases": [],
     "purpose": "Индекс обновлений по версиям: физика, мир, география, рождение и результаты."
   },
@@ -948,6 +948,14 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/updates/v058-fractional-meals.md",
+    "url": "./source-files/docs/updates/v058-fractional-meals.md",
+    "lines": 27,
+    "bytes": 5550,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "tools/open-game.py",
     "url": "./source-files/tools/open-game.py",
     "lines": 111,
@@ -1142,8 +1150,8 @@
   {
     "name": "dist/project-guide-inventory.json",
     "url": "./project-guide-inventory.json",
-    "lines": 1527,
-    "bytes": 31131,
+    "lines": 1531,
+    "bytes": 31222,
     "aliases": [],
     "purpose": "Производный инвентарь канонического кода; не процент полноты пособия."
   },
@@ -1711,7 +1719,7 @@
     "name": "README.ru.md",
     "url": "./source-files/README.ru.md",
     "lines": 121,
-    "bytes": 17146,
+    "bytes": 17042,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13444,6 +13452,710 @@
     "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
   },
   {
+    "name": "dist/benchmark-snapshots/0.58.0/action-catalog.js",
+    "url": "./benchmark-snapshots/0.58.0/action-catalog.js",
+    "lines": 4,
+    "bytes": 509,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/action-timing.js",
+    "url": "./benchmark-snapshots/0.58.0/action-timing.js",
+    "lines": 10,
+    "bytes": 1098,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/activity-perception.js",
+    "url": "./benchmark-snapshots/0.58.0/activity-perception.js",
+    "lines": 41,
+    "bytes": 2601,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/attention-gate.js",
+    "url": "./benchmark-snapshots/0.58.0/attention-gate.js",
+    "lines": 41,
+    "bytes": 4345,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/automatic-environment.js",
+    "url": "./benchmark-snapshots/0.58.0/automatic-environment.js",
+    "lines": 59,
+    "bytes": 5791,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/benchmark-fixtures.js",
+    "url": "./benchmark-snapshots/0.58.0/benchmark-fixtures.js",
+    "lines": 68,
+    "bytes": 6101,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/benchmark-state.js",
+    "url": "./benchmark-snapshots/0.58.0/benchmark-state.js",
+    "lines": 39,
+    "bytes": 2859,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/body-physiology.js",
+    "url": "./benchmark-snapshots/0.58.0/body-physiology.js",
+    "lines": 53,
+    "bytes": 3981,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/brain-controller.js",
+    "url": "./benchmark-snapshots/0.58.0/brain-controller.js",
+    "lines": 178,
+    "bytes": 14709,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/brain-cost.js",
+    "url": "./benchmark-snapshots/0.58.0/brain-cost.js",
+    "lines": 45,
+    "bytes": 4357,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/brain-economy.js",
+    "url": "./benchmark-snapshots/0.58.0/brain-economy.js",
+    "lines": 12,
+    "bytes": 942,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/brain-evolution-rules.js",
+    "url": "./benchmark-snapshots/0.58.0/brain-evolution-rules.js",
+    "lines": 14,
+    "bytes": 2119,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/brain-initialization.js",
+    "url": "./benchmark-snapshots/0.58.0/brain-initialization.js",
+    "lines": 39,
+    "bytes": 3198,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/brain-input-scales.js",
+    "url": "./benchmark-snapshots/0.58.0/brain-input-scales.js",
+    "lines": 10,
+    "bytes": 1142,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/brain-parameters.js",
+    "url": "./benchmark-snapshots/0.58.0/brain-parameters.js",
+    "lines": 73,
+    "bytes": 5858,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/brain-structure-rules.js",
+    "url": "./benchmark-snapshots/0.58.0/brain-structure-rules.js",
+    "lines": 9,
+    "bytes": 825,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/cognition-owner.js",
+    "url": "./benchmark-snapshots/0.58.0/cognition-owner.js",
+    "lines": 59,
+    "bytes": 5795,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/cognition-packet.js",
+    "url": "./benchmark-snapshots/0.58.0/cognition-packet.js",
+    "lines": 32,
+    "bytes": 3722,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/cognition-result-validation.js",
+    "url": "./benchmark-snapshots/0.58.0/cognition-result-validation.js",
+    "lines": 21,
+    "bytes": 1976,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/cognition-rules.js",
+    "url": "./benchmark-snapshots/0.58.0/cognition-rules.js",
+    "lines": 12,
+    "bytes": 836,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/cognition-summary.js",
+    "url": "./benchmark-snapshots/0.58.0/cognition-summary.js",
+    "lines": 6,
+    "bytes": 579,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/cognition-worker.js",
+    "url": "./benchmark-snapshots/0.58.0/cognition-worker.js",
+    "lines": 20,
+    "bytes": 1399,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/cognition.js",
+    "url": "./benchmark-snapshots/0.58.0/cognition.js",
+    "lines": 289,
+    "bytes": 23237,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/computation-settings.js",
+    "url": "./benchmark-snapshots/0.58.0/computation-settings.js",
+    "lines": 16,
+    "bytes": 1677,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/dag-network.js",
+    "url": "./benchmark-snapshots/0.58.0/dag-network.js",
+    "lines": 72,
+    "bytes": 5776,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/digestion.js",
+    "url": "./benchmark-snapshots/0.58.0/digestion.js",
+    "lines": 43,
+    "bytes": 3310,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/dual-brain-genome.js",
+    "url": "./benchmark-snapshots/0.58.0/dual-brain-genome.js",
+    "lines": 198,
+    "bytes": 17610,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/dual-brain-layout.js",
+    "url": "./benchmark-snapshots/0.58.0/dual-brain-layout.js",
+    "lines": 65,
+    "bytes": 6692,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/dual-brain-settings.js",
+    "url": "./benchmark-snapshots/0.58.0/dual-brain-settings.js",
+    "lines": 41,
+    "bytes": 4293,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/dual-brain-state.js",
+    "url": "./benchmark-snapshots/0.58.0/dual-brain-state.js",
+    "lines": 19,
+    "bytes": 1661,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/dual-brain-statistics.js",
+    "url": "./benchmark-snapshots/0.58.0/dual-brain-statistics.js",
+    "lines": 22,
+    "bytes": 2137,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/energy-budget.js",
+    "url": "./benchmark-snapshots/0.58.0/energy-budget.js",
+    "lines": 10,
+    "bytes": 778,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/environment-plan.js",
+    "url": "./benchmark-snapshots/0.58.0/environment-plan.js",
+    "lines": 69,
+    "bytes": 6700,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/environment-settings.js",
+    "url": "./benchmark-snapshots/0.58.0/environment-settings.js",
+    "lines": 19,
+    "bytes": 2802,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/evolution.js",
+    "url": "./benchmark-snapshots/0.58.0/evolution.js",
+    "lines": 623,
+    "bytes": 55581,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/experiment-execution.js",
+    "url": "./benchmark-snapshots/0.58.0/experiment-execution.js",
+    "lines": 19,
+    "bytes": 1227,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/experiment-runner.js",
+    "url": "./benchmark-snapshots/0.58.0/experiment-runner.js",
+    "lines": 183,
+    "bytes": 21449,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/food-distribution.js",
+    "url": "./benchmark-snapshots/0.58.0/food-distribution.js",
+    "lines": 10,
+    "bytes": 1305,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/food-exposure.js",
+    "url": "./benchmark-snapshots/0.58.0/food-exposure.js",
+    "lines": 39,
+    "bytes": 2841,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/food-island-evolution.js",
+    "url": "./benchmark-snapshots/0.58.0/food-island-evolution.js",
+    "lines": 120,
+    "bytes": 11150,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/food-islands.js",
+    "url": "./benchmark-snapshots/0.58.0/food-islands.js",
+    "lines": 106,
+    "bytes": 8463,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/food-layout.js",
+    "url": "./benchmark-snapshots/0.58.0/food-layout.js",
+    "lines": 46,
+    "bytes": 3162,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/food-production-history.js",
+    "url": "./benchmark-snapshots/0.58.0/food-production-history.js",
+    "lines": 22,
+    "bytes": 1737,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/food-resources.js",
+    "url": "./benchmark-snapshots/0.58.0/food-resources.js",
+    "lines": 62,
+    "bytes": 4125,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/food-settings.js",
+    "url": "./benchmark-snapshots/0.58.0/food-settings.js",
+    "lines": 50,
+    "bytes": 5666,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/founder-senses.js",
+    "url": "./benchmark-snapshots/0.58.0/founder-senses.js",
+    "lines": 26,
+    "bytes": 2422,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/genome.js",
+    "url": "./benchmark-snapshots/0.58.0/genome.js",
+    "lines": 131,
+    "bytes": 13628,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/geography.js",
+    "url": "./benchmark-snapshots/0.58.0/geography.js",
+    "lines": 136,
+    "bytes": 10325,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/heritable-statistics.js",
+    "url": "./benchmark-snapshots/0.58.0/heritable-statistics.js",
+    "lines": 35,
+    "bytes": 4319,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/life-history.js",
+    "url": "./benchmark-snapshots/0.58.0/life-history.js",
+    "lines": 87,
+    "bytes": 8934,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/life-observations.js",
+    "url": "./benchmark-snapshots/0.58.0/life-observations.js",
+    "lines": 15,
+    "bytes": 1617,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/manifest.json",
+    "url": "./benchmark-snapshots/0.58.0/manifest.json",
+    "lines": 1825,
+    "bytes": 215237,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/model-rules.js",
+    "url": "./benchmark-snapshots/0.58.0/model-rules.js",
+    "lines": 24,
+    "bytes": 2610,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/mutation-parameters.js",
+    "url": "./benchmark-snapshots/0.58.0/mutation-parameters.js",
+    "lines": 56,
+    "bytes": 5030,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/navigation.js",
+    "url": "./benchmark-snapshots/0.58.0/navigation.js",
+    "lines": 35,
+    "bytes": 2191,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/neighbour-perception.js",
+    "url": "./benchmark-snapshots/0.58.0/neighbour-perception.js",
+    "lines": 49,
+    "bytes": 3223,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/neural-brain.js",
+    "url": "./benchmark-snapshots/0.58.0/neural-brain.js",
+    "lines": 228,
+    "bytes": 17983,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/neural-layout.js",
+    "url": "./benchmark-snapshots/0.58.0/neural-layout.js",
+    "lines": 49,
+    "bytes": 5195,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/numeric-mutation.js",
+    "url": "./benchmark-snapshots/0.58.0/numeric-mutation.js",
+    "lines": 36,
+    "bytes": 3103,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/parallel-world.js",
+    "url": "./benchmark-snapshots/0.58.0/parallel-world.js",
+    "lines": 141,
+    "bytes": 13580,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/performance-probe.js",
+    "url": "./benchmark-snapshots/0.58.0/performance-probe.js",
+    "lines": 10,
+    "bytes": 993,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/physiology-actions.js",
+    "url": "./benchmark-snapshots/0.58.0/physiology-actions.js",
+    "lines": 47,
+    "bytes": 3714,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/physiology-brain-layout.js",
+    "url": "./benchmark-snapshots/0.58.0/physiology-brain-layout.js",
+    "lines": 24,
+    "bytes": 4502,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/physiology-budget.js",
+    "url": "./benchmark-snapshots/0.58.0/physiology-budget.js",
+    "lines": 46,
+    "bytes": 3901,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/physiology-cognition.js",
+    "url": "./benchmark-snapshots/0.58.0/physiology-cognition.js",
+    "lines": 80,
+    "bytes": 8473,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/physiology-inputs.js",
+    "url": "./benchmark-snapshots/0.58.0/physiology-inputs.js",
+    "lines": 50,
+    "bytes": 4698,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/physiology-invariants.js",
+    "url": "./benchmark-snapshots/0.58.0/physiology-invariants.js",
+    "lines": 10,
+    "bytes": 1333,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/physiology-metrics.js",
+    "url": "./benchmark-snapshots/0.58.0/physiology-metrics.js",
+    "lines": 18,
+    "bytes": 2517,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/physiology-settings.js",
+    "url": "./benchmark-snapshots/0.58.0/physiology-settings.js",
+    "lines": 104,
+    "bytes": 8962,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/physiology-statistics.js",
+    "url": "./benchmark-snapshots/0.58.0/physiology-statistics.js",
+    "lines": 20,
+    "bytes": 2390,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/physiology-world.js",
+    "url": "./benchmark-snapshots/0.58.0/physiology-world.js",
+    "lines": 233,
+    "bytes": 22777,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/policy-layout.js",
+    "url": "./benchmark-snapshots/0.58.0/policy-layout.js",
+    "lines": 41,
+    "bytes": 3360,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/pregnancy.js",
+    "url": "./benchmark-snapshots/0.58.0/pregnancy.js",
+    "lines": 35,
+    "bytes": 2626,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/reproduction.js",
+    "url": "./benchmark-snapshots/0.58.0/reproduction.js",
+    "lines": 29,
+    "bytes": 3310,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/rest-policy.js",
+    "url": "./benchmark-snapshots/0.58.0/rest-policy.js",
+    "lines": 17,
+    "bytes": 1647,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/set-brain-engine.js",
+    "url": "./benchmark-snapshots/0.58.0/set-brain-engine.js",
+    "lines": 180,
+    "bytes": 15660,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/set-brain-inputs.js",
+    "url": "./benchmark-snapshots/0.58.0/set-brain-inputs.js",
+    "lines": 79,
+    "bytes": 7214,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/set-brain-layout.js",
+    "url": "./benchmark-snapshots/0.58.0/set-brain-layout.js",
+    "lines": 30,
+    "bytes": 5060,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/set-brain.js",
+    "url": "./benchmark-snapshots/0.58.0/set-brain.js",
+    "lines": 5,
+    "bytes": 439,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/simulation.js",
+    "url": "./benchmark-snapshots/0.58.0/simulation.js",
+    "lines": 301,
+    "bytes": 17000,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/structural-brain.js",
+    "url": "./benchmark-snapshots/0.58.0/structural-brain.js",
+    "lines": 132,
+    "bytes": 13944,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/temporal-brain.js",
+    "url": "./benchmark-snapshots/0.58.0/temporal-brain.js",
+    "lines": 15,
+    "bytes": 1321,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/temporal-inputs.js",
+    "url": "./benchmark-snapshots/0.58.0/temporal-inputs.js",
+    "lines": 36,
+    "bytes": 4476,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/temporal-layout.js",
+    "url": "./benchmark-snapshots/0.58.0/temporal-layout.js",
+    "lines": 24,
+    "bytes": 5783,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/temporal-world.js",
+    "url": "./benchmark-snapshots/0.58.0/temporal-world.js",
+    "lines": 229,
+    "bytes": 21445,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/weighted-statistics.js",
+    "url": "./benchmark-snapshots/0.58.0/weighted-statistics.js",
+    "lines": 11,
+    "bytes": 1099,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/world-defaults.js",
+    "url": "./benchmark-snapshots/0.58.0/world-defaults.js",
+    "lines": 5,
+    "bytes": 468,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
+    "name": "dist/benchmark-snapshots/0.58.0/world-edit.js",
+    "url": "./benchmark-snapshots/0.58.0/world-edit.js",
+    "lines": 115,
+    "bytes": 9807,
+    "aliases": [],
+    "purpose": "Неизменяемый снимок расчётной версии для бенчмарка."
+  },
+  {
     "name": "dist/body-physiology.js",
     "url": "./body-physiology.js",
     "lines": 53,
@@ -13622,8 +14334,8 @@
   {
     "name": "dist/digestion.js",
     "url": "./digestion.js",
-    "lines": 42,
-    "bytes": 3192,
+    "lines": 43,
+    "bytes": 3310,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13679,7 +14391,7 @@
     "name": "dist/energy-preview-ui.js",
     "url": "./energy-preview-ui.js",
     "lines": 26,
-    "bytes": 5014,
+    "bytes": 5291,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13966,8 +14678,8 @@
   {
     "name": "dist/guide-physiology-text.js",
     "url": "./guide-physiology-text.js",
-    "lines": 82,
-    "bytes": 30428,
+    "lines": 83,
+    "bytes": 30950,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -13975,7 +14687,7 @@
     "name": "dist/guide-physiology-topics.js",
     "url": "./guide-physiology-topics.js",
     "lines": 20,
-    "bytes": 4953,
+    "bytes": 5056,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -14134,8 +14846,8 @@
   {
     "name": "dist/physiology-checks.js",
     "url": "./physiology-checks.js",
-    "lines": 15,
-    "bytes": 2168,
+    "lines": 16,
+    "bytes": 2534,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -14150,8 +14862,8 @@
   {
     "name": "dist/physiology-help.js",
     "url": "./physiology-help.js",
-    "lines": 22,
-    "bytes": 5472,
+    "lines": 25,
+    "bytes": 6160,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -14182,8 +14894,8 @@
   {
     "name": "dist/physiology-preview.js",
     "url": "./physiology-preview.js",
-    "lines": 23,
-    "bytes": 3370,
+    "lines": 25,
+    "bytes": 3618,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -14207,7 +14919,7 @@
     "name": "dist/physiology-settings.js",
     "url": "./physiology-settings.js",
     "lines": 104,
-    "bytes": 8832,
+    "bytes": 8962,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -14223,7 +14935,7 @@
     "name": "dist/physiology-world.js",
     "url": "./physiology-world.js",
     "lines": 233,
-    "bytes": 22806,
+    "bytes": 22777,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -14588,6 +15300,30 @@
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
   {
+    "name": "docs/analysis/v058-browser.json",
+    "url": "./source-files/docs/analysis/v058-browser.json",
+    "lines": 11,
+    "bytes": 245,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/analysis/v058-mechanisms.json",
+    "url": "./source-files/docs/analysis/v058-mechanisms.json",
+    "lines": 328,
+    "bytes": 11997,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "docs/analysis/v058-verification.json",
+    "url": "./source-files/docs/analysis/v058-verification.json",
+    "lines": 96,
+    "bytes": 57118,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
     "name": "docs/archive/context-2026-10-18/README.md",
     "url": "./source-files/docs/archive/context-2026-10-18/README.md",
     "lines": 14,
@@ -14879,7 +15615,7 @@
     "name": "docs/mechanics-reference.md",
     "url": "./source-files/docs/mechanics-reference.md",
     "lines": 67,
-    "bytes": 13777,
+    "bytes": 14173,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -14966,8 +15702,8 @@
   {
     "name": "docs/next-feeding-system.md",
     "url": "./source-files/docs/next-feeding-system.md",
-    "lines": 226,
-    "bytes": 39019,
+    "lines": 234,
+    "bytes": 40946,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -15047,7 +15783,7 @@
     "name": "docs/numeric-rules.md",
     "url": "./source-files/docs/numeric-rules.md",
     "lines": 46,
-    "bytes": 9499,
+    "bytes": 9741,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -15207,7 +15943,7 @@
     "name": "tests/digestion057.test.mjs",
     "url": "./source-files/tests/digestion057.test.mjs",
     "lines": 35,
-    "bytes": 3075,
+    "bytes": 3114,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -15320,6 +16056,14 @@
     "url": "./source-files/tests/food-resources057.test.mjs",
     "lines": 28,
     "bytes": 2457,
+    "aliases": [],
+    "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
+  },
+  {
+    "name": "tests/fractional-meals058.test.mjs",
+    "url": "./source-files/tests/fractional-meals058.test.mjs",
+    "lines": 46,
+    "bytes": 3672,
     "aliases": [],
     "purpose": "Исходник или проверка браузерного проекта. Старый опыт находится в legacy.html."
   },
@@ -15934,8 +16678,8 @@
   {
     "name": "dist/benchmark-versions.js",
     "url": "./benchmark-versions.js",
-    "lines": 59,
-    "bytes": 5266,
+    "lines": 60,
+    "bytes": 5353,
     "aliases": [],
     "purpose": "Реестр текущей серии, выбор повторов и ротация порядка версий."
   },
@@ -16111,7 +16855,7 @@
     "name": "docs/performance-plan.md",
     "url": "./source-files/docs/performance-plan.md",
     "lines": 43,
-    "bytes": 7403,
+    "bytes": 7157,
     "aliases": [],
     "purpose": "Предложенный порядок измерений/ускорения 0.17 с сохранением правил и будущим индексом соседей."
   },
@@ -16159,7 +16903,7 @@
     "name": "tools/verify-local.py",
     "url": "./source-files/tools/verify-local.py",
     "lines": 122,
-    "bytes": 9164,
+    "bytes": 9202,
     "aliases": [],
     "purpose": "Одна команда коротких локальных проверок, повтор выбранной части и отчёт времени/ошибок."
   },
@@ -16231,7 +16975,7 @@
     "name": "docs/work/current.md",
     "url": "./source-files/docs/work/current.md",
     "lines": 10,
-    "bytes": 2086,
+    "bytes": 2131,
     "aliases": [],
     "purpose": "Контрольная запись: разрешённый объём, состояние этапа, проверки и следующий шаг."
   },
@@ -16295,7 +17039,7 @@
     "name": "docs/decisions.md",
     "url": "./source-files/docs/decisions.md",
     "lines": 37,
-    "bytes": 8097,
+    "bytes": 8106,
     "aliases": [],
     "purpose": "Почему выбраны правила и что действительно согласовано."
   },
@@ -16310,8 +17054,8 @@
   {
     "name": "docs/verification.md",
     "url": "./source-files/docs/verification.md",
-    "lines": 81,
-    "bytes": 12658,
+    "lines": 83,
+    "bytes": 12962,
     "aliases": [],
     "purpose": "Выбор проверок, пределы выводов и сохранение проекта."
   },
@@ -16398,8 +17142,8 @@
   {
     "name": "dist/build-info.json",
     "url": "./build-info.json",
-    "lines": 1729,
-    "bytes": 203241,
+    "lines": 1817,
+    "bytes": 214024,
     "aliases": [],
     "purpose": "Отпечаток этой сборки для точного анализа отчёта."
   },
@@ -16559,7 +17303,7 @@
     "name": "README.md",
     "url": "./source-files/README.md",
     "lines": 136,
-    "bytes": 12037,
+    "bytes": 12022,
     "aliases": [],
     "purpose": "Устройство проекта, ограничения, запуск исходников и проверки."
   },

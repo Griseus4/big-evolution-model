@@ -1,0 +1,11 @@
+{
+  "modelVersion": "0.58.0",
+  "browser": "isolated headless Chrome",
+  "viewport": "1440x1000",
+  "inventory": "2.30/3",
+  "stomach": "3.00 / 3.00 порции",
+  "fixedMealSubsteps": 2,
+  "calculator": true,
+  "help": true,
+  "errors": []
+}
