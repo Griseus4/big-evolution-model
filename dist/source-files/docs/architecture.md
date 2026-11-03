@@ -7,7 +7,7 @@
 | Модуль | Владелец/граница |
 | --- | --- |
 | [evolution.js](../dist/evolution.js) | Мир: клетки, жители, доступность действий, физика, балансы, вызов сценария среды |
-| [Физиология](navigation/physiology.md) | Тело, пища, роды и атаки |
+| [Физиология](navigation/physiology.md) | Тело, пища, роды, ношение, атаки |
 | [temporal-world.js](../dist/temporal-world.js) | Память/обучение; старый цикл |
 | [world-runtime.js](../dist/world-runtime.js), [world-worker.js](../dist/world-worker.js) | Единственный координатор мира, очередь команд, темп, пауза, представление и сохранение |
 | [parallel-world.js](../dist/parallel-world.js), [world-substeps.js](../dist/world-substeps.js) | Постоянные владельцы личных мозгов; общие границы подшага, синхронизация, смена пула |

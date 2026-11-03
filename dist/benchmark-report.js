@@ -7,7 +7,14 @@ import {configurationLayout,validateConfigurationReport,configurationMatrix} fro
 // Архивные отчёты читаются без загрузки старых расчётных модулей. Каждая
 // нагрузка привязана к своей модели; между разными сериями ускорение не считаем.
 const HISTORICAL_SERIES=Object.freeze({'fixed-mobile-food-workloads-v1':'mobile-food-environment-v1','fixed-target-food-workloads-v1':'target-food-environment-v1','fixed-moving-food-workloads-v1':'moving-food-islands-v1','fixed-environment-deficit-workloads-v1':'environment-energy-deficit-v1','fixed-activity-workloads-v1':'duration-activity-v1','fixed-duration-workloads-v1':'duration-attention-v1','fixed-neural-workloads-v1':'neural-local-body-v1',
- 'fixed-food-island-workloads-v1':'neural-food-islands-v1','fixed-neighbour-workloads-v1':'neural-neighbours-v1','fixed-heritable-mutation-workloads-v1':'neural-heritable-mutation-v1'});
+ 'fixed-food-island-workloads-v1':'neural-food-islands-v1','fixed-neighbour-workloads-v1':'neural-neighbours-v1','fixed-heritable-mutation-workloads-v1':'neural-heritable-mutation-v1','physiology-workloads-v1':'fractional-meals-v1'});
+export function benchmarkSeries(report){
+ if(report.suiteId==='physiology-workloads-v1'&&report.seriesId==='physiology-v1')return report.seriesId;
+ return HISTORICAL_SERIES[report.suiteId]??(report.suiteId===BENCHMARK_SUITE_ID?BENCHMARK_MODEL_SERIES:null);
+}
+// У прежних серий шесть нагрузок. Новый случай ношения нельзя требовать от
+// сохранённого отчёта: его состав определяется исходной методикой.
+export function reportBenchmarkCases(suiteId){return BENCHMARK_CASES.filter(s=>suiteId===BENCHMARK_SUITE_ID||s.id!=='world-care');}
 export function timingSummary(samples){
  const sorted=samples.slice().sort((a,b)=>a-b),middle=Math.floor(sorted.length/2);
  const median=sorted.length%2?sorted[middle]:(sorted[middle-1]+sorted[middle])/2;
@@ -18,7 +25,7 @@ export function benchmarkReportLayout(report){
  const grouped=report.version>=3;
  const groups=grouped?report.groups:BENCHMARK_GROUPS;
  return {versionIds:report.version>=2?report.versionIds:[report.modelVersion??'не указана'],groups,
-  specs:BENCHMARK_CASES.filter(spec=>groups.includes(spec.kind)&&(report.version!==4||report.caseIds.includes(spec.id))),
+  specs:reportBenchmarkCases(report.suiteId).filter(spec=>groups.includes(spec.kind)&&(report.version!==4||report.caseIds.includes(spec.id))),
   repeatCounts:grouped?report.repeatCounts:{evaluator:report.version===2?report.repeatCount:BENCHMARK_REPEATS,world:report.version===2?report.repeatCount:BENCHMARK_REPEATS}};
 }
 export function validateBenchmarkReport(report){
@@ -29,8 +36,8 @@ export function validateBenchmarkReport(report){
   if(typeof report.kernelVersion!=='string')throw new Error('Не указана версия расчёта.');
   const selection=workerBenchmarkSelection(report.workerCounts,report.caseIds?.[0],report.repeatCounts?.world,report.kernelVersion);
   for(const key of ['mode','versionIds','workerCounts','caseIds','groups','repeatCounts'])if(JSON.stringify(report[key])!==JSON.stringify(selection[key]))throw new Error('Некорректная конфигурация сравнения вычислителей.');
-  if(report.seriesId!==(HISTORICAL_SERIES[report.suiteId]??(report.suiteId===BENCHMARK_SUITE_ID?BENCHMARK_MODEL_SERIES:null))||report.protocolId!==WORKER_BENCHMARK_PROTOCOL)throw new Error('Неизвестная методика сравнения вычислителей.');
- }else if(multi&&(report.seriesId!==(HISTORICAL_SERIES[report.suiteId]??BENCHMARK_MODEL_SERIES)||report.protocolId!==BENCHMARK_PROTOCOL||
+  if(report.seriesId!==(benchmarkSeries(report))||report.protocolId!==WORKER_BENCHMARK_PROTOCOL)throw new Error('Неизвестная методика сравнения вычислителей.');
+ }else if(multi&&(report.seriesId!==(benchmarkSeries(report))||report.protocolId!==BENCHMARK_PROTOCOL||
   !Array.isArray(report.versionIds)||!report.versionIds.length||report.versionIds.length>8||new Set(report.versionIds).size!==report.versionIds.length||
   report.versionIds.some(id=>typeof id!=='string'||!/^\d+\.\d+\.\d+$/.test(id))))throw new Error('Неизвестная серия/методика или неверный выбор версий.');
  if(report.version>=3&&(!Array.isArray(report.groups)||!report.groups.length||new Set(report.groups).size!==report.groups.length||report.groups.some(g=>!BENCHMARK_GROUPS.includes(g))||

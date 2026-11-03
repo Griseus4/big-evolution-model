@@ -19,7 +19,7 @@ function reportFixture(){
  return {format:'big-evolution-benchmark',version:2,suiteId:BENCHMARK_SUITE_ID,seriesId:BENCHMARK_MODEL_SERIES,protocolId:BENCHMARK_PROTOCOL,
   status:'completed',versionIds:ids,repeatCount:2,versions:ids.map(id=>({id})),cases:BENCHMARK_CASES.flatMap(spec=>ids.map((versionId,j)=>({
    id:spec.id,label:spec.label,kind:spec.kind,work:spec.work,warmup:spec.warmup,seed:spec.seed,population:spec.population,versionId,fixtureDigest:'a'.repeat(64),repeats:[0,1].map(i=>({
-    computeMs:40-j*10+i,wallMs:60+i,work:spec.work,actions:100,steps:spec.kind==='world'?64:0,resultDigest:'b'.repeat(64),repeatIndex:i,orderIndex:j}))})))};
+    computeMs:40-j*10+i,wallMs:60+i,work:spec.work,actions:100,steps:spec.kind==='world'?spec.work:0,resultDigest:'b'.repeat(64),repeatIndex:i,orderIndex:j}))})))};
 }
 function fakeLoader(log,specs=[BENCHMARK_CASES[3]]){return async id=>({manifest:{id},suiteId:BENCHMARK_SUITE_ID,specs,
  create:()=>({tick:0,agents:[]}),capture:world=>structuredClone(world),restore:state=>structuredClone(state),check:()=>{},digest:async value=>value?.tick?'b'.repeat(64):'a'.repeat(64),
@@ -35,7 +35,7 @@ export const BENCHMARK_VERSION_CHECKS=[
   for(const count of [0,101,1.5,NaN])rejects(()=>benchmarkSelection(available,count));rejects(()=>benchmarkSelection([],10));rejects(()=>benchmarkSelection([available[0],available[0]],10));
  }},
  {id:'benchmark-version-report',label:'Версии: неполные/различные итоги не получают проценты ускорения',run(){
-  const historical=reportFixture();historical.suiteId='fixed-heritable-mutation-workloads-v1';historical.seriesId='neural-heritable-mutation-v1';
+  const historical=reportFixture();historical.suiteId='fixed-heritable-mutation-workloads-v1';historical.seriesId='neural-heritable-mutation-v1';historical.cases=historical.cases.filter(c=>c.id!=='world-care');
   validateBenchmarkReport(historical);
   const report=reportFixture();validateBenchmarkReport(report);const matrix=benchmarkMatrix(report);
   assert(matrix.rows.every(row=>row.cells.every(c=>c.comparable)&&row.cells[1].timeChangePercent<0),'Совпадающие итоги не сравниваются');
@@ -75,21 +75,21 @@ export const BENCHMARK_VERSION_CHECKS=[
   rejects(()=>groupedBenchmarkSelection(ids,{groups:['world'],repeatCounts:{world:101}}));
  }},
  {id:'benchmark-group-report',label:'Группы: v3 сохраняет разные числа, исключает невыбранное и читает v2',run(){
-  const legacy=reportFixture();validateBenchmarkReport(legacy);assert(benchmarkMatrix(legacy).rows.length===6,'Потерян v2');
+  const legacy=reportFixture();validateBenchmarkReport(legacy);assert(benchmarkMatrix(legacy).rows.length===BENCHMARK_CASES.length,'Потерян v2');
   const report={...legacy,version:3,groups:['evaluator','world'],repeatCounts:{evaluator:2,world:1},cases:structuredClone(legacy.cases)};
   for(const row of report.cases)if(row.kind==='world')row.repeats=row.repeats.slice(0,1);
   validateBenchmarkReport(report);assert(benchmarkMatrix(report).rows.every(row=>row.repeatCount===(row.kind==='world'?1:2)),'Потеряны разные числа повторов');
   report.groups=['world'];report.repeatCounts={world:1};report.cases=report.cases.filter(row=>row.kind==='world');
-  assert(benchmarkMatrix(report).rows.length===3,'Выключенные нагрузки показаны как недостающие');
+  assert(benchmarkMatrix(report).rows.length===BENCHMARK_CASES.filter(s=>s.kind==='world').length,'Выключенные нагрузки показаны как недостающие');
   report.cases[0].repeats=[];rejects(()=>validateBenchmarkReport(report));report.status='stopped';validateBenchmarkReport(report);
   assert(benchmarkMatrix(report).rows[0].cells[0].timeChangePercent===null,'Частичный мир получил ускорение');
  }},
  {id:'benchmark-group-queue',label:'Группы: очередь исполняет только выбранные нагрузки и правильно считает прогресс',async run(){
   const ids=BENCHMARK_VERSIONS.map(v=>v.id),log=[];
   const report=await runVersionBenchmarks({versionIds:ids,groups:['world'],repeatCounts:{world:2},loadVersion:fakeLoader(log,BENCHMARK_CASES)});
-  assert(report.status==='completed'&&report.cases.length===3*ids.length,'Не все выбранные нагрузки завершены');
+  assert(report.status==='completed'&&report.cases.length===BENCHMARK_CASES.filter(s=>s.kind==='world').length*ids.length,'Не все выбранные нагрузки завершены');
   assert(log.every(row=>row.kind==='world'),'Оценщик запущен без галочки');
-  assert(report.completedMeasurements===6*ids.length&&report.plannedMeasurements===6*ids.length,'Прогресс неправильный');validateBenchmarkReport(report);
+  assert(report.completedMeasurements===2*BENCHMARK_CASES.filter(s=>s.kind==='world').length*ids.length&&report.plannedMeasurements===report.completedMeasurements,'Прогресс неправильный');validateBenchmarkReport(report);
   for(const [caseIndex,spec]of BENCHMARK_CASES.entries())if(spec.kind==='world'){
    const measured=log.filter(row=>row.caseId===spec.id&&row.count===spec.work);
    assert(measured.map(row=>row.id).join()===Array.from({length:2},(_,i)=>benchmarkOrder(ids,i,caseIndex)).flat().join(),'Изменён порядок после выключения группы');

@@ -1,0 +1,22 @@
+{
+  "modelVersion": "0.59.0",
+  "browser": "isolated headless Chrome",
+  "viewport": [
+    1440,
+    1000
+  ],
+  "scope": "short UI path with real birth/feeding and orphan fixtures; no long evolutionary experiment",
+  "checks": [
+    "fresh current world boot",
+    "one-substep fractional feeding: parent inventory 2.80/3",
+    "carried child passive action explanation",
+    "child observation memory displayed",
+    "care brain diagram opens",
+    "browser world v6 download",
+    "old world rejected without replacing current resident",
+    "orphan is independent and alive",
+    "care settings and help present",
+    "guide reproduction article includes postnatal care"
+  ],
+  "errors": []
+}

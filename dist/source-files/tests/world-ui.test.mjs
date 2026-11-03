@@ -1,6 +1,7 @@
+import {CARE_ACTIONS,CARE_OPERATIONS} from '../dist/care-actions.js';
 import {physiologySettingsUI} from '../dist/physiology-settings-ui.js';
 import {PHYSIOLOGY_ACTIONS,PHYSIOLOGY_OPERATIONS} from '../dist/physiology-actions.js';
-import {CONTEXT_INPUTS as BODY_CONTEXT_INPUTS} from '../dist/physiology-brain-layout.js';
+import {CONTEXT_INPUTS as BODY_CONTEXT_INPUTS} from '../dist/care-brain-layout.js';
 import {dagConnectionBudget} from '../dist/dual-brain-settings.js';
 import {structureSettingsTable} from '../dist/brain-settings-tables.js';
 import {installEnergyPreview} from '../dist/energy-preview-ui.js';
@@ -10,7 +11,7 @@ import {validateDigestionTime} from '../dist/model-rules.js';
 import {genomeMetadata} from '../dist/genome.js';
 import {validateWorldOptions} from '../dist/experiment-plan.js';
 import {WORLD_LIMITS} from '../dist/world-defaults.js';
-import {DUAL_BRAIN_TYPE,PHYSIOLOGY_GENOME_VERSION as DUAL_VERSION} from '../dist/dual-brain-layout.js';
+import {DUAL_BRAIN_TYPE,CARE_GENOME_VERSION as DUAL_VERSION} from '../dist/dual-brain-layout.js';
 /** Настоящий UI-код и протокол в минимальном DOM. Это не браузерная проверка:
  * модель настоящая, вспомогательные панели и доставка сообщений контролируются. */
 import test from 'node:test';
@@ -97,7 +98,7 @@ async function boot(){
   requestAnimationFrame:fn=>frame=fn,performance:{now:()=>now},Blob,
   URL:{createObjectURL:blob=>{downloads.push(blob);return 'blob:mock';},revokeObjectURL:()=>{}},setTimeout:()=>0});
  // Панель стартовых генов изолирована, как остальные вспомогательные панели.
- Object.assign(context,{physiologySettingsUI,PHYSIOLOGY_ACTIONS,PHYSIOLOGY_OPERATIONS,BODY_CONTEXT_INPUTS,dagConnectionBudget,MotionPlayer,MOTION_RULES,agentPoint,WorldMapLayers,structureSettingsTable,installEnergyPreview,installFormPreferences,validateBrainCostMultiplier,BRAIN_ECONOMY,validateDigestionTime,genomeMetadata,validateWorldOptions,MAX_GENOME_FILE_BYTES:8*1024*1024,DUAL_BRAIN_TYPE,DUAL_VERSION,dualBrainSettingsUI:()=>({inputs:new Map(),read:()=>({}),refresh(){}}),installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
+ Object.assign(context,{CARE_ACTIONS,CARE_OPERATIONS,physiologySettingsUI,PHYSIOLOGY_ACTIONS,PHYSIOLOGY_OPERATIONS,BODY_CONTEXT_INPUTS,dagConnectionBudget,MotionPlayer,MOTION_RULES,agentPoint,WorldMapLayers,structureSettingsTable,installEnergyPreview,installFormPreferences,validateBrainCostMultiplier,BRAIN_ECONOMY,validateDigestionTime,genomeMetadata,validateWorldOptions,MAX_GENOME_FILE_BYTES:8*1024*1024,DUAL_BRAIN_TYPE,DUAL_VERSION,dualBrainSettingsUI:()=>({inputs:new Map(),read:()=>({}),refresh(){}}),installEnvironmentUI,installWorldFiles,installScreenTabs,installProjectGuide,installLiveFoodControls,initialNeuronsInput,wireInitialStructure});
  vm.runInContext(performanceUI,context);vm.runInContext(app,context);await settle();assert.equal(elements.get('error').textContent??'','');
  return {elements,document,context,downloads,setBenchmarkActive:value=>benchmarkActive=value,get runtime(){return runtime;},
   pulse:async value=>{now=value;runtime.pulse();await settle();},frame:value=>frame(value),
@@ -110,7 +111,7 @@ test('world form persists brain price and preview, validates zero and restores f
   const b=await boot(),host=b.elements.get('start-panel-other'),find=text=>walk(host).find(n=>n.textContent===text),price=find('Коэффициент цены обоих мозгов').children[0];
   price.value='0';price.emit('input');await settle();assert.ok(walk(host).some(n=>/больше нуля/.test(n.textContent)));assert.equal(b.runtime.world.brainCostMultiplier,1);
   price.value='.5';price.emit('input');await settle();await b.elements.get('restart').emit('click');await settle();assert.equal(b.runtime.world.brainCostMultiplier,.5);
-  find('Сделать стандартными').emit('click');assert.equal(JSON.parse(values.get('big-evolution-world-form-physiology-v1')).standard.fields.brainCostMultiplier,'.5');
+  find('Сделать стандартными').emit('click');assert.equal(JSON.parse(values.get('big-evolution-world-form-care-v1')).standard.fields.brainCostMultiplier,'.5');
   const c=await boot(),other=c.elements.get('start-panel-other');assert.equal(c.runtime.world.brainCostMultiplier,.5);walk(other).find(n=>n.textContent==='Сбросить к заводским').emit('click');await settle();assert.equal(c.runtime.world.brainCostMultiplier,.5);assert.equal(walk(other).find(n=>n.textContent==='Коэффициент цены обоих мозгов').children[0].value,1);
  }finally{globalThis.localStorage=old;}
 });

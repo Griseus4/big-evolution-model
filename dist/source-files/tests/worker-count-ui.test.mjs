@@ -44,7 +44,7 @@ function completeReport(selection){
  return {format:'big-evolution-benchmark',version:5,modelVersion:MODEL_VERSION,seriesId:versions.BENCHMARK_MODEL_SERIES,suiteId:fixtures.BENCHMARK_SUITE_ID,
   protocolId:configs.CONFIGURATION_PROTOCOL,...selection,createdAt:new Date().toISOString(),status:'completed',
   versions:selection.configurations.map(c=>({id:c.id,snapshotId:c.snapshotId,execution:{computeWorkers:c.computeWorkers}})),
-  cases:fixtures.BENCHMARK_CASES.filter(s=>selection.groups.includes(s.kind)).flatMap(spec=>configs.configurationsFor(selection,spec).map((c,i)=>({...spec,versionId:c.id,fixtureDigest:'a'.repeat(64),repeats:Array.from({length:selection.repeatCounts[spec.kind]},(_,repeatIndex)=>({repeatIndex,orderIndex:i,computeWorkers:c.computeWorkers,computeMs:100/(i+1),wallMs:101,work:spec.work,steps:spec.kind==='world'?64:0,actions:100,resultDigest:'b'.repeat(64)}))})))
+  cases:fixtures.BENCHMARK_CASES.filter(s=>selection.groups.includes(s.kind)).flatMap(spec=>configs.configurationsFor(selection,spec).map((c,i)=>({...spec,versionId:c.id,fixtureDigest:'a'.repeat(64),repeats:Array.from({length:selection.repeatCounts[spec.kind]},(_,repeatIndex)=>({repeatIndex,orderIndex:i,computeWorkers:c.computeWorkers,computeMs:100/(i+1),wallMs:101,work:spec.work,steps:spec.kind==='world'?spec.work:0,actions:100,resultDigest:'b'.repeat(64)}))})))
  };
 }
 function text(element){return element.textContent+' '+element.children.map(text).join(' ');}

@@ -1,0 +1,49 @@
+{
+  "modelVersion": "0.59.0",
+  "seriesId": "child-care-v1",
+  "scope": "bounded Node smoke, synthetic founder pairs; not browser speed or evolutionary survival",
+  "cpu": "Intel(R) Core(TM) i5-14600KF",
+  "node": "v24.22.1",
+  "results": [
+    {
+      "population": 150,
+      "carried": 75,
+      "substeps": 10,
+      "runMs": 226.88849999999996,
+      "saveBytes": 35895255,
+      "balances": {
+        "schema": "physiology-balances-v1",
+        "energyError": -5.9117155615240335e-12,
+        "massError": 0,
+        "foodError": -2.9103830456733704e-11,
+        "energy": 1485.1305711122577,
+        "expectedEnergy": 1485.1305711122636,
+        "mass": 4999.999999999999,
+        "expectedMass": 4999.999999999999,
+        "foodEnergy": 155843.32056684117,
+        "expectedFoodEnergy": 155843.3205668412,
+        "energyTolerance": 0.00015756641056684117
+      }
+    },
+    {
+      "population": 1000,
+      "carried": 500,
+      "substeps": 10,
+      "runMs": 2643.4785,
+      "saveBytes": 236930082,
+      "balances": {
+        "schema": "physiology-balances-v1",
+        "energyError": 4.547473508864641e-11,
+        "massError": 0,
+        "foodError": -2.9103830456733704e-11,
+        "energy": 9881.821085937772,
+        "expectedEnergy": 9881.821085937727,
+        "mass": 33333.3333333329,
+        "expectedMass": 33333.3333333329,
+        "foodEnergy": 155910.31606684116,
+        "expectedFoodEnergy": 155910.3160668412,
+        "energyTolerance": 0.00016681825506684108
+      }
+    }
+  ]
+}

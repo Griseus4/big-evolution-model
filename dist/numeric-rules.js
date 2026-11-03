@@ -1,5 +1,5 @@
 import {CARE_GENE_FIELDS} from './care-settings.js';
-import {PHYSIOLOGY_FIELDS,BODY_GENE_FIELDS,PHYSIOLOGY_DEFAULTS,BODY_GENE_DEFAULTS} from './physiology-settings.js';
+import {PHYSIOLOGY_FIELDS,PHYSIOLOGY_DEFAULTS} from './physiology-settings.js';
 import {NUMERIC_MUTATION_RULES} from './numeric-mutation.js';
 import {BRAIN_ECONOMY} from './brain-economy.js';
 import {MOTION_RULES} from './world-motion.js';
@@ -22,7 +22,7 @@ import {ATTENTION_REFERENCE_OPERATIONS,ATTENTION_OPERATION_PRICE} from './brain-
 import {CELL_HIDDEN,CONTEXT_HIDDEN,GATE_INPUTS,GATE_HIDDEN} from './temporal-layout.js';
 const group=(id,title,file,symbol,description,values,fields,unit='')=>Object.freeze({id,title,file,symbol,description,values,fields,unit});
 export const NUMERIC_RULE_GROUPS=Object.freeze([
- ...[['physiology',PHYSIOLOGY_FIELDS,PHYSIOLOGY_DEFAULTS,'PHYSIOLOGY_DEFAULTS'],['body-genes',BODY_GENE_FIELDS,BODY_GENE_DEFAULTS,'BODY_GENE_DEFAULTS']].map(([id,fields,values,symbol])=>group(id,id==='physiology'?'Правила новой физики':'Гены тела основателей','physiology-settings.js',symbol,'Базовые значения; принятый мир или вариант хранит собственные настройки.',values,Object.fromEntries(Object.entries(fields).map(([key,f])=>[key,[f.label,f.unit]])))),
+ ...[['physiology',PHYSIOLOGY_FIELDS,PHYSIOLOGY_DEFAULTS,'PHYSIOLOGY_DEFAULTS'],['body-genes',CARE_GENE_FIELDS,Object.fromEntries(Object.entries(CARE_GENE_FIELDS).map(([k,f])=>[k,f.value])),'CARE_GENE_FIELDS']].map(([id,fields,values,symbol])=>group(id,id==='physiology'?'Правила новой физики':'Гены тела основателей',id==='physiology'?'physiology-settings.js':'care-settings.js',symbol,'Базовые значения; принятый мир или вариант хранит собственные настройки.',values,Object.fromEntries(Object.entries(fields).map(([key,f])=>[key,[f.label,f.unit]])))),
  group('numeric-mutation','Числовая мутация v18','numeric-mutation.js','NUMERIC_MUTATION_RULES','A/r и опорные масштабы; это не вероятность мутации.',NUMERIC_MUTATION_RULES,Object.fromEntries(Object.keys(NUMERIC_MUTATION_RULES).map(k=>[k,[k,'доля/масштаб']]))),
  group('map-motion','Плавное отображение карты','world-motion.js','MOTION_RULES','Только показ наблюдателя: не физические шаги и не вычислительная цена мозга.',MOTION_RULES,{fps:['Целевая частота','кадров/с'],maxFrameMs:['Предельный период кадра','мс'],frameBudgetFraction:['Доля времени для рисования','доля'],maxDelayMs:['Время воспроизведения быстрого снимка','мс'],maxProgressDelayMs:['Время сглаживания медленного подшага','мс'],maxMoves:['Перемещений в пакете','рёбер'],maxPointsPerAgent:['Точек на жителя','точек'],maxPoints:['Точек суммарно','точек'],hitRadius:['Радиус выбора','пикселей']}),
  group('brain-economy','Цена вычислений','brain-economy.js','BRAIN_ECONOMY','Коэффициент мира для выбора, обучения и малого мозга; строго положительный.',BRAIN_ECONOMY,{multiplier:'Коэффициент по умолчанию'}),

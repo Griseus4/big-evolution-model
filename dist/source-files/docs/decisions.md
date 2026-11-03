@@ -22,7 +22,7 @@
 | Конструктор и сравнение опытов | Запуск/повторы — [контракт](experiment-comparison-plan.md). Каталог, копии, категории и закрепления 0.49 — [контракт](next-experiment-statistics-ui.md). |
 | Контекст и документация | Решения — в одном контракте; история не разрешает код. Вход — [карта](navigation/README.md), поддержка — [правила](workflows/context.md). [Пособие](next-game-guide.md): дерево/статья и сверка; [серия](guide-plan/README.md) пока не запущена. [Числа](numeric-rules.md) — именованные источники и каталог. |
 
-Физиология: [P00–P14](updates/v057-physiology.md); [дробная еда 0.58](updates/v058-fractional-meals.md).
+Физиология: [P00–P14](updates/v057-physiology.md); [уход 0.59](updates/v059-child-care.md).
 
 Подробности — в тематических контрактах, история — в протоколах и Git.
 

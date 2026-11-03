@@ -82,7 +82,7 @@ test('returning to a live dashboard flushes finished hidden results; changing a 
  globalThis.Worker=class{constructor(){workers.push(this);}postMessage(m){messages.push({w:this,m});}terminate(){this.closed=true;}};
  const b=boot();let read=0;try{
   b.ui.refresh();b.sim.lives={...b.sim.lives,tick:301};b.ui.refresh();b.elements.get('panel-history').hidden=true;
-  for(let turn=0;turn<30;turn++){await wait();if(read>=messages.length)break;const {w,m}=messages[read++];w.onmessage({data:{request:m.request,owner:m.owner,metric:m.prepared.metric,summary:{mean:20,median:20,worlds:1},points:[]}});}
+  let lastAnswer=Date.now();for(const deadline=Date.now()+2000;Date.now()<deadline;){await wait();if(read>=messages.length){if(Date.now()-lastAnswer>50)break;continue;}lastAnswer=Date.now();const {w,m}=messages[read++];w.onmessage({data:{request:m.request,owner:m.owner,metric:m.prepared.metric,summary:{mean:20,median:20,worlds:1},points:[]}});}
   assert.equal(workers.length,1);b.elements.get('panel-history').hidden=false;b.ui.refresh();await wait();assert.match(b.elements.get('history-summary').textContent,/шаг 301/);assert.equal(workers.length,2);
   const previous=workers[1];b.sim.lives={...b.sim.lives,tick:302};b.elements.get('history-width').value='200';b.elements.get('history-width').emit('change');
   assert.equal(previous.closed,true);assert.equal(workers.length,3);assert.match(b.elements.get('history-summary').textContent,/шаг 302/);assert.equal(b.ui.getSummary().width,200);

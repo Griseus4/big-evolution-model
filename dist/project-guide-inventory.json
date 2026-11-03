@@ -1,7 +1,7 @@
 {
   "format": "big-evolution-guide-inventory",
   "version": 1,
-  "modelVersion": "0.58.0",
+  "modelVersion": "0.59.0",
   "files": [
     {
       "path": ".github/workflows/pages.yml",
@@ -168,6 +168,22 @@
       "kind": "app"
     },
     {
+      "path": "dist/care-actions.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/care-brain-layout.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/care-inputs.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/care-settings.js",
+      "kind": "app"
+    },
+    {
       "path": "dist/catalogue-expression-client.js",
       "kind": "app"
     },
@@ -197,6 +213,10 @@
     },
     {
       "path": "dist/chart-update-state.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/child-care.js",
       "kind": "app"
     },
     {
@@ -473,6 +493,10 @@
     },
     {
       "path": "dist/guide-audit-topics.js",
+      "kind": "app"
+    },
+    {
+      "path": "dist/guide-child-care-text.js",
       "kind": "app"
     },
     {
@@ -1097,6 +1121,10 @@
     },
     {
       "path": "tests/chart-context049.test.mjs",
+      "kind": "tests"
+    },
+    {
+      "path": "tests/child-care059.test.mjs",
       "kind": "tests"
     },
     {

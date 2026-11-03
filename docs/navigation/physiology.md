@@ -1,6 +1,6 @@
-﻿# Физиология, питание и размножение 0.57
+﻿# Физиология, питание и размножение 0.59
 
-Маршрут текущей модели v18. [Контракт P00–P14](../next-feeding-system.md), [точная спецификация](../specifications/physiology-2026-11-02.md), [механики](../mechanics-reference.md).
+Маршрут текущей модели v19. [Контракт P00–P14](../next-feeding-system.md), [точная спецификация](../specifications/physiology-2026-11-02.md), [механики](../mechanics-reference.md).
 
 | Задача | Владелец | Проверка |
 | --- | --- | --- |
@@ -10,6 +10,7 @@
 | Бюджет, плод, роды | physiology-budget.js, pregnancy.js | budget-pregnancy057 |
 | Фазы, атаки, смерть | physiology-world.js, physiology-actions.js | physiology-world057, physiology-integration057 |
 | Входы и владельцы мозгов | physiology-inputs.js, physiology-cognition.js | physiology-parallel057 |
+| Ношение и кормление | child-care.js, care-settings.js, care-inputs.js | child-care059 |
 | Полный мир | physiology-save.js, world-runtime.js | physiology-save057 |
 | Метрики, калькулятор, настройки | physiology-metrics.js, physiology-preview.js, physiology-settings-ui.js | physiology-integration057, world-ui |
 | Пособие и числовые привязки | guide-physiology-text.js, guide-physiology-topics.js, guide-parameters.js | guide-*, check-project-docs.py |
