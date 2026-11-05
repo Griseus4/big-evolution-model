@@ -1,0 +1,49 @@
+{
+  "modelVersion": "0.60.0",
+  "seriesId": "modular-brain-v1",
+  "scope": "bounded Node smoke, synthetic founders with four hidden neurons in every block; not browser speed or evolutionary survival",
+  "cpu": "Intel(R) Core(TM) i5-14600KF",
+  "node": "v24.22.1",
+  "results": [
+    {
+      "population": 150,
+      "carried": 0,
+      "substeps": 10,
+      "runMs": 420.0052,
+      "saveBytes": 27567651,
+      "balances": {
+        "schema": "physiology-balances-v1",
+        "energyError": -5.229594535194337e-12,
+        "massError": 0,
+        "foodError": 5.820766091346741e-11,
+        "energy": 1465.9870025155128,
+        "expectedEnergy": 1465.987002515518,
+        "mass": 4999.999999999999,
+        "expectedMass": 4999.999999999999,
+        "foodEnergy": 158462.21004058633,
+        "expectedFoodEnergy": 158462.21004058627,
+        "energyTolerance": 0.0001601730350405863
+      }
+    },
+    {
+      "population": 1000,
+      "carried": 0,
+      "substeps": 10,
+      "runMs": 4555.7963,
+      "saveBytes": 180142712,
+      "balances": {
+        "schema": "physiology-balances-v1",
+        "energyError": 1.3096723705530167e-10,
+        "massError": 0,
+        "foodError": 1.7462298274040222e-10,
+        "energy": 9825.392783091102,
+        "expectedEnergy": 9825.39278309097,
+        "mass": 33333.3333333329,
+        "expectedMass": 33333.3333333329,
+        "foodEnergy": 158655.21604058644,
+        "expectedFoodEnergy": 158655.21604058627,
+        "energyTolerance": 0.00016942888904058616
+      }
+    }
+  ]
+}

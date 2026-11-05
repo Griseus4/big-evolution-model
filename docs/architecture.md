@@ -17,15 +17,14 @@
 
 ## Мозг и сведения
 
-
 | Модуль | Ответственность |
 | --- | --- |
-| [temporal-layout.js](../dist/temporal-layout.js), [temporal-inputs.js](../dist/temporal-inputs.js) | Именованная схема текущих генов/входов, сведения о текущем процессе |
-| [temporal-brain.js](../dist/temporal-brain.js), [brain-controller.js](../dist/brain-controller.js) | Оценки, выбор, временное обучение; наследуемый малый контроллер пересмотра |
+| [modular-brain-layout.js](../dist/modular-brain-layout.js), [care-inputs.js](../dist/care-inputs.js) | Шесть DAG v20; именованные локальные входы |
+| [modular-brain-math.js](../dist/modular-brain-math.js), [brain-controller.js](../dist/brain-controller.js) | Проход/градиент, выбор и обучение; DAG компилируются при рождении/загрузке |
 | [cognition.js](../dist/cognition.js), [navigation.js](../dist/navigation.js) | Личная память, ощущения и локальные координаты; скрытые клетки не обновляются |
 | [activity-perception.js](../dist/activity-perception.js) | Снимок видимой деятельности на границе подшага, без социальной памяти |
-| [genome.js](../dist/genome.js), [brain-initialization.js](../dist/brain-initialization.js) | Наследование и старт DAG; личные знания не наследуются |
-| [action-timing.js](../dist/action-timing.js), [energy-budget.js](../dist/energy-budget.js) | Длительности/цены и общая оплата дефицита здоровьем |
+| [genome.js](../dist/genome.js), [modular-brain-genome.js](../dist/modular-brain-genome.js) | Наследование и старт DAG; личные знания не наследуются |
+| [physiology-settings.js](../dist/physiology-settings.js), [physiology-budget.js](../dist/physiology-budget.js) | Общие параметры и бюджет тела |
 
 ## Пищевая среда
 

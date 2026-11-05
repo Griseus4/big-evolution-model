@@ -12,7 +12,7 @@ test('continuation preserves process identity and progress; a different action r
  acceptTemporalChoice(w,a,continuation);assert.equal(a.process,process);assert.equal(a.process.elapsed,2);
  a.inventory=1;a.stomach=0;acceptTemporalChoice(w,a,temporalSelectedChoice(w,a,7));
  assert.notEqual(a.process,process);assert.equal(a.process.elapsed,0);assert.equal(a.life.observer.interruptions.voluntary,1);
- assert.equal(GUIDE_ARTICLES.find(a=>a.id==='actions').reviewedVersion,'0.59.0');
+ assert.equal(GUIDE_ARTICLES.find(a=>a.id==='actions').reviewedVersion,'0.60.0');
 });
 test('food disappearing cancels gathering before the shared activity snapshot',()=>{
  const w=new Evolution({population:1,seed:42}),a=w.agents[0],cell=w.tile(a.x,a.y);cell.food=1;a.inventory=0;

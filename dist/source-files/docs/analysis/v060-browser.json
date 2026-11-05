@@ -1,0 +1,20 @@
+{
+  "modelVersion": "0.60.0",
+  "browser": "isolated headless Chrome",
+  "viewport": [
+    1440,
+    1000
+  ],
+  "scope": "settings, persistence, actual founder genotype, diagram, imported basis and experiment editor; no long evolution",
+  "checks": [
+    "current v20 world boot",
+    "eight physical groups and both tooltip directions",
+    "six editable structures and active profiles persist across reload",
+    "configured cells appear in resident diagram and exported genotype",
+    "import locks structure and clearing base unlocks it",
+    "experiment editor exposes extra block structures",
+    "one-world one-T experiment completed through real UI",
+    "current guide and live default mutation binding displayed"
+  ],
+  "errors": []
+}

@@ -15,15 +15,15 @@ export function mutationSettingsTable(doc,controls,{percent=true,groups=MUTATION
 export function structureSettingsTable(doc,title,neurons,layers,initial,percent){
  const box=create(doc,'fieldset');box.className='brain-settings-block';box.append(create(doc,'legend',title));
  const table=create(doc,'table');table.className='brain-settings-table';
- for(const [text,input]of [['Предел нейронов',neurons],['Предел слоёв',layers],['Начальные нейроны по слоям',initial],['Начальная связность, %',percent]]){
-  const row=create(doc,'tr'),cell=create(doc,'td');input.setAttribute('aria-label',title+': '+text);cell.append(input);row.append(create(doc,'th',text),cell);table.append(row);
+ for(const [text,input,help]of [['Предел нейронов',neurons,'brain-structure-neuron-limit'],['Предел слоёв',layers,'brain-structure-layer-limit'],['Начальные нейроны по слоям',initial,'brain-structure-initial-neurons'],['Начальная связность, %',percent,'brain-structure-connectivity']]){
+  const row=create(doc,'tr'),cell=create(doc,'td');input.setAttribute('aria-label',title+': '+text);cell.append(input);const label=create(doc,'th');label.append(createHelpButton(help,text,doc));row.append(label,cell);table.append(row);
  }box.append(table);return box;
 }
 
 function numericSettingsTable(doc,controls,percent,groups){
  const box=create(doc,'div');box.className='brain-settings-scroll';
  for(const numeric of [true,false]){
-  const table=create(doc,'table');table.className='brain-settings-table';table.append(create(doc,'caption',numeric?'Числовые гены: каждый существующий параметр меняется при рождении':'Структура: отдельные события изменения нейронов и связей'));
+  const table=create(doc,'table');table.className='brain-settings-table';table.append(create(doc,'caption',numeric?'Числовые гены: параметры включённых групп меняются при рождении':'Структура: отдельные события изменения нейронов и связей'));
   const head=create(doc,'tr');for(const text of ['Блок','Включено',numeric?'Форма A':'Вероятность'+(percent?', %':', доля'),numeric?'Потолок r':'Сила'])head.append(create(doc,'th',text));table.append(head);
   for(const key of groups.filter(k=>NUMERIC_MUTATION_GROUPS.includes(k)===numeric)){
    const row=create(doc,'tr'),name=create(doc,'th');name.append(createHelpButton('mutation-block-'+key,MUTATION_LABELS[key],doc));row.append(name);

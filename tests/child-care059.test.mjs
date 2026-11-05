@@ -44,7 +44,7 @@ import {validatePlan,EXPERIMENT_PLAN_VERSION} from '../dist/experiment-plan.js';
 import {analyzeGenome} from '../dist/genome-analysis.js';
 import {physiologyMetric} from '../dist/physiology-metrics.js';
 test('план v5, анализ v19 и показатели ухода сохраняют смысл и старые пропуски',()=>{
- const p=validatePlan({worlds:1,steps:1,factors:[{key:'bodyGenes.tCarry',values:[50,100]}]});assert.equal(EXPERIMENT_PLAN_VERSION,5);assert.equal(p.variants[0].settings.genomeVersion,19);assert.deepEqual(validatePlan(structuredClone(p),{historical:true}),p);
+ const p=validatePlan({worlds:1,steps:1,factors:[{key:'bodyGenes.tCarry',values:[50,100]}]});assert.equal(EXPERIMENT_PLAN_VERSION,6);assert.equal(p.variants[0].settings.genomeVersion,20);assert.deepEqual(validatePlan(structuredClone(p),{historical:true}),p);
  const {w,parent,child}=family();const report=analyzeGenome(w.genomeFile(parent));assert.equal(report.genomeVersion,19);assert.equal(report.actions.length,13);assert(report.properties.some(p=>p.key==='body-tCarry'));
  advancePhysiologyBodies(w);const row={physiology:child.life.physiology,care:child.life.care};assert.equal(physiologyMetric(row,'carriedTime'),100);assert.equal(physiologyMetric({physiology:child.life.physiology},'carriedTime'),null);
 });

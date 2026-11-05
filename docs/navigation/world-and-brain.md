@@ -57,6 +57,7 @@
 **Дальше:** причина конкретной популяции с отрицательными чувствительностями не доказана; план диагностики — в том же контракте, инструменты — [опыты](experiments-and-statistics.md#design).
 
 ## genome
+Текущая v20: [шесть DAG](../../dist/modular-brain-layout.js), [проход/градиент](../../dist/modular-brain-math.js), [контракт](../next-brain-configuration.md).
 **Задача:** мутации, чувствительности, размер/архитектура сети, наследование.
 **Сейчас:** `TEMPORAL_LAYOUT` — [temporal-layout.js](../../dist/temporal-layout.js); `genomeMetadata`/`mutateGenome`/`validateGenomeFile` — [genome.js](../../dist/genome.js); регуляторы — [mutation-parameters.js](../../dist/mutation-parameters.js). Анализ — [отдельная карточка](interface-and-files.md#genome-analysis).
 **Граница:** в коде сохраняются старые схемы. Для текущего генома читать metadata/layout, а не принимать историческую `GENOME_VERSION` за единственную схему. Изменение раскладки затрагивает входы, контроллер, валидаторы, основы опытов и сохранения; личные поправки не наследуются.

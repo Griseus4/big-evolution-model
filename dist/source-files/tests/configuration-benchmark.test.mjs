@@ -30,9 +30,9 @@ test('capabilities reject unsupported frozen counts and ignore disabled repeat f
 test('version/count matrix runs each evaluator once, worlds per count and rotates without overlapping pools',async()=>{
  const l=loader(),report=await runConfigurationBenchmarks({selections:[{versionId:BENCHMARK_CURRENT_KERNEL,workerCounts:[1,2,10]}],groups:['evaluator','world'],repeatCounts:{evaluator:2,world:2},loadVersion:l.loadVersion});
  assert.equal(report.status,'completed',report.error?.message);validateBenchmarkReport(report);
- assert.equal(report.completedMeasurements,30);assert.equal(report.plannedMeasurements,plannedConfigurationMeasurements(report,BENCHMARK_CASES));
- assert.equal(l.peak,1);assert.equal(l.active,0);assert.equal(l.created,7);assert.ok(l.log.every(r=>r.tick===0));
- assert.equal(report.cases.filter(c=>c.kind==='evaluator').length,3);assert.equal(report.cases.filter(c=>c.kind==='world').length,12);
+ assert.equal(report.completedMeasurements,36);assert.equal(report.plannedMeasurements,plannedConfigurationMeasurements(report,BENCHMARK_CASES));
+ assert.equal(l.peak,1);assert.equal(l.active,0);assert.equal(l.created,8);assert.ok(l.log.every(r=>r.tick===0));
+ assert.equal(report.cases.filter(c=>c.kind==='evaluator').length,3);assert.equal(report.cases.filter(c=>c.kind==='world').length,15);
  const row=benchmarkMatrix(report).rows.find(r=>r.kind==='world'),two=row.cells.find(c=>c.computeWorkers===2),ten=row.cells.find(c=>c.computeWorkers===10);
  assert.ok(Math.abs(two.speedup-1.3)<1e-12);assert.ok(Math.abs(two.speedPercent-30)<1e-10);assert.ok(Math.abs(two.efficiency-65)<1e-10);assert.ok(Math.abs(ten.efficiency-15)<1e-10);
  assert.equal(benchmarkMatrix(report).rows[0].cells.length,1);
@@ -47,7 +47,8 @@ test('partial configuration runs have no acceleration and preserve completed rep
 
 test('previous duration-series v5 reports remain readable without enabling old kernels in new runs',async()=>{
  const l=loader(),current=await runConfigurationBenchmarks({selections:[{versionId:BENCHMARK_CURRENT_KERNEL,workerCounts:[1,2]}],groups:['world'],repeatCounts:{world:1},loadVersion:l.loadVersion});
- current.cases=current.cases.filter(c=>c.id!=='world-care');current.completedMeasurements=current.cases.length;current.plannedMeasurements=current.cases.length;
+ const care=JSON.parse(JSON.stringify(current).replaceAll(BENCHMARK_CURRENT_KERNEL,'0.59.0'));care.seriesId='child-care-v1';care.suiteId='child-care-workloads-v1';care.cases=care.cases.filter(c=>c.id!=='world-modular');care.completedMeasurements=care.cases.length;care.plannedMeasurements=care.cases.length;validateBenchmarkReport(care);assert.equal(benchmarkMatrix(care).rows.length,4);
+ current.cases=current.cases.filter(c=>!['world-care','world-modular'].includes(c.id));current.completedMeasurements=current.cases.length;current.plannedMeasurements=current.cases.length;
  for(const [id,series] of [['0.58.0','fractional-meals-v1'],['0.57.2','physiology-v1']]){const old=JSON.parse(JSON.stringify(current).replaceAll(BENCHMARK_CURRENT_KERNEL,id));old.seriesId=series;old.suiteId='physiology-workloads-v1';validateBenchmarkReport(old);assert.equal(benchmarkMatrix(old).rows.length,3);assert.throws(()=>configurationSelection(old.selections));}
  const oldTarget=JSON.parse(JSON.stringify(current).replaceAll(BENCHMARK_CURRENT_KERNEL,'0.38.0'));oldTarget.seriesId='target-food-environment-v1';oldTarget.suiteId='fixed-target-food-workloads-v1';validateBenchmarkReport(oldTarget);assert.throws(()=>configurationSelection(oldTarget.selections));
  const oldMoving=JSON.parse(JSON.stringify(current).replaceAll(BENCHMARK_CURRENT_KERNEL,'0.37.0'));oldMoving.seriesId='moving-food-islands-v1';oldMoving.suiteId='fixed-moving-food-workloads-v1';validateBenchmarkReport(oldMoving);assert.throws(()=>configurationSelection(oldMoving.selections));

@@ -1,0 +1,24 @@
+import * as old from './temporal-layout.js';
+import {CARE_OPERATIONS as PHYSIOLOGY_OPERATIONS,CARE_ACTIONS as PHYSIOLOGY_ACTIONS,careOperation as operationForAction} from './care-actions.js';
+export {operationForAction};
+export const OPERATION_NAMES=PHYSIOLOGY_OPERATIONS;
+export const BODY_NAMES=Object.freeze(['Энергия / текущая ёмкость','Здоровье / текущий максимум','Запас / вместимость','Желудок / текущий объём','Тело / (тело + опорная масса)','Рекордная масса / (рекордная + опорная)','Тело / исторический максимум','Возраст / (возраст + срок развития)','Беременность','Оплаченная доля беременности','Прогресс беременности','Роды','Трава в запасе / вместимость','Плоды в запасе / вместимость','Мясо в запасе / вместимость','Есть носимый ребёнок','Размер ребёнка / сумму размеров','Относительное здоровье ребёнка','Остаток срока ношения']);
+export const ACTIVITY_NAMES=Object.freeze([...PHYSIOLOGY_ACTIONS.slice(0,12).map(s=>'Выполняют: '+s),'Рожают','Кормят ребёнка','Несомые дети']);
+export const CELL_NAMES=Object.freeze([...old.CELL_NAMES.slice(0,10),...ACTIVITY_NAMES,'Трава / масштаб пищи','Плоды / масштаб пищи','Мясо / масштаб пищи','Прогноз травы','Прогноз плодов','Прогноз мяса']);
+export const TARGET_NAMES=Object.freeze([...old.TARGET_NAMES.slice(0,14),...ACTIVITY_NAMES,'Трава / масштаб пищи','Плоды / масштаб пищи','Мясо / масштаб пищи','Выбран тип: трава','Выбран тип: плоды','Выбран тип: мясо','Есть целевая особь','Размер целевой особи / сумму размеров','Относительное здоровье целевой особи',...PHYSIOLOGY_ACTIONS.map(s=>'Целевая особь: '+s),'Целевая особь рожает','Целевая особь несомая','Целевая особь атакует меня','Целевая особь атакует другую особь','Прогноз травы цели','Прогноз плодов цели','Прогноз мяса цели']);
+export const PROCESS_NAMES=Object.freeze([...OPERATION_NAMES.map(s=>'Процесс: '+s),'Процесс продолжается','Прогресс','Осталось / масштаб времени','Вызов: завершение','Вызов: пересмотр','Вызов: срыв',...TARGET_NAMES.map(s=>'Процесс: '+s)]);
+export const CANDIDATE_NAMES=Object.freeze([...OPERATION_NAMES.map(s=>'Операция: '+s),...TARGET_NAMES,'Продолжение попытки','Время / масштаб времени','Цена решения / масштаб цены']);
+export const CELL_INPUTS=CELL_NAMES.length,CELL_HIDDEN=8,CONTEXT_HIDDEN=16,CANDIDATE_INPUTS=CANDIDATE_NAMES.length;
+export const CONTEXT_NAMES=Object.freeze([...BODY_NAMES,...old.CONTEXT_NAMES.slice(4,28),...PROCESS_NAMES]);
+export const CONTEXT_INPUTS=CONTEXT_NAMES.length;
+export const SET_BLOCKS=Object.freeze((()=>{
+ let offset=0;
+ const matrix=(key,label,inputs,outputs,context=false)=>{const weights=context?0:inputs*outputs,b={key,label,offset,inputs,outputs,weights,bias:offset+weights};offset+=weights+outputs;return Object.freeze(b);};
+ const a=[matrix('cells','Клетки',CELL_INPUTS,8),matrix('context','Ситуация и процесс',CONTEXT_INPUTS,16,true),matrix('target','Цель',CANDIDATE_INPUTS-OPERATION_NAMES.length,16)];
+ a.push(Object.freeze({key:'operation',label:'Операции',offset,inputs:OPERATION_NAMES.length,outputs:16,weights:OPERATION_NAMES.length*16,bias:null}));offset+=OPERATION_NAMES.length*16;
+ a.push(matrix('direct','Прямая оценка',CANDIDATE_INPUTS,1));return a;
+})());
+export const SET_PARAMETER_COUNT=SET_BLOCKS.at(-1).bias+1;
+export const GATE_NAMES=Object.freeze([...old.GATE_NAMES,'Время с вызова','Тело / (тело + опорная масса)','Тело / исторический максимум','Беременность','Роды','Трава здесь','Плоды здесь','Мясо здесь','Наблюдаемые атаки на меня','Есть носимый ребёнок','Размер ребёнка / сумму размеров','Относительное здоровье ребёнка','Остаток срока ношения']);
+export const ATTENTION_INPUTS=GATE_NAMES.length;
+export const NETWORK=Object.freeze({...old.TEMPORAL_LAYOUT.network,inputSchema:'local-body-food-care-v1',cellInputs:CELL_INPUTS,contextInputs:CONTEXT_INPUTS,candidateInputs:CANDIDATE_INPUTS,gateInputs:ATTENTION_INPUTS,operations:OPERATION_NAMES.length});

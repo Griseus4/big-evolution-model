@@ -51,7 +51,7 @@ test('new introduction records specific implementation sources; legacy articles 
  const intro=GUIDE_ARTICLES.find(a=>a.id==='intro');assert.equal(intro.reviewedVersion,'0.54.2');
  for(const source of intro.sources){const code=readFileSync(new URL('../dist/'+source.file,import.meta.url),'utf8');for(const symbol of source.symbols)assert.match(code,new RegExp(`\\b${symbol}\\s*\\(`));}
  for(const id of ['brain','checks','limits'])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,'0.54.17');
- for(const [id,version] of [['saves','0.59.0'],['selection','0.59.0'],['genome','0.59.0'],['memory','0.54.12'],['observation','0.59.0'],['feelings','0.57.2'],['brain-structure','0.59.0'],['choice','0.55.0'],['food','0.59.0'],['deposits','0.57.2'],['environment','0.54.11']])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,version);
+ for(const [id,version] of [['saves','0.60.0'],['selection','0.59.0'],['genome','0.60.0'],['memory','0.54.12'],['observation','0.59.0'],['feelings','0.57.2'],['brain-structure','0.60.0'],['choice','0.55.0'],['food','0.59.0'],['deposits','0.57.2'],['environment','0.54.11']])assert.equal(GUIDE_ARTICLES.find(a=>a.id===id).reviewedVersion,version);
 });
 
 test('article links open their branch, keep DOM state, restore reading position and respect modified clicks',()=>{

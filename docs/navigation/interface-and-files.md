@@ -7,6 +7,7 @@
 Числовой каталог пособия: [numeric-rules.js](../../dist/numeric-rules.js) → [guide-numbers-text.js](../../dist/guide-numbers-text.js); источник и единицы проверяются в [numeric-rules0548.test.mjs](../../tests/numeric-rules0548.test.mjs).
 
 ## interface
+Настройки 0.60: [группы физики](../../dist/physiology-field-groups.js), [пояснения изменений](../../dist/physiology-parameter-help.js), [все блоки мозга](../../dist/modular-settings-ui.js); [контракт](../next-brain-configuration.md).
 Плавное движение 0.56.2: [world-motion.js](../../dist/world-motion.js) отделяет подтверждённый маршрут от пиксельной позиции; [world-map-layers.js](../../dist/world-map-layers.js) кэширует слои. [Проверки](../../tests/world-motion0561.test.mjs), [контракт](../updates/v056-slow-motion.md).
 Подсказки мутаций: [mutation-help.js](../../dist/mutation-help.js) → [ui-text.js](../../dist/ui-text.js)/[brain-settings-tables.js](../../dist/brain-settings-tables.js); взаимодействие — [help.js](../../dist/help.js), регрессия — [help-ui.test.mjs](../../tests/help-ui.test.mjs). [Выпуск](../updates/v055-mutation-help.md).
 **Задача:** кнопка/панель/подсказка, выбранный житель, карта, медленный показ, подпись версии.

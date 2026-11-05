@@ -11,7 +11,7 @@ import {validateDigestionTime} from '../dist/model-rules.js';
 import {genomeMetadata} from '../dist/genome.js';
 import {validateWorldOptions} from '../dist/experiment-plan.js';
 import {WORLD_LIMITS} from '../dist/world-defaults.js';
-import {DUAL_BRAIN_TYPE,CARE_GENOME_VERSION as DUAL_VERSION} from '../dist/dual-brain-layout.js';
+import {DUAL_BRAIN_TYPE,MODULAR_VERSION as DUAL_VERSION} from '../dist/dual-brain-layout.js';
 /** Настоящий UI-код и протокол в минимальном DOM. Это не браузерная проверка:
  * модель настоящая, вспомогательные панели и доставка сообщений контролируются. */
 import test from 'node:test';
@@ -111,7 +111,7 @@ test('world form persists brain price and preview, validates zero and restores f
   const b=await boot(),host=b.elements.get('start-panel-other'),find=text=>walk(host).find(n=>n.textContent===text),price=find('Коэффициент цены обоих мозгов').children[0];
   price.value='0';price.emit('input');await settle();assert.ok(walk(host).some(n=>/больше нуля/.test(n.textContent)));assert.equal(b.runtime.world.brainCostMultiplier,1);
   price.value='.5';price.emit('input');await settle();await b.elements.get('restart').emit('click');await settle();assert.equal(b.runtime.world.brainCostMultiplier,.5);
-  find('Сделать стандартными').emit('click');assert.equal(JSON.parse(values.get('big-evolution-world-form-care-v1')).standard.fields.brainCostMultiplier,'.5');
+  find('Сделать стандартными').emit('click');assert.equal(JSON.parse(values.get('big-evolution-world-form-modular-v1')).standard.fields.brainCostMultiplier,'.5');
   const c=await boot(),other=c.elements.get('start-panel-other');assert.equal(c.runtime.world.brainCostMultiplier,.5);walk(other).find(n=>n.textContent==='Сбросить к заводским').emit('click');await settle();assert.equal(c.runtime.world.brainCostMultiplier,.5);assert.equal(walk(other).find(n=>n.textContent==='Коэффициент цены обоих мозгов').children[0].value,1);
  }finally{globalThis.localStorage=old;}
 });

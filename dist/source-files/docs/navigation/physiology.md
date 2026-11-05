@@ -1,10 +1,12 @@
-﻿# Физиология, питание и размножение 0.59
+﻿# Физиология, питание и размножение 0.60
 
-Маршрут текущей модели v19. [Контракт P00–P14](../next-feeding-system.md), [точная спецификация](../specifications/physiology-2026-11-02.md), [механики](../mechanics-reference.md).
+Маршрут текущей модели v20. [Контракт P00–P14](../next-feeding-system.md), [точная спецификация](../specifications/physiology-2026-11-02.md), [механики](../mechanics-reference.md).
 
 | Задача | Владелец | Проверка |
 | --- | --- | --- |
 | Параметры мира, гены, единицы | physiology-settings.js, body-physiology.js | physiology057 |
+| Все блоки мозга | modular-brain-layout/genome/math.js, modular-settings-ui.js | modular-brain060 |
+| Подсказки и группы | physiology-parameter-help/field-groups.js | modular-brain060, world-ui |
 | Численная мутация A/r | numeric-mutation.js, dual-brain-genome.js | numeric-mutation057 |
 | Желудок, ресурсы | digestion.js, food-resources.js | digestion057, food-resources057 |
 | Бюджет, плод, роды | physiology-budget.js, pregnancy.js | budget-pregnancy057 |
