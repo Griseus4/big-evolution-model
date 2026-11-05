@@ -7,14 +7,14 @@ import {configurationLayout,validateConfigurationReport,configurationMatrix} fro
 // Архивные отчёты читаются без загрузки старых расчётных модулей. Каждая
 // нагрузка привязана к своей модели; между разными сериями ускорение не считаем.
 const HISTORICAL_SERIES=Object.freeze({'fixed-mobile-food-workloads-v1':'mobile-food-environment-v1','fixed-target-food-workloads-v1':'target-food-environment-v1','fixed-moving-food-workloads-v1':'moving-food-islands-v1','fixed-environment-deficit-workloads-v1':'environment-energy-deficit-v1','fixed-activity-workloads-v1':'duration-activity-v1','fixed-duration-workloads-v1':'duration-attention-v1','fixed-neural-workloads-v1':'neural-local-body-v1',
- 'fixed-food-island-workloads-v1':'neural-food-islands-v1','fixed-neighbour-workloads-v1':'neural-neighbours-v1','fixed-heritable-mutation-workloads-v1':'neural-heritable-mutation-v1','physiology-workloads-v1':'fractional-meals-v1'});
+ 'fixed-food-island-workloads-v1':'neural-food-islands-v1','fixed-neighbour-workloads-v1':'neural-neighbours-v1','fixed-heritable-mutation-workloads-v1':'neural-heritable-mutation-v1','physiology-workloads-v1':'fractional-meals-v1','child-care-workloads-v1':'child-care-v1'});
 export function benchmarkSeries(report){
  if(report.suiteId==='physiology-workloads-v1'&&report.seriesId==='physiology-v1')return report.seriesId;
  return HISTORICAL_SERIES[report.suiteId]??(report.suiteId===BENCHMARK_SUITE_ID?BENCHMARK_MODEL_SERIES:null);
 }
 // У прежних серий шесть нагрузок. Новый случай ношения нельзя требовать от
 // сохранённого отчёта: его состав определяется исходной методикой.
-export function reportBenchmarkCases(suiteId){return BENCHMARK_CASES.filter(s=>suiteId===BENCHMARK_SUITE_ID||s.id!=='world-care');}
+export function reportBenchmarkCases(suiteId){return BENCHMARK_CASES.filter(s=>suiteId===BENCHMARK_SUITE_ID||(suiteId==='child-care-workloads-v1'?s.id!=='world-modular':!['world-care','world-modular'].includes(s.id)));}
 export function timingSummary(samples){
  const sorted=samples.slice().sort((a,b)=>a-b),middle=Math.floor(sorted.length/2);
  const median=sorted.length%2?sorted[middle]:(sorted[middle-1]+sorted[middle])/2;

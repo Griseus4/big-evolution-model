@@ -36,7 +36,7 @@ export function movementSteps(a,r=PHYSIOLOGY_DEFAULTS){
  return n;
 }
 export function motorRate(a,kind,r=PHYSIOLOGY_DEFAULTS){
- const rate={move:r.moveRate,gather:r.gatherRate,eat:r.eatRate,deposit:r.depositRate,rest:0,birth:0,conceive:0,feed:r.feedRate}[kind];
+ const rate={move:r.moveRate,gather:r.gatherRate,eat:r.eatRate,deposit:r.depositRate,rest:0,birth:0,conceive:r.conceiveRate,feed:r.feedRate}[kind];
  if(rate===undefined)throw new Error('Для атаки требуется фиксированная цена замаха.');
  return rate*a.L/r.referenceMass;
 }

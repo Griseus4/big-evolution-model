@@ -12,7 +12,7 @@ import {ACTIVITY_COUNT} from './activity-perception.js';
  * Все суммы — энергия/Т установившегося цикла до заполнения запаса. */
 export const ENERGY_PREVIEW=Object.freeze({moves:12,maxMoves:10000,calls:1,cells:7,candidates:11,operations:6,seed:553});
 export function previewBrain(options={}){
- const genes=options.baseGenome??randomDualGenome(new Random(ENERGY_PREVIEW.seed),{...dualStructureSettings({...options,genomeVersion:options.physiology?(options.genomeVersion??18):undefined,initialMutation:undefined}),genomeVersion:options.physiology?(options.genomeVersion??18):17,bodyGenes:options.bodyGenes});
+ const genes=options.baseGenome??randomDualGenome(new Random(ENERGY_PREVIEW.seed),{...dualStructureSettings({...options,genomeVersion:options.physiology?(options.genomeVersion??20):undefined,initialMutation:undefined}),genomeVersion:options.physiology?(options.genomeVersion??20):17,bodyGenes:options.bodyGenes});
  return compileDualState(genes);
 }
 export function energyPreview(options={},brain=previewBrain(options),moves=ENERGY_PREVIEW.moves,scenario={}){

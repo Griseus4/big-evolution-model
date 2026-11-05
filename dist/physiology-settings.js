@@ -40,6 +40,8 @@ export const PHYSIOLOGY_FIELDS=Object.freeze({
  gatherRate:field('Добавка сбора эталона','энергия/Т',.36),
  eatRate:field('Добавка еды эталона','энергия/Т',INITIAL_EATING_MOTOR_RATE),
  depositRate:field('Добавка выкладывания эталона','энергия/Т',.06),
+ conceiveRate:field('Двигательная цена зачатия','энергия/Т',0),
+ conceiveSteps:field('Длительность зачатия','подшаги',1,1,Number.MAX_SAFE_INTEGER),
  gatherSteps:field('Длительность сбора','подшаги',5,1,Number.MAX_SAFE_INTEGER),
  feedSteps:field('Длительность кормления ребёнка','подшаги',1,1,1),
  feedRate:field('Двигательная цена кормления','энергии/Т при опорной массе',INITIAL_EATING_MOTOR_RATE,0),

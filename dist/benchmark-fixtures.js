@@ -10,7 +10,7 @@ import {ACTION_DURATIONS} from './action-timing.js';
 import {Evolution} from './evolution.js';
 import {observe} from './cognition.js';
 import {positionKey,localNeighbours} from './navigation.js';
-export const BENCHMARK_SUITE_ID='child-care-workloads-v1';
+export const BENCHMARK_SUITE_ID='all-blocks-dag-workloads-v1';
 export const BENCHMARK_REPEATS=3;
 export const BENCHMARK_CASES=Object.freeze([
  {id:'evaluator-empty',label:'Оценщик · пустая память',kind:'evaluator',seed:701,population:16,filled:false,work:4096,warmup:256},
@@ -20,6 +20,7 @@ export const BENCHMARK_CASES=Object.freeze([
  {id:'world-400',label:'Мир · 400, заполненная память',kind:'world',seed:802,population:400,filled:true,work:64,warmup:8},
  {id:'world-1000',label:'Мир · 1000, заполненная память',kind:'world',seed:803,population:1000,filled:true,work:64,warmup:8},
  {id:'world-care',label:'Мир · 150, пары ношения',kind:'world',seed:804,population:150,filled:true,carried:true,work:32,warmup:4},
+ {id:'world-modular',label:'Мир · 150, скрытые слои всех блоков',kind:'world',seed:805,population:150,filled:true,modular:true,work:32,warmup:4},
 ].map(Object.freeze));
 function fillMemory(brain){
  const count=brain.traits.shortCapacity+brain.traits.longCapacity,cells=[];
@@ -43,7 +44,7 @@ function fillMemory(brain){
  brain.spatialCache=null;
 }
 export function createBenchmarkFixture(spec,options={}){
- const world=new Evolution({...(options.brainType?{}:{physiology:{},genomeVersion:19}),seed:spec.seed,population:spec.population,limit:1000,foodSources:384,foodRegrowInterval:20,
+ const world=new Evolution({...(spec.modular?{initialNeurons:[4],attentionInitialNeurons:[4],brainModules:Object.fromEntries(['cells','target','operation','direct'].map(key=>[key,{initialNeurons:[4]}]))}:{}),...(options.brainType?{}:{physiology:{},genomeVersion:20}),seed:spec.seed,population:spec.population,limit:1000,foodSources:384,foodRegrowInterval:20,
   temporal:options.temporal??(!options.brainType||[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE,DUAL_BRAIN_TYPE].includes(options.brainType)),brainType:options.brainType??DUAL_BRAIN_TYPE,memory:true,learning:true,mutationRate:.02,mutations:true,lifeHistoryLimit:250,heritableMutations:!options.brainType,...options});
  for(const agent of world.agents){
   agent.brain.memory.clear();agent.brain.longMemory.clear();agent.brain.spatialCache=null;

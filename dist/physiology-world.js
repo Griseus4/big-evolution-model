@@ -26,7 +26,7 @@ import {sampleFoodExposure} from './food-exposure.js';
 import {advanceEnvironment} from './automatic-environment.js';
 
 export function initializePhysiologyAgent(w,a,body=null){
- const genes=unpackDualBrain(a.genome);if(![18,19].includes(genes.layout.version))throw new Error('Нужен поддерживаемый геном тела.');
+ const genes=unpackDualBrain(a.genome);if(![18,19,20].includes(genes.layout.version))throw new Error('Нужен поддерживаемый геном тела.');
  a.bodyGenes=genes.body;a.bodyPlan=bodyPlan(genes.body);Object.assign(a,body??createBody(a.bodyPlan,w.physiology));
  a.bornSubtick=w.subtick??0;a.ageSteps=0;a.foodInventory=[0,0,0];a.carriedMeat=createMeat(0,w.subtick??0);
  a.digestion=createDigestion(a.bodyPlan.retentionSteps,w.subtick??0);a.pregnancy=null;a.brainDue=0;a.budget=budgetRecord();a.resting=false;

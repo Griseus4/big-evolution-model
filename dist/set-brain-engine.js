@@ -1,3 +1,4 @@
+import {modularCommonForward,modularCandidateForward,modularCandidateValue,modularSetGradient} from './modular-brain-math.js';
 import {FEELING_SCALES,LEARNING_RULES} from './brain-input-scales.js';
 /** Общая ситуация вычисляется один раз на прямой выбор жителя.
  * Q(s,a)=sum(z(s)*operation(a)*target(a))/sqrt(16)+linear(a).
@@ -23,6 +24,7 @@ function dense(p,block,input,activate=true,reuse=null){
  return output;
 }
 function setCommonForward(p,frame){
+ if(p.structure?.modular)return modularCommonForward(p,frame);
  const mark=beginComputePart('forward');try{
   const cells=frame.cells.map(row=>dense(p,CELLS,row)),input=new Float64Array(CONTEXT_INPUTS),n=cells.length;
   input.set(frame.body);
@@ -32,6 +34,7 @@ function setCommonForward(p,frame){
  }finally{endComputePart(mark);}
 }
 function setCandidateForward(p,common,input){
+ if(p.structure?.modular)return modularCandidateForward(p,common,input);
  const mark=beginComputePart('forward');try{
   const hidden=dense(p,TARGET,input.subarray(OPERATION_NAMES.length),false),operation=dense(p,OPERATION,input.subarray(0,OPERATION_NAMES.length),false);
   let value=p[DIRECT.bias];
@@ -99,7 +102,7 @@ function evaluateSetBrain(brain,request,detailed=true,decision=null){
   const row=decision?.rows[index]??setCandidateInput(brain,request.observation,candidate,prepared,detailed?null:buffers.candidateInput,detailed?null:buffers.features);
   const forwardMark=beginComputePart('forward');let value;
   try{
-   const head=heads[row.operation]??(heads[row.operation]=operationHead(p,common,row.operation));value=headValue(head,row.input);
+   const head=p.structure?.modular?null:heads[row.operation]??(heads[row.operation]=operationHead(p,common,row.operation));value=p.structure?.modular?modularCandidateValue(p,common,row.input,row.operation):headValue(head,row.input);
   }finally{endComputePart(forwardMark);}
   const copyMark=beginComputePart('copies');try{return {...candidate,row:0,operation:row.operation,score:value/TEMPERATURE,learningValue:value,
    ...(detailed?{features:row.features,senses:prepared.senses.slice(),input:displayInput,candidateInput:Array.from(row.input),batchInput:{body:prepared.body,cells:prepared.cells,memory:prepared.memory,candidate:row.input,...(prepared.process?{process:prepared.process}:{})}}:{})};
@@ -125,7 +128,7 @@ function expectedSetValue(brain,request,decision=null){
   const row=decision?.rows[i]??setCandidateInput(brain,request.observation,request.candidates[i],prepared,buffers.candidateInput,buffers.features);
   const mark=beginComputePart('forward');let value;
   try{
-   const operation=row.operation,head=ready[operation]?heads[operation]:operationHead(p,common,operation,heads[operation]);ready[operation]=1;value=headValue(head,row.input);
+   const operation=row.operation,head=p.structure?.modular?null:ready[operation]?heads[operation]:operationHead(p,common,operation,heads[operation]);ready[operation]=1;value=p.structure?.modular?modularCandidateValue(p,common,row.input,row.operation):headValue(head,row.input);
   }finally{endComputePart(mark);}
   s.values[i]=value;s.scores[i]=value/TEMPERATURE;s.operations[i]=row.operation;
  }
@@ -140,7 +143,8 @@ function expectedSetValue(brain,request,decision=null){
 /** Дифференцируем выбранный Q через оба кодировщика и общую ситуацию.
  * Мягкого поиска памяти нет: входные наблюдения/оценки памяти — константы.
  * Усреднение и второй момент по клеткам имеют производные 1/n и 2*h/n. */
-function setGradient(p,frame,gradient=new Float64Array(SET_PARAMETER_COUNT)){
+function setGradient(p,frame,gradient=new Float64Array(p.length)){
+ if(p.structure?.modular)return modularSetGradient(p,frame,gradient);
  const mark=beginComputePart('gradient');try{
   gradient.fill(0);const common=setCommonForward(p,frame),candidate=setCandidateForward(p,common,frame.candidate),back=new Float64Array(CONTEXT_INPUTS);
   gradient[DIRECT.bias]=1;for(let i=0;i<frame.candidate.length;i++)gradient[DIRECT.offset+i]=frame.candidate[i];

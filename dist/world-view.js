@@ -9,7 +9,7 @@ export const WORLD_PROTOCOL=1;
 export const WORLD_UI_INTERVAL=200;
 // Полный отчёт жизней нужен лишь видимой истории, не каждому кадру карты.
 export const HISTORY_UI_INTERVAL=1000;
-const META=['childCare','physiology','bodyGenes','genomeVersion','brainCostMultiplier','attentionMaxNeurons','attentionMaxLayers','attentionInitialNeurons','attentionInitialConnections','initialMutation','mutationEnabled','initialNeurons','initialConnections','maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
+const META=['brainModules','childCare','physiology','bodyGenes','genomeVersion','brainCostMultiplier','attentionMaxNeurons','attentionMaxLayers','attentionInitialNeurons','attentionInitialConnections','initialMutation','mutationEnabled','initialNeurons','initialConnections','maxNeurons','maxLayers','structuralMutations','seed','initialPopulation','initialFood','limit','scenario','geography','geographyInfo','foodSettings',
  'digestionTime','learningEnabled','memoryEnabled','mutationRate','mutations','brainType','mutationProtocol','reproduction'];
 export function worldPresentation(world,{selected,trail,section='birth',history=false,staticMap=false,movement=false}={}){
  const state={tick:world.tick,environmentRevision:world.environmentRevision,automaticEnvironment:environmentStatus(world),
@@ -36,7 +36,7 @@ export function worldPresentation(world,{selected,trail,section='birth',history=
   // Полная память только выбранного наблюдателем. Рабочие следы/градиенты и
   // pending-переход не нужны UI, их не копируем даже для выбранного мозга.
   const a=selected,b=a.brain;
-  const fields=['care','physiology','dual','lastDecisionSubtick','traits','controllerType','position','facing','memory','longMemory','updates','feelingTotal',
+  const fields=['modular','care','physiology','dual','lastDecisionSubtick','traits','controllerType','position','facing','memory','longMemory','updates','feelingTotal',
    'costProfile','feelingSamples','lastLearning','temporal','gateBase','scale','weights','bodyGenes','bodyWeights'];
   const brain=Object.fromEntries(fields.map(k=>[k,b[k]]));
   brain.networkDelta=b.networkDelta;

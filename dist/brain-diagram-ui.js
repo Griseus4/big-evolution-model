@@ -16,7 +16,14 @@ export function brainDiagramModel(agent,component='context',learningEnabled=true
  const nodes=[],edges=[],base=agent.genome,delta=b.networkDelta;
  const node=(id,layer,label,index=null)=>nodes.push({id,layer,label,index});
  const edge=(from,to,index,gate=false)=>edges.push({from,to,index,base:gate?b.gateBase[index]:base[index],delta:gate?0:delta?.[index]??0,enabled:gate||learningEnabled});
- if(component==='context'){
+ if(l.version>=20){
+  const key=component==='gate'?'attention':component,g=dual.graphs[key],m=l.modules.find(m=>m.key===key);if(!g||!m)return null;
+  const names=key==='context'?CONTEXT_NAMES:key==='cells'?CELL_NAMES:key==='target'?CANDIDATE_NAMES.slice(OPERATION_NAMES.length):key==='operation'?OPERATION_NAMES:key==='attention'?GATE_NAMES:CANDIDATE_NAMES;
+  const I=g.inputs,H=g.layers.length,depth=Math.max(0,...g.layers);for(let j=0;j<I;j++)node(j,0,names[j]);
+  for(let j=0;j<H;j++)node(I+j,g.layers[j],`Скрытый ${j+1}`,m.offset+j);
+  for(let j=0;j<g.outputs;j++)node(I+H+j,depth+1,key==='context'?`Выход контекста ${j+1}`:key==='target'?`Цель ${j+1}`:key==='operation'?`Операция ${j+1}`:key==='cells'?`Признак клетки ${j+1}`:key==='attention'?'Запросить основной мозг':'Добавка Q',m.offset+H+j);
+  g.edges.forEach((e,j)=>edge(e.from,e.to,(key==='attention'?0:m.offset)+H+g.outputs+j,key==='attention'));
+ }else if(component==='context'){
   const I=l.inputs,n=l.hidden,depth=Math.max(0,...d.layers);
   for(let i=0;i<I;i++)node(i,0,CONTEXT_NAMES[i]);
   d.layers.forEach((v,j)=>node(I+j,v,`Скрытый ${j+1}`,FIXED_PARAMETERS+j));

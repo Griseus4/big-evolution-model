@@ -35,7 +35,7 @@ export const BENCHMARK_VERSION_CHECKS=[
   for(const count of [0,101,1.5,NaN])rejects(()=>benchmarkSelection(available,count));rejects(()=>benchmarkSelection([],10));rejects(()=>benchmarkSelection([available[0],available[0]],10));
  }},
  {id:'benchmark-version-report',label:'Версии: неполные/различные итоги не получают проценты ускорения',run(){
-  const historical=reportFixture();historical.suiteId='fixed-heritable-mutation-workloads-v1';historical.seriesId='neural-heritable-mutation-v1';historical.cases=historical.cases.filter(c=>c.id!=='world-care');
+  const historical=reportFixture();historical.suiteId='fixed-heritable-mutation-workloads-v1';historical.seriesId='neural-heritable-mutation-v1';historical.cases=historical.cases.filter(c=>!['world-care','world-modular'].includes(c.id));
   validateBenchmarkReport(historical);
   const report=reportFixture();validateBenchmarkReport(report);const matrix=benchmarkMatrix(report);
   assert(matrix.rows.every(row=>row.cells.every(c=>c.comparable)&&row.cells[1].timeChangePercent<0),'Совпадающие итоги не сравниваются');

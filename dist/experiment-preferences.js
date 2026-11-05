@@ -1,7 +1,7 @@
 /** Только форма наблюдателя: черновик не меняет личный стандартный набор.
  * Храним малые настройки, не результаты опытов. Сбой/quota не блокирует работу. */
 import {splitMutationForm} from './mutation-form-migration.js';
-const KEY='big-evolution-experiment-preferences-care-v1';
+const KEY='big-evolution-experiment-preferences-modular-v1';
 export function experimentPreferences(storage,onError=()=>{},key=KEY){
  let state={version:1,draft:null,standard:null};
  try{const saved=JSON.parse(storage?.getItem(key)??'null');if(saved?.version===1)state={...state,...saved};}catch{onError('Не удалось прочитать настройки формы. Доступны исходные настройки.');}

@@ -9,10 +9,18 @@ import {DECISION_COST} from './action-timing.js';
 const dense=b=>2*b.weights+(b.bias===null?0:b.outputs);
 const [cells,context,target,operation,direct]=SET_BLOCKS;
 export function brainCostProfile(plan){
+ if(plan.modular)return {care:true,physiology:true,modular:true,linearHeads:plan.modules.target.hidden===0&&plan.modules.direct.hidden===0,targetEdges:plan.modules.target.activeEdges,directEdges:plan.modules.direct.activeEdges,modules:Object.fromEntries(Object.entries(plan.modules).map(([key,m])=>[key,{forward:m.operations,backward:4*m.activeEdges+2*m.nodes.length+3*m.nodes.filter(id=>id<m.inputs+m.hidden).length}])),parameters:plan.activeParameters.length};
  return {...(plan.care?{care:true}:{}),...(plan.physiology?{physiology:true}:{}),context:2*plan.activeEdges+plan.nodes.length+plan.nodes.filter(id=>id<plan.inputs+plan.hidden).length,
   parameters:plan.activeParameters.length};
 }
 export function operationCounts(profile,nCells,nCandidates,nOperations=6){
+ if(profile?.modular){
+  const m=profile.modules,common=nCells*(m.cells.forward+care.CELL_HIDDEN)+nCells*care.CELL_HIDDEN*5+care.CONTEXT_INPUTS+m.context.forward;
+  const candidate=m.target.forward+m.direct.forward+4*care.CONTEXT_HIDDEN;
+  const forward=profile.linearHeads?common+nOperations*(m.operation.forward+2*profile.targetEdges+4*care.CONTEXT_HIDDEN+profile.directEdges+care.CANDIDATE_INPUTS)+nCandidates*(2*(care.CANDIDATE_INPUTS-care.OPERATION_NAMES.length)+8):common+nOperations*m.operation.forward+nCandidates*(candidate+8),single=common+m.operation.forward+candidate;
+  const backward=m.context.backward+m.target.backward+m.operation.backward+m.direct.backward+nCells*(m.cells.backward+3*care.CELL_HIDDEN);
+  return {forward,learning:forward+2*single+backward+12*profile.parameters};
+ }
  const [cells,context,target,operation,direct]=profile?.care?care.SET_BLOCKS:profile?.physiology?physiology.SET_BLOCKS:SET_BLOCKS,CONTEXT_INPUTS=profile?.care?care.CONTEXT_INPUTS:profile?.physiology?physiology.CONTEXT_INPUTS:context.inputs,CANDIDATE_INPUTS=direct.inputs;
  const contextCost=profile?.context??dense(context)+CONTEXT_HIDDEN;
  const common=nCells*(dense(cells)+CELL_HIDDEN)+nCells*CELL_HIDDEN*5+CONTEXT_INPUTS+contextCost;

@@ -14,7 +14,7 @@ import {dagConnectionBudget} from './dual-brain-settings.js';
 import {validateWorldOptions} from './experiment-plan.js';
 import {WORLD_LIMITS} from './world-defaults.js';
 import {initialNeuronsInput,wireInitialStructure} from './brain-initialization-ui.js';
-import {DUAL_BRAIN_TYPE,CARE_GENOME_VERSION as DUAL_VERSION} from './dual-brain-layout.js';
+import {DUAL_BRAIN_TYPE,MODULAR_VERSION as DUAL_VERSION} from './dual-brain-layout.js';
 import {dualBrainSettingsUI} from './dual-brain-settings-ui.js';
 import {MAX_GENOME_FILE_BYTES} from './experiment-genomes.js';
 import {PHYSIOLOGY_OPERATIONS} from './physiology-actions.js';
@@ -188,7 +188,7 @@ syncWorldFoodEditor();
 environmentUI=installEnvironmentUI({element,command,getWorld:()=>sim});
 const energyPreview=installEnergyPreview({doc:document,host:startHost,read:settings});
 const savedWorldControls=new Map([...physiologyControls.inputs,...dualControls.inputs,...['seed','founders','population-limit','learning','memory','mutations','structural-mutations','mutation-rate','brain-max-neurons','brain-max-layers','brain-initial-connections','food-sources','food-sources-number','food-period','food-period-number','food-islands','food-size-spread','food-size-spread-number','food-period-spread','food-period-spread-number','food-size-mean','food-size-mean-number','food-capacity-mean','food-capacity-mean-number','food-capacity-spread','food-capacity-spread-number'].map(id=>[id,element(id)]),['initialNeurons',initialNeuronsControl],['brainCostMultiplier',brainPriceInput],['digestionTime',digestionInput],['previewFood',energyPreview.food],['previewCalls',energyPreview.calls],['previewMoves',energyPreview.moves]]);
-worldForm=installFormPreferences({doc:document,host:startHost,key:'big-evolution-world-form-care-v1',controls:savedWorldControls,validate:()=>validateWorldOptions(settings()),readExtra:()=>baseGenome,writeExtra:value=>{if(value&&genomeMetadata(value).version!==DUAL_VERSION)throw new Error('Сохранённая основа прежней схемы: загрузите геном v19 или сбросьте форму. Старые результаты доступны для анализа.');baseGenome=value?validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(value),genes:value}):null;legacyBase=false;},refresh:()=>{initialStructureControls.refresh(true);dualControls.refresh();physiologyControls.refresh();element('clear-base').disabled=!baseGenome;element('base-status').textContent=baseGenome?'Сохранённая основа генома':'Новая популяция: случайные геномы';energyPreview.refresh();}});
+worldForm=installFormPreferences({doc:document,host:startHost,key:'big-evolution-world-form-modular-v1',controls:savedWorldControls,validate:()=>validateWorldOptions(settings()),readExtra:()=>baseGenome,writeExtra:value=>{if(value&&genomeMetadata(value).version!==DUAL_VERSION)throw new Error('Сохранённая основа прежней схемы: загрузите геном v20 или сбросьте форму. Старые результаты доступны для анализа.');baseGenome=value?validateGenomeFile({format:'big-evolution-genome',...genomeMetadata(value),genes:value}):null;legacyBase=false;},refresh:()=>{initialStructureControls.refresh(true);dualControls.refresh();physiologyControls.refresh();element('clear-base').disabled=!baseGenome;element('base-status').textContent=baseGenome?'Сохранённая основа генома':'Новая популяция: случайные геномы';energyPreview.refresh();}});
 for(const name of ['input','change'])startHost.addEventListener(name,()=>energyPreview.refresh());
 for(const n of savedWorldControls.values())for(const name of ['input','change'])n.addEventListener(name,()=>energyPreview.refresh());
 
@@ -227,7 +227,7 @@ element('load-genome').addEventListener('change',async event=>{
  const file=event.target.files?.[0];if(!file)return;pause();
  try{
   if(file.size>MAX_GENOME_FILE_BYTES)throw new Error('Файл генома превышает допустимый размер.');
-  const data=JSON.parse(await file.text());if(data.version!==DUAL_VERSION)throw new Error('Новый мир принимает геномы v19 с отдельными регуляторами. Старые результаты опытов доступны для анализа.');baseGenome=validateGenomeFile(data);legacyBase=false;worldForm?.save();energyPreview.refresh();
+  const data=JSON.parse(await file.text());if(data.version!==DUAL_VERSION)throw new Error('Новый мир принимает геномы v20 с отдельными регуляторами. Старые результаты опытов доступны для анализа.');baseGenome=validateGenomeFile(data);legacyBase=false;worldForm?.save();energyPreview.refresh();
   element('legacy-options').hidden=!legacyBase;
   const inherited=Boolean(mutationProfile(baseGenome));
   element('upgrade-mutations').checked=false;element('mutation-upgrade-options').hidden=inherited;

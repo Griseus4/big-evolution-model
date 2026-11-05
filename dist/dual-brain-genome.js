@@ -1,3 +1,4 @@
+import {validateModularBrain,randomModularBrain,mutateModularBrain} from './modular-brain-genome.js';
 import {CARE_GENE_FIELDS,careGeneValues} from './care-settings.js';
 import {EVOLUTION_RULES as R,MUTATION_GROUPS} from './brain-evolution-rules.js';
 import {dualBrainLayout,unpackDualBrain,packDualBrain,dualDimensions,ATTENTION_INPUTS,DUAL_SCHEMAS} from './dual-brain-layout.js';
@@ -23,6 +24,7 @@ export function dualMutationProfiles(genes){const l=dualBrainLayout(genes);if(!l
 
 export function validateDualBrain(genes){
  const d=unpackDualBrain(genes);
+ if(d.layout.version===20){if(!Array.isArray(genes)||!genes.every(Number.isFinite))throw new Error("Неконечный геном");validateModularBrain(d);dualMutationProfiles(genes);for(let j=0;j<d.layout.mutationGroups.length;j++)if(!NUMERIC_MUTATION_GROUPS.includes(d.layout.mutationGroups[j])&&(d.regulators[2*j+1]<LOG_MIN||d.regulators[2*j+1]>LOG_MAX))throw new Error("Неверный регулятор структуры");return d;}
  if(!Array.isArray(genes)||!genes.every(Number.isFinite)||d.fixed.length!==d.layout.fixedParameters||d.traits.length!==12||
  [...d.fixed,...d.traits].some(v=>Math.abs(v)>R.weightLimit))throw new Error('Неверные параметры двух сетей.');
  validateDag(d.main);validateDag(d.attention);
@@ -59,6 +61,7 @@ export function randomDag(inputs,outputs,counts,percent,random){
 
 export function randomDualGenome(random,settings={}){
  const version=settings.genomeVersion??17;
+ if(version===20){const genes=randomModularBrain(random,settings,randomDag,encodeMutationPair);validateDualBrain(genes);return genes;}
  if(![17,18,19].includes(version))throw new Error('Неподдерживаемая начальная схема генома.');
  const dimensions=dualDimensions(version),FIXED_PARAMETERS=dimensions.fixed,STRUCTURAL_BLOCKS=dimensions.blocks,CONTEXT_INPUTS=dimensions.inputs,ATTENTION_INPUTS=dimensions.attentionInputs;
  const fixed=Array(FIXED_PARAMETERS).fill(0);
@@ -133,6 +136,7 @@ function mutateTopology(graph,strength,random,maxNeurons,maxLayers){
 export function mutateDualGenome(parent,random,settings={}){
  if(settings.mutations===false)return parent.slice();
  const d=validateDualBrain(parent),profiles=dualMutationProfiles(parent);
+ if(d.layout.version===20){const genes=mutateModularBrain(d,profiles,random,settings,mutateTopology,encodeMutationPair);validateDualBrain(genes);return genes;}
  if(d.layout.version>=18)return mutateNumericDual(d,profiles,random,settings);
  const legacy=d.layout.version===15,split=d.layout.version>=17;
  const context=legacy?'main':split?'contextWeights':'context',attention=split?'attentionWeights':'attention';

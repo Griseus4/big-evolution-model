@@ -27,7 +27,7 @@ class Endpoint{
  }
  close(error){if(this.pending){clearTimeout(this.pending.timer);this.pending.reject(error);this.pending=null;}return this.worker.terminate();}
 }
-function mirrorBrain(b){return {...(b.care?{care:true}:{}),physiology:b.physiology,costProfile:b.costProfile,traits:b.traits,controllerType:b.controllerType,temporal:b.temporal,dual:b.dual,lastDecisionSubtick:b.lastDecisionSubtick,position:b.position,facing:b.facing,updates:b.updates,feelingTotal:b.feelingTotal,feelingSamples:b.feelingSamples,wellbeing:b.wellbeing,memory:new Map(),longMemory:new Map()};}
+function mirrorBrain(b){return {...(b.modular?{modular:true}:{}),...(b.care?{care:true}:{}),physiology:b.physiology,costProfile:b.costProfile,traits:b.traits,controllerType:b.controllerType,temporal:b.temporal,dual:b.dual,lastDecisionSubtick:b.lastDecisionSubtick,position:b.position,facing:b.facing,updates:b.updates,feelingTotal:b.feelingTotal,feelingSamples:b.feelingSamples,wellbeing:b.wellbeing,memory:new Map(),longMemory:new Map()};}
 export class ParallelWorld{
  constructor(world,{workers=4,createWorker=()=>new Worker(new URL('./cognition-worker.js',import.meta.url),{type:'module'}),timeout=30000}={}){
   if(!world.temporal)throw new Error('Параллельный расчёт поддерживает модель v13.');

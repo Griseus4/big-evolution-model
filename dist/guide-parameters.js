@@ -1,3 +1,6 @@
+import {MODULAR_DEFAULTS as D} from './modular-brain-layout.js';
+import {MODULAR_MUTATION_GROUPS,MODULAR_MUTATION_LABELS} from './brain-evolution-rules.js';
+import {NUMERIC_MUTATION_GROUPS} from './numeric-mutation.js';
 import {CARE_GENE_FIELDS} from './care-settings.js';
 /** Именованные привязки пособия. Читают только принятые настройки;
  * отсутствующее значение не подменяется настройкой нового мира. */
@@ -7,6 +10,7 @@ import {REPRODUCTION_DEFAULTS,reproductionProfile} from './reproduction.js';
 import {guideSourceUrl} from './project-guide-search.js';
 
 export const GUIDE_PARAMETERS=Object.freeze({
+ ...Object.fromEntries(MODULAR_MUTATION_GROUPS.flatMap(group=>(NUMERIC_MUTATION_GROUPS.includes(group)?['shape','ceiling']:['rate','strength']).map(key=>['initialMutation.'+group+'.'+key,{label:MODULAR_MUTATION_LABELS[group]+': стартовый '+key,unit:key==='shape'?'A':key==='strength'?'сила':'доля',file:'modular-brain-layout.js',symbol:'MODULAR_DEFAULTS',default:()=>D[key],read:s=>s.initialMutation?.[group]?.[key]}]))),
  ...Object.fromEntries([['physiology',PHYSIOLOGY_FIELDS],['bodyGenes',CARE_GENE_FIELDS]].flatMap(([group,fields])=>Object.entries(fields).map(([key,f])=>[group+'.'+key,{label:f.label,unit:f.unit,file:key==='tCarry'?'care-settings.js':'physiology-settings.js',symbol:key==='tCarry'?'CARE_GENE_FIELDS':group==='physiology'?'PHYSIOLOGY_FIELDS':'BODY_GENE_FIELDS',default:()=>f.value,read:s=>s[group]?.[key]}]))),
  digestionTime:{label:'Прежняя модель: усвоение одной порции',unit:'Т',file:'model-rules.js',symbol:'validateDigestionTime',default:()=>RULES.foodEnergy/RULES.digestionRate,read:s=>s.digestionTime},
  maturity:{label:'Прежняя модель: возраст начала родов',unit:'Т',file:'reproduction.js',symbol:'reproductionProfile',default:()=>REPRODUCTION_DEFAULTS.maturity,read:s=>s.reproduction?.maturity},

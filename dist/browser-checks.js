@@ -1,9 +1,10 @@
+import {MODULAR_BRAIN_CHECKS} from './modular-brain-checks.js';
 import {PHYSIOLOGY_CHECKS} from './physiology-checks.js';
 import {STRUCTURAL_CHECKS} from './structural-checks.js';
 /** Текущая физиология и сохранённые проверки исторических механизмов. */
 import {TEMPORAL_CHECKS} from './temporal-checks.js';
 import {ENVIRONMENT_CHECKS} from './environment-checks.js';
-export const BROWSER_CHECKS=[...PHYSIOLOGY_CHECKS,...STRUCTURAL_CHECKS,...TEMPORAL_CHECKS,...ENVIRONMENT_CHECKS];
+export const BROWSER_CHECKS=[...MODULAR_BRAIN_CHECKS,...PHYSIOLOGY_CHECKS,...STRUCTURAL_CHECKS,...TEMPORAL_CHECKS,...ENVIRONMENT_CHECKS];
 const assert=(ok,message)=>{if(!ok)throw new Error(message);};
 export async function runBrowserChecks(ids,onResult){
  const selected=ids?.length?BROWSER_CHECKS.filter(c=>ids.includes(c.id)):BROWSER_CHECKS;

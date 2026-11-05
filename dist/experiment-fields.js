@@ -1,8 +1,10 @@
+import {PHYSIOLOGY_FIELD_GROUPS} from './physiology-field-groups.js';
+import {MODULAR_GRAPH_SPECS} from './modular-brain-layout.js';
 import {CARE_GENE_FIELDS} from './care-settings.js';
 import {PHYSIOLOGY_FIELDS,BODY_GENE_FIELDS} from './physiology-settings.js';
 import {NUMERIC_MUTATION_GROUPS,NUMERIC_MUTATION_RULES as N} from './numeric-mutation.js';
 import {STRUCTURAL_LIMITS} from './structural-brain.js';
-import {EVOLUTION_RULES,MUTATION_GROUPS,MUTATION_LABELS,V16_MUTATION_LABELS} from './brain-evolution-rules.js';
+import {EVOLUTION_RULES,MODULAR_MUTATION_GROUPS as MUTATION_GROUPS,MODULAR_MUTATION_LABELS as MUTATION_LABELS,V16_MUTATION_LABELS} from './brain-evolution-rules.js';
 import {initialLayerCounts} from './brain-initialization.js';
 import {initialNeuronsInput} from './brain-initialization-ui.js';
 import {FOUNDER_SENSE_FIELDS} from './founder-senses.js';
@@ -14,12 +16,13 @@ export const EXPERIMENT_FIELDS=Object.freeze([
  ['Мир','population','Основателей',1,1000,1],['Мир','limit','Лимит живых',1,1000,1],
  ['Вычисления','brainCostMultiplier','Коэффициент цены обоих мозгов',Number.MIN_VALUE,Number.MAX_VALUE,'any'],
  ...Object.entries(CARE_GENE_FIELDS).map(([key,f])=>['Тело основателей','bodyGenes.'+key,f.label+' ('+f.unit+')',f.exclusiveMin&&f.min===0?Number.MIN_VALUE:f.min,f.max,'any']),
- ...Object.entries(PHYSIOLOGY_FIELDS).map(([key,f])=>['Правила тела и пищи','physiology.'+key,f.label+' ('+f.unit+')',f.exclusiveMin&&f.min===0?Number.MIN_VALUE:f.min,f.max,f.unit==='подшаги'?1:'any']),
+ ...PHYSIOLOGY_FIELD_GROUPS.flatMap(group=>group.keys.map(key=>{const f=PHYSIOLOGY_FIELDS[key];return [group.title,'physiology.'+key,f.label+' ('+f.unit+')',f.exclusiveMin&&f.min===0?Number.MIN_VALUE:f.min,f.max,f.unit==='подшаги'?1:'any'];})),
  ['Возможности','memory','Память мест','check'],['Возможности','learning','Личное обучение','check'],['Возможности','mutations','Мутации потомков','check'],
  ['Возможности','structuralMutations','Структурные мутации','check'],['Мозг','maxNeurons','Предел скрытых нейронов',0,STRUCTURAL_LIMITS.maxNeurons,1],['Мозг','maxLayers','Предел скрытых слоёв',0,STRUCTURAL_LIMITS.maxLayers,1],
  ['Мозг','initialNeurons','Начальные нейроны по слоям','neurons'],['Мозг','initialConnections','Начальная связность, %',0,1e6,'any'],
  ['Малый мозг','attentionMaxNeurons','Предел скрытых нейронов',0,STRUCTURAL_LIMITS.maxNeurons,1],['Малый мозг','attentionMaxLayers','Предел скрытых слоёв',0,STRUCTURAL_LIMITS.maxLayers,1],
  ['Малый мозг','attentionInitialNeurons','Начальные нейроны по слоям','neurons'],['Малый мозг','attentionInitialConnections','Начальная связность, %',0,1e6,'any'],
+ ...MODULAR_GRAPH_SPECS.filter(s=>!['context','attention'].includes(s.key)).flatMap(s=>[[s.label,'brainModules.'+s.key+'.maxNeurons','Предел скрытых нейронов',0,STRUCTURAL_LIMITS.maxNeurons,1],[s.label,'brainModules.'+s.key+'.maxLayers','Предел скрытых слоёв',0,STRUCTURAL_LIMITS.maxLayers,1],[s.label,'brainModules.'+s.key+'.initialNeurons','Начальные нейроны по слоям','neurons'],[s.label,'brainModules.'+s.key+'.initialConnections','Начальная связность, %',0,1e6,'any']]),
  ...MUTATION_GROUPS.map(key=>Object.freeze(['Мутации блоков','mutationEnabled.'+key,MUTATION_LABELS[key]+': мутации потомков','check'])),
  ...MUTATION_GROUPS.flatMap(key=>NUMERIC_MUTATION_GROUPS.includes(key)?[Object.freeze(['Мутации блоков','initialMutation.'+key+'.shape',MUTATION_LABELS[key]+': форма A',Number.MIN_VALUE,Number.MAX_VALUE,'any',true]),Object.freeze(['Мутации блоков','initialMutation.'+key+'.ceiling',MUTATION_LABELS[key]+': потолок r',N.ceilingMin,N.ceilingMax,'any',true])]:[
   Object.freeze(['Мутации блоков','initialMutation.'+key+'.rate',MUTATION_LABELS[key]+': вероятность мутации',EVOLUTION_RULES.rateFloor,1,'any',true]),

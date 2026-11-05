@@ -13,7 +13,7 @@ export function candidateKey(action,foodType=null,targetHandle=null){return `${a
 export function processTiming(a,choice,r=PHYSIOLOGY_DEFAULTS){
  const kind=actionKind(choice.action);
  if(kind==='attack'){const p=attackProfile(a,a.bodyPlan,r);return {...p,motor:p.motor/p.steps,kind};}
- const steps=kind==='move'?movementSteps(a,r):kind==='gather'?r.gatherSteps:kind==='eat'?r.eatSteps:kind==='deposit'?r.depositSteps:kind==='conceive'?1:kind==='feed'?r.feedSteps:0;
+ const steps=kind==='move'?movementSteps(a,r):kind==='gather'?r.gatherSteps:kind==='eat'?r.eatSteps:kind==='deposit'?r.depositSteps:kind==='conceive'?r.conceiveSteps:kind==='feed'?r.feedSteps:0;
  if(!kind)throw new Error('Неизвестное действие тела.');
  return {kind,steps,motor:motorRate(a,kind,r)*DT,total:motorRate(a,kind,r)*DT*steps};
 }

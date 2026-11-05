@@ -6,7 +6,14 @@ import {brainCostProfile} from './brain-cost.js';
 /** Адаптер общего DAG к прежней раскладке обучаемого контекста. Фиксированные
  * кодировщик/проекции сохраняют все индексы и существующий быстрый оценщик. */
 export function compileDualState(genes){
- const d=validateDualBrain(genes),g=compileDag(d.main),H=g.hidden,O=g.outputs;
+ const d=validateDualBrain(genes);
+ if(d.layout.version===20){
+  const modules=Object.fromEntries(d.layout.modules.slice(0,-1).map(m=>[m.key,{...compileDag(d.graphs[m.key]),offset:m.offset}]));
+  const activeParameters=Object.values(modules).flatMap(m=>m.activeParameters.map(i=>i+m.offset));
+  const structure={...modules.context,modules,modular:true,care:true,physiology:true,parameters:d.layout.parameters,activeParameters};
+  return {modular:true,care:true,physiology:true,structure,costProfile:brainCostProfile(structure),attentionStructure:compileDag(d.attention),gateBase:dagParameters(d.attention),dual:true,lastDecisionSubtick:0};
+ }
+ const g=compileDag(d.main),H=g.hidden,O=g.outputs;
  const FIXED_PARAMETERS=d.layout.fixedParameters,STRUCTURAL_BLOCKS=d.layout.blocks;
  const parameter=index=>index<H?FIXED_PARAMETERS+index:index<H+O?STRUCTURAL_BLOCKS[1].bias+index-H:FIXED_PARAMETERS+index-O;
  const activeParameters=[];

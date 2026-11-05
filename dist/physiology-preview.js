@@ -12,7 +12,7 @@ import {ENERGY_PREVIEW} from './energy-preview.js';
  * Кольцевое округление даёт интервал удержания, а не обещание усвоить Q. */
 export function physiologyEnergyPreview(options,brain,moves,{foodType=0,callsPerT=1}={}){
  if(!Number.isInteger(foodType)||foodType<0||foodType>2||!Number.isFinite(callsPerT)||callsPerT<0)throw new Error('Некорректный сценарий питания/решений.');
- const r=physiologySettings(options.physiology),g=bodyPlan(options.baseGenome?unpackDualBrain(options.baseGenome).body:(options.genomeVersion>=19?careGeneValues:bodyGeneValues)(options.bodyGenes??{})),a=createBody(g,r),c=bodyCapacities(a,r),k=validateBrainCostMultiplier(options.brainCostMultiplier),p=ENERGY_PREVIEW;
+ const r=physiologySettings(options.physiology),g=bodyPlan(options.baseGenome?unpackDualBrain(options.baseGenome).body:(brain.care?careGeneValues:bodyGeneValues)(options.bodyGenes??{})),a=createBody(g,r),c=bodyCapacities(a,r),k=validateBrainCostMultiplier(options.brainCostMultiplier),p=ENERGY_PREVIEW;
  const portion=Math.min(r.inventoryCapacity,c.volume),gathers=portion/Math.min(r.portionPerAction,r.inventoryCapacity),movements=moves*portion;
  const moveT=movements*movementSteps(a,r)/SUBSTEPS,gatherT=gathers*r.gatherSteps/SUBSTEPS,eatT=r.eatSteps/SUBSTEPS,activeT=moveT+gatherT+eatT;
  const group=Math.max(1,Math.floor(g.retentionSteps*DIGESTION_GROUP_FRACTION)),retention=(g.retentionSteps-(group-1)/2)/SUBSTEPS;

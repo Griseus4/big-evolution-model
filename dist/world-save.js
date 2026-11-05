@@ -19,7 +19,7 @@ import {genomeMetadata,validateGenomeFile} from './genome.js';
 import {validateEnvironmentSettings,ENVIRONMENT_DEFAULTS,ENVIRONMENT_SCHEMA,ENVIRONMENT_RULES,foodProduction} from './environment-settings.js';
 import {reproductionProfile} from './reproduction.js';
 import {controllerProblems} from './brain-controller.js';
-export const WORLD_SAVE_FORMAT='big-evolution-world',WORLD_SAVE_VERSION=6,LEGACY_WORLD_SAVE_VERSION=4,MAX_WORLD_SAVE_BYTES=512*1024*1024;
+export const WORLD_SAVE_FORMAT='big-evolution-world',WORLD_SAVE_VERSION=7,LEGACY_WORLD_SAVE_VERSION=4,MAX_WORLD_SAVE_BYTES=512*1024*1024;
 // Старые миры продолжают прежнее усвоение: отсутствующий параметр даёт 20 Т.
 // Новые сохраняют выбранное время; номер UI сам по себе не ломает схему.
 const COMPATIBLE_MODELS=new Set([MODEL_VERSION,'0.56.1','0.56.0','0.55.4','0.55.3','0.55.2','0.55.1','0.55.0','0.54.17','0.54.16','0.54.15','0.54.14','0.54.13','0.54.12','0.54.11','0.54.10','0.54.9','0.54.8','0.54.7','0.54.6','0.54.5','0.54.4','0.54.3','0.54.2','0.53.0','0.53.1','0.53.2','0.53.3','0.54.0','0.54.1']);
@@ -31,7 +31,7 @@ export function saveWorld(w){
  return {format:WORLD_SAVE_FORMAT,version:LEGACY_WORLD_SAVE_VERSION,modelVersion:MODEL_VERSION,activityRevision:w._activities?.revision??0,state:encodeState(state)};
 }
 export function loadWorld(file){
- if(file?.version===5||file?.version===6)return loadPhysiologyWorld(file,FIELDS);
+ if(file?.version===5||file?.version===6||file?.version===7)return loadPhysiologyWorld(file,FIELDS);
  if(file?.format!==WORLD_SAVE_FORMAT||file.version!==LEGACY_WORLD_SAVE_VERSION||!COMPATIBLE_MODELS.has(file.modelVersion))throw new Error('Неподдерживаемый формат или версия сохранения мира. Требуется совместимая схема целевой автоматики.');
  const state=decodeState(file.state),w=Object.create(Evolution.prototype);
  if(!state||Object.keys(state).some(k=>!FIELDS.includes(k)))throw new Error('Недопустимые поля мира.');Object.assign(w,state);w.reproduction=reproductionProfile(w.reproduction);

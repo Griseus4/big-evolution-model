@@ -18,7 +18,7 @@ import {SUBSTEPS} from './action-timing.js';
 import {checkPhysiologyInvariants} from './physiology-invariants.js';
 import {grassAmount} from './food-resources.js';
 export const PHYSIOLOGY_SAVE_VERSION=5;
-const EXTRA=['physiology','childCare','genomeVersion','bodyGenes','_physNextFruit','_physEnvironment','_groundFood','_growingGrass'];
+const EXTRA=['brainModules','physiology','childCare','genomeVersion','bodyGenes','_physNextFruit','_physEnvironment','_groundFood','_growingGrass'];
 const number=n=>typeof n==='number'&&Number.isFinite(n),positive=n=>number(n)&&n>=0,integer=n=>Number.isSafeInteger(n)&&n>=0;
 const check=(condition,message)=>{if(!condition)throw new Error('Повреждено сохранение: '+message);};
 const near=(a,b)=>Math.abs(a-b)<=1e-9*Math.max(1,Math.abs(a),Math.abs(b));
@@ -33,7 +33,7 @@ export function savePhysiologyWorld(w,commonFields){
   if(w.childCare)delete brain.networkBase;
   return {...a,brain};
  });
- return {format:'big-evolution-world',version:w.childCare?6:PHYSIOLOGY_SAVE_VERSION,modelVersion:MODEL_VERSION,physiologySchema:PHYSIOLOGY_SCHEMA,...(w.childCare?{careSchema:'postnatal-care-v1'}:{}),state:encodeState(state)};
+ return {format:'big-evolution-world',version:w.genomeVersion>=20?7:w.childCare?6:PHYSIOLOGY_SAVE_VERSION,modelVersion:MODEL_VERSION,physiologySchema:PHYSIOLOGY_SCHEMA,...(w.childCare?{careSchema:'postnatal-care-v1'}:{}),state:encodeState(state)};
 }
 function validateMeat(c,tick){check(c&&integer(c.whole)&&number(c.fraction)&&c.fraction>=0&&c.fraction<1&&integer(c.subtick)&&c.subtick<=tick,'контейнер мяса');}
 function validateDigestion(d,plan,tick,capacity){
@@ -54,11 +54,11 @@ function validatePregnancy(p,a,w){
  else check(p.laborStarted===p.due&&p.laborDue===p.due+w.physiology.birthSteps&&w.subtick<p.laborDue&&positive(p.fraction)&&p.fraction<=1&&near(p.fraction,p.paid/p.cost)&&a.process===null,'срок/доля родов');
 }
 export function loadPhysiologyWorld(file,commonFields){
- check(file.format==='big-evolution-world'&&[5,6].includes(file.version)&&file.physiologySchema===PHYSIOLOGY_SCHEMA,'версия физики');
- if(file.version===6)check(file.careSchema==='postnatal-care-v1','схема ношения');
+ check(file.format==='big-evolution-world'&&[5,6,7].includes(file.version)&&file.physiologySchema===PHYSIOLOGY_SCHEMA,'версия физики');
+ if(file.version>=6)check(file.careSchema==='postnatal-care-v1','схема ношения');
  const state=decodeState(file.state),fields=new Set([...commonFields,...EXTRA]);check(state&&Object.keys(state).every(k=>fields.has(k)),'поля мира');
  const w=Object.assign(Object.create(Evolution.prototype),state);
- check(w.physiology&&w.genomeVersion===(file.version===6?19:18)&&Boolean(w.childCare)===(file.version===6),'настройки тела');w.physiology=physiologySettings(w.physiology);w.bodyGenes=(w.childCare?careGeneValues:bodyGeneValues)(w.bodyGenes);w.foodEnergies=foodEnergies(w.physiology);
+ check(w.physiology&&w.genomeVersion===(file.version===7?20:file.version===6?19:18)&&Boolean(w.childCare)===(file.version>=6),'настройки тела');w.physiology=physiologySettings(w.physiology);w.bodyGenes=(w.childCare?careGeneValues:bodyGeneValues)(w.bodyGenes);w.foodEnergies=foodEnergies(w.physiology);
  Object.assign(w,dualStructureSettings(w));w.brainCostMultiplier=validateBrainCostMultiplier(w.brainCostMultiplier);
  check(w.temporal===true&&integer(w.subtick)&&w.tick===w.subtick/SUBSTEPS&&integer(w.nextId)&&Array.isArray(w.agents)&&Array.isArray(w.tiles)&&w.tiles.length===WORLD_WIDTH*WORLD_HEIGHT&&w.records instanceof Map&&w.lineages instanceof Map&&w.lifeHistory instanceof LifeHistory,'основные поля');
  for(const key of ['random','cognitiveRandom','bodyRandom','neuralRandom','mutationRandom'])check(w[key] instanceof Random&&integer(w[key].state)&&w[key].state<=4294967295,'RNG '+key);
@@ -81,7 +81,7 @@ export function loadPhysiologyWorld(file,commonFields){
   if(w.childCare){check(a.brain&&!Object.hasOwn(a.brain,'networkBase'),'дублирующая основа мозга');a.brain.networkBase=Float64Array.from(a.genome.slice(0,genes.layout.parameters));}
   check(a.brain?.memory instanceof Map&&a.brain.longMemory instanceof Map&&a.brain.networkBase?.length===genes.layout.parameters&&a.brain.networkBase.every((v,j)=>v===a.genome[j]),'основа мозга');
   const state=compileDualState(a.genome);a.brain.structure=state.structure;a.brain.costProfile=state.costProfile;a.brain.attentionStructure=state.attentionStructure;
-  check(a.brain.physiology===true&&Boolean(a.brain.care)===Boolean(w.childCare)&&a.brain.gateBase?.length===state.gateBase.length&&a.brain.gateBase.every((v,j)=>v===state.gateBase[j])&&controllerProblems(a.brain).length===0,'мозг/обучение');
+  check(Boolean(a.brain.modular)===(w.genomeVersion>=20)&&a.brain.physiology===true&&Boolean(a.brain.care)===Boolean(w.childCare)&&a.brain.gateBase?.length===state.gateBase.length&&a.brain.gateBase.every((v,j)=>v===state.gateBase[j])&&controllerProblems(a.brain).length===0,'мозг/обучение');
   check(a.brain.outcomeExpectation?.length===(w.childCare?13:12)&&a.brain.outcomeExpectation.every(number)&&integer(a.brain.lastDecisionSubtick)&&a.brain.lastDecisionSubtick<=w.subtick&&a.brainDue===0,'состояние решения');
  }
  check(w.automaticEnvironment?.random instanceof Random,'среда');validateEnvironmentSettings(w.automaticEnvironment);

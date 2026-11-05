@@ -232,7 +232,7 @@ function analyzeNeuralGenome(data,{name,sha256}){
    properties.push({key:`attention-${gateTopology}-${i}`,label:i<=H?`Диспетчер: смещение ${i+1}`:`Диспетчер: ${edge.to} ← ${edge.from}`,group:'Малый мозг',description:'Наследуемый вес, без обучения за жизнь',present:true,index:layout.gateOffset+i,raw:data.genes[layout.gateOffset+i],derived:null,unit:'вес',share:null});
   }
  }
- const structureData=layout.version>=15?{layout,...unpackDualBrain(data.genes).main}:layout.version===14?structuralData(data.genes):null;
+ const structureData=layout.version>=15?{layout,...unpackDualBrain(data.genes).main,graphs:unpackDualBrain(data.genes).graphs}:layout.version===14?structuralData(data.genes):null;
  const topologyKey=layout.version>=14?data.genes.slice(layout.topologyOffset).reduce((h,v)=>Math.imul(h^v,16777619)>>>0,2166136261).toString(16):layout.network.inputSchema;
  for(let i=0;i<PARAMETER_COUNT;i++){
   const label=layout.version>=14?structuralParameterLabel(structureData,i):layout.brainType===TEMPORAL_BRAIN_TYPE?temporalParameterLabel(i):layout.brainType===SET_BRAIN_TYPE?setParameterLabel(i):i<HIDDEN_BIAS?`Скрытый ${Math.floor(i/INPUT_COUNT)+1} ← ${NEURAL_INPUT_NAMES[i%INPUT_COUNT]}`:
@@ -245,7 +245,7 @@ function analyzeNeuralGenome(data,{name,sha256}){
  return {name:String(name).slice(0,200),sha256:typeof sha256==='string'&&/^[a-f0-9]{64}$/i.test(sha256)?sha256:null,genomeVersion:layout.version,geneCount:data.genes.length,columns:11,
   stateEncoding:data.network.inputSchema,stateKnown:false,bodySenseKnown:true,bodySenseEncoding:'network-input-v1',modelVersion:data.modelVersion??null,brainType:layout.brainType,
   traitScale:context.traitScale??TRAIT_SCALE_VERSION,actions:(layout.version>=19?CARE_ACTIONS:layout.version===18?PHYSIOLOGY_ACTIONS:ACTIONS).slice(),source,rules,environment,properties,policy:[],network:{...NETWORK_SCHEMA},inputNames:NEURAL_INPUT_NAMES.slice(),
-  architectureLabel:layout.version>=15?`Контекст DAG (${layout.hidden} скрытых), диспетчер DAG (${layout.gateHidden} скрытых); покой без процесса`:[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout.brainType)?`Клетки, деятельность и процесс → все Q; наследуемое внимание ${GATE_INPUTS} → ${GATE_HIDDEN} → 1`:layout.brainType===SET_BRAIN_TYPE?'Общие клетки → ситуация → все Q; 6 операций, направления внутри движения':`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q`,
+  architectureLabel:layout.version>=20?'Шесть изменяемых DAG; фиксированные интерфейсы блоков':layout.version>=15?`Контекст DAG (${layout.hidden} скрытых), диспетчер DAG (${layout.gateHidden} скрытых); покой без процесса`:[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout.brainType)?`Клетки, деятельность и процесс → все Q; наследуемое внимание ${GATE_INPUTS} → ${GATE_HIDDEN} → 1`:layout.brainType===SET_BRAIN_TYPE?'Общие клетки → ситуация → все Q; 6 операций, направления внутри движения':`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q`,
   insights:[layout.version>=15?`${PARAMETER_COUNT} параметров основного оценщика; ${layout.gateParameters} параметров диспетчера; ${layout.regulatorCount} регуляторов. Начальные диапазоны не ограничивают эволюцию. Диспетчер не обучается за жизнь.`:[TEMPORAL_BRAIN_TYPE,STRUCTURAL_TYPE].includes(layout.brainType)?`${PARAMETER_COUNT} параметров основного мозга, 12 свойств, ${GATE_PARAMETERS} параметра малого мозга. Основной мозг учитывает текущий процесс, его прогресс, причину вызова и цену решения. Малый мозг не обучается за жизнь.`:layout.brainType===SET_BRAIN_TYPE?`Вариант Б: кодировщик клеток ${layout.network.cellInputs} → ${layout.network.cellHidden}, ситуация ${layout.network.contextInputs} → ${layout.network.contextHidden}, цели ${layout.network.targetInputs} → ${layout.network.contextHidden}, критерии 6 операций; ${PARAMETER_COUNT} параметров и 13 общих свойств. Все Q за один прямой вызов; видимость источника независима от порций.`:`Сеть ${INPUT_COUNT} → ${HIDDEN_COUNT} tanh → Q; ${PARAMETER_COUNT} параметров и 13 свойств ощущений/памяти/обучения.`,
    `Память: краткая ${known?traits.shortCapacity:'неизвестна'}, долгая ${known?traits.longCapacity:'неизвестна'}. Личный опыт не сохранён.`,
    'Сеть оценивает варианты по локальным признакам. Значения Q и вероятности требуют конкретных наблюдений.'],
@@ -279,7 +279,9 @@ function compareNeuralGenomes(a,b){
 }
 
 function structuralParameterLabel(d,index){
- const l=d.layout,fixed=l.fixedParameters??FIXED_PARAMETERS;
+ const l=d.layout;
+ if(l.version>=20){const m=l.modules.find(m=>index>=m.offset&&index<m.offset+m.parameters),local=index-m.offset;if(local<m.hidden+m.outputs)return `${m.label}: смещение ${local+1}`;const e=d.graphs[m.key].edges[local-m.hidden-m.outputs];return `${m.label}: ${e.to} ← ${e.from}`;}
+ const fixed=l.fixedParameters??FIXED_PARAMETERS;
  if(index>=fixed+l.hidden){const e=d.edges[index-fixed-l.hidden];return `DAG: ${e.to} ← ${e.from}`;}
  if(index>=fixed)return `DAG: смещение скрытого ${index-fixed+1}`;
  const b=(l.blocks??STRUCTURAL_BLOCKS).find(b=>index>=b.offset&&index<b.offset+b.weights+(b.bias===null?0:b.outputs));

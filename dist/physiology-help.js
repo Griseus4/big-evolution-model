@@ -1,3 +1,4 @@
+import {BODY_PARAMETER_HELP,WORLD_PARAMETER_HELP} from './physiology-parameter-help.js';
 import {CARE_GENE_FIELDS} from './care-settings.js';
 import {PHYSIOLOGY_FIELDS,BODY_GENE_FIELDS} from './physiology-settings.js';
 const genes={
@@ -28,3 +29,8 @@ PHYSIOLOGY_HELP['physiology.eatSteps']=[PHYSIOLOGY_FIELDS.eatSteps.label,'Фик
 PHYSIOLOGY_HELP['bodyGenes.tCarry']=[CARE_GENE_FIELDS.tCarry.label,'Отдельный наследуемый срок, на который родитель берёт родившегося ребёнка. На старте половина окна развития, далее мутирует независимо в группе поведенческих свойств. Срок фиксируется при рождении. Ношение запрещает новое зачатие. Ребёнок наблюдает и ведёт память; при гибели родителя досрочно становится самостоятельным.'];
 PHYSIOLOGY_HELP['physiology.feedSteps']=['Длительность кормления','Отдельное решение родителя длительностью один подшаг. Переносится выбранная пища из его запаса в свободное место желудка ребёнка; несъеденное остаётся в запасе.'];
 PHYSIOLOGY_HELP['physiology.feedRate']=['Цена кормления','Двигательный расход энергии за Т при опорной массе родителя. За попытку оплачивается один подшаг, даже если желудок ребёнка полон. Энергия пищи поступает ребёнку позже через его собственное пищеварение.'];
+
+for(const [prefix,fields,explanations] of [['bodyGenes',CARE_GENE_FIELDS,BODY_PARAMETER_HELP],['physiology',PHYSIOLOGY_FIELDS,WORLD_PARAMETER_HELP]])for(const [key,f] of Object.entries(fields)){
+ const h=explanations[key];if(!h)continue;
+ PHYSIOLOGY_HELP[prefix+'.'+key]=[f.label,`${h.meaning} Если увеличить: ${h.increase} Если уменьшить: ${h.decrease} Единица: ${f.unit}. ${prefix==='bodyGenes'?'Стартовый наследуемый ген; у потомков может мутировать.':'Общее правило мира; не наследуется.'} Изменение формы применяется к следующему запуску.`];
+}

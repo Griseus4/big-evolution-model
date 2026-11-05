@@ -30,7 +30,7 @@ export function wireInitialStructure(neurons,percent,maxNeurons,maxLayers,{onCha
  const doc=neurons.ownerDocument??globalThis.document,note=doc.createElement('p');note.className='note';neurons.append(note);
  function refresh(rebuild=false){
   if(rebuild)neurons.refresh();const imported=isGenome();neurons.setDisabled(imported);percent.disabled=imported;
-  if(imported){note.textContent='Геном из файла задаёт свою структуру; начальные нейроны и связность не применяются.';return;}
+  if(imported){note.textContent='Загружен геном: его структура сохраняется. Для редактирования стартовых нейронов и связности очистите основу генома и выберите случайных основателей.';return;}
   try{const counts=neurons.readSetting(),budget=connectionBudget(counts);percent.max=budget.maxPercent;
    const actual=connectionBudget(counts,String(percent.value).trim()===''?NaN:Number(percent.value));note.textContent=`Связей: ${actual.count}. 100% = ${budget.base} соседних; максимум ${budget.maximum} (${budget.maxPercent.toLocaleString('ru-RU',{maximumFractionDigits:2})}%).`;percent.setCustomValidity?.('');
   }catch(e){note.textContent=e.message;percent.setCustomValidity?.(e.message);}
